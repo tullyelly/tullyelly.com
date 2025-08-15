@@ -2,7 +2,11 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.message.create({ data: { text: 'Hello World' } });
+  await prisma.message.upsert({
+    where: { id: 1 },
+    update: { text: 'Hello World' },
+    create: { id: 1, text: 'Hello World' },
+  });
   console.log('Seeded: Hello World');
 }
 
