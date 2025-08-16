@@ -15,7 +15,7 @@ export default function HugBallPage() {
         padding: "1rem",
       }}
     >
-      <Image src="/hug-ball-test.png" alt="Hug Ball" width={720} height={1280} />
+      <Image src="/hug-ball-test.jpg" alt="Hug Ball" width={720} height={1280} />
       <p>Fellas, we launched.</p>
     </div>
   );
