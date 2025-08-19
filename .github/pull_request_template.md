@@ -5,7 +5,7 @@ Explain what this PR changes and why.
 WU-XXX
 
 ## Reviewers
-- @tullyelly  (giannis@tullyelly.com)
+- @tullyelly
 
 ## Checks
 - [ ] Lint passes locally (`npm run lint`)
