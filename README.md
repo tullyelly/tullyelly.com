@@ -1,4 +1,3 @@
-````markdown
 # tullyelly.com
 
 A [Next.js](https://nextjs.org) project customized with **Tailwind v4 design tokens** and an **image optimization pipeline**.
