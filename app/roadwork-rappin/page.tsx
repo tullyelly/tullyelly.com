@@ -24,7 +24,7 @@ return (
 
 <figure>
 <Image
-src="/images/optimized/hero-roadwork-1200.webp"
+src="/img/logo.webp"
 alt="Roadwork Rappin’ hero"
 width={1200}
 height={675}
