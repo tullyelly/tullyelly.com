@@ -23,14 +23,14 @@ return (
 
 
 <figure>
-<Image
-src="/img/test.webp"
-alt="HEELS HAVE EYES hero"
-width={1200}
-height={675}
-sizes="(max-width: 768px) 100vw, 1200px"
-priority
-/>
+    <Image
+      src="/images/optimized/test.webp"
+      alt="HEELS HAVE EYES hero"
+      width={1200}
+      height={675}
+      sizes="(max-width: 768px) 100vw, 1200px"
+      priority
+    />
 <figcaption className="muted">Hero image served from the optimized folder.</figcaption>
 </figure>
 </article>
