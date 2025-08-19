@@ -1,87 +1,86 @@
-📖 Project README (Updated)
-tullyelly.com
+````markdown
+# tullyelly.com
 
-This is a Next.js
- project bootstrapped with create-next-app
-, customized with Tailwind v4 design tokens and an automated image pipeline.
+A [Next.js](https://nextjs.org) project customized with **Tailwind v4 design tokens** and an **image optimization pipeline**.
 
-🚀 Getting Started
-Run the development server
+---
+
+## 🚀 Getting Started
+
+Run the development server:
+
+```bash
 npm run dev
+````
 
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+Pages auto-update when you edit files in the `app/` folder.
 
-Then open http://localhost:3000
- in your browser.
-The page auto-updates as you edit files inside the app/ folder.
+---
 
-🎨 Design Tokens & Styles
+## 🎨 Design Tokens & Styles
 
-We use Tailwind v4 with custom design tokens defined in app/globals.css.
+* Tokens are defined as CSS variables in `app/globals.css`.
+* Tailwind (`tailwind.config.mjs`) maps tokens to classes.
+* Use them like this:
 
-Tokens are CSS variables (e.g. --color-background, --color-foreground).
-
-They’re hooked into Tailwind via tailwind.config.mjs.
-
-Use them in components with standard Tailwind classes:
-
+```jsx
 <div className="bg-background text-foreground border-border">
   Hello world with tokens!
 </div>
+```
 
+This keeps typography, colors, and spacing consistent across the site.
 
-This keeps typography, colors, and spacing consistent across pages.
+---
 
-🖼️ Image Optimization Pipeline
+## 🖼️ Image Optimization Pipeline
 
-Large images slow down the site. We use an automated pipeline powered by sharp
- and imagemin
-.
+Optimize large images before pushing to the repo:
 
-Workflow
+1. Place original images into:
 
-Place your original images into:
+   ```
+   public/images/source/
+   ```
 
-public/images/source/
+2. Run the pipeline:
 
+   ```bash
+   npm run images
+   ```
 
-Run the pipeline:
+3. Optimized images are saved to:
 
-npm run images
+   ```
+   public/images/optimized/
+   ```
 
+Images are resized (1200px, 600px) and exported as **WebP, AVIF, JPG**.
 
-Optimized images will be created in:
+---
 
-public/images/optimized/
+## 📚 Learn More
 
+* [Next.js Documentation](https://nextjs.org/docs)
+* [Tailwind CSS Docs](https://tailwindcss.com/docs)
+* [Sharp Image Processing](https://sharp.pixelplumbing.com/)
+* [Imagemin](https://github.com/imagemin/imagemin)
 
-Each image is resized to 1200px and 600px widths and exported in WebP, AVIF, and JPG formats.
+---
 
-Scripts available
+## ☁️ Deployment
 
-npm run images → process new images.
+Deploy easily with [Vercel](https://vercel.com/new).
+This repo is already structured for one-click deploys.
 
-npm run clean:images → clear out optimized outputs.
+---
 
-📚 Learn More
+## ✅ Quick Notes
 
-Next.js Documentation
+* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`
+* `globals.css`: design tokens + Tailwind entry point
+* `tailwind.config.mjs`: maps tokens → Tailwind theme
+* Always run `npm run images` before committing new images
 
-Tailwind CSS
-
-Sharp Image Processing
-
-☁️ Deployment
-
-The easiest way to deploy is the Vercel Platform
-.
-This project is already structured for one-click deploys.
-
-✅ Quick Notes
-
-Static pages live under app/ (e.g. /roadwork-rappin, /heels-have-eyes).
-
-globals.css = design tokens + Tailwind entry point.
-
-tailwind.config.mjs = maps tokens → Tailwind theme.
-
-Always run npm run images before committing new images.
+```
