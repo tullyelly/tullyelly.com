@@ -1,7 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: {
@@ -21,13 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <header className="header">
-          <div className="container">
-            <nav className="nav" aria-label="Main">
-              <Link href="/">Home</Link>
-              <Link href="/roadwork-rappin">Roadwork Rappin’</Link>
-              <Link href="/heels-have-eyes">HEELS HAVE EYES</Link>
-            </nav>
-          </div>
+          <div className="container">tullyelly</div>
         </header>
 
         <main id="content" className="container" tabIndex={-1}>
