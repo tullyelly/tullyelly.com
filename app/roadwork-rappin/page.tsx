@@ -9,7 +9,7 @@ openGraph: {
 title: "Roadwork Rappin’",
 description: "A shareable static page for Roadwork Rappin’.",
 images: [
-"/images/optimized/hero-roadwork-1200.webp",
+"/images/optimized/shaolin logo.webp",
 ],
 },
 };
@@ -23,14 +23,14 @@ return (
 
 
 <figure>
-<Image
-src="/img/logo.webp"
-alt="Roadwork Rappin’ hero"
-width={1200}
-height={675}
-sizes="(max-width: 768px) 100vw, 1200px"
-priority
-/>
+    <Image
+      src="/images/optimized/shaolin logo.webp"
+      alt="Roadwork Rappin’ hero"
+      width={1200}
+      height={675}
+      sizes="(max-width: 768px) 100vw, 1200px"
+      priority
+    />
 <figcaption className="muted">Hero image served from the optimized folder.</figcaption>
 </figure>
 </article>

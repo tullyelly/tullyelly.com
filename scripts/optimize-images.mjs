@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
-const inDir = "public/raw";   // drop your originals here
-const outDir = "public/img";  // optimized outputs land here
+const inDir = "public/images/source";   // drop your originals here
+const outDir = "public/images/optimized";  // optimized outputs land here
 
 const exts = new Set([".jpg", ".jpeg", ".png", ".webp", ".tiff"]);
 

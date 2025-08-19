@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const inDir = "public/raw";
-const outDir = "public/img";
+const inDir = "public/images/source";
+const outDir = "public/images/optimized";
 
 const srcExts = new Set([".jpg", ".jpeg", ".png", ".webp", ".tiff"]);
 const requiredOutputs = [".jpg", ".webp", ".avif", ".png"]; // what optimize-images.mjs produces
@@ -77,3 +77,4 @@ if (failures.length) {
 } else {
   console.log("All images are optimized and up to date ✅");
 }
+

@@ -41,7 +41,7 @@ Optimize large images before pushing to the repo:
 1. Place original images into:
 
    ```
-   public/raw/
+   public/images/source/
    ```
 
 2. Generate optimized assets:
@@ -59,7 +59,7 @@ Optimize large images before pushing to the repo:
 4. Optimized images are saved to:
 
    ```
-   public/img/
+   public/images/optimized/
    ```
 
 Images are resized to a **1920px** max width and exported as **JPG, WebP, AVIF, PNG**.
