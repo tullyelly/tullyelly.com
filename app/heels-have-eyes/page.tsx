@@ -24,7 +24,7 @@ return (
 
 <figure>
 <Image
-src="/images/optimized/hero-heels-1200.webp"
+src="/img/test.webp"
 alt="HEELS HAVE EYES hero"
 width={1200}
 height={675}
