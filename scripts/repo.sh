@@ -1,12 +1,12 @@
-# create workflows folder under .github
-mkdir -p .github/workflows
-
-# add CI workflow
+# edit .github/workflows/ci.yml to this:
 cat > .github/workflows/ci.yml <<'YAML'
 name: CI
+
 on:
-  pull_request: { branches: [ "main" ] }
-  push:        { branches: [ "main" ] }
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build-and-check:
@@ -30,8 +30,6 @@ jobs:
         run: npm run build --if-present
 YAML
 
-# commit on a new branch
-git checkout -b ci/add-workflow
 git add .github/workflows/ci.yml
-git commit -m "ci(WU-186): add lint/typecheck/build workflow"
-git push -u origin ci/add-workflow
+git commit -m "ci: WU-186 broaden triggers (push on all branches, PRs, manual)"
+git push -u origin "$(git branch --show-current)"
