@@ -9,7 +9,7 @@ openGraph: {
 title: "HEELS HAVE EYES",
 description: "A shareable static page for HEELS HAVE EYES.",
 images: [
-"/images/optimized/hero-heels-1200.webp",
+"/images/optimized/cardattack logo.webp",
 ],
 },
 };
@@ -24,7 +24,7 @@ return (
 
 <figure>
     <Image
-      src="/images/optimized/test.webp"
+      src="/images/optimized/cardattack logo.webp"
       alt="HEELS HAVE EYES hero"
       width={1200}
       height={675}

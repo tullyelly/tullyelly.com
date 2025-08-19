@@ -9,7 +9,7 @@ openGraph: {
 title: "Roadwork Rappin’",
 description: "A shareable static page for Roadwork Rappin’.",
 images: [
-"/images/optimized/hero-roadwork-1200.webp",
+"/images/optimized/shaolin logo.webp",
 ],
 },
 };
@@ -24,7 +24,7 @@ return (
 
 <figure>
     <Image
-      src="/images/optimized/logo.webp"
+      src="/images/optimized/shaolin logo.webp"
       alt="Roadwork Rappin’ hero"
       width={1200}
       height={675}
