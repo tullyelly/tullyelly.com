@@ -6,11 +6,12 @@ A [Next.js](https://nextjs.org) project customized with **Tailwind v4 design tok
 
 ## 🚀 Getting Started
 
-Run the development server:
+Install dependencies and run the development server:
 
 ```bash
+npm install
 npm run dev
-````
+```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 Pages auto-update when you edit files in the `app/` folder.
@@ -40,22 +41,53 @@ Optimize large images before pushing to the repo:
 1. Place original images into:
 
    ```
-   public/images/source/
+   public/raw/
    ```
 
-2. Run the pipeline:
+2. Generate optimized assets:
 
    ```bash
-   npm run images
+   npm run images:optimize
    ```
 
-3. Optimized images are saved to:
+3. Verify outputs:
+
+   ```bash
+   npm run images:check
+   ```
+
+4. Optimized images are saved to:
 
    ```
-   public/images/optimized/
+   public/img/
    ```
 
-Images are resized (1200px, 600px) and exported as **WebP, AVIF, JPG**.
+Images are resized to a **1920px** max width and exported as **JPG, WebP, AVIF, PNG**.
+
+---
+
+## 🗃️ Database
+
+This project requires a **Postgres** database. Set the `DATABASE_URL` environment variable to point to your instance.
+
+After configuring the database, run:
+
+```bash
+npx prisma migrate dev
+npx prisma db seed
+```
+
+---
+
+## 📜 Scripts
+
+Recommended Node version: **20**.
+
+* `npm run lint` – lint the codebase
+* `npm run typecheck` – run TypeScript checks
+* `npm run build` – build the production bundle
+* `npm run start` – start the production server
+* `npm run ci` – run lint, image checks, and build
 
 ---
 
@@ -77,9 +109,7 @@ This repo is already structured for one-click deploys.
 
 ## ✅ Quick Notes
 
-* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`
+* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/hug-ball`
 * `globals.css`: design tokens + Tailwind entry point
 * `tailwind.config.mjs`: maps tokens → Tailwind theme
-* Always run `npm run images` before committing new images
-
-```
+* Always run `npm run images:optimize` before committing new images
