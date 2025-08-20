@@ -11,7 +11,16 @@ export function buildPageMetadata(frontmatter: PageFrontmatter): Metadata {
     openGraph: {
       title,
       description,
-      images: hero ? [hero.src] : undefined,
+      images: hero
+        ? [
+            {
+              url: hero.src,
+              width: hero.width,
+              height: hero.height,
+              alt: hero.alt,
+            },
+          ]
+        : undefined,
     },
   };
 }

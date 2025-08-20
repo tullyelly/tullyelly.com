@@ -1,118 +1,171 @@
-:root {
-/* Colors */
---color-bg: #ffffff; /* page background */
---color-text: #111111; /* main text */
---color-muted: #666666; /* secondary text */
---color-accent: #0f62fe; /* links/buttons */
---color-border: #e5e7eb; /* light gray borders */
-
-
-/* Typography scale (mobile-first) */
---font-family-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
---font-size-xs: 0.75rem; /* 12px */
---font-size-sm: 0.875rem; /* 14px */
---font-size-base: 1rem; /* 16px */
---font-size-lg: 1.125rem; /* 18px */
---font-size-xl: 1.25rem; /* 20px */
---font-size-2xl: 1.5rem; /* 24px */
---font-size-3xl: 1.875rem; /* 30px */
---font-size-4xl: 2.25rem; /* 36px */
-
-
-/* Spacing (8px baseline) */
---space-1: 0.25rem; /* 4px */
---space-2: 0.5rem; /* 8px */
---space-3: 0.75rem; /* 12px */
---space-4: 1rem; /* 16px */
---space-6: 1.5rem; /* 24px */
---space-8: 2rem; /* 32px */
---space-12: 3rem; /* 48px */
---space-16: 4rem; /* 64px */
-
-
-/* Container width */
---container: 72rem; /* 1152px */
-}
-
-
-/* Simple reset + base styles */
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; font-family: var(--font-family-sans); background: var(--color-bg); color: var(--color-text); line-height: 1.6; }
-img, picture, video, canvas, svg { display: block; max-width: 100%; }
-
-
-main { font-size: var(--font-size-base); }
-h1 { font-size: var(--font-size-4xl); line-height: 1.15; margin: var(--space-8) 0 var(--space-4); }
-h2 { font-size: var(--font-size-3xl); line-height: 1.2; margin: var(--space-6) 0 var(--space-3); }
-h3 { font-size: var(--font-size-2xl); line-height: 1.25; margin: var(--space-4) 0 var(--space-2); }
-p { margin: 0 0 var(--space-4); color: var(--color-text); }
-small, .muted { color: var(--color-muted); }
-
-
-/* Links */
-a { color: var(--color-accent); text-decoration: none; }
-a:hover, a:focus { text-decoration: underline; }
-
-
-/* Layout helpers */
-.container { width: 100%; max-width: var(--container); padding: 0 var(--space-4); margin: 0 auto; }
-.section { padding: var(--space-12) 0; border-top: 1px solid var(--color-border); }
-.header, .footer { padding: var(--space-4) 0; }
-.nav { display: flex; gap: var(--space-4); }
-
-
-/* Visually hidden (for a11y) */
-.visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px,1px,1px,1px); white-space: nowrap; }
-
-/* Tailwind v4 base import */
 @import "tailwindcss";
 
-/* ────────────────
-   CSS Variables
-   ──────────────── */
-:root {
-  /* Colors (light mode defaults) */
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Milwaukee Bucks Cream City global tokens.
+ * Use var(--surface-page) (cream) for page backgrounds and gutters.
+ * Use var(--surface-card) (white) for long-form reading surfaces.
+ */
 
-  --color-muted: #666666;
-  --color-accent: #0f62fe;
-  --color-border: #e5e7eb;
+:root {
+  /* Brand bases */
+  --cream: #EEE1C6;            /* Cream City Cream */
+  --blue: #0077C0;             /* Great Lakes Blue */
+  --blue-contrast: #0069A9;    /* Darkened for AA on cream */
+  --green: #00471B;            /* Bucks Green */
+
+  /* Neutrals for readability */
+  --white: #FFFFFF;
+  --black: #0B0B0B;            /* body text */
+
+  /* Text */
+  --text-primary: var(--black);
+  --text-on-blue: var(--white);
+  --text-on-green: var(--white);
+
+  /* Links */
+  --link-on-white: var(--blue);
+  --link-on-cream: var(--blue-contrast);
+
+  /* Surfaces */
+  --surface-page: var(--cream);   /* page wrap/gutters */
+  --surface-card: var(--white);   /* reading surfaces */
+  --border-subtle: color-mix(in srgb, var(--blue) 12%, var(--white));
+
+  /* Buttons */
+  --btn-primary-bg: var(--blue);
+  --btn-primary-fg: var(--text-on-blue);
+  --btn-secondary-bg: var(--green);
+  --btn-secondary-fg: var(--text-on-green);
 
   /* Fonts */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
 
   /* Layout scale */
-  --container: 72rem; /* 1152px */
+  --container: 72rem;
 }
 
-/* Dark mode variables */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --color-muted: #9ca3af;
-    --color-border: #2a2a2a;
-  }
-}
-
-/* ────────────────
-   Global Element Styles
-   ──────────────── */
 html {
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--surface-page);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   line-height: 1.6;
+}
+
+a {
+  color: var(--link-on-cream);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.on-white a {
+  color: var(--link-on-white);
+}
+
+.on-cream a {
+  color: var(--link-on-cream);
+}
+
+a:hover,
+a:focus {
+  color: color-mix(in srgb, currentColor 80%, var(--black));
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--blue-contrast);
+  outline-offset: 2px;
+}
+
+.on-white {
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.on-cream {
+  background: var(--surface-page);
+  color: var(--text-primary);
+}
+
+.on-blue {
+  background: var(--blue);
+  color: var(--text-on-blue);
+}
+
+.on-blue a {
+  color: var(--text-on-blue);
+}
+
+.on-green {
+  background: var(--green);
+  color: var(--text-on-green);
+}
+
+.on-green a {
+  color: var(--text-on-green);
+}
+
+.article,
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button.primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+
+.button.secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-fg);
+}
+
+.button:hover {
+  filter: brightness(0.9);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 0.25rem;
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-fg);
+}
+
+input,
+select,
+textarea {
+  padding: 0.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.25rem;
+  background: var(--surface-card);
+  color: var(--text-primary);
 }
 
 img,
@@ -129,30 +182,21 @@ h1 {
   line-height: 1.15;
   margin: 2rem 0 1rem;
 }
+
 h2 {
   line-height: 1.2;
   margin: 1.5rem 0 0.75rem;
 }
+
 h3 {
   line-height: 1.25;
   margin: 1rem 0 0.5rem;
 }
+
 p {
   margin: 0 0 1rem;
 }
 
-a {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-a:hover,
-a:focus {
-  text-decoration: underline;
-}
-
-/* ────────────────
-   Helpers
-   ──────────────── */
 .container {
   width: 100%;
   max-width: var(--container);
@@ -164,7 +208,7 @@ a:focus {
 
 .section {
   padding: 3rem 0;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .header,
@@ -173,7 +217,7 @@ a:focus {
 }
 
 .muted {
-  color: var(--color-muted);
+  color: color-mix(in srgb, var(--text-primary) 60%, var(--surface-page));
 }
 
 .visually-hidden {
