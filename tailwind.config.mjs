@@ -8,10 +8,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        cream: "var(--color-cream)",
+        blue: "var(--color-blue)",
+        green: "var(--color-green)",
         background: "var(--background)",
         foreground: "var(--foreground)",
         muted: "var(--color-muted)",
         accent: "var(--color-accent)",
+        cta: "var(--color-cta)",
         border: "var(--color-border)"
       },
       maxWidth: {
