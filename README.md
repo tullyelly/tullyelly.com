@@ -66,6 +66,12 @@ Images are resized to a **1920px** max width and exported as **JPG, WebP, AVIF, 
 
 ---
 
+## 📝 Authoring Static Pages
+
+See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and validate a new page.
+
+---
+
 ## 🗃️ Database
 
 This project requires a **Postgres** database. Set the `DATABASE_URL` environment variable to point to your instance.

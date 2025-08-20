@@ -20,3 +20,7 @@ Thumbs.db
 .env.local
 
 /app/generated/prisma
+
+# Generated assets
+tsconfig.tsbuildinfo
+public/images
