@@ -2,7 +2,7 @@ export const runtime = 'nodejs';
 import prisma from '@/lib/prisma';
 
 export default async function Home() {
-  let message;
+  let message: any;
 
   try {
     const msg = await prisma.message.findFirst({
