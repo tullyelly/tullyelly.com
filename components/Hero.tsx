@@ -10,10 +10,11 @@ interface HeroProps {
 }
 
 export default function Hero({ src, alt, width, height, caption, priority = true }: HeroProps) {
+  const normalizedSrc = src.startsWith('/') ? src : `/${src}`;
   return (
     <figure>
       <Image
-        src={src}
+        src={normalizedSrc}
         alt={alt}
         width={width}
         height={height}
