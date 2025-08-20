@@ -1,38 +1,28 @@
-import type { Metadata } from "next";
-import Image from "next/image";
+import Hero from '@/components/Hero';
+import { buildPageMetadata } from '@/lib/page-metadata';
+import type { PageFrontmatter } from '@/types/frontmatter';
 
-
-export const metadata: Metadata = {
-title: "HEELS HAVE EYES",
-description: "A shareable static page for HEELS HAVE EYES.",
-openGraph: {
-title: "HEELS HAVE EYES",
-description: "A shareable static page for HEELS HAVE EYES.",
-images: [
-"/images/optimized/cardattack logo.webp",
-],
-},
+const frontmatter: PageFrontmatter = {
+  title: 'HEELS HAVE EYES',
+  description: 'A shareable static page for HEELS HAVE EYES.',
+  canonical: 'https://tullyelly.com/heels-have-eyes',
+  hero: {
+    src: '/globe.svg',
+    alt: 'HEELS HAVE EYES hero',
+    width: 1200,
+    height: 675,
+  },
 };
+
+export const metadata = buildPageMetadata(frontmatter);
 
 
 export default function Page() {
-return (
-<article className="section" aria-labelledby="title">
-<h1 id="title">HEELS HAVE EYES</h1>
-<p>This page uses the same base layout, tokens, and image pipeline.</p>
-
-
-<figure>
-    <Image
-      src="/images/optimized/cardattack logo.webp"
-      alt="HEELS HAVE EYES hero"
-      width={1200}
-      height={675}
-      sizes="(max-width: 768px) 100vw, 1200px"
-      priority
-    />
-<figcaption className="muted">Hero image served from the optimized folder.</figcaption>
-</figure>
-</article>
-);
+  return (
+    <article className="section" aria-labelledby="title">
+      <h1 id="title">{frontmatter.title}</h1>
+      <p>This page uses the same base layout, tokens, and image pipeline.</p>
+      <Hero {...frontmatter.hero} caption="Hero image served from the optimized folder." />
+    </article>
+  );
 }
