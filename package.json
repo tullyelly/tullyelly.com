@@ -22,8 +22,7 @@
     "next": "15.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "sharp": "^0.34.3",
-    "@next/mdx": "^15.5.0"
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@mdx-js/react": "^3.1.0",
