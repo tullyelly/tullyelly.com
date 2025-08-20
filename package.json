@@ -11,7 +11,10 @@
     "lint": "next lint",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:check": "node scripts/check-images.mjs",
-    "ci": "npm run lint && npm run images:optimize && npm run images:check && npm run build",
+    "new-page": "node scripts/new-page.mjs",
+    "validate-frontmatter": "node scripts/validate-frontmatter.mjs",
+    "validate-seo": "node scripts/validate-seo.mjs",
+    "ci": "npm run lint && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -22,14 +25,21 @@
     "sharp": "^0.34.3"
   },
   "devDependencies": {
+    "@mdx-js/react": "^3.1.0",
+    "@next/mdx": "^15.5.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "eslint": "^9.33.0",
     "eslint-config-next": "^15.4.6",
+    "glob": "^11.0.3",
+    "gray-matter": "^4.0.3",
     "prisma": "^6.14.0",
+    "remark-frontmatter": "^5.0.0",
+    "remark-mdx-frontmatter": "^5.2.0",
     "tailwindcss": "^4",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "zod": "^4.0.17"
   }
 }
