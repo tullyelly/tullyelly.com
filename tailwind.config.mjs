@@ -8,11 +8,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        muted: "var(--color-muted)",
-        accent: "var(--color-accent)",
-        border: "var(--color-border)"
+        cream: "var(--cream)",
+        blue: "var(--blue)",
+        "blue-contrast": "var(--blue-contrast)",
+        green: "var(--green)",
+        white: "var(--white)",
+        black: "var(--black)",
+        "text-primary": "var(--text-primary)",
+        "text-on-blue": "var(--text-on-blue)",
+        "text-on-green": "var(--text-on-green)",
+        "link-on-white": "var(--link-on-white)",
+        "link-on-cream": "var(--link-on-cream)",
+        "surface-page": "var(--surface-page)",
+        "surface-card": "var(--surface-card)",
+        "border-subtle": "var(--border-subtle)",
+        "btn-primary-bg": "var(--btn-primary-bg)",
+        "btn-primary-fg": "var(--btn-primary-fg)",
+        "btn-secondary-bg": "var(--btn-secondary-bg)",
+        "btn-secondary-fg": "var(--btn-secondary-fg)"
       },
       maxWidth: {
         container: "var(--container)"
