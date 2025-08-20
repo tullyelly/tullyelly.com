@@ -1,28 +1,22 @@
-import Hero from '@/components/Hero';
+/**
+ * HEELS HAVE EYES demo page
+ * Server wrapper for the Bucks palette style lab.
+ * Renders the client-side <HeelsDemo /> component.
+ */
+
 import { buildPageMetadata } from '@/lib/page-metadata';
 import type { PageFrontmatter } from '@/types/frontmatter';
+import HeelsDemo from './HeelsDemo';
 
-const frontmatter: PageFrontmatter = {
-  title: 'HEELS HAVE EYES',
-  description: 'A shareable static page for HEELS HAVE EYES.',
+const frontmatter = {
+  title: 'Heels Have Eyes – Style Demo',
+  description: 'Playground for Bucks color system & typography rules',
   canonical: 'https://tullyelly.com/heels-have-eyes',
-  hero: {
-    src: '/images/optimized/shaolin.webp',
-    alt: 'HEELS HAVE EYES hero',
-    width: 1200,
-    height: 675,
-  },
-};
+} satisfies PageFrontmatter;
 
 export const metadata = buildPageMetadata(frontmatter);
 
-
 export default function Page() {
-  return (
-    <article className="section" aria-labelledby="title">
-      <h1 id="title">{frontmatter.title}</h1>
-      <p>This page uses the same base layout, tokens, and image pipeline.</p>
-      <Hero {...frontmatter.hero} caption="Hero image served from the optimized folder." />
-    </article>
-  );
+  return <HeelsDemo />;
 }
+

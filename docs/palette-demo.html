@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" class="on-cream">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bucks Palette Demo</title>
+  <link rel="stylesheet" href="../app/globals.css" />
+  <style>
+    .demo-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .card { width: 280px; }
+  </style>
+</head>
+<body>
+  <main class="container section">
+    <h1>Palette Demo</h1>
+    <p>This page shows usage of the Milwaukee Bucks Cream City color tokens.</p>
+
+    <div class="demo-grid">
+      <div class="card">
+        <h2>Card Heading</h2>
+        <p>Body text on white surface. <a href="#">Link example</a>.</p>
+        <button class="button primary">Primary</button>
+        <button class="button secondary">Secondary</button>
+      </div>
+
+      <div class="card on-cream">
+        <h2>Cream Surface</h2>
+        <p>Links adapt color: <a href="#">example link</a>.</p>
+      </div>
+
+      <div class="alert">This is an alert using Bucks Green.</div>
+
+      <form class="card">
+        <label for="name">Name</label>
+        <input id="name" placeholder="Your name" />
+        <label for="state">State</label>
+        <select id="state"><option>WI</option><option>IL</option></select>
+        <button class="button primary" type="submit">Submit</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>
