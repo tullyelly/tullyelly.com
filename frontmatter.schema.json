@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["title", "description", "hero"],
+  "properties": {
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "canonical": { "type": "string", "format": "uri" },
+    "category": { "type": "string", "enum": ["music", "video", "campaign"] },
+    "hero": {
+      "type": "object",
+      "required": ["src", "alt", "width", "height"],
+      "properties": {
+        "src": { "type": "string" },
+        "alt": { "type": "string" },
+        "width": { "type": "number" },
+        "height": { "type": "number" }
+      }
+    },
+    "cta": {
+      "type": "object",
+      "required": ["label", "href"],
+      "properties": {
+        "label": { "type": "string" },
+        "href": { "type": "string" }
+      }
+    },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}
