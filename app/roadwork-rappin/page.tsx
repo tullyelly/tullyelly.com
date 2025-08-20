@@ -7,7 +7,7 @@ const frontmatter: PageFrontmatter = {
   description: 'A shareable static page for Roadwork Rappin’.',
   canonical: 'https://tullyelly.com/roadwork-rappin',
   hero: {
-    src: '/window.svg',
+    src: '/images/optimized/cardattack logo.webp',
     alt: 'Roadwork Rappin’ hero',
     width: 1200,
     height: 675,

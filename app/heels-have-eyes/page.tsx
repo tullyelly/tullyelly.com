@@ -7,7 +7,7 @@ const frontmatter: PageFrontmatter = {
   description: 'A shareable static page for HEELS HAVE EYES.',
   canonical: 'https://tullyelly.com/heels-have-eyes',
   hero: {
-    src: '/globe.svg',
+    src: '/images/optimized/shaolin logo.webp',
     alt: 'HEELS HAVE EYES hero',
     width: 1200,
     height: 675,
