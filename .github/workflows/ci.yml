@@ -12,21 +12,26 @@ jobs:
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'   # caches ~/.npm, not node_modules
+          cache: 'npm' # caches ~/.npm, not node_modules
 
-      - name: Install deps
-        run: npm ci
+      - name: Install deps (include optional)
+        run: npm ci --include=optional
 
       - name: Rebuild native addons (lightningcss + sharp)
+        env:
+          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+          npm_config_platform: linux
+          npm_config_arch: x64
         run: |
           npm rebuild lightningcss --foreground-scripts
-          SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm rebuild sharp --foreground-scripts
+          npm rebuild sharp --foreground-scripts
 
       - name: Run CI pipeline
         run: npm run ci --if-present
