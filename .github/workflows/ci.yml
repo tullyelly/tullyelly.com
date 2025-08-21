@@ -23,15 +23,10 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      # 👇 make sure native binaries match the runner (fixes lightningcss)
-      - name: Rebuild native addons
-        run: npm rebuild lightningcss --foreground-scripts
+      - name: Rebuild native addons (lightningcss + sharp)
+        run: |
+          npm rebuild lightningcss --foreground-scripts
+          SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm rebuild sharp --foreground-scripts
 
-      # If your "ci" script already runs tests + typecheck + build, keep this:
       - name: Run CI pipeline
         run: npm run ci --if-present
-
-      # Otherwise, be explicit:
-      # - run: npm run typecheck --if-present
-      # - run: npm test --if-present
-      # - run: npm run build
