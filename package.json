@@ -15,7 +15,8 @@
     "validate-frontmatter": "node scripts/validate-frontmatter.mjs",
     "validate-seo": "node scripts/validate-seo.mjs",
     "ci": "npm run lint && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",
@@ -27,7 +28,10 @@
   "devDependencies": {
     "@mdx-js/react": "^3.1.0",
     "@next/mdx": "^15.5.0",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
@@ -35,6 +39,9 @@
     "eslint-config-next": "^15.4.6",
     "glob": "^11.0.3",
     "gray-matter": "^4.0.3",
+    "jest": "^30.0.5",
+    "jest-axe": "^10.0.0",
+    "jest-environment-jsdom": "^30.0.5",
     "prisma": "^6.14.0",
     "remark-frontmatter": "^5.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
