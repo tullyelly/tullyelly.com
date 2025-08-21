@@ -1,8 +1,7 @@
+// jest.config.mjs
 import nextJest from "next/jest.js";
 
-const createJestConfig = nextJest({
-  dir: "./",
-});
+const createJestConfig = nextJest({ dir: "./" });
 
 const config = {
   testEnvironment: "jsdom",
@@ -10,7 +9,12 @@ const config = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
   },
-  testPathIgnorePatterns: ["<rootDir>/e2e/"],
+  testPathIgnorePatterns: [
+    "<rootDir>/.next/",
+    "<rootDir>/node_modules/",
+    "<rootDir>/e2e/",
+  ],
+  clearMocks: true,
 };
 
 export default createJestConfig(config);
