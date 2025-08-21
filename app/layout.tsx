@@ -20,11 +20,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-background text-foreground">
-        <header>
-          <SiteHeader />
-        </header>
-        <main id="content" className="container flex-1" tabIndex={-1}>
+      <body className="min-h-screen flex flex-col">
+        <SiteHeader />
+        <main id="content" className="flex-1" tabIndex={-1}>
           {children}
         </main>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
