@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
-      <body className="min-h-screen flex flex-col bg-background text-foreground">
+      <body className="font-sans min-h-screen flex flex-col bg-background text-foreground">
         <header>
           <SiteHeader />
         </header>
