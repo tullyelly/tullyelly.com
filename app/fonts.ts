@@ -1,13 +1,17 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
 
+// Axis control: customize `weight`, `style`, or other supported axes as needed.
 export const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
   display: "swap",
+  variable: "--font-inter",
+  // weight: ["400", "700"], // example axis control
 });
 
-export const jetbrainsMono = JetBrains_Mono({
+// JetBrains Mono also supports axis customization like `weight`.
+export const jbMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
   display: "swap",
+  variable: "--font-jbmono",
+  // weight: ["400", "700"], // example axis control
 });

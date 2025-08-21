@@ -7,13 +7,13 @@ This site self-hosts [Inter](https://fonts.google.com/specimen/Inter) as the pri
 Fonts are defined in `app/fonts.ts` using `next/font/google` with CSS variables:
 
 ```ts
-import { inter, jetbrainsMono } from "@/app/fonts";
+import { inter, jbMono } from "@/app/fonts";
 ```
 
 The variables are attached to the `<html>` element in `app/layout.tsx`:
 
 ```tsx
-<html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+<html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
 ```
 
 Tailwind exposes them as `font-sans` and `font-mono` utilities.

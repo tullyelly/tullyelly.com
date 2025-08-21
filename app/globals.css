@@ -65,7 +65,7 @@ code,
 pre,
 kbd,
 samp {
-  font-family: var(--font-jetbrains-mono);
+  font-family: var(--font-jbmono);
 }
 
 a {

@@ -32,7 +32,7 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-inter)"],
-        mono: ["var(--font-jetbrains-mono)"]
+        mono: ["var(--font-jbmono)"]
       }
     }
   },
