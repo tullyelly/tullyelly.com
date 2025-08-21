@@ -7,19 +7,18 @@
  */
 
 :root {
+  /* Brand chrome */
+  --brand-chrome: #0077C0;      /* Great Lakes Blue */
+  --brand-chrome-fg: #ffffff;   /* text on chrome */
+
   /* Brand bases */
   --cream: #EEE1C6;            /* Cream City Cream */
   --blue: #0077C0;             /* Great Lakes Blue */
   --blue-contrast: #0069A9;    /* Darkened for AA on cream */
-  --blue-header: #005990;      /* Darkened for AAA header fill */
   --green: #00471B;            /* Bucks Green */
-  --header-fg: #FFFFFF;
-  --header-fg-muted: rgba(255,255,255,.85);
-  --header-focus: color-mix(in srgb, white 85%, var(--blue-header));
+  --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
   --rail-bg: var(--green);
   --rail-fg: #FFFFFF;
-  --header-bg-transparent: rgba(0,0,0,.25); /* fallback tint when transparent */
-  --header-bg-solid: var(--blue-header);
 
   /* Neutrals for readability */
   --white: #FFFFFF;

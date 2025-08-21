@@ -3,7 +3,7 @@ export default {
   content: [
     "./app/**/*.{js,jsx,ts,tsx,mdx}",
     "./components/**/*.{js,jsx,ts,tsx,mdx}",
-    "./pages/**/*.{js,jsx,ts,tsx,mdx}"
+    "./pages/**/*.{js,jsx,ts,tsx,mdx}",
   ],
   darkMode: ["media"], // uses prefers-color-scheme; switch to "class" if you want .dark
   theme: {
@@ -27,17 +27,15 @@ export default {
         "btn-primary-fg": "var(--btn-primary-fg)",
         "btn-secondary-bg": "var(--btn-secondary-bg)",
         "btn-secondary-fg": "var(--btn-secondary-fg)",
-        "great-lakes": "#0077C0"
       },
       maxWidth: {
-        container: "var(--container)"
+        container: "var(--container)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
-        mono: ["var(--font-mono)"]
-      }
-    }
+        mono: ["var(--font-mono)"],
+      },
+    },
   },
-  safelist: ["bg-great-lakes", "text-white"],
-  plugins: []
+  plugins: [],
 };
