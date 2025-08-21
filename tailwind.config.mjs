@@ -31,8 +31,24 @@ export default {
         container: "var(--container)"
       },
       fontFamily: {
-        sans: ["var(--font-inter)"],
-        mono: ["var(--font-jbmono)"]
+        sans: [
+          "var(--font-inter)",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "sans-serif"
+        ],
+        mono: [
+          "var(--font-jbmono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Consolas",
+          "monospace"
+        ]
       }
     }
   },

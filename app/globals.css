@@ -7,6 +7,9 @@
  */
 
 :root {
+  --font-inter: system-ui, sans-serif;
+  --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
   /* Brand bases */
   --cream: #EEE1C6;            /* Cream City Cream */
   --blue: #0077C0;             /* Great Lakes Blue */
