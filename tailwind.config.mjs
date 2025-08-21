@@ -14,6 +14,7 @@ export default {
         green: "var(--green)",
         white: "var(--white)",
         black: "var(--black)",
+        "great-lakes": "#0077C0",
         "text-primary": "var(--text-primary)",
         "text-on-blue": "var(--text-on-blue)",
         "text-on-green": "var(--text-on-green)",

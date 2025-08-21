@@ -29,7 +29,9 @@ export default function SiteHeader() {
   }, []);
 
   return (
-    <header className={`site-header ${solid ? "solid" : "transparent"}`}>
+    <header
+      className={`site-header ${solid ? "solid bg-great-lakes" : "transparent"} text-white`}
+    >
       <div className="container header-inner">
         <Link href="/" className="brand">
           tullyelly
