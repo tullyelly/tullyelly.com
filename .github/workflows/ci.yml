@@ -12,16 +12,41 @@ jobs:
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'npm'   # caches ~/.npm, not node_modules
 
-      - name: Install deps
-        run: npm ci
+      # ✅ Install for the runner's OS/arch and include optional deps
+      - name: Install deps (linux x64 + optional)
+        env:
+          npm_config_platform: linux
+          npm_config_arch: x64
+          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+        run: npm ci --include=optional
 
+      # ✅ Verify sharp resolves before running your scripts
+      - name: Verify sharp binding
+        env:
+          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+        run: |
+          node -p "process.platform + ' ' + process.arch"
+          node -e "require('sharp'); console.log('sharp: OK')"
+
+      # ✅ Rebuild native addons just in case (belt & suspenders)
+      - name: Rebuild native addons (lightningcss + sharp)
+        env:
+          npm_config_platform: linux
+          npm_config_arch: x64
+          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+        run: |
+          npm rebuild lightningcss --foreground-scripts
+          npm rebuild sharp --foreground-scripts
+
+      # 🚦 Your pipeline (lint -> images -> build, etc.)
       - name: Run CI pipeline
         run: npm run ci --if-present

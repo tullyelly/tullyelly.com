@@ -2,6 +2,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: {
@@ -19,16 +20,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <SiteHeader />
-        <main id="content" className="container" tabIndex={-1}>
+      <body className="min-h-screen flex flex-col bg-background text-foreground">
+        <header>
+          <SiteHeader />
+        </header>
+        <main id="content" className="container flex-1" tabIndex={-1}>
           {children}
         </main>
-        <footer className="footer">
-          <div className="container">
-            <small className="muted">© {new Date().getFullYear()} tullyelly</small>
-          </div>
-        </footer>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <Footer />
       </body>
     </html>
   );
