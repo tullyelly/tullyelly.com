@@ -115,7 +115,7 @@ This repo is already structured for one-click deploys.
 
 ## ✅ Quick Notes
 
-* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`
+* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`
 * `globals.css`: design tokens + Tailwind entry point
 * `tailwind.config.mjs`: maps tokens → Tailwind theme
 * Always run `npm run images:optimize` before committing new images
