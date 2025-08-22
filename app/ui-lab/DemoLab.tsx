@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Callout from '@/components/Callout';
 import Quote from '@/components/Quote';
 import Hero from '@/components/Hero';
@@ -8,21 +8,42 @@ import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 
+const paletteTokens = {
+  brand: [
+    { name: 'blue', var: '--blue', text: 'text-text-on-blue', light: false },
+    { name: 'green', var: '--green', text: 'text-text-on-green', light: false },
+  ],
+  surface: [
+    { name: 'cream', var: '--cream', text: 'text-text-primary', light: true },
+    { name: 'surface-card', var: '--surface-card', text: 'text-text-primary', light: true },
+    { name: 'surface-page', var: '--surface-page', text: 'text-text-primary', light: true },
+    { name: 'border-subtle', var: '--border-subtle', text: 'text-text-primary', light: true },
+  ],
+} as const;
+
+type PaletteGroup = keyof typeof paletteTokens;
+
 export default function DemoLab() {
-  const palette = [
-    { name: 'blue', swatch: 'bg-blue text-text-on-blue' },
-    { name: 'green', swatch: 'bg-green text-text-on-green' },
-    { name: 'cream', swatch: 'bg-cream text-text-primary' },
-    { name: 'surface-card', swatch: 'bg-surface-card text-text-primary' },
-    { name: 'surface-page', swatch: 'bg-surface-page text-text-primary' },
-    { name: 'border-subtle', swatch: 'bg-border-subtle text-text-primary' },
-  ];
+  const [paletteGroup, setPaletteGroup] = useState<PaletteGroup>('brand');
+  const [colorValues, setColorValues] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const root = getComputedStyle(document.documentElement);
+    const entries: Record<string, string> = {};
+    Object.values(paletteTokens)
+      .flat()
+      .forEach((c) => {
+        entries[c.name] = root.getPropertyValue(c.var).trim();
+      });
+    setColorValues(entries);
+  }, []);
 
   const [message, setMessage] = useState('Custom announcement');
   const [href, setHref] = useState('');
   const [variant, setVariant] =
     useState<'info' | 'success' | 'warning' | 'error'>('info');
   const [dismissible, setDismissible] = useState(false);
+  const [showHeroImage, setShowHeroImage] = useState(true);
 
   return (
     <div className="mx-auto max-w-container space-y-8 p-4">
@@ -111,15 +132,55 @@ export default function DemoLab() {
         </section>
         <section className="card space-y-4 md:col-span-2" aria-labelledby="hero">
           <h2 id="hero" className="text-xl font-semibold">Hero</h2>
-          <Hero src="/vercel.svg" alt="Vercel logo" width={400} height={200} />
+          <div className="flex flex-col-reverse items-center gap-6 md:flex-row md:gap-8">
+            <div className="space-y-4 text-center md:text-left">
+              <h1 className="text-5xl font-extrabold">Design, delivered.</h1>
+              <p className="text-lg">Reusable tokens and components to build quickly.</p>
+              <a href="#" className="button primary inline-block">Get started</a>
+            </div>
+            {showHeroImage && (
+              <Hero
+                src="/vercel.svg"
+                alt="Vercel logo"
+                width={400}
+                height={200}
+                priority={false}
+              />
+            )}
+          </div>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={showHeroImage}
+              onChange={(e) => setShowHeroImage(e.target.checked)}
+            />
+            Show image
+          </label>
         </section>
         <section className="card space-y-4 md:col-span-2" aria-labelledby="palette">
           <h2 id="palette" className="text-xl font-semibold">Palette</h2>
-          <ul className="grid grid-cols-3 gap-4" aria-label="Color tokens">
-            {palette.map((c) => (
+          <label className="inline-flex items-center gap-2 text-sm">
+            Palette
+            <select
+              className="border border-border-subtle rounded p-1"
+              value={paletteGroup}
+              onChange={(e) => setPaletteGroup(e.target.value as PaletteGroup)}
+            >
+              <option value="brand">brand</option>
+              <option value="surface">surface</option>
+            </select>
+          </label>
+          <ul className="grid grid-cols-3 gap-4" aria-label={`${paletteGroup} color tokens`}>
+            {paletteTokens[paletteGroup].map((c) => (
               <li key={c.name} className="border border-border-subtle rounded">
-                <div className={`h-16 rounded-t ${c.swatch}`} />
-                <p className="p-2 text-sm">{c.name}</p>
+                <div
+                  className={`h-16 rounded-t ${c.light ? 'border border-border-subtle' : ''}`}
+                  style={{ backgroundColor: `var(${c.var})` }}
+                />
+                <p className="p-2 text-sm flex items-center justify-between">
+                  <span>{c.name}</span>
+                  <span className="font-mono">{colorValues[c.name]}</span>
+                </p>
               </li>
             ))}
           </ul>
