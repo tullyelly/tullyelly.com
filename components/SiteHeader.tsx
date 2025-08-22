@@ -12,8 +12,9 @@ export default function SiteHeader() {
         <BrandedLink href="/" aria-label="tullyelly — home">
           tullyelly
         </BrandedLink>
-        <nav>
+        <nav className="flex items-center gap-6">
           <BrandedLink href="/ui-lab">UI Lab</BrandedLink>
+          <BrandedLink href="/typography-demo">Typography</BrandedLink>
         </nav>
       </div>
     </header>
