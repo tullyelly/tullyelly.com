@@ -32,7 +32,6 @@ export default {
         container: "var(--container)",
       },
       fontFamily: {
-        // Keep Codex's concrete stacks while exposing Tailwind keys used by main
         sans: [
           "var(--font-inter)",
           "system-ui",

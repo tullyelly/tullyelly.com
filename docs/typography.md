@@ -18,6 +18,26 @@ The variables are attached to the `<html>` element in `app/layout.tsx`:
 
 Tailwind exposes them as `font-sans` and `font-mono` utilities.
 
+## Variable axes
+
+Both imports load variable fonts. Inter exposes `wght` (weight) by default and adds `opsz` (optical size) via the `axes` option. JetBrains Mono provides the `wght` axis:
+
+```ts
+import { Inter, JetBrains_Mono } from "next/font/google";
+
+export const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+  axes: ["opsz"], // `wght` is implicit
+});
+
+export const jbMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jbmono",
+});
+
 ## Demo
 
 Visit `/typography-demo` to see the hierarchy and monospace usage.
