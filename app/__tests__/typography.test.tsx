@@ -1,15 +1,8 @@
+// app/__tests__/typography.test.tsx
 import React from "react";
 import { render, screen } from "@testing-library/react";
-
-jest.mock("next/font/local", () => {
-  return (opts: any) => ({
-    variable: opts.variable,
-    className: opts.variable,
-  });
-});
-
-import RootLayout from "../layout"; // default export
-// Note: RootLayout applies `${inter.variable} ${jbMono.variable}` to <html>
+import "@testing-library/jest-dom";
+import RootLayout from "../layout";
 
 function Page() {
   return (
@@ -22,9 +15,7 @@ function Page() {
 
 describe("Typography system", () => {
   it("applies Inter and JB Mono variables to <html>", () => {
-    // Render the layout with a child page
     render(
-      // @ts-expect-error – RootLayout’s signature matches Next’s layout contract
       <RootLayout>
         <Page />
       </RootLayout>
@@ -33,15 +24,13 @@ describe("Typography system", () => {
     const html = document.documentElement; // <html>
     const className = html.className;
 
-    // We don’t import inter/jbMono here to avoid coupling the test to implementation details.
-    // We only assert that two non-empty variable-bearing classes were applied.
+    // Assert variable tokens are present (don’t couple to hashed classnames)
     expect(className).toMatch(/--font-inter/);
     expect(className).toMatch(/--font-jbmono/);
   });
 
   it("exposes a usable monospace utility via Tailwind (font-mono)", () => {
     render(
-      // @ts-expect-error – see note above
       <RootLayout>
         <Page />
       </RootLayout>
