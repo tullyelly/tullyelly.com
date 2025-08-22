@@ -14,16 +14,21 @@ function Page() {
 }
 
 describe("Typography system", () => {
-  it.skip("applies Inter and JB Mono variables to <html>", () => {
-    const element = RootLayout({ children: <Page /> }) as React.ReactElement;
-    const className = element.props.className as string;
+  it("applies Inter and JB Mono variables to <html>", () => {
+    // Render RootLayout so we can inspect the <html> element it produces
+    const { container } = render(<RootLayout>{<Page />}</RootLayout>);
+
+    const html = container.querySelector("html") as HTMLHtmlElement | null;
+    expect(html).not.toBeNull();
+
+    const className = (html as HTMLHtmlElement).className;
     expect(className).toMatch(/--font-inter/);
     expect(className).toMatch(/--font-jbmono/);
   });
 
   it("exposes a usable monospace utility via Tailwind (font-mono)", () => {
     render(<Page />);
-    const code = screen.getByText(/const x = 1;/i);
+    const code = screen.getByText(/const x = 1;/i) as HTMLElement;
     expect(code).toHaveClass("font-mono");
   });
 });
