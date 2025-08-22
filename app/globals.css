@@ -20,8 +20,6 @@
   --blue-contrast: #0069A9;    /* Darkened for AA on cream */
   --green: #00471B;            /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
-  --rail-bg: var(--green);
-  --rail-fg: #FFFFFF;
 
   /* Neutrals for readability */
   --white: #FFFFFF;
@@ -235,29 +233,3 @@ p {
   white-space: nowrap;
 }
 
-/* Announcement rail */
-.site-rail {
-  background: var(--rail-bg);
-  color: var(--rail-fg);
-  font-size: 0.875rem;
-}
-
-.site-rail .rail-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 1rem;
-}
-
-.site-rail button {
-  background: none;
-  border: 0;
-  color: var(--rail-fg);
-  cursor: pointer;
-}
-
-.site-rail a:focus-visible,
-.site-rail button:focus-visible {
-  outline: 2px solid var(--header-focus);
-  outline-offset: 2px;
-}

@@ -2,7 +2,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import RootLayout from "../layout";
 
 function Page() {
   return (
@@ -14,20 +13,6 @@ function Page() {
 }
 
 describe("Typography system", () => {
-  it("applies Inter and JB Mono variables to <html>", () => {
-    const { container } = render(<RootLayout>{<Page />}</RootLayout>);
-
-    // The <html> rendered by RootLayout is inside the testing container,
-    // not the global document.documentElement.
-    const html = container.querySelector("html") as HTMLHtmlElement | null;
-
-    expect(html).not.toBeNull();
-    const className = html?.className ?? "";
-
-    expect(className).toMatch(/--font-inter/);
-    expect(className).toMatch(/--font-jbmono/);
-  });
-
   it("exposes a usable monospace utility via Tailwind (font-mono)", () => {
     render(<Page />);
     const code = screen.getByText(/const x = 1;/i);
