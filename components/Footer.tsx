@@ -1,7 +1,6 @@
-// components/Footer.tsx
 "use client";
 
-import Link from "next/link";
+import BrandedLink from "@/components/BrandedLink";
 
 export default function Footer() {
   return (
@@ -12,9 +11,7 @@ export default function Footer() {
     >
       <div className="mx-auto max-w-7xl px-6 py-6">
         © {new Date().getFullYear()}{" "}
-        <Link href="/" className="underline">
-          tullyelly
-        </Link>
+        <BrandedLink href="/">tullyelly</BrandedLink>
         . All rights reserved.
       </div>
     </footer>
