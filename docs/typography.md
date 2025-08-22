@@ -1,7 +1,6 @@
 # Typography
 
-This site self-hosts [Inter](https://fonts.google.com/specimen/Inter) as the primary sans-serif face
-and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) for monospace accents.
+This site self-hosts [Inter](https://fonts.google.com/specimen/Inter) as the primary sans-serif face and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) for monospace accents.
 
 ## Usage
 
@@ -21,7 +20,7 @@ Tailwind exposes them as `font-sans` and `font-mono` utilities.
 
 ## Variable axes
 
-Both imports load variable fonts. Inter exposes `wght` (weight) by default and adds `opsz` (optical size) via the `axes` option. JetBrains Mono only provides the `wght` axis:
+Both imports load variable fonts. Inter exposes `wght` (weight) by default and adds `opsz` (optical size) via the `axes` option. JetBrains Mono provides the `wght` axis:
 
 ```ts
 import { Inter, JetBrains_Mono } from "next/font/google";
@@ -38,13 +37,6 @@ export const jbMono = JetBrains_Mono({
   display: "swap",
   variable: "--font-jbmono",
 });
-```
-
-Use `font-variation-settings` in CSS to tune these axes when needed:
-
-```css
-h1 { font-variation-settings: "wght" 700, "opsz" 72; }
-```
 
 ## Demo
 

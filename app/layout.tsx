@@ -25,9 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header>
           <SiteHeader />
         </header>
+
         <main id="content" className="container flex-1" tabIndex={-1}>
           {children}
         </main>
+
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <Footer />
       </body>
