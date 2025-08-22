@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Callout from '@/components/Callout';
 import Quote from '@/components/Quote';
 import Hero from '@/components/Hero';
@@ -17,13 +18,80 @@ export default function DemoLab() {
     { name: 'border-subtle', swatch: 'bg-border-subtle text-text-primary' },
   ];
 
+  const [message, setMessage] = useState('Custom announcement');
+  const [href, setHref] = useState('');
+  const [variant, setVariant] =
+    useState<'info' | 'success' | 'warning' | 'error'>('info');
+  const [dismissible, setDismissible] = useState(false);
+
   return (
     <div className="mx-auto max-w-container space-y-8 p-4">
       <h1 className="text-4xl font-extrabold">UI Lab</h1>
       <div className="grid gap-6 md:grid-cols-2">
         <section className="card space-y-4" aria-labelledby="announcement-banner">
           <h2 id="announcement-banner" className="text-xl font-semibold">Announcement Banner</h2>
-          <AnnouncementBanner message="Big news! Something important goes here." dismissible />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">Presets</h3>
+              <AnnouncementBanner message="Heads up!" variant="info" />
+              <AnnouncementBanner message="It worked!" variant="success" />
+              <AnnouncementBanner message="Watch out!" variant="warning" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">Build your own</h3>
+              <AnnouncementBanner
+                key={`${message}-${href}-${variant}-${dismissible}`}
+                message={message}
+                href={href || undefined}
+                variant={variant}
+                dismissible={dismissible}
+              />
+              <div className="grid gap-2 text-sm">
+                <label className="flex flex-col">
+                  Message
+                  <input
+                    className="border border-border-subtle rounded p-1"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                </label>
+                <label className="flex flex-col">
+                  Link
+                  <input
+                    className="border border-border-subtle rounded p-1"
+                    value={href}
+                    onChange={(e) => setHref(e.target.value)}
+                    placeholder="https://example.com"
+                  />
+                </label>
+                <label className="flex flex-col">
+                  Variant
+                  <select
+                    className="border border-border-subtle rounded p-1"
+                    value={variant}
+                    onChange={(e) =>
+                      setVariant(
+                        e.target.value as 'info' | 'success' | 'warning' | 'error'
+                      )
+                    }
+                  >
+                    <option value="info">info</option>
+                    <option value="success">success</option>
+                    <option value="warning">warning</option>
+                    <option value="error">error</option>
+                  </select>
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={dismissible}
+                    onChange={(e) => setDismissible(e.target.checked)}
+                  />
+                  Dismissible
+                </label>
+              </div>
+            </div>
+          </div>
         </section>
         <section className="card space-y-4" aria-labelledby="header-footer">
           <h2 id="header-footer" className="text-xl font-semibold">Header & Footer</h2>
