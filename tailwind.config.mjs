@@ -5,7 +5,7 @@ export default {
     "./components/**/*.{js,jsx,ts,tsx,mdx}",
     "./pages/**/*.{js,jsx,ts,tsx,mdx}",
   ],
-  darkMode: ["media"], // uses prefers-color-scheme; switch to "class" if you want .dark
+  darkMode: ["media"], // switch to "class" if you want .dark toggling
   theme: {
     extend: {
       colors: {
@@ -32,8 +32,25 @@ export default {
         container: "var(--container)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        mono: ["var(--font-mono)"],
+        // Keep Codex's concrete stacks while exposing Tailwind keys used by main
+        sans: [
+          "var(--font-inter)",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
+        mono: [
+          "var(--font-jbmono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Consolas",
+          "monospace",
+        ],
       },
     },
   },
