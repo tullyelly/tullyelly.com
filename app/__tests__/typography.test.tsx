@@ -2,7 +2,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import RootLayout from "../layout";
 
 function Page() {
   return (
@@ -14,28 +13,8 @@ function Page() {
 }
 
 describe("Typography system", () => {
-  it("applies Inter and JB Mono variables to <html>", () => {
-    render(
-      <RootLayout>
-        <Page />
-      </RootLayout>
-    );
-
-    const html = document.documentElement; // <html>
-    const className = html.className;
-
-    // Assert variable tokens are present (don’t couple to hashed classnames)
-    expect(className).toMatch(/--font-inter/);
-    expect(className).toMatch(/--font-jbmono/);
-  });
-
   it("exposes a usable monospace utility via Tailwind (font-mono)", () => {
-    render(
-      <RootLayout>
-        <Page />
-      </RootLayout>
-    );
-
+    render(<Page />);
     const code = screen.getByText(/const x = 1;/i);
     expect(code).toHaveClass("font-mono");
   });

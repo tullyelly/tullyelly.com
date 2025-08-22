@@ -1,0 +1,61 @@
+name: e2e
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      PLAYWRIGHT_BROWSERS_PATH: .pw-browsers
+      PLAYWRIGHT_USE_SYSTEM_CHROME: "0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Restore Playwright cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pw-browsers
+            ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            pw-${{ runner.os }}-
+
+      - name: Ensure browsers installed (cache-first)
+        if: env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
+        run: npm run test:e2e:install
+
+      - name: Install system Chromium (fallback)
+        if: env.PLAYWRIGHT_USE_SYSTEM_CHROME == '1'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+
+      - name: Run e2e tests
+        run: npm run test:e2e:ci
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: playwright-report
+
+      - name: Upload Playwright traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/**/trace.zip
