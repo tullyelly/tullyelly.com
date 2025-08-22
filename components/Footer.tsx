@@ -8,7 +8,11 @@ export default function Footer() {
       style={{ backgroundColor: "var(--brand-chrome)", color: "var(--brand-chrome-fg)" }}
     >
       <div className="mx-auto max-w-7xl px-6 py-6">
-        © {new Date().getFullYear()} tullyelly. All rights reserved.
+        © {new Date().getFullYear()} {" "}
+        <a href="/" className="underline">
+          tullyelly
+        </a>
+        . All rights reserved.
       </div>
     </footer>
   );

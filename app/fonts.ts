@@ -1,17 +1,43 @@
-import { Inter, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 
-// Variable font imports let you control axes like weight (`wght`) and optical size (`opsz`).
-export const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
+export const inter = localFont({
+  src: [
+    {
+      path: require.resolve(
+        "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
+      ),
+      style: "normal",
+      weight: "100 900",
+    },
+    {
+      path: require.resolve(
+        "@fontsource-variable/inter/files/inter-latin-wght-italic.woff2"
+      ),
+      style: "italic",
+      weight: "100 900",
+    },
+  ],
   variable: "--font-inter",
-  axes: ["opsz"], // `wght` is included by default
+  display: "swap",
 });
 
-// JetBrains Mono exposes the `wght` axis, included automatically.
-// You can also customize `weight` if you want specific ranges.
-export const jbMono = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
+export const jbMono = localFont({
+  src: [
+    {
+      path: require.resolve(
+        "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"
+      ),
+      style: "normal",
+      weight: "100 800",
+    },
+    {
+      path: require.resolve(
+        "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-italic.woff2"
+      ),
+      style: "italic",
+      weight: "100 800",
+    },
+  ],
   variable: "--font-jbmono",
+  display: "swap",
 });
