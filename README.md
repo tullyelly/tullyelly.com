@@ -136,7 +136,7 @@ This repo is already structured for one-click deploys.
 
 ## ✅ Quick Notes
 
-* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`
+* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`, `app/typography-demo`
 * `globals.css`: design tokens + Tailwind entry point
 * `tailwind.config.mjs`: maps tokens → Tailwind theme
 * Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
