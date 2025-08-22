@@ -1,43 +1,35 @@
 # Typography
 
-This site self-hosts [Inter](https://fonts.google.com/specimen/Inter) as the primary sans-serif face and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) for monospace accents.
+This site uses **Inter** for proportional sans (body/headings) and **JetBrains Mono** for monospace accents (code/meta). Fonts are self-hosted and applied via `next/font` with CSS variables.
 
 ## Usage
 
-Fonts are defined in `app/fonts.ts` using `next/font/google` with CSS variables:
+- Defined in `app/fonts.ts` and attached in `app/layout.tsx`:
+  ```tsx
+  <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
+    <body className="font-sans">{/* … */}</body>
+  </html>
+  ```
 
-```ts
-import { inter, jbMono } from "@/app/fonts";
-```
+- Tailwind utilities:
 
-The variables are attached to the `<html>` element in `app/layout.tsx`:
+  - `font-sans` → Inter stack
+  - `font-mono` → JetBrains Mono stack
 
-```tsx
-<html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
-```
+## Where to tweak
 
-Tailwind exposes them as `font-sans` and `font-mono` utilities.
+- **Weights / axes**: adjust in `app/fonts.ts` (variable font ranges).
+- **Default body font**: `app/layout.tsx` (`className="font-sans"` on `<body>`).
+- **Code snippets**: apply `className="font-mono"` or global CSS for `code, pre, kbd, samp`.
 
-## Variable axes
+## Performance notes
 
-Both imports load variable fonts. Inter exposes `wght` (weight) by default and adds `opsz` (optical size) via the `axes` option. JetBrains Mono provides the `wght` axis:
+- Fonts are self-hosted WOFF2; `display: "swap"` minimizes CLS.
+- Verify no external font hosts in DevTools → Network (should serve from same origin).
 
-```ts
-import { Inter, JetBrains_Mono } from "next/font/google";
+## Quick checks
 
-export const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-  axes: ["opsz"], // `wght` is implicit
-});
+- Build: `npm run build`
+- Test: `npm test`
+- Lighthouse (optional): run against `/typography-demo`; CLS should be ≤ 0.01
 
-export const jbMono = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-jbmono",
-});
-
-## Demo
-
-Visit `/typography-demo` to see the hierarchy and monospace usage.
