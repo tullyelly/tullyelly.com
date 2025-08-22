@@ -5,7 +5,10 @@ import Quote from '@/components/Quote';
 import Hero from '@/components/Hero';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
+<<<<<<< HEAD
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+=======
+>>>>>>> origin/cipher/scaffold-ui-lab-page-and-demo-cards
 
 export default function DemoLab() {
   const palette = [
@@ -23,7 +26,13 @@ export default function DemoLab() {
       <div className="grid gap-6 md:grid-cols-2">
         <section className="card space-y-4" aria-labelledby="announcement-banner">
           <h2 id="announcement-banner" className="text-xl font-semibold">Announcement Banner</h2>
+<<<<<<< HEAD
           <AnnouncementBanner message="Big news! Something important goes here." />
+=======
+          <div role="status" className="on-blue p-4 rounded">
+            Big news! Something important goes here.
+          </div>
+>>>>>>> origin/cipher/scaffold-ui-lab-page-and-demo-cards
         </section>
         <section className="card space-y-4" aria-labelledby="header-footer">
           <h2 id="header-footer" className="text-xl font-semibold">Header & Footer</h2>
