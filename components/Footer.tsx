@@ -1,4 +1,7 @@
+// components/Footer.tsx
 "use client";
+
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -8,10 +11,10 @@ export default function Footer() {
       style={{ backgroundColor: "var(--brand-chrome)", color: "var(--brand-chrome-fg)" }}
     >
       <div className="mx-auto max-w-7xl px-6 py-6">
-        © {new Date().getFullYear()} {" "}
-        <a href="/" className="underline">
+        © {new Date().getFullYear()}{" "}
+        <Link href="/" className="underline">
           tullyelly
-        </a>
+        </Link>
         . All rights reserved.
       </div>
     </footer>
