@@ -24,3 +24,6 @@ Thumbs.db
 # Generated assets
 tsconfig.tsbuildinfo
 public/images/source
+
+# Generated project tree
+app-tree.txt
