@@ -27,3 +27,8 @@ public/images/source
 
 # Generated project tree
 app-tree.txt
+
+# Playwright
+playwright-report
+test-results
+.pw-browsers

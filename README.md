@@ -97,6 +97,27 @@ Recommended Node version: **20**.
 
 ---
 
+## Running E2E
+
+**Cache-first (recommended):**
+
+```bash
+npm ci
+npm run test:e2e:install
+npm run test:e2e
+```
+
+**System-Chrome fallback:**
+
+```bash
+export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+export PLAYWRIGHT_USE_SYSTEM_CHROME=1
+export PLAYWRIGHT_CHROME_PATH="/usr/bin/google-chrome"
+npm run test:e2e
+```
+
+---
+
 ## 📚 Learn More
 
 * [Next.js Documentation](https://nextjs.org/docs)
@@ -118,4 +139,5 @@ This repo is already structured for one-click deploys.
 * Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`
 * `globals.css`: design tokens + Tailwind entry point
 * `tailwind.config.mjs`: maps tokens → Tailwind theme
+* Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
 * Always run `npm run images:optimize` before committing new images
