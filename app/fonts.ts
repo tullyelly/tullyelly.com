@@ -1,18 +1,16 @@
+// app/fonts.ts
 import localFont from "next/font/local";
 
 export const inter = localFont({
   src: [
     {
-      path: require.resolve(
-        "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
-      ),
+      // note: path is literal and relative to this file (app/ -> ../public/…)
+      path: "../public/fonts/inter/inter-latin-wght-normal.woff2",
       style: "normal",
       weight: "100 900",
     },
     {
-      path: require.resolve(
-        "@fontsource-variable/inter/files/inter-latin-wght-italic.woff2"
-      ),
+      path: "../public/fonts/inter/inter-latin-wght-italic.woff2",
       style: "italic",
       weight: "100 900",
     },
@@ -24,16 +22,12 @@ export const inter = localFont({
 export const jbMono = localFont({
   src: [
     {
-      path: require.resolve(
-        "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"
-      ),
+      path: "../public/fonts/jetbrains-mono/jetbrains-mono-latin-wght-normal.woff2",
       style: "normal",
       weight: "100 800",
     },
     {
-      path: require.resolve(
-        "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-italic.woff2"
-      ),
+      path: "../public/fonts/jetbrains-mono/jetbrains-mono-latin-wght-italic.woff2",
       style: "italic",
       weight: "100 800",
     },
