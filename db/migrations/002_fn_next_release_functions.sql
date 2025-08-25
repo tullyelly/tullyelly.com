@@ -35,7 +35,7 @@ BEGIN
     FROM dojo.shaolin_scrolls
     WHERE major = v_major AND minor = v_minor;
 
-  INSERT INTO dojo.shaolin_scrolls
+  INSERT INTO dojo.shaolin_scrolls AS ss
     (major, minor, patch, year, month, label, release_status_id, release_type_id)
   VALUES (
     v_major,
@@ -47,12 +47,12 @@ BEGIN
     (SELECT id FROM dojo.release_status WHERE code = 'planned'),
     (SELECT id FROM dojo.release_type WHERE code = 'hotfix')
   )
-  RETURNING id INTO v_id;
+  RETURNING ss.id INTO v_id;
 
   RETURN QUERY
-    SELECT v_id, generated_name
-    FROM dojo.v_shaolin_scrolls
-    WHERE id = v_id;
+    SELECT v_id AS id, generated_name
+    FROM dojo.v_shaolin_scrolls vs
+    WHERE vs.id = v_id;
 END;
 $$;
 
@@ -73,7 +73,7 @@ BEGIN
     FROM dojo.shaolin_scrolls
     WHERE major = v_major;
 
-  INSERT INTO dojo.shaolin_scrolls
+  INSERT INTO dojo.shaolin_scrolls AS ss
     (major, minor, patch, year, month, label, release_status_id, release_type_id)
   VALUES (
     v_major,
@@ -85,11 +85,11 @@ BEGIN
     (SELECT id FROM dojo.release_status WHERE code = 'planned'),
     (SELECT id FROM dojo.release_type WHERE code = 'minor')
   )
-  RETURNING id INTO v_id;
+  RETURNING ss.id INTO v_id;
 
   RETURN QUERY
-    SELECT v_id, generated_name
-    FROM dojo.v_shaolin_scrolls
-    WHERE id = v_id;
+    SELECT v_id AS id, generated_name
+    FROM dojo.v_shaolin_scrolls vs
+    WHERE vs.id = v_id;
 END;
 $$;
