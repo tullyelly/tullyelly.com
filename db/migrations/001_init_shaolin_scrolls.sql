@@ -1,38 +1,54 @@
--- 001_init_shaolin_scrolls.sql
--- Purpose: initial schema for shaolin_scrolls on PostgreSQL/Neon
+-- 001_init_shaolin_scrolls_normalized.sql
+-- Purpose: normalized initial schema for shaolin_scrolls on PostgreSQL/Neon
+-- Design: no ENUMs, no generated columns; lookup table + FK; view for presentation.
 
--- 1) ENUM for release_type (idempotent)
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'release_type_t') THEN
-    CREATE TYPE release_type_t AS ENUM ('hotfix', 'minor', 'major');
-  END IF;
-END$$;
+-- 0) Schema (namespaced home for app objects)
+CREATE SCHEMA IF NOT EXISTS core;
 
--- 2) Table definition
-CREATE TABLE IF NOT EXISTS public.shaolin_scrolls (
-  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  label TEXT NOT NULL,
-  release_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  version INT NOT NULL CHECK (version >= 0),
-  patch   INT NOT NULL CHECK (patch >= 0),
-  release_type release_type_t NOT NULL,
-  full_label TEXT GENERATED ALWAYS AS (
-    'v' || version || '.' || patch || '-' || (release_type::TEXT)
-  ) STORED,
-  CONSTRAINT uq_release UNIQUE (version, patch, release_type)
+-- 1) Lookup table for release types (instead of ENUM)
+CREATE TABLE IF NOT EXISTS core.release_type (
+  id   SMALLSERIAL PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE CHECK (code ~ '^[a-z0-9_]+$')  -- e.g., planned/hotfix/minor/major
 );
 
--- 3) Trigger: keep label aligned with version.patch
-CREATE OR REPLACE FUNCTION public.shaolin_set_label() RETURNS TRIGGER AS $$
-BEGIN
-  NEW.label := 'v' || NEW.version || '.' || NEW.patch;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Seed values (safe to re-run)
+INSERT INTO core.release_type (code) VALUES
+  ('planned'), ('hotfix'), ('minor'), ('major')
+ON CONFLICT (code) DO NOTHING;
 
-DROP TRIGGER IF EXISTS shaolin_set_label_trg ON public.shaolin_scrolls;
-CREATE TRIGGER shaolin_set_label_trg
-BEFORE INSERT OR UPDATE OF version, patch ON public.shaolin_scrolls
-FOR EACH ROW
-EXECUTE FUNCTION public.shaolin_set_label();
+-- 2) Main table
+CREATE TABLE IF NOT EXISTS core.shaolin_scrolls (
+  id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  label         TEXT NOT NULL,                                   -- optional human label you control
+  release_date  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  version       INT NOT NULL CHECK (version >= 0),
+  patch         INT NOT NULL CHECK (patch   >= 0),
+  release_type_id SMALLINT NOT NULL REFERENCES core.release_type(id),
+  CONSTRAINT uq_release UNIQUE (version, patch, release_type_id)
+);
+
+-- Helpful indexes
+CREATE INDEX IF NOT EXISTS idx_scrolls_release_key
+  ON core.shaolin_scrolls (version, patch, release_type_id);
+CREATE INDEX IF NOT EXISTS idx_scrolls_date
+  ON core.shaolin_scrolls (release_date DESC);
+
+-- 3) Read model: present friendly computed fields without storing them
+CREATE OR REPLACE VIEW core.v_shaolin_scrolls AS
+SELECT
+  s.id,
+  s.label,
+  s.release_date,
+  s.version,
+  s.patch,
+  rt.code                          AS release_type,
+  'v' || s.version || '.' || s.patch || '-' || rt.code AS full_label
+FROM core.shaolin_scrolls s
+JOIN core.release_type rt ON rt.id = s.release_type_id;
+
+-- 4) (Optional) Role quality-of-life: set search_path for your app role outside of migrations
+-- ALTER ROLE tullyelly_admin IN DATABASE tullyelly_db SET search_path = core, public;
+
+-- 5) (Optional) Minimal example write using the lookup
+-- INSERT INTO core.shaolin_scrolls (label, version, patch, release_type_id)
+-- SELECT 'v1.0', 1, 0, rt.id FROM core.release_type rt WHERE rt.code = 'minor';
