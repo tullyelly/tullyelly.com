@@ -18,8 +18,10 @@ SELECT
 
 -- Next planned hotfix
 SELECT * FROM dojo.fn_next_hotfix('First hotfix');
+-- Expect: id plus generated_name like 'v2.0.1 First hotfix'
 
 -- Next planned minor release
 SELECT * FROM dojo.fn_next_minor('Next minor');
+-- Expect: id plus generated_name like 'v2.1.0 Next minor'
 
 ROLLBACK;

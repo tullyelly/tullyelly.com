@@ -50,7 +50,7 @@ BEGIN
   RETURNING ss.id INTO v_id;
 
   RETURN QUERY
-    SELECT v_id AS id, generated_name
+    SELECT v_id, vs.generated_name
     FROM dojo.v_shaolin_scrolls vs
     WHERE vs.id = v_id;
 END;
@@ -88,7 +88,7 @@ BEGIN
   RETURNING ss.id INTO v_id;
 
   RETURN QUERY
-    SELECT v_id AS id, generated_name
+    SELECT v_id, vs.generated_name
     FROM dojo.v_shaolin_scrolls vs
     WHERE vs.id = v_id;
 END;
