@@ -9,7 +9,7 @@
 --   psql $NEON_DATABASE_URL -c "SELECT * FROM dojo.fn_next_minor('Test minor');"
 --   psql $NEON_DATABASE_URL -c "SELECT * FROM dojo.fn_next_hotfix('Test hotfix');"
 
-CREATE OR REPLACE FUNCTION dojo.fn_next_hotfix(p_label TEXT)
+CREATE OR REPLACE FUNCTION dojo.fn_next_patch(p_label TEXT)
 RETURNS TABLE(scroll_id BIGINT, generated_name TEXT)
 LANGUAGE plpgsql
 AS $$

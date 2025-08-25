@@ -17,7 +17,7 @@ SELECT
   (SELECT id FROM dojo.release_type WHERE code = 'minor');
 
 -- Next planned hotfix
-SELECT * FROM dojo.fn_next_hotfix('First hotfix');
+SELECT * FROM dojo.fn_next_patch('First hotfix');
 -- Expect: id plus generated_name like 'v2.0.1 First hotfix'
 
 -- Next planned minor release
