@@ -83,6 +83,12 @@ npx prisma migrate dev
 npx prisma db seed
 ```
 
+Apply release helper functions:
+
+```bash
+psql $NEON_DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
+```
+
 ---
 
 ## 📜 Scripts
