@@ -74,7 +74,11 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 ## 🗃️ Database
 
-This project requires a **Postgres** database. Set the `DATABASE_URL` environment variable to point to your instance.
+This project requires a **Postgres** database. Use explicit environment variables for each runtime:
+
+- `DATABASE_URL` – production
+- `PREVIEW_DATABASE_URL` – Vercel preview
+- `TEST_DATABASE_URL` – local development
 
 After configuring the database, run:
 
@@ -93,7 +97,7 @@ Verify connectivity:
 
 ```bash
 curl -s http://localhost:3000/api/_health
-curl -s http://localhost:3000/api/releases?limit=5
+curl -s http://localhost:3000/api/releases
 ```
 
 ---
