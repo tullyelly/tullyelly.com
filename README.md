@@ -89,6 +89,12 @@ Apply release helper functions:
 psql $NEON_DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
 ```
 
+Verify connectivity:
+
+```bash
+curl -s http://localhost:3000/api/_health
+```
+
 ---
 
 ## 📜 Scripts
