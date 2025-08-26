@@ -10,10 +10,10 @@ SELECT
          -- Translate code like "planned_release" -> "Planned Release"
          WHEN rt.code IS NOT NULL
               AND position(
-                    lower( initcap(replace(rt.code, '_', ' ')) || ':' )
+                    lower( replace(rt.code, '_', ' ') || ':' )
                   in lower(s.label)
                   ) <> 1
-           THEN initcap(replace(rt.code, '_', ' ')) || ': ' || s.label
+           THEN replace(rt.code, '_', ' ') || ': ' || s.label
          ELSE s.label
        END
   ) AS release_name,
