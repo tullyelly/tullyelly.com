@@ -20,13 +20,14 @@
     "ci": "npm run lint && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run build",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:ci": "cross-env NODE_ENV=test jest --runInBand",
+    "test:ci": "cross-env NODE_ENV=test jest --ci --maxWorkers=2",
     "preci": "npm rebuild lightningcss --foreground-scripts && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm rebuild sharp --foreground-scripts",
     "pretest:e2e": "node -e \"require('fs').mkdirSync('.pw-browsers',{recursive:true})\"",
     "test:e2e": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test",
     "test:e2e:headed": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --headed",
     "test:e2e:install": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright install --with-deps",
-    "test:e2e:ci": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --reporter=html"
+    "test:e2e:ci": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --reporter=html",
+    "test:db": "cross-env NODE_ENV=test dotenv -e .env.test -- node ./test/scripts/verify-test-env.ts && dotenv -e .env.test -- jest -c ./test/jest.db.config.ts --runInBand"
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",
@@ -43,6 +44,7 @@
     "@next/mdx": "^15.5.0",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
+    "@testcontainers/postgresql": "^11.5.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
@@ -53,6 +55,7 @@
     "@types/react-dom": "^19.1.7",
     "cross-env": "^7.0.3",
     "dotenv": "^17.2.1",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^9.33.0",
     "eslint-config-next": "^15.4.6",
     "glob": "^11.0.3",

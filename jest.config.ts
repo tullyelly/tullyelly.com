@@ -1,19 +1,19 @@
 import type { Config } from 'jest';
 
 const config: Config = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  rootDir: '.',
-  testMatch: ['**/__tests__/**/*.test.ts'],
-  setupFiles: ['<rootDir>/jest.setup.env.ts'],
-  verbose: true,
-  // Make sure Next aliases resolve
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^server-only$': '<rootDir>/test/shims/server-only.ts',
+    '^@/app/lib/db$': '<rootDir>/__mocks__/db.ts',
   },
-  // Keep workers low to avoid too many DB connections in CI
-  maxWorkers: 1,
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.test.json', useESM: true }],
+  },
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  testMatch: ['<rootDir>/**/__tests__/**/*.test.(ts|tsx)'],
+  testPathIgnorePatterns: ['/__tests__/db/'],
 };
 
 export default config;

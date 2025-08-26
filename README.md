@@ -89,6 +89,21 @@ Apply release helper functions:
 psql $NEON_DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
 ```
 
+For database smoke tests, copy `.env.test.sample` to `.env.test` and set `TEST_DATABASE_URL` to a real Postgres connection string. Optional: enable Docker fallback by setting `DOCKER_FALLBACK=true`.
+
+```
+TEST_DATABASE_URL=postgres://user:password@localhost:5432/your_test_db
+DOCKER_FALLBACK=false
+```
+
+Run:
+
+```
+npm run test:db
+```
+
+If `TEST_DATABASE_URL` is missing and `DOCKER_FALLBACK=true`, the command starts a temporary Postgres via Testcontainers. Regular unit tests do **not** require any database.
+
 ---
 
 ## 📜 Scripts
@@ -100,6 +115,8 @@ Recommended Node version: **20**.
 * `npm run build` – build the production bundle
 * `npm run start` – start the production server
 * `npm run ci` – run lint, image checks, and build
+* `npm test` – run unit and accessibility tests (no database)
+* `npm run test:db` – run Postgres smoke tests (requires `.env.test` with `TEST_DATABASE_URL`; set `DOCKER_FALLBACK=true` to allow Docker)
 
 ---
 
