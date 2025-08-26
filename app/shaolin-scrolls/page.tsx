@@ -1,4 +1,4 @@
-import CreateRelease from './CreateRelease';
+import CreateRelease from '@/components/CreateRelease';
 import ReleaseRowDetail from '@/components/ReleaseRowDetail';
 import styles from './page.module.css';
 
@@ -34,7 +34,9 @@ export default async function ShaolinScrollsPage() {
   return (
     <main className={styles.container}>
       <h1>Shaolin Scrolls</h1>
-      <CreateRelease />
+      <div className={styles.create}>
+        <CreateRelease />
+      </div>
       <table className={styles.table}>
         <thead>
           <tr>
@@ -64,3 +66,4 @@ export default async function ShaolinScrollsPage() {
     </main>
   );
 }
+
