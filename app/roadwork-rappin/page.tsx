@@ -43,12 +43,12 @@ export default function Page() {
         </section>
 
         <section aria-labelledby="video-title" className="space-y-4">
-          <h2 id="video-title" className="text-xl font-semibold">Watch the Video</h2>
+          <h2 id="video-title" className="text-xl font-semibold">Roadwork Rappin’ Video</h2>
           <div className="relative aspect-video overflow-hidden rounded-xl">
             <iframe
               className="absolute inset-0 h-full w-full"
               src="https://www.youtube-nocookie.com/embed/jRHqjDnEFiE?si=-aVzrmGAmDuJ0PL0"
-              title="Aesop Rock — Roadwork Rappin’"
+              title="Aesop Rock — Roadwork Rappin’ music video"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
