@@ -6,9 +6,3 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
-
-model Message {
-  id        Int      @id @default(autoincrement())
-  text      String
-  createdAt DateTime @default(now())
-}

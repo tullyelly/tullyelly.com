@@ -93,13 +93,6 @@ Using a Neon branch instead of local Postgres? Point `TEST_DATABASE_URL` at the 
 TEST_DATABASE_URL=postgresql://…@ep-round-forest-aeuxacm9.c-2.us-east-2.aws.neon.tech/tullyelly_db?sslmode=require&channel_binding=require
 ```
 
-After configuring the database, run:
-
-```bash
-npx prisma migrate dev
-npx prisma db seed
-```
-
 Apply release helper functions:
 
 ```bash

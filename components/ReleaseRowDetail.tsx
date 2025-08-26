@@ -1,105 +1,90 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
+import { useState } from 'react';
 
-export interface Row {
-  id: number;
-  release_name: string;
+type Id = string | number;
+
+interface ReleaseData {
   semver: string;
-  major: number;
-  minor: number;
-  patch: number;
-  year: number;
-  month: number;
   label: string | null;
   status: string;
   release_type: string;
-  created_at: string;
-  created_by: string | null;
-  updated_at: string | null;
-  updated_by: string | null;
 }
 
 interface Props {
-  id: number;
+  id: Id;
+  summaryText?: string;
 }
 
-export default function ReleaseRowDetail({ id }: Props) {
-  const [open, setOpen] = useState(false);
+export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props) {
+  const [data, setData] = useState<ReleaseData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<Row | null>(null);
 
-  useEffect(() => {
-    if (!open || data || loading || error) return;
-    let cancelled = false;
+  const onToggle = async (e: React.SyntheticEvent<HTMLDetailsElement>) => {
+    if (!e.currentTarget.open || data || loading) return;
+
     setLoading(true);
-    fetch(`/api/releases/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('fetch failed');
-        return res.json() as Promise<Row>;
-      })
-      .then((json) => {
-        if (!cancelled) {
-          setData(json);
-          setError(null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setError('error');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, data, loading, error, id]);
+    setError(null);
 
-  const handleToggle = (e: React.SyntheticEvent<HTMLDetailsElement>) => {
-    setOpen(e.currentTarget.open);
+    const controller = new AbortController();
+
+    try {
+      const res = await fetch(`/api/releases/${id}`, { signal: controller.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json: ReleaseData = await res.json();
+      setData(json);
+    } catch (err) {
+      if ((err as any)?.name !== 'AbortError') {
+        setError('Failed to load details');
+      }
+    } finally {
+      setLoading(false);
+    }
+
+    // Cleanup if the details close before fetch resolves
+    e.currentTarget.addEventListener(
+      'toggle',
+      () => {
+        if (!e.currentTarget.open) controller.abort();
+      },
+      { once: true }
+    );
   };
 
   let content: React.ReactNode = null;
+
   if (loading) {
     content = <p>Loading…</p>;
   } else if (error) {
-    content = <p>Error loading details</p>;
+    content = <p>{error}</p>;
   } else if (data) {
-    const fields: (keyof Row)[] = [
-      'id',
-      'release_name',
-      'semver',
-      'major',
-      'minor',
-      'patch',
-      'year',
-      'month',
-      'label',
-      'status',
-      'release_type',
-      'created_at',
-      'created_by',
-      'updated_at',
-      'updated_by',
-    ];
     content = (
       <dl>
-        {fields.map((key) => (
-          <Fragment key={key}>
-            <dt>{key}</dt>
-            <dd>{String(data[key] ?? '')}</dd>
-          </Fragment>
-        ))}
+        <div>
+          <dt>Version</dt>
+          <dd>{data.semver}</dd>
+        </div>
+        <div>
+          <dt>Label</dt>
+          <dd>{data.label ?? '—'}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{data.status}</dd>
+        </div>
+        <div>
+          <dt>Type</dt>
+          <dd>{data.release_type}</dd>
+        </div>
       </dl>
     );
   }
 
   return (
-    <details onToggle={handleToggle}>
-      <summary>Details</summary>
+    <details onToggle={onToggle}>
+      <summary>{summaryText}</summary>
       {content}
     </details>
   );
 }
-
