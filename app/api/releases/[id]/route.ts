@@ -1,4 +1,7 @@
+import type { NextRequest } from 'next/server';
 import { query } from '@/app/lib/db';
+
+type RouteContext<Path extends string> = { params: Promise<Record<string, string>> };
 
 // curl -s http://localhost:3000/api/releases/1
 
@@ -21,11 +24,12 @@ export interface ReleaseRow {
 }
 
 export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: RouteContext<'/api/releases/[id]'>
 ) {
-  const id = Number.parseInt(params.id, 10);
-  if (!Number.isInteger(id)) {
+  const { id } = await params;
+  const numId = Number.parseInt(id, 10);
+  if (!Number.isInteger(numId)) {
     return Response.json({ error: 'invalid id' }, { status: 400 });
   }
 
@@ -38,7 +42,7 @@ export async function GET(
   WHERE id = $1;`;
 
   try {
-    const { rows } = await query<ReleaseRow>(sql, [id]);
+    const { rows } = await query<ReleaseRow>(sql, [numId]);
     const row = rows[0];
     if (!row) {
       return Response.json({ error: 'not found' }, { status: 404 });
