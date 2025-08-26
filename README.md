@@ -76,13 +76,6 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 This project requires a **Postgres** database. Set the `DATABASE_URL` environment variable to point to your instance.
 
-After configuring the database, run:
-
-```bash
-npx prisma migrate dev
-npx prisma db seed
-```
-
 Apply release helper functions:
 
 ```bash

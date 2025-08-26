@@ -1,23 +1,9 @@
 export const runtime = 'nodejs';
-import prisma from '@/lib/prisma';
 
-export default async function Home() {
-  let message: any;
-
-  try {
-    const msg = await prisma.message.findFirst({
-      orderBy: { createdAt: 'asc' },
-      select: { text: true },
-    });
-    message = msg?.text ?? 'No message found';
-  } catch (error) {
-    console.error('Error fetching message:', error);
-    message = 'No message found';
-  }
-
+export default function Home() {
   return (
     <main style={{ padding: 32 }}>
-      <h1>{message}</h1>
+      <h1>Hello World</h1>
     </main>
   );
 }
