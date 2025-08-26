@@ -1,8 +1,9 @@
 import CreateRelease from './CreateRelease';
+import ReleaseRowDetail from '@/components/ReleaseRowDetail';
 import styles from './page.module.css';
 
 interface ListItem {
-  id: string;
+  id: number;
   release_name: string;
   status: string;
   release_type: string;
@@ -18,13 +19,8 @@ async function fetchJson<T>(path: string): Promise<T> {
   return res.json();
 }
 
-async function ReleaseRowDetail({ id }: { id: string }) {
-  const data = await fetchJson<any>(`/api/releases/${id}`);
-  return <pre className={styles.detail}>{JSON.stringify(data, null, 2)}</pre>;
-}
-
 export default async function ShaolinScrollsPage() {
-  const list = await fetchJson<{ items: Array<{ id: string; release_name: string; status: string; release_type: string }> }>(
+  const list = await fetchJson<{ items: Array<{ id: number; release_name: string; status: string; release_type: string }> }>(
     '/api/releases?limit=20'
   );
 
@@ -59,10 +55,7 @@ export default async function ShaolinScrollsPage() {
                 <time dateTime={item.created_at}>{item.created_at}</time>
               </td>
               <td>
-                <details className={styles.details}>
-                  <summary>Details</summary>
-                  <ReleaseRowDetail id={item.id} />
-                </details>
+                <ReleaseRowDetail id={item.id} />
               </td>
             </tr>
           ))}
