@@ -78,7 +78,20 @@ This project requires a **Postgres** database. Use explicit environment variable
 
 - `DATABASE_URL` – production
 - `PREVIEW_DATABASE_URL` – Vercel preview
-- `TEST_DATABASE_URL` – local development
+- `TEST_DATABASE_URL` – local development and tests
+
+For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
+
+```bash
+# .env.test
+TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/tullyelly_test
+```
+
+Using a Neon branch instead of local Postgres? Point `TEST_DATABASE_URL` at the branch URL:
+
+```bash
+TEST_DATABASE_URL=postgresql://…@ep-round-forest-aeuxacm9.c-2.us-east-2.aws.neon.tech/tullyelly_db?sslmode=require&channel_binding=require
+```
 
 After configuring the database, run:
 
