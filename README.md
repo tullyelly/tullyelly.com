@@ -74,12 +74,40 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 ## 🗃️ Database
 
-This project requires a **Postgres** database. Set the `DATABASE_URL` environment variable to point to your instance.
+This project requires a **Postgres** database. Use explicit environment variables for each runtime:
+
+- `DATABASE_URL` – production
+- `PREVIEW_DATABASE_URL` – Vercel preview
+- `TEST_DATABASE_URL` – local development and tests
+
+For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
+
+```bash
+# .env.test
+TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/tullyelly_test
+```
+
+Using a Neon branch instead of local Postgres? Point `TEST_DATABASE_URL` at the branch URL:
+
+```bash
+TEST_DATABASE_URL=postgresql://…@ep-round-forest-aeuxacm9.c-2.us-east-2.aws.neon.tech/tullyelly_db?sslmode=require&channel_binding=require
+```
 
 Apply release helper functions:
 
 ```bash
 psql $NEON_DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
+```
+
+Verify connectivity:
+
+```bash
+curl -s http://localhost:3000/api/_health
+curl -s http://localhost:3000/api/releases
+curl -s -X POST -H 'Content-Type: application/json' \
+  -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch # mutates data
+curl -s -X POST -H 'Content-Type: application/json' \
+  -d '{"label":"Test minor"}' http://localhost:3000/api/releases/minor # mutates data
 ```
 
 ---
