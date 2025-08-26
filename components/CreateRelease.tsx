@@ -1,78 +1,129 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+
+type ReleaseType = "patch" | "minor";
 
 export default function CreateRelease() {
   const router = useRouter();
-  const [patchLabel, setPatchLabel] = useState('');
-  const [minorLabel, setMinorLabel] = useState('');
-  const [patchMsg, setPatchMsg] = useState('');
-  const [minorMsg, setMinorMsg] = useState('');
+
+  // Patch form state
+  const [patchLabel, setPatchLabel] = useState("");
+  const [patchLoading, setPatchLoading] = useState(false);
+  const [patchError, setPatchError] = useState<string | null>(null);
+  const [patchCreated, setPatchCreated] = useState(false);
+
+  // Minor form state
+  const [minorLabel, setMinorLabel] = useState("");
+  const [minorLoading, setMinorLoading] = useState(false);
+  const [minorError, setMinorError] = useState<string | null>(null);
+  const [minorCreated, setMinorCreated] = useState(false);
 
   async function submit(
-    type: 'patch' | 'minor',
-    label: string,
-    setLabel: (v: string) => void,
-    setMsg: (v: string) => void
+    e: FormEvent<HTMLFormElement>,
+    type: ReleaseType
   ) {
-    const trimmed = label.trim().slice(0, 120);
-    if (!trimmed) return;
+    e.preventDefault();
+
+    const isPatch = type === "patch";
+    const label = (isPatch ? patchLabel : minorLabel).trim().slice(0, 120);
+
+    // guard
+    if (!label) return;
+
+    // set local UI state
+    if (isPatch) {
+      setPatchLoading(true);
+      setPatchError(null);
+      setPatchCreated(false);
+    } else {
+      setMinorLoading(true);
+      setMinorError(null);
+      setMinorCreated(false);
+    }
+
     try {
       const res = await fetch(`/api/releases/${type}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label: trimmed }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label }),
       });
-      if (res.ok) {
-        setLabel('');
-        setMsg('Created');
-        router.refresh();
+
+      if (!res.ok) throw new Error("Request failed");
+
+      // success
+      if (isPatch) {
+        setPatchLabel("");
+        setPatchCreated(true);
+      } else {
+        setMinorLabel("");
+        setMinorCreated(true);
       }
+
+      router.refresh();
     } catch {
-      // ignore errors for now
+      if (isPatch) setPatchError("Failed to create patch release");
+      else setMinorError("Failed to create minor release");
+    } finally {
+      if (isPatch) setPatchLoading(false);
+      else setMinorLoading(false);
     }
   }
 
   return (
-    <div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submit('patch', patchLabel, setPatchLabel, setPatchMsg);
-        }}
-      >
-        <label htmlFor="patch-label">Patch label</label>
+    <div className="flex flex-col gap-6">
+      {/* Patch form */}
+      <form onSubmit={(e) => submit(e, "patch")} className="flex flex-col gap-2">
+        <label htmlFor="patch-label" className="text-sm font-medium">
+          Patch label
+        </label>
         <input
           id="patch-label"
           name="patch-label"
           value={patchLabel}
-          maxLength={120}
           onChange={(e) => setPatchLabel(e.target.value)}
+          maxLength={120}
           required
+          className="rounded border px-2 py-1"
+          placeholder="e.g. hotfix: correct audit trail ordering"
         />
-        <button type="submit">Create Patch</button>
-        {patchMsg && <small>{patchMsg}</small>}
+        <button
+          type="submit"
+          disabled={patchLoading}
+          className="rounded border px-3 py-1 disabled:opacity-50"
+        >
+          {patchLoading ? "Creating…" : "Create Patch"}
+        </button>
+        {patchError && <p className="text-sm text-red-600">{patchError}</p>}
+        {patchCreated && <p className="text-sm text-green-600">Created</p>}
       </form>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submit('minor', minorLabel, setMinorLabel, setMinorMsg);
-        }}
-      >
-        <label htmlFor="minor-label">Minor label</label>
+
+      {/* Minor form */}
+      <form onSubmit={(e) => submit(e, "minor")} className="flex flex-col gap-2">
+        <label htmlFor="minor-label" className="text-sm font-medium">
+          Minor label
+        </label>
         <input
           id="minor-label"
           name="minor-label"
           value={minorLabel}
-          maxLength={120}
           onChange={(e) => setMinorLabel(e.target.value)}
+          maxLength={120}
           required
+          className="rounded border px-2 py-1"
+          placeholder="e.g. v0.6: add scrolls list filters"
         />
-        <button type="submit">Create Minor</button>
-        {minorMsg && <small>{minorMsg}</small>}
+        <button
+          type="submit"
+          disabled={minorLoading}
+          className="rounded border px-3 py-1 disabled:opacity-50"
+        >
+          {minorLoading ? "Creating…" : "Create Minor"}
+        </button>
+        {minorError && <p className="text-sm text-red-600">{minorError}</p>}
+        {minorCreated && <p className="text-sm text-green-600">Created</p>}
       </form>
     </div>
   );
 }
-
