@@ -1,44 +1,63 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 
-interface ReleaseRowDetailProps {
-  id: string | number;
-}
+type Id = string | number;
 
 interface ReleaseData {
   semver: string;
-  label: string;
+  label: string | null;
   status: string;
   release_type: string;
 }
 
-export default function ReleaseRowDetail({ id }: ReleaseRowDetailProps) {
+interface Props {
+  id: Id;
+  summaryText?: string;
+}
+
+export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props) {
   const [data, setData] = useState<ReleaseData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const onToggle = async (e: React.SyntheticEvent<HTMLDetailsElement>) => {
-    if (!e.currentTarget.open || data) return;
+    if (!e.currentTarget.open || data || loading) return;
+
     setLoading(true);
-    setError(false);
+    setError(null);
+
+    const controller = new AbortController();
+
     try {
-      const res = await fetch(`/api/releases/${id}`);
-      if (!res.ok) throw new Error('Failed to load');
+      const res = await fetch(`/api/releases/${id}`, { signal: controller.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: ReleaseData = await res.json();
       setData(json);
-    } catch {
-      setError(true);
+    } catch (err) {
+      if ((err as any)?.name !== 'AbortError') {
+        setError('Failed to load details');
+      }
     } finally {
       setLoading(false);
     }
+
+    // Cleanup if the details close before fetch resolves
+    e.currentTarget.addEventListener(
+      'toggle',
+      () => {
+        if (!e.currentTarget.open) controller.abort();
+      },
+      { once: true }
+    );
   };
 
-  let content = null;
+  let content: React.ReactNode = null;
+
   if (loading) {
     content = <p>Loading…</p>;
   } else if (error) {
-    content = <p>Error loading details</p>;
+    content = <p>{error}</p>;
   } else if (data) {
     content = (
       <dl>
@@ -48,7 +67,7 @@ export default function ReleaseRowDetail({ id }: ReleaseRowDetailProps) {
         </div>
         <div>
           <dt>Label</dt>
-          <dd>{data.label}</dd>
+          <dd>{data.label ?? '—'}</dd>
         </div>
         <div>
           <dt>Status</dt>
@@ -62,6 +81,10 @@ export default function ReleaseRowDetail({ id }: ReleaseRowDetailProps) {
     );
   }
 
-  return <details onToggle={onToggle}>{content}</details>;
+  return (
+    <details onToggle={onToggle}>
+      <summary>{summaryText}</summary>
+      {content}
+    </details>
+  );
 }
-

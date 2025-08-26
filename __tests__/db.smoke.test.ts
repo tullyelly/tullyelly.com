@@ -1,4 +1,4 @@
-import { query, endPool } from '@/app/lib/db';
+import { query } from '@/app/lib/db';
 
 describe('database smoke test', () => {
   it('SELECT 1 returns 1', async () => {
@@ -11,9 +11,5 @@ describe('database smoke test', () => {
     // Not asserting exact name; just ensure we got *something* in test env
     expect(typeof rows[0].current_database).toBe('string');
     expect(rows[0].current_database.length).toBeGreaterThan(0);
-  });
-
-  afterAll(async () => {
-    await endPool();
   });
 });
