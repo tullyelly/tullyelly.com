@@ -20,6 +20,7 @@
     "ci": "npm run lint && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run build",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:ci": "cross-env NODE_ENV=test jest --runInBand",
     "preci": "npm rebuild lightningcss --foreground-scripts && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm rebuild sharp --foreground-scripts",
     "pretest:e2e": "node -e \"require('fs').mkdirSync('.pw-browsers',{recursive:true})\"",
     "test:e2e": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test",
@@ -30,6 +31,7 @@
   "dependencies": {
     "@prisma/client": "^6.14.0",
     "next": "15.4.6",
+    "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sharp": "^0.34.3"
@@ -46,9 +48,11 @@
     "@testing-library/react": "^16.3.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
+    "@types/pg": "^8.15.5",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "cross-env": "^7.0.3",
+    "dotenv": "^17.2.1",
     "eslint": "^9.33.0",
     "eslint-config-next": "^15.4.6",
     "glob": "^11.0.3",
@@ -59,7 +63,9 @@
     "prisma": "^6.14.0",
     "remark-frontmatter": "^5.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
+    "server-only": "^0.0.1",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.1",
     "typescript": "^5.9.2",
     "zod": "^4.0.17"
   }
