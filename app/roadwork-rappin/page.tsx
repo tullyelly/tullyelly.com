@@ -1,28 +1,51 @@
-import Hero from '@/components/Hero';
-import { buildPageMetadata } from '@/lib/page-metadata';
-import type { PageFrontmatter } from '@/types/frontmatter';
+'use client';
 
-const frontmatter: PageFrontmatter = {
-  title: 'Roadwork Rappin’',
-  description: 'A shareable static page for Roadwork Rappin’.',
-  canonical: 'https://tullyelly.com/roadwork-rappin',
-  hero: {
-    src: '/images/optimized/cardattack.webp',
-    alt: 'Roadwork Rappin’ hero',
-    width: 1200,
-    height: 675,
-  },
-};
-
-export const metadata = buildPageMetadata(frontmatter);
-
+import React from 'react';
 
 export default function Page() {
   return (
-    <article className="section" aria-labelledby="title">
-      <h1 id="title">{frontmatter.title}</h1>
-      <p>This page verifies our base layout, tokens, and image pipeline in Next.js.</p>
-      <Hero {...frontmatter.hero} caption="Hero image served from the optimized folder." />
-    </article>
+    <main className="px-4 sm:px-6 lg:px-8">
+      <article className="mx-auto max-w-3xl py-10 space-y-10">
+        <header>
+          <h1 className="text-3xl font-bold tracking-tight">Roadwork Rappin’</h1>
+          <p className="mt-2 text-sm text-neutral-500">
+            A tiny static page demo with an embedded video and some copy blocks.
+          </p>
+        </header>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Setup</h2>
+          <p>
+            Road cones, fresh paint, and a beat on loop. This section is simple filler to prove the layout
+            and spacing. Swap in real copy later.
+          </p>
+        </section>
+
+        <section aria-labelledby="video-title" className="space-y-4">
+          <h2 id="video-title" className="text-xl font-semibold">Video</h2>
+          <div className="relative aspect-video overflow-hidden rounded-xl">
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src="https://www.youtube-nocookie.com/embed/jRHqjDnEFiE?si=-aVzrmGAmDuJ0PL0"
+              title="Roadwork Rappin’ — YouTube"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+          <p className="text-sm text-neutral-500">
+            Embedded directly from YouTube using the privacy-enhanced player.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Notes</h2>
+          <p>
+            Another small block of placeholder copy. Keep the tempo steady; real content will land next pass.
+          </p>
+        </section>
+      </article>
+    </main>
   );
 }
