@@ -93,6 +93,7 @@ Verify connectivity:
 
 ```bash
 curl -s http://localhost:3000/api/_health
+curl -s http://localhost:3000/api/releases?limit=5
 ```
 
 ---
