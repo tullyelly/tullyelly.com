@@ -113,6 +113,8 @@ curl -s http://localhost:3000/api/_health
 curl -s http://localhost:3000/api/releases
 curl -s -X POST -H 'Content-Type: application/json' \
   -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch # mutates data
+curl -s -X POST -H 'Content-Type: application/json' \
+  -d '{"label":"Test minor"}' http://localhost:3000/api/releases/minor # mutates data
 ```
 
 ---
