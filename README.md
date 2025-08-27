@@ -76,7 +76,7 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 This project requires a **Postgres** database.
 
-- `NEON_DATABASE_URL` – runtime connection string
+- `DATABASE_URL` – runtime connection string (falls back to `NEON_DATABASE_URL`)
 - `TEST_DATABASE_URL` – local tests
 
 For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
@@ -95,7 +95,7 @@ TEST_DATABASE_URL=postgresql://…@ep-round-forest-aeuxacm9.c-2.us-east-2.aws.ne
 Apply release helper functions:
 
 ```bash
-psql $NEON_DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
+psql $DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
 ```
 
 Verify connectivity:
