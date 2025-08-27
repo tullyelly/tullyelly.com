@@ -67,6 +67,19 @@ export default function Page() {
           </p>
         </header>
 
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Parental Discrection Advised</h2>
+          <p className="leading-relaxed">
+            There's been a ton of new albums to explore this summer (tyler, clipse, jid, freddie gibbs, ghostface, raekwon, etc..) and the one EP I keep returning to more than any other is HEELS HAVE EYES by Westside Gunn. He's shown up here and there in the almighty algorithm, but I've never done a deep dive until now.
+          </p>
+          <p className="leading-relaxed">
+            Well, I'm hooked and DAVEY BOY SMITH is the beat of the year for me so far. A simple piano loop will get me every time. Shouts to Denny LaFlare.
+          </p>          
+          <p className="leading-relaxed">
+            Anywho, FLYGUY told me to put this up on my kid's wall. Consider it done, king.
+          </p>
+        </section>
+
         <section aria-labelledby="video-title" className="space-y-3">
           <h2 id="video-title" className="text-xl font-semibold">DAVEY BOY SMITH Video</h2>
           <figure className="space-y-2">
@@ -110,7 +123,7 @@ export default function Page() {
                   )}
                   {isFav(item) && (
                     <Badge tone="success" className="absolute bottom-2 right-2">
-                      uncle jimmy’s favorite
+                      unclejimmy classic
                     </Badge>
                   )}
                 </Card>
