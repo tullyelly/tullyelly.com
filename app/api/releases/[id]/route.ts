@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { query } from '@/app/lib/db';
+import { logger } from '@/app/lib/server-logger';
 
-type RouteContext<Path extends string> = { params: Promise<Record<string, string>> };
+type RouteContext = { params: Promise<Record<string, string>> };
 
 // curl -s http://localhost:3000/api/releases/1
 
@@ -25,7 +26,7 @@ export interface ReleaseRow {
 
 export async function GET(
   _req: NextRequest,
-  { params }: RouteContext<'/api/releases/[id]'>
+  { params }: RouteContext
 ) {
   const { id } = await params;
   const numId = Number.parseInt(id, 10);
@@ -49,7 +50,7 @@ export async function GET(
     }
     return Response.json(row);
   } catch (err) {
-    console.error('releases id query failed:', err);
+    logger.error('releases id query failed:', err);
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 import { query } from '@/app/lib/db';
+import { logger } from '@/app/lib/server-logger';
 
 // curl -s -X POST -H 'Content-Type: application/json' \
 //   -d '{"label":"First hotfix"}' http://localhost:3000/api/releases/patch
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     const item: Row = { id: String(row.scroll_id), generated_name: row.generated_name };
     return Response.json(item);
   } catch (err) {
-    console.error('fn_next_patch failed:', err);
+    logger.error('fn_next_patch failed:', err);
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }

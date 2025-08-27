@@ -1,4 +1,5 @@
 import { query } from '@/app/lib/db';
+import { logger } from '@/app/lib/server-logger';
 
 // curl -s 'http://localhost:3000/api/releases?limit=5'
 
@@ -53,7 +54,7 @@ LIMIT $1 OFFSET $2;
     }));
     return Response.json({ items, page: { limit, offset } });
   } catch (err) {
-    console.error('releases query failed:', err);
+    logger.error('releases query failed:', err);
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }
