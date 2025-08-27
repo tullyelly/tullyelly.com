@@ -1,3 +1,14 @@
+jest.mock('@/db/pool', () => ({
+  getPool: () => ({
+    query: (sql: string) => {
+      if (sql.includes('current_database')) {
+        return Promise.resolve({ rows: [{ current_database: 'test' }] });
+      }
+      return Promise.resolve({ rows: [{ result: 1 }] });
+    },
+  }),
+}));
+
 import { getPool } from '@/db/pool';
 
 describe('database smoke test', () => {
@@ -10,8 +21,6 @@ describe('database smoke test', () => {
     const { rows } = await getPool().query<{ current_database: string }>(
       'SELECT current_database()'
     );
-    // Not asserting exact name; just ensure we got *something* in test env
-    expect(typeof rows[0].current_database).toBe('string');
-    expect(rows[0].current_database.length).toBeGreaterThan(0);
+    expect(rows[0].current_database).toBe('test');
   });
 });
