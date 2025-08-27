@@ -233,3 +233,18 @@ p {
   white-space: nowrap;
 }
 
+
+/* YouTube embed wrapper */
+.yt-wrapper-bucks {
+  background: var(--green);
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.yt-wrapper-bucks > iframe,
+.yt-wrapper-bucks > .youtube-embed {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
