@@ -14,24 +14,3 @@
 .create input {
   margin-left: 0.25rem;
 }
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  border: 1px solid #ccc;
-  padding: 0.5rem;
-  text-align: left;
-}
-
-.details summary {
-  cursor: pointer;
-}
-
-.detail {
-  margin: 0.5rem 0;
-  white-space: pre-wrap;
-}

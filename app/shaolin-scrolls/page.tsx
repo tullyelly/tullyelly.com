@@ -1,18 +1,38 @@
+import { logger } from '@/app/lib/server-logger';
 import CreateRelease from '@/components/CreateRelease';
-import ReleaseRowDetail from '@/components/ReleaseRowDetail';
-import { getReleases } from '@/lib/releases';
+import ScrollsTable from '@/components/ScrollsTable';
+import type { ReleaseListResponse } from '@/types/releases';
 import styles from './page.module.css';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
-export default async function Page() {
-  let releases: Awaited<ReturnType<typeof getReleases>> = [];
+interface PageProps {
+  searchParams?: { limit?: string; offset?: string; sort?: string; q?: string };
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  const limit = Math.min(Math.max(parseInt(searchParams?.limit ?? '20', 10), 1), 100);
+  const offset = Math.max(parseInt(searchParams?.offset ?? '0', 10), 0);
+  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'created_at:desc';
+  const q = typeof searchParams?.q === 'string' ? searchParams.q : undefined;
+
+  const params = new URLSearchParams({ limit: String(limit), offset: String(offset), sort });
+  if (q) params.set('q', q);
+
+  let data: ReleaseListResponse = {
+    items: [],
+    page: { limit, offset, total: 0, sort, ...(q ? { q } : {}) },
+  };
+
   try {
-    releases = await getReleases(20);
+    const base = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+    const res = await fetch(`${base}/api/releases?${params.toString()}`, {
+      cache: 'no-store',
+    });
+    if (res.ok) data = await res.json();
   } catch (err) {
-    console.error('[shaolin-scrolls] failed to load releases', err);
+    logger.error('[shaolin-scrolls] failed to load releases', err);
   }
 
   return (
@@ -21,36 +41,7 @@ export default async function Page() {
       <div className={styles.create}>
         <CreateRelease />
       </div>
-      {releases.length > 0 ? (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th scope="col">Release Name</th>
-              <th scope="col">Status</th>
-              <th scope="col">Type</th>
-              <th scope="col">Created</th>
-              <th scope="col">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {releases.map((item) => (
-              <tr key={item.id}>
-                <td>{item.release_name}</td>
-                <td>{item.status}</td>
-                <td>{item.release_type}</td>
-                <td>
-                  <time dateTime={item.created_at}>{item.created_at}</time>
-                </td>
-                <td>
-                  <ReleaseRowDetail id={item.id} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No releases available.</p>
-      )}
+      <ScrollsTable rows={data.items} total={data.page.total} page={data.page} />
     </main>
   );
 }

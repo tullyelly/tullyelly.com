@@ -102,7 +102,7 @@ Verify connectivity:
 
 ```bash
 curl -s http://localhost:3000/api/_health
-curl -s http://localhost:3000/api/releases
+curl -s "http://localhost:3000/api/releases?limit=5&offset=0&sort=created_at:desc"
 curl -s -X POST -H 'Content-Type: application/json' \
   -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch # mutates data
 curl -s -X POST -H 'Content-Type: application/json' \
