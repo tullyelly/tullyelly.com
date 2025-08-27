@@ -26,7 +26,8 @@
     "test:e2e": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test",
     "test:e2e:headed": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --headed",
     "test:e2e:install": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright install --with-deps",
-    "test:e2e:ci": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --reporter=html"
+    "test:e2e:ci": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --reporter=html",
+    "db:ping": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/db-ping.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",
@@ -79,6 +80,7 @@
     "server-only": "^0.0.1",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.1",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
     "zod": "^4.0.17"

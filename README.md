@@ -139,7 +139,7 @@ Recommended Node version: **20**.
 * `npm run build` – build the production bundle
 * `npm run start` – start the production server
 * `npm run ci` – run lint, image checks, and build
-* `npx tsx scripts/db-ping.ts` – verify DB connectivity (SELECT 1)
+* `npm run db:ping` – verify DB connectivity (SELECT 1)
 
 ---
 
