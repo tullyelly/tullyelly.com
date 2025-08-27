@@ -104,6 +104,7 @@ Apply release helper functions:
 
 ```bash
 psql $DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
+psql $DATABASE_URL -f db/migrations/003_semver_columns.sql
 ```
 
 Verify connectivity:

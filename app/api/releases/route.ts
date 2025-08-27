@@ -7,8 +7,22 @@ import type { QueryResult } from 'pg';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const SORTABLE_COLUMNS = new Set(['name', 'status', 'type', 'semver']);
-const SORT_DIRECTIONS = new Set(['asc', 'desc']);
+const ORDER_BY = {
+  'semver:desc': `ORDER BY
+    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 1), ''), '0')::int DESC,
+    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 2), ''), '0')::int DESC,
+    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 3), ''), '0')::int DESC,
+    created_at DESC, id DESC`,
+  'semver:asc': `ORDER BY
+    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 1), ''), '0')::int ASC,
+    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 2), ''), '0')::int ASC,
+    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 3), ''), '0')::int ASC,
+    created_at DESC, id DESC`,
+  'created_at:desc': 'ORDER BY created_at DESC, id DESC',
+  'created_at:asc': 'ORDER BY created_at ASC, id ASC',
+} as const;
+
+type Sort = keyof typeof ORDER_BY;
 
 type ReleaseItem = {
   id: string | number;
@@ -45,23 +59,21 @@ function parseQuery(url: string) {
   }
 
   const sortRaw = searchParams.get('sort') ?? 'semver:desc';
-  const [col = 'semver', dir = 'desc'] = sortRaw.split(':');
-  const sortCol = col.toLowerCase();
-  const sortDir = dir.toLowerCase();
-  if (!SORTABLE_COLUMNS.has(sortCol) || !SORT_DIRECTIONS.has(sortDir)) {
+  if (!(sortRaw in ORDER_BY)) {
     throw new InputError('invalid sort');
   }
-  const sort = `${sortCol}:${sortDir}`;
+  const sort = sortRaw as Sort;
 
   const qRaw = searchParams.get('q');
   const q = qRaw ? qRaw.trim() : undefined;
 
-  return { limit, offset, sortCol, sortDir, sort, q };
+  return { limit, offset, sort, q };
 }
 
 export async function GET(req: Request) {
   try {
-    const { limit, offset, sortCol, sortDir, sort, q } = parseQuery(req.url);
+    const { limit, offset, sort, q } = parseQuery(req.url);
+    console.log('[API:/releases] params', { limit, offset, sort, q }); // eslint-disable-line no-console
 
     const conditions: string[] = [];
     const values: Array<string | number> = [];
@@ -84,18 +96,7 @@ export async function GET(req: Request) {
     values.push(offset);
     const offsetParam = values.length;
 
-    let orderClause: string;
-    if (sortCol === 'semver') {
-      orderClause = `ORDER BY sem_major ${sortDir}, sem_minor ${sortDir}, sem_patch ${sortDir}, sem_hotfix ${sortDir}`;
-    } else if (sortCol === 'name') {
-      orderClause = `ORDER BY release_name ${sortDir}`;
-    } else if (sortCol === 'status') {
-      orderClause = `ORDER BY status ${sortDir}`;
-    } else if (sortCol === 'type') {
-      orderClause = `ORDER BY release_type ${sortDir}`;
-    } else {
-      orderClause = `ORDER BY sem_major DESC, sem_minor DESC, sem_patch DESC, sem_hotfix DESC`;
-    }
+    const orderClause = ORDER_BY[sort];
 
     const sqlItems = `
       SELECT
@@ -104,10 +105,10 @@ export async function GET(req: Request) {
         status,
         release_type AS type,
         semver,
-        split_part(semver, '.', 1)::int AS sem_major,
-        split_part(semver, '.', 2)::int AS sem_minor,
-        split_part(split_part(semver, '.', 3), '+', 1)::int AS sem_patch,
-        COALESCE((regexp_match(semver, '\\+([0-9]+)$'))[1]::int, 0) AS sem_hotfix
+        COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 1), ''), '0')::int AS sem_major,
+        COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 2), ''), '0')::int AS sem_minor,
+        COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 3), ''), '0')::int AS sem_patch,
+        COALESCE((regexp_match(regexp_replace(semver, '^[^0-9]*', ''), '\\+([0-9]+)$'))[1]::int, 0) AS sem_hotfix
       FROM dojo.v_shaolin_scrolls
       ${where}
       ${orderClause}
@@ -147,3 +148,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'internal error' }, { status: 500 });
   }
 }
+

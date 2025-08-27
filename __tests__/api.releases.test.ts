@@ -64,8 +64,8 @@ describe('/api/releases', () => {
   });
 
   it('accepts custom sorting', async () => {
-    const res = await GET(makeReq('?sort=name:asc&limit=1'));
+    const res = await GET(makeReq('?sort=created_at:asc&limit=1'));
     const json = (await res.json()) as ReleaseListResponse;
-    expect(json.page.sort).toBe('name:asc');
+    expect(json.page.sort).toBe('created_at:asc');
   });
 });
