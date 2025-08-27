@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
 
         <main id="content" className="flex-1 p-4" tabIndex={-1}>
-          <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-6">
+          <div className="mx-auto w-full max-w-7xl bg-white rounded-lg shadow-sm p-6">
             {children}
           </div>
         </main>
