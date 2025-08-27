@@ -27,6 +27,12 @@ export default {
         "btn-primary-fg": "var(--btn-primary-fg)",
         "btn-secondary-bg": "var(--btn-secondary-bg)",
         "btn-secondary-fg": "var(--btn-secondary-fg)",
+        surface: "var(--surface)",
+        bg: "var(--bg)",
+        border: "var(--border)",
+        fg: "var(--fg)",
+        success: "var(--success)",
+        warning: "var(--warning)",
       },
       maxWidth: {
         container: "var(--container)",

@@ -1,4 +1,11 @@
 import React from "react"
+import {
+  Badge,
+  Card,
+  CardGrid,
+  type CardItem,
+  mapDomainToCardItem,
+} from "@/ui"
 
 export const metadata = {
   title: "Roadwork Rappin’ by Aesop Rock | tullyelly",
@@ -28,7 +35,6 @@ type Album = {
   title: string
   year: number
   note: string
-  favorite?: boolean
 }
 
 const albums: Album[] = [
@@ -37,27 +43,22 @@ const albums: Album[] = [
   { title: "Skelethon", year: 2012, note: "Darker, self-produced record showcasing his full creative control." },
   { title: "The Impossible Kid", year: 2016, note: "Personal, playful, and a highly accessible entry point." },
   { title: "Spirit World Field Guide", year: 2020, note: "Conceptual journey through a surreal, otherworldly manual." },
-  { title: "Garbology (with Blockhead)", year: 2021, note: "Return to form with a longtime collaborator.", favorite: true },
-  { title: "Black Hole Superette", year: 2024, note: "Latest release, expanding his signature style with fresh energy.", favorite: true },
+  { title: "Garbology (with Blockhead)", year: 2021, note: "Return to form with a longtime collaborator." },
+  {
+    title: "Black Hole Superette",
+    year: 2024,
+    note: "Latest release, expanding his signature style with fresh energy.",
+  },
 ]
 
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center rounded-full border border-neutral-200 px-2 py-0.5 text-[11px] font-medium leading-4 text-neutral-700">
-      {children}
-    </span>
-  )
-}
+const items: CardItem[] = mapDomainToCardItem(albums, (a) => ({
+  id: a.title,
+  title: a.title,
+  meta: a.year,
+  description: a.note,
+}))
 
-// Only change: make the favorite badge appear ONLY for "Spirit World Field Guide"
-function FavBadge({ title }: { title: string }) {
-  if (title !== "Spirit World Field Guide") return null
-  return (
-    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold leading-4 text-emerald-700 ring-1 ring-emerald-600/20">
-      uncle jimmy’s favorite
-    </span>
-  )
-}
+const isFav = (item: CardItem) => item.title === "Spirit World Field Guide"
 
 export default function Page() {
   return (
@@ -65,7 +66,7 @@ export default function Page() {
       <article className="mx-auto max-w-3xl py-10 space-y-10">
         <header>
           <h1 className="text-3xl font-bold tracking-tight">Roadwork Rappin’</h1>
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-fg/60">
             Welcome to my newest experiment. Please excuse any bugs or lack of polish. Early days.
           </p>
         </header>
@@ -95,7 +96,7 @@ export default function Page() {
                 allowFullScreen
               />
             </div>
-            <figcaption className="text-xs text-neutral-500">
+            <figcaption className="text-xs text-fg/60">
               Embedded via YouTube’s privacy-enhanced player.
             </figcaption>
           </figure>
@@ -111,24 +112,26 @@ export default function Page() {
 
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">Albums to Explore</h3>
-            <ul role="list" className="grid gap-3 sm:grid-cols-2">
-              {albums.map((a) => (
-                <li
-                  key={a.title}
-                  className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-sm"
-                >
+            <CardGrid>
+              {items.map((item) => (
+                <Card key={item.id}>
                   <div className="flex items-start justify-between gap-3">
-                    <h4 className="font-semibold italic">{a.title}</h4>
+                    <h4 className="font-semibold italic">{item.title}</h4>
                     <div className="flex items-center gap-2">
-                      <Badge>{a.year}</Badge>
-                      {/* Only show favorite badge for Spirit World Field Guide */}
-                      <FavBadge title={a.title} />
+                      {item.meta && <Badge>{item.meta}</Badge>}
+                      {isFav(item) && (
+                        <Badge tone="success">uncle jimmy’s favorite</Badge>
+                      )}
                     </div>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-neutral-700">{a.note}</p>
-                </li>
+                  {item.description && (
+                    <p className="mt-2 text-sm text-fg/80 leading-relaxed">
+                      {item.description}
+                    </p>
+                  )}
+                </Card>
               ))}
-            </ul>
+            </CardGrid>
           </div>
         </section>
       </article>
