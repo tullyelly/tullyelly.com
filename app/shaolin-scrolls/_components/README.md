@@ -4,12 +4,10 @@ TanStack Table powered UI for Shaolin Scrolls releases with fixed column widths 
 
 ## Columns
 
-1. **Expander** – toggles row details (placeholder).
-2. **Release Name** – primary identifier, sortable, truncates long names.
-3. **Status** – colored badge showing release status.
-4. **Type** – colored pill for patch/minor/hotfix.
-5. **SemVer** – monospace semantic version, sortable.
-6. **Actions** – three-dot menu for row actions.
+1. **Release Name** – primary identifier, sortable, truncates long names.
+2. **Status** – colored badge showing release status.
+3. **Type** – colored pill for patch/minor/hotfix.
+4. **SemVer** – monospace semantic version, sortable.
 
 ## Extending
 
