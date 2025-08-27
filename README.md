@@ -72,6 +72,12 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 ---
 
+## 🌐 SEO & Crawl Directives
+
+Robots and sitemap metadata routes live in `app/robots.ts` and `app/sitemap.ts`, providing baseline crawl directives and a simple sitemap for top-level pages.
+
+---
+
 ## 🗃️ Database
 
 This project requires a **Postgres** database.
