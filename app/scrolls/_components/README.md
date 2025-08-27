@@ -20,3 +20,5 @@ To add a column:
 1. Extend the `Release` type in `ScrollsTable.tsx`.
 2. Append a `ColumnDef` to the `columns` array with width settings.
 3. Provide `meta` class names to align header and cells.
+
+The component also handles loading and empty states. Pass `isLoading` to render skeleton rows.
