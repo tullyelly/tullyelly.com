@@ -1,6 +1,6 @@
 # ScrollsTable
 
-TanStack Table powered UI for Shaolin Scrolls releases.
+TanStack Table powered UI for Shaolin Scrolls releases with fixed column widths and a sticky header.
 
 ## Columns
 

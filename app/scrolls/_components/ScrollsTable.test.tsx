@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import ScrollsTable, { Release } from './ScrollsTable';
+import { ScrollsTable, Release } from './ScrollsTable';
 
 const baseRelease: Release = {
   id: '1',
