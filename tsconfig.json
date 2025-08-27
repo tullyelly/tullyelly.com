@@ -18,7 +18,10 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["*", "app/*"],
+      "@components/*": ["components/*"],
+      "@ui": ["components/ui"],
+      "@ui/*": ["components/ui/*"]
     },
 
     "types": ["jest", "node"]

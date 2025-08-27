@@ -47,6 +47,14 @@
 
   /* Layout scale */
   --container: 72rem;
+
+  /* UI tokens */
+  --surface: var(--surface-card);
+  --bg: var(--surface-page);
+  --border: var(--border-subtle);
+  --fg: var(--text-primary);
+  --success: var(--green);
+  --warning: #92400e;
 }
 
 html {
@@ -55,10 +63,14 @@ html {
 
 body {
   margin: 0;
-  background: var(--surface-page);
-  color: var(--text-primary);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-inter);
   line-height: 1.6;
+}
+
+.main-surface {
+  background: var(--surface);
 }
 
 code,
