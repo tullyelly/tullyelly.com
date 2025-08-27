@@ -8,9 +8,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # To skip browser installs entirely, uncomment the following lines to use
+    # Playwright's prebuilt container image.
+    # container:
+    #   image: mcr.microsoft.com/playwright:v1.55.0-noble
     env:
       NODE_ENV: test
-      PLAYWRIGHT_BROWSERS_PATH: .pw-browsers
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
       PLAYWRIGHT_USE_SYSTEM_CHROME: "0"
 
     steps:
@@ -23,19 +27,26 @@ jobs:
 
       - run: npm ci
 
-      - name: Restore Playwright cache
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(npx @playwright/test --version | awk '{print $2}')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
         uses: actions/cache@v4
         with:
-          path: |
-            .pw-browsers
-            ~/.cache/ms-playwright
-          key: pw-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
           restore-keys: |
-            pw-${{ runner.os }}-
+            ${{ runner.os }}-playwright-
 
-      - name: Ensure browsers installed (cache-first)
-        if: env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
-        run: npm run test:e2e:install
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
+        run: npx playwright install-deps chromium
+
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
+        run: npx playwright install chromium
 
       - name: Install system Chromium (fallback)
         if: env.PLAYWRIGHT_USE_SYSTEM_CHROME == '1'
@@ -44,7 +55,7 @@ jobs:
           sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
 
       - name: Run e2e tests
-        run: npm run test:e2e:ci
+        run: npx playwright test --reporter=html
 
       - name: Upload HTML report
         if: always()
