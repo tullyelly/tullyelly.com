@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { logger } from '@/app/lib/server-logger';
 import { getPool } from '@/db/pool';
-import type { ReleaseRow, PageMeta, ReleaseListResponse } from '@/types/releases';
+import type { PageMeta, ReleaseListResponse } from '@/types/releases';
+import type { QueryResult } from 'pg';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,21 +10,37 @@ export const dynamic = 'force-dynamic';
 const SORTABLE_COLUMNS = new Set(['name', 'status', 'type', 'semver']);
 const SORT_DIRECTIONS = new Set(['asc', 'desc']);
 
+type ReleaseItem = {
+  id: string | number;
+  name: string;
+  status: string;
+  type: string;
+  semver: string;
+  sem_major: number;
+  sem_minor: number;
+  sem_patch: number;
+  sem_hotfix: number;
+};
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20', 10), 1), 100);
     const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
+
     let sort = searchParams.get('sort') || 'semver:desc';
     let [sortCol, sortDir] = sort.split(':');
+
     if (!SORTABLE_COLUMNS.has(sortCol) || !SORT_DIRECTIONS.has((sortDir || '').toLowerCase())) {
       sortCol = 'semver';
       sortDir = 'desc';
       sort = 'semver:desc';
     } else {
-      sortDir = sortDir.toLowerCase();
+      sortDir = (sortDir || 'desc').toLowerCase();
       sort = `${sortCol}:${sortDir}`;
     }
+
     const qRaw = searchParams.get('q')?.trim();
     const q = qRaw ? qRaw : undefined;
 
@@ -31,6 +48,7 @@ export async function GET(req: Request) {
     const values: Array<string | number> = [];
     const countConditions: string[] = [];
     const countValues: Array<string> = [];
+
     if (q) {
       values.push(`%${q}%`);
       countValues.push(`%${q}%`);
@@ -38,6 +56,7 @@ export async function GET(req: Request) {
       conditions.push(`release_name ILIKE ${p}`);
       countConditions.push(`release_name ILIKE $${countValues.length}`);
     }
+
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const countWhere = countConditions.length ? `WHERE ${countConditions.join(' AND ')}` : '';
 
@@ -84,17 +103,16 @@ export async function GET(req: Request) {
     `;
 
     const db = getPool();
-    const [itemsRes, countRes] = await Promise.all([
-      db.query<ReleaseRow>(sqlItems, values),
-      db.query<{ total: number }>(sqlCount, countValues),
-    ]);
+
+    const [itemsRes, countRes]: [QueryResult<ReleaseItem>, QueryResult<{ total: number }>] =
+      await Promise.all([db.query(sqlItems, values), db.query(sqlCount, countValues)]);
 
     const items = itemsRes.rows.map((row) => ({
       ...row,
       id: String(row.id),
     }));
 
-    const total = countRes.rows[0]?.total || 0;
+    const total = countRes.rows[0]?.total ?? 0;
     const page: PageMeta = { limit, offset, total, sort };
     if (q) page.q = q;
 

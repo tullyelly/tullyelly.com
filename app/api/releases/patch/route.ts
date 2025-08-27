@@ -1,5 +1,6 @@
 import { getPool } from '@/db/pool';
 import { logger } from '@/app/lib/server-logger';
+import type { QueryResult } from 'pg';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -33,8 +34,8 @@ export async function POST(req: Request) {
   const sql = 'SELECT * FROM dojo.fn_next_patch($1::text);';
   try {
     const db = getPool();
-    const { rows } = await db.query<DbRow>(sql, [label]);
-    const row = rows[0];
+    const res: QueryResult<DbRow> = await db.query(sql, [label]);
+    const row = res.rows[0];
     const item: Row = { id: String(row.scroll_id), generated_name: row.generated_name };
     return Response.json(item);
   } catch (err) {
@@ -42,3 +43,4 @@ export async function POST(req: Request) {
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }
+

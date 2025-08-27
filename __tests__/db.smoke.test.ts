@@ -9,18 +9,20 @@ jest.mock('@/db/pool', () => ({
   }),
 }));
 
+import type { QueryResult } from 'pg';
 import { getPool } from '@/db/pool';
 
 describe('database smoke test', () => {
   it('SELECT 1 returns 1', async () => {
-    const { rows } = await getPool().query<{ result: number }>('SELECT 1 as result');
-    expect(rows[0].result).toBe(1);
+    const res: QueryResult<{ result: number }> = await getPool().query('SELECT 1 as result');
+    expect(res.rows[0].result).toBe(1);
   });
 
   it('reports current database name', async () => {
-    const { rows } = await getPool().query<{ current_database: string }>(
+    const res: QueryResult<{ current_database: string }> = await getPool().query(
       'SELECT current_database()'
     );
-    expect(rows[0].current_database).toBe('test');
+    expect(res.rows[0].current_database).toBe('test');
   });
 });
+

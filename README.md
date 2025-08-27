@@ -76,7 +76,7 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 This project requires a **Postgres** database.
 
-- `DATABASE_URL` – runtime connection string (falls back to `NEON_DATABASE_URL`)
+- `DATABASE_URL` – runtime connection string
 - `TEST_DATABASE_URL` – local tests
 
 For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
@@ -101,13 +101,23 @@ psql $DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
 Verify connectivity:
 
 ```bash
+# Verify connectivity
 curl -s http://localhost:3000/api/_health
+
+# Metadata + counts
+curl -s http://localhost:3000/api/db-meta
+curl -s http://localhost:3000/api/releases-count
+
+# Releases queries
 curl -s "http://localhost:3000/api/releases?limit=5&offset=0&sort=semver:desc"
 curl -s "http://localhost:3000/api/releases?q=scroll"
+
+# Mutations (creates new releases)
 curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch # mutates data
+  -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch
+
 curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test minor"}' http://localhost:3000/api/releases/minor # mutates data
+  -d '{"label":"Test minor"}' http://localhost:3000/api/releases/minor
 ```
 
 ---
