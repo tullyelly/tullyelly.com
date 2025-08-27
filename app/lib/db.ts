@@ -28,7 +28,6 @@ function assertDbSafety(dbUrl: string) {
   if (!allow[env].includes(host)) {
     throw new Error(`Safety check failed: ${env} runtime cannot use DB host "${host}".`)
   }
-  // swap any env var locally to verify the error above is thrown
 }
 
 export function getPool(): Pool {
@@ -40,7 +39,6 @@ export function getPool(): Pool {
   const { vercelEnv, nodeEnv } = getRuntimeEnv()
   const env: RuntimeEnv = nodeEnv === 'test' ? 'development' : vercelEnv
 
-  // Use node:util debug channel instead of console.* (respects NODE_DEBUG)
   if (env !== 'production') {
     const host = new URL(dbUrl).hostname
     debug('[env:%s] host=%s', env, host)
@@ -54,5 +52,7 @@ export function query<T = unknown>(
   text: string,
   params?: ReadonlyArray<unknown>
 ): Promise<QueryResult<T>> {
-  return getPool().query<T>(text, params)
+  // pg expects a mutable array; copy into a normal array and cast as unknown[]
+  const values: unknown[] | undefined = params ? [...params] : undefined
+  return getPool().query<T>(text, values)
 }
