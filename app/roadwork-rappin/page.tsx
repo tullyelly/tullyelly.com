@@ -114,20 +114,20 @@ export default function Page() {
             <h3 className="text-lg font-semibold">Albums to Explore</h3>
             <CardGrid>
               {items.map((item) => (
-                <Card key={item.id}>
+                <Card key={item.id} className="relative">
                   <div className="flex items-start justify-between gap-3">
                     <h4 className="font-semibold italic">{item.title}</h4>
-                    <div className="flex items-center gap-2">
-                      {item.meta && <Badge>{item.meta}</Badge>}
-                      {isFav(item) && (
-                        <Badge tone="success">uncle jimmy’s favorite</Badge>
-                      )}
-                    </div>
+                    {item.meta && <Badge>{item.meta}</Badge>}
                   </div>
                   {item.description && (
                     <p className="mt-2 text-sm text-fg/80 leading-relaxed">
                       {item.description}
                     </p>
+                  )}
+                  {isFav(item) && (
+                    <Badge tone="success" className="absolute bottom-2 right-2">
+                      uncle jimmy’s favorite
+                    </Badge>
                   )}
                 </Card>
               ))}
