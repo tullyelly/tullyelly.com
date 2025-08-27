@@ -8,13 +8,18 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  searchParams?: { limit?: string; offset?: string; sort?: string; q?: string };
+  searchParams?: {
+    limit?: string;
+    offset?: string;
+    sort?: string;
+    q?: string;
+  };
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const limit = Math.min(Math.max(parseInt(searchParams?.limit ?? '20', 10), 1), 100);
   const offset = Math.max(parseInt(searchParams?.offset ?? '0', 10), 0);
-  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'created_at:desc';
+  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'semver:desc';
   const q = typeof searchParams?.q === 'string' ? searchParams.q : undefined;
 
   const params = new URLSearchParams({ limit: String(limit), offset: String(offset), sort });
@@ -22,7 +27,13 @@ export default async function Page({ searchParams }: PageProps) {
 
   let data: ReleaseListResponse = {
     items: [],
-    page: { limit, offset, total: 0, sort, ...(q ? { q } : {}) },
+    page: {
+      limit,
+      offset,
+      total: 0,
+      sort,
+      ...(q ? { q } : {}),
+    },
   };
 
   try {

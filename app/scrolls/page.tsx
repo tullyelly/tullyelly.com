@@ -14,7 +14,7 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const limit = Math.min(Math.max(parseInt(searchParams?.limit ?? '20', 10), 1), 100);
   const offset = Math.max(parseInt(searchParams?.offset ?? '0', 10), 0);
-  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'created_at:desc';
+  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'semver:desc';
   const q = typeof searchParams?.q === 'string' ? searchParams.q : undefined;
 
   const params = new URLSearchParams({ limit: String(limit), offset: String(offset), sort });
