@@ -72,7 +72,7 @@ export default function Page() {
           <figure className="space-y-2">
             <div className="yt-wrapper-bucks">
               <iframe
-                src="https://www.youtube.com/watch?v=-mnJEnjyaY4"
+                src="https://www.youtube-nocookie.com/embed/-mnJEnjyaY4?si=LMJt5-8BmEL4cFlQ"
                 title="Westside Gunn — DAVEY BOY SMITH music video"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
