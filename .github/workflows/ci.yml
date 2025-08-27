@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-check:
+  ci:
     runs-on: ubuntu-latest
     env:
       CI: true
@@ -46,7 +46,6 @@ jobs:
         run: |
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
-
-      # 🚦 Your pipeline (lint -> images -> build, etc.)
-      - name: Run CI pipeline
-        run: npm run ci --if-present
+        # 🚦 Run lint, typecheck, tests, and build
+        - name: Run CI pipeline
+          run: npm run ci

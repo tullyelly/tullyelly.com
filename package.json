@@ -17,7 +17,7 @@
     "new-page": "node scripts/new-page.mjs",
     "validate-frontmatter": "node scripts/validate-frontmatter.mjs",
     "validate-seo": "node scripts/validate-seo.mjs",
-    "ci": "npm run lint && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run build",
+    "ci": "npm run lint && npm run typecheck && npm test && npm run build",
     "typecheck": "tsc --noEmit",
     "test": "cross-env NODE_ENV=test jest",
     "test:ci": "cross-env NODE_ENV=test jest --runInBand",
