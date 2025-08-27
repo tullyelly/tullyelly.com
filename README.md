@@ -72,6 +72,12 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 ---
 
+## 🌐 SEO & Crawl Directives
+
+Robots and sitemap metadata routes live in `app/robots.ts` and `app/sitemap.ts`, providing baseline crawl directives and a simple sitemap for top-level pages.
+
+---
+
 ## 🗃️ Database
 
 This project requires a **Postgres** database.
@@ -181,3 +187,4 @@ This repo is already structured for one-click deploys.
 * Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
 * Always run `npm run images:optimize` before committing new images
 * `app/scrolls`: responsive grid layout with sidebar and table scaffold
+* Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.
