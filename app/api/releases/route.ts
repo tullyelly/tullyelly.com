@@ -6,6 +6,7 @@ import type { QueryResult } from 'pg';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const ORDER_BY = {
   'semver:desc': `ORDER BY
@@ -137,7 +138,14 @@ export async function GET(req: Request) {
     const page: PageMeta = { limit, offset, total, sort };
     if (q) page.q = q;
 
-    return NextResponse.json({ items, page } as ReleaseListResponse);
+    return NextResponse.json(
+      { items, page } as ReleaseListResponse,
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
+    );
   } catch (err) {
     if (err instanceof InputError) {
       console.error('[API:/releases] bad input', err); // eslint-disable-line no-console
