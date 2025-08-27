@@ -1,21 +1,27 @@
-import type { ReleaseListResponse, ReleaseListItem } from '@/types/releases';
+import type { ReleaseListResponse, ReleaseRow } from '@/types/releases';
 
-const rows: ReleaseListItem[] = [
+const rows: ReleaseRow[] = [
   {
-    id: 1,
-    release_name: 'Alpha',
-    status: 'open',
-    release_type: 'minor',
-    created_at: new Date('2024-01-01').toISOString(),
+    id: '1',
+    name: 'Alpha',
+    status: 'planned',
+    type: 'minor',
     semver: '0.1.0',
+    sem_major: 0,
+    sem_minor: 1,
+    sem_patch: 0,
+    sem_hotfix: 0,
   },
   {
-    id: 2,
-    release_name: 'Beta',
-    status: 'closed',
-    release_type: 'major',
-    created_at: new Date('2024-02-01').toISOString(),
+    id: '2',
+    name: 'Beta',
+    status: 'released',
+    type: 'major',
     semver: '1.0.0',
+    sem_major: 1,
+    sem_minor: 0,
+    sem_patch: 0,
+    sem_hotfix: 0,
   },
 ];
 
@@ -43,11 +49,11 @@ function makeReq(query = '') {
 
 describe('/api/releases', () => {
   it('respects limit/offset and returns total', async () => {
-    const res = await GET(makeReq('?limit=1&offset=0&sort=created_at:desc'));
+    const res = await GET(makeReq('?limit=1&offset=0&sort=semver:desc'));
     const json = (await res.json()) as ReleaseListResponse;
     expect(json.items.length).toBeLessThanOrEqual(1);
     expect(json.page.total).toBe(rows.length);
-    expect(json.page.sort).toBe('created_at:desc');
+    expect(json.page.sort).toBe('semver:desc');
   });
 
   it('filters by q', async () => {
@@ -58,8 +64,8 @@ describe('/api/releases', () => {
   });
 
   it('accepts custom sorting', async () => {
-    const res = await GET(makeReq('?sort=release_name:asc&limit=1'));
+    const res = await GET(makeReq('?sort=name:asc&limit=1'));
     const json = (await res.json()) as ReleaseListResponse;
-    expect(json.page.sort).toBe('release_name:asc');
+    expect(json.page.sort).toBe('name:asc');
   });
 });

@@ -2,10 +2,10 @@
 
 import { Fragment, useState } from 'react';
 import ReleaseRowDetail from '@/components/ReleaseRowDetail';
-import type { ReleaseListItem } from '@/types/releases';
+import type { ReleaseRow } from '@/types/releases';
 
 interface ScrollsTableProps {
-  rows: ReleaseListItem[];
+  rows: ReleaseRow[];
 }
 
 export default function ScrollsTable({ rows }: ScrollsTableProps) {
@@ -19,7 +19,7 @@ export default function ScrollsTable({ rows }: ScrollsTableProps) {
             <th className="sticky left-0 z-30 bg-surface-card p-2 text-left">Release Name</th>
             <th className="p-2 text-left">Status</th>
             <th className="p-2 text-left">Type</th>
-            <th className="p-2 text-left">Created</th>
+            <th className="p-2 text-left">SemVer</th>
           </tr>
         </thead>
         <tbody>
@@ -36,14 +36,12 @@ export default function ScrollsTable({ rows }: ScrollsTableProps) {
                     >
                       {expanded[row.id] ? '-' : '+'}
                     </button>
-                    <span>{row.release_name}</span>
+                    <span>{row.name}</span>
                   </div>
                 </td>
                 <td className="p-2 min-w-[8rem]">{row.status}</td>
-                <td className="p-2 min-w-[8rem]">{row.release_type}</td>
-                <td className="p-2 whitespace-nowrap min-w-[8rem]">
-                  <time dateTime={row.created_at}>{row.created_at}</time>
-                </td>
+                <td className="p-2 min-w-[8rem]">{row.type}</td>
+                <td className="p-2 min-w-[8rem]">{row.semver}</td>
               </tr>
               {expanded[row.id] && (
                 <tr>

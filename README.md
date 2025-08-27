@@ -100,12 +100,10 @@ psql $DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
 
 Verify connectivity:
 
-The `/api/releases` endpoint supports `status` and `type` query params (comma-separated) for filtering.
-
 ```bash
 curl -s http://localhost:3000/api/_health
-curl -s "http://localhost:3000/api/releases?limit=5&offset=0&sort=created_at:desc"
-curl -s "http://localhost:3000/api/releases?status=released&type=hotfix,minor"
+curl -s "http://localhost:3000/api/releases?limit=5&offset=0&sort=semver:desc"
+curl -s "http://localhost:3000/api/releases?q=scroll"
 curl -s -X POST -H 'Content-Type: application/json' \
   -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch # mutates data
 curl -s -X POST -H 'Content-Type: application/json' \

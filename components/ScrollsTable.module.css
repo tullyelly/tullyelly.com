@@ -3,30 +3,15 @@
   max-height: 600px;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.thead th {
+.headerRow {
   position: sticky;
   top: 0;
   background: var(--background);
   z-index: 1;
 }
 
-.row:hover {
+.dataRow:hover {
   background: var(--muted, #f5f5f5);
-}
-
-.compact th,
-.compact td {
-  padding: 0.25rem 0.5rem;
-}
-
-.comfortable th,
-.comfortable td {
-  padding: 0.5rem 1rem;
 }
 
 .focusRing:focus-visible {
