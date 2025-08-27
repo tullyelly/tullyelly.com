@@ -34,8 +34,8 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: ReleaseData = await res.json();
       setData(json);
-    } catch (err) {
-      if ((err as any)?.name !== 'AbortError') {
+    } catch (err: unknown) {
+      if ((err as { name?: string })?.name !== 'AbortError') {
         setError('Failed to load details');
       }
     } finally {
