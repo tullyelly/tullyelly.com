@@ -21,9 +21,9 @@ export interface ReleaseRow {
   label: string | null;
   status: string;
   release_type: string;
-  created_at: string;
+  created_at: string | Date;
   created_by: string | null;
-  updated_at: string | null;
+  updated_at: string | Date | null;
   updated_by: string | null;
 }
 
@@ -52,7 +52,17 @@ export async function GET(
     if (!row) {
       return Response.json({ error: 'not found' }, { status: 404 });
     }
-    return Response.json(row);
+    return Response.json({
+      ...row,
+      created_at:
+        row.created_at instanceof Date
+          ? row.created_at.toISOString()
+          : row.created_at,
+      updated_at:
+        row.updated_at instanceof Date
+          ? row.updated_at.toISOString()
+          : row.updated_at,
+    });
   } catch (err) {
     logger.error('releases id query failed:', err);
     return Response.json({ error: 'database error' }, { status: 500 });
