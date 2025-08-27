@@ -33,3 +33,4 @@ app-tree.txt
 playwright-report
 test-results
 .pw-browsers
+.vercel
