@@ -1,10 +1,13 @@
-export interface ReleaseListItem {
-  id: number;
-  release_name: string;
-  status: string;
-  release_type: string;
-  created_at: string;
-  semver: string | null;
+export interface ReleaseRow {
+  id: string;
+  name: string;
+  status: 'released' | 'planned' | 'archived';
+  type: 'hotfix' | 'minor' | 'major' | 'planned';
+  semver: string;
+  sem_major: number;
+  sem_minor: number;
+  sem_patch: number;
+  sem_hotfix?: number;
 }
 
 export interface PageMeta {
@@ -16,6 +19,6 @@ export interface PageMeta {
 }
 
 export interface ReleaseListResponse {
-  items: ReleaseListItem[];
+  items: ReleaseRow[];
   page: PageMeta;
 }

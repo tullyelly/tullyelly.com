@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ScrollsTable from '@/components/ScrollsTable';
-import type { ReleaseListItem, PageMeta } from '@/types/releases';
+import type { ReleaseRow, PageMeta } from '@/types/releases';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
@@ -13,18 +13,21 @@ jest.mock('@/components/ReleaseRowDetail', () => ({
   default: ({ id }: { id: number }) => <div data-testid={`detail-${id}`}>detail {id}</div>,
 }));
 
-const rows: ReleaseListItem[] = [
+const rows: ReleaseRow[] = [
   {
-    id: 1,
-    release_name: 'v1',
+    id: '1',
+    name: 'v1',
     status: 'planned',
-    release_type: 'minor',
-    created_at: '2024-01-01T00:00:00.000Z',
+    type: 'minor',
     semver: '0.0.1',
+    sem_major: 0,
+    sem_minor: 0,
+    sem_patch: 1,
+    sem_hotfix: 0,
   },
 ];
 
-const page: PageMeta = { limit: 20, offset: 0, sort: 'created_at:desc', total: 1 };
+const page: PageMeta = { limit: 20, offset: 0, sort: 'semver:desc', total: 1 };
 
 describe('ScrollsTable', () => {
   it('renders column headers', () => {

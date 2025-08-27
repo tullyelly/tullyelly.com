@@ -9,6 +9,9 @@ interface ReleaseData {
   label: string | null;
   status: string;
   release_type: string;
+  description?: string | null;
+  jira?: string[];
+  commits?: string[];
 }
 
 interface Props {
@@ -62,8 +65,8 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
           <dd>{data.semver}</dd>
         </div>
         <div>
-          <dt>Label</dt>
-          <dd>{data.label ?? '—'}</dd>
+          <dt>Description</dt>
+          <dd>{data.description ?? data.label ?? '—'}</dd>
         </div>
         <div>
           <dt>Status</dt>
@@ -73,6 +76,38 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
           <dt>Type</dt>
           <dd>{data.release_type}</dd>
         </div>
+        {data.jira && data.jira.length > 0 && (
+          <div>
+            <dt>Jira</dt>
+            <dd>
+              <ul>
+                {data.jira.map((link) => (
+                  <li key={link}>
+                    <a href={link} target="_blank" rel="noreferrer">
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+        )}
+        {data.commits && data.commits.length > 0 && (
+          <div>
+            <dt>Commits</dt>
+            <dd>
+              <ul>
+                {data.commits.map((link) => (
+                  <li key={link}>
+                    <a href={link} target="_blank" rel="noreferrer">
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+        )}
       </dl>
     );
   }
