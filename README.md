@@ -104,6 +104,7 @@ Apply release helper functions:
 
 ```bash
 psql $DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
+psql $DATABASE_URL -f db/migrations/003_semver_columns.sql
 ```
 
 Verify connectivity:
@@ -139,6 +140,7 @@ Recommended Node version: **20**.
 * `npm run build` – build the production bundle
 * `npm run start` – start the production server
 * `npm run ci` – run lint, image checks, and build
+* `npm run db:ping` – verify DB connectivity (SELECT 1)
 
 ---
 

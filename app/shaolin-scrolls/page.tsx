@@ -1,3 +1,4 @@
+import { readSearchParams } from '@/lib/server/search-params';
 import { logger } from '@/app/lib/server-logger';
 import CreateRelease from '@/components/CreateRelease';
 import ScrollsTable from '@/components/ScrollsTable';
@@ -8,19 +9,16 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  searchParams?: {
+  searchParams: Promise<{
     limit?: string;
     offset?: string;
     sort?: string;
     q?: string;
-  };
+  }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
-  const limit = Math.min(Math.max(parseInt(searchParams?.limit ?? '20', 10), 1), 100);
-  const offset = Math.max(parseInt(searchParams?.offset ?? '0', 10), 0);
-  const sort = typeof searchParams?.sort === 'string' ? searchParams.sort : 'semver:desc';
-  const q = typeof searchParams?.q === 'string' ? searchParams.q : undefined;
+  const { limit, offset, sort, q } = await readSearchParams(searchParams);
 
   const params = new URLSearchParams({ limit: String(limit), offset: String(offset), sort });
   if (q) params.set('q', q);
