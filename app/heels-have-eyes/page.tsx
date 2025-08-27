@@ -1,22 +1,125 @@
-/**
- * HEELS HAVE EYES demo page
- * Server wrapper for the Bucks palette style lab.
- * Renders the client-side <HeelsDemo /> component.
- */
+import React from "react"
+import {
+  Badge,
+  Card,
+  CardGrid,
+  type CardItem,
+  mapDomainToCardItem,
+} from "@ui"
 
-import { buildPageMetadata } from '@/lib/page-metadata';
-import type { PageFrontmatter } from '@/types/frontmatter';
-import HeelsDemo from './HeelsDemo';
+export const metadata = {
+  title: "Heels Have Eyes by Westside Gunn | tullyelly",
+  description:
+    "Explore 'Heels Have Eyes' by Westside Gunn — a gritty yet artful entry in modern underground hip-hop. This page features the video, context, and supporting content for fans of rap and experimental lyricism.",
+  alternates: { canonical: "/heels-have-eyes" },
+  openGraph: {
+    title: "Westside Gunn — Heels Have Eyes",
+    description:
+      "Hip-hop and rap fans can dive into Westside Gunn’s 'Heels Have Eyes' with video and context on this page.",
+    url: "/heels-have-eyes",
+    type: "music.song",
+    music: {
+      musician: "Westside Gunn",
+      genre: ["Hip-Hop", "Rap", "Underground Rap"],
+    },
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Westside Gunn — Heels Have Eyes",
+    description:
+      "Westside Gunn’s 'Heels Have Eyes' with hip-hop context, video embed, and supporting content.",
+  },
+}
 
-const frontmatter = {
-  title: 'Heels Have Eyes – Style Demo',
-  description: 'Playground for Bucks color system & typography rules',
-  canonical: 'https://tullyelly.com/heels-have-eyes',
-} satisfies PageFrontmatter;
+type Album = {
+  title: string
+  year: number
+  note: string
+}
 
-export const metadata = buildPageMetadata(frontmatter);
+const albums: Album[] = [
+  { title: "FLYGOD", year: 2016, note: "His breakout, blending raw Buffalo grit with his emerging taste for artful extravagance." },
+  { title: "Supreme Blientele", year: 2018, note: "A milestone record, full of cinematic beats and sharp, painterly verses." },
+  { title: "Pray for Paris", year: 2020, note: "A fan favorite that perfectly fuses fashion, art, and grimy rap, recorded after Gunn’s trip to Paris Fashion Week." },
+  { title: "Hitler Wears Hermes 8: Sincerely, Adolf", year: 2021, note: "Grand finale to his signature series, showing his range from ruthless to reflective." },
+  { title: "Peace “Fly” God", year: 2022, note: "A raw, minimal experiment produced in just two days, spotlighting Gunn’s instinctive artistry." },
+  { title: "And Then You Pray for Me", year: 2023, note: "Intended as his retirement album, a sprawling, ornate statement piece." },
+  { title: "HEELS HAVE EYES", year: 2024, note: "Wrestling-inspired and concept-heavy, a bold continuation of his storytelling." },
+]
+
+const items: CardItem[] = mapDomainToCardItem(albums, (a) => ({
+  id: a.title,
+  title: a.title,
+  meta: a.year,
+  description: a.note,
+}))
+
+const isFav = (item: CardItem) => item.title === "HEELS HAVE EYES"
 
 export default function Page() {
-  return <HeelsDemo />;
+  return (
+    <main className="px-4 sm:px-6 lg:px-8">
+      <article className="mx-auto max-w-3xl py-10 space-y-10">
+        <header>
+          <h1 className="text-3xl font-bold tracking-tight">Heels Have Eyes</h1>
+          <p className="mt-2 text-sm text-fg/60">
+            Welcome to my newest experiment. Please excuse any bugs or lack of polish. Early days.
+          </p>
+        </header>
+
+        <section aria-labelledby="video-title" className="space-y-3">
+          <h2 id="video-title" className="text-xl font-semibold">DAVEY BOY SMITH Video</h2>
+          <figure className="space-y-2">
+            <div className="yt-wrapper-bucks">
+              <iframe
+                src="https://www.youtube.com/watch?v=-mnJEnjyaY4"
+                title="Westside Gunn — DAVEY BOY SMITH music video"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+            <figcaption className="text-xs text-fg/60">
+              Embedded via YouTube’s privacy-enhanced player.
+            </figcaption>
+          </figure>
+        </section>
+
+        <section className="space-y-6">
+          <header className="space-y-1">
+            <h2 className="text-xl font-semibold">Westside Gunn Bio</h2>
+            <p className="leading-relaxed">
+              Westside Gunn (Alvin Worthy) is a Buffalo-born rapper, curator, and co-founder of the influential Griselda collective. His music fuses gritty street narratives with a flair for high fashion, fine art, and wrestling references, turning raw street rap into something operatic and luxurious. What makes him stand out is his ear for aesthetics: ad-libs delivered like brushstrokes, beats that sound like gallery pieces, and an instinct for curation that has reshaped modern underground hip-hop. Gunn isn’t just rapping; he’s directing an entire scene.
+            </p>
+          </header>
+
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold">Albums to Explore</h3>
+            <CardGrid>
+              {items.map((item) => (
+                <Card key={item.id} className="relative">
+                  <div className="flex items-start justify-between gap-3">
+                    <h4 className="font-semibold italic">{item.title}</h4>
+                    {item.meta && <Badge>{item.meta}</Badge>}
+                  </div>
+                  {item.description && (
+                    <p className="mt-2 text-sm text-fg/80 leading-relaxed">
+                      {item.description}
+                    </p>
+                  )}
+                  {isFav(item) && (
+                    <Badge tone="success" className="absolute bottom-2 right-2">
+                      uncle jimmy’s favorite
+                    </Badge>
+                  )}
+                </Card>
+              ))}
+            </CardGrid>
+          </div>
+        </section>
+      </article>
+    </main>
+  )
 }
 
