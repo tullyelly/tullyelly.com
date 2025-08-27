@@ -76,7 +76,7 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 This project requires a **Postgres** database.
 
-- `DATABASE_URL` – runtime connection string
+- `NEON_DATABASE_URL` – runtime connection string (falls back to `DATABASE_URL`)
 - `TEST_DATABASE_URL` – local tests
 
 Set `NEXT_PUBLIC_DEBUG_DB_META=1` to expose `/api/env-check` with redacted database env vars for debugging.
