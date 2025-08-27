@@ -5,7 +5,7 @@ import {
   CardGrid,
   type CardItem,
   mapDomainToCardItem,
-} from "@/ui"
+} from "@/components/ui"
 
 export const metadata = {
   title: "Roadwork Rappin’ by Aesop Rock | tullyelly",

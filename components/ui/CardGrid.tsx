@@ -1,4 +1,3 @@
-// app/ui/CardGrid.tsx
 import React from 'react'
 
 export function CardGrid({ children }: { children: React.ReactNode }) {

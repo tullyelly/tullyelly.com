@@ -1,4 +1,3 @@
-// app/ui/Badge.tsx
 import React from 'react'
 
 export type BadgeProps = {

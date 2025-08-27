@@ -1,4 +1,3 @@
-// app/ui/index.ts
 export type CardItem = {
   id: string
   title: string
