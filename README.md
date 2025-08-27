@@ -74,11 +74,10 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 ## 🗃️ Database
 
-This project requires a **Postgres** database. Use explicit environment variables for each runtime:
+This project requires a **Postgres** database.
 
-- `DATABASE_URL` – production
-- `PREVIEW_DATABASE_URL` – Vercel preview
-- `TEST_DATABASE_URL` – local development and tests
+- `NEON_DATABASE_URL` – runtime connection string
+- `TEST_DATABASE_URL` – local tests
 
 For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
 
