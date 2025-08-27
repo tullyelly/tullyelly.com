@@ -199,5 +199,5 @@ This repo is already structured for one-click deploys.
 * `tailwind.config.mjs`: maps tokens → Tailwind theme
 * Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
 * Always run `npm run images:optimize` before committing new images
-* `app/scrolls`: responsive grid layout with sidebar and table scaffold
+* `app/shaolin-scrolls`: responsive grid layout with sidebar and table scaffold
 * Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.
