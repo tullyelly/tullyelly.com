@@ -37,9 +37,15 @@
     "sharp": "^0.34.3"
   },
   "devDependencies": {
+    "@eslint/css": "^0.10.0",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.34.0",
+    "@eslint/json": "^0.13.2",
+    "@eslint/markdown": "^7.2.0",
     "@fontsource-variable/inter": "^5.2.6",
     "@fontsource-variable/jetbrains-mono": "^5.2.6",
     "@mdx-js/react": "^3.1.0",
+    "@next/eslint-plugin-next": "^15.5.2",
     "@next/mdx": "^15.5.0",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
@@ -53,13 +59,18 @@
     "@types/react-dom": "^19.1.7",
     "cross-env": "^7.0.3",
     "dotenv": "^17.2.1",
-    "eslint": "^9.33.0",
+    "eslint": "^9.34.0",
     "eslint-config-next": "^15.4.6",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
     "glob": "^11.0.3",
+    "globals": "^16.3.0",
     "gray-matter": "^4.0.3",
     "jest": "^30.0.5",
     "jest-axe": "^10.0.0",
     "jest-environment-jsdom": "^30.0.5",
+    "jiti": "^2.5.1",
+    "prettier": "^3.6.2",
     "prisma": "^6.14.0",
     "remark-frontmatter": "^5.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
@@ -67,6 +78,7 @@
     "tailwindcss": "^4",
     "ts-jest": "^29.4.1",
     "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0",
     "zod": "^4.0.17"
   }
 }

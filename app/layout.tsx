@@ -35,7 +35,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
 
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <Footer />
       </body>
     </html>
