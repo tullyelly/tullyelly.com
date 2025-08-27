@@ -49,6 +49,8 @@ const columns: ColumnDef<Release, any>[] = [
     header: () => null,
     cell: ({ row }) => (
       <button
+        type="button"
+        aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
         aria-expanded={row.getIsExpanded()}
         onClick={row.getToggleExpandedHandler()}
         className="mx-auto block"
@@ -144,6 +146,7 @@ export function ScrollsTable({ data, pageSize = 20 }: { data: Release[]; pageSiz
   return (
     <div>
       <input
+        aria-label="Search releases"
         value={globalFilter ?? ''}
         onChange={(e) => setGlobalFilter(e.target.value)}
         placeholder="Search releases"
