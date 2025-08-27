@@ -7,6 +7,7 @@ import styles from './page.module.css';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PageProps {
   searchParams: Promise<{
@@ -38,6 +39,7 @@ export default async function Page({ searchParams }: PageProps) {
     const base = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
     const res = await fetch(`${base}/api/releases?${params.toString()}`, {
       cache: 'no-store',
+      next: { revalidate: 0 },
     });
     if (res.ok) data = await res.json();
   } catch (err) {

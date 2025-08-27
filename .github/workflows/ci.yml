@@ -22,10 +22,10 @@ jobs:
         with:
           fetch-depth: 0      # needed for diff + preview fast-forward
 
-      # your composite setup (node, cache, deps)
+      # composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
 
-      # native addon sanity + rebuilds
+      # sanity-check native bindings
       - name: Verify sharp binding
         env:
           SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
