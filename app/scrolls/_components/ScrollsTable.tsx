@@ -41,6 +41,8 @@ const TYPE_STYLES: Record<Release['type'], string> = {
   hotfix: 'bg-[#C41E3A] text-white',
 };
 
+const BUILD = process.env.VERCEL_GIT_COMMIT_SHA || 'local';
+
 const columns: ColumnDef<Release, any>[] = [
   {
     id: 'expander',
@@ -86,7 +88,7 @@ const columns: ColumnDef<Release, any>[] = [
         </span>
       );
     },
-    meta: { headerClassName: 'text-left', cellClassName: 'text-left w-30 shrink-0' },
+    meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
   },
   {
     accessorKey: 'type',
@@ -101,7 +103,7 @@ const columns: ColumnDef<Release, any>[] = [
         </span>
       );
     },
-    meta: { headerClassName: 'text-left', cellClassName: 'text-left w-24 shrink-0' },
+    meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
   },
   {
     accessorKey: 'semver',
@@ -109,7 +111,7 @@ const columns: ColumnDef<Release, any>[] = [
     size: 96,
     minSize: 96,
     cell: info => <code className="font-mono tabular-nums">{info.getValue<string>()}</code>,
-    meta: { headerClassName: 'text-left', cellClassName: 'text-left w-24 shrink-0' },
+    meta: { headerClassName: 'text-right w-24', cellClassName: 'text-right w-24 shrink-0' },
     sortingFn: 'alphanumeric',
   },
   {
@@ -165,7 +167,8 @@ export function ScrollsTable({
   const columnCount = table.getAllLeafColumns().length;
 
   return (
-    <div>
+    <div id="scrolls-table" data-build={BUILD}>
+      <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
       <input
         aria-label="Search releases"
         value={globalFilter ?? ''}
@@ -212,7 +215,7 @@ export function ScrollsTable({
               Array.from({ length: pageSize }).map((_, i) => (
                 <tr key={i} className="odd:bg-neutral-50">
                   {columns.map((col, idx) => (
-                    <td key={col.id ?? idx} className="px-3 py-2">
+                    <td key={col.id ?? idx} style={{ width: col.size }} className="px-3 py-2">
                       <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
                     </td>
                   ))}

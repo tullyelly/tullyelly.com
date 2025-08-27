@@ -54,7 +54,7 @@ export default async function Page({ searchParams }: PageProps) {
 
   return (
     <ScrollsLayout sidebar={<ScrollsSidebar />}>
-      <h1 className="mb-4 text-xl font-semibold">Shaolin Scrolls</h1>
+      <h1 className="mb-4 text-xl font-semibold">Shaolin Scrolls — NEW</h1>
       {error && (
         <div role="alert" className="mb-2 rounded border border-red-500 bg-red-50 p-2 text-sm text-red-600">
           {error}
