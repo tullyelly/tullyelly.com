@@ -22,27 +22,46 @@ type ReleaseItem = {
   sem_hotfix: number;
 };
 
+class InputError extends Error {}
+
+function parseQuery(url: string) {
+  const { searchParams } = new URL(url);
+
+  const limitRaw = searchParams.get('limit');
+  let limit = 20;
+  if (limitRaw !== null) {
+    const num = Number.parseInt(limitRaw, 10);
+    if (Number.isNaN(num)) throw new InputError('invalid limit');
+    limit = num;
+  }
+  limit = Math.min(Math.max(limit, 1), 100);
+
+  const offsetRaw = searchParams.get('offset');
+  let offset = 0;
+  if (offsetRaw !== null) {
+    const num = Number.parseInt(offsetRaw, 10);
+    if (Number.isNaN(num) || num < 0) throw new InputError('invalid offset');
+    offset = num;
+  }
+
+  const sortRaw = searchParams.get('sort') ?? 'semver:desc';
+  const [col = 'semver', dir = 'desc'] = sortRaw.split(':');
+  const sortCol = col.toLowerCase();
+  const sortDir = dir.toLowerCase();
+  if (!SORTABLE_COLUMNS.has(sortCol) || !SORT_DIRECTIONS.has(sortDir)) {
+    throw new InputError('invalid sort');
+  }
+  const sort = `${sortCol}:${sortDir}`;
+
+  const qRaw = searchParams.get('q');
+  const q = qRaw ? qRaw.trim() : undefined;
+
+  return { limit, offset, sortCol, sortDir, sort, q };
+}
+
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-
-    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20', 10), 1), 100);
-    const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
-
-    let sort = searchParams.get('sort') || 'semver:desc';
-    let [sortCol, sortDir] = sort.split(':');
-
-    if (!SORTABLE_COLUMNS.has(sortCol) || !SORT_DIRECTIONS.has((sortDir || '').toLowerCase())) {
-      sortCol = 'semver';
-      sortDir = 'desc';
-      sort = 'semver:desc';
-    } else {
-      sortDir = (sortDir || 'desc').toLowerCase();
-      sort = `${sortCol}:${sortDir}`;
-    }
-
-    const qRaw = searchParams.get('q')?.trim();
-    const q = qRaw ? qRaw : undefined;
+    const { limit, offset, sortCol, sortDir, sort, q } = parseQuery(req.url);
 
     const conditions: string[] = [];
     const values: Array<string | number> = [];
@@ -103,6 +122,7 @@ export async function GET(req: Request) {
     `;
 
     const db = getPool();
+    await db.query('SELECT 1');
 
     const [itemsRes, countRes]: [QueryResult<ReleaseItem>, QueryResult<{ total: number }>] =
       await Promise.all([db.query(sqlItems, values), db.query(sqlCount, countValues)]);
@@ -118,7 +138,12 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ items, page } as ReleaseListResponse);
   } catch (err) {
-    logger.error('[API:/releases]', err);
-    return NextResponse.json({ error: 'database error' }, { status: 500 });
+    if (err instanceof InputError) {
+      console.error('[API:/releases] bad input', err); // eslint-disable-line no-console
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+    console.error('[API:/releases] unexpected error', err); // eslint-disable-line no-console
+    logger.error('[API:/releases] unexpected error', err);
+    return NextResponse.json({ error: 'internal error' }, { status: 500 });
   }
 }
