@@ -48,12 +48,9 @@ export default function Page() {
         </section>
 
         <section aria-labelledby="video-title" className="space-y-4">
-          <h2 id="video-title" className="text-xl font-semibold">
-            Video
-          </h2>
-          <div className="relative aspect-video overflow-hidden rounded-xl">
+          <h2 id="video-title" className="text-xl font-semibold">Roadwork Rappin’ Video</h2>
+          <div className="yt-wrapper-bucks">
             <iframe
-              className="absolute inset-0 h-full w-full"
               src="https://www.youtube-nocookie.com/embed/jRHqjDnEFiE?si=-aVzrmGAmDuJ0PL0&loop=1&playlist=jRHqjDnEFiE"
               title="Aesop Rock — Roadwork Rappin’ music video"
               loading="lazy"
@@ -62,6 +59,9 @@ export default function Page() {
               allowFullScreen
             />
           </div>
+          <p className="text-sm text-neutral-500">
+            Embedded directly from YouTube using the privacy-enhanced player.
+          </p>
         </section>
 
         <section className="space-y-4">
