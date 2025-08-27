@@ -1,9 +1,8 @@
 import { readSearchParams } from '@/lib/server/search-params';
 import { logger } from '@/app/lib/server-logger';
 import type { ReleaseListResponse } from '@/types/releases';
-import ScrollsLayout from './components/ScrollsLayout';
-import ScrollsSidebar from './components/ScrollsSidebar';
-import { ScrollsTable, Release } from './_components/ScrollsTable';
+import type { Release } from './_components/ScrollsTable';
+import ScrollsPageClient from './_components/ScrollsPageClient';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -53,14 +52,17 @@ export default async function Page({ searchParams }: PageProps) {
   }));
 
   return (
-    <ScrollsLayout sidebar={<ScrollsSidebar />}>
-      <h1 className="mb-4 text-xl font-semibold">Shaolin Scrolls</h1>
+    <section className="flex h-[calc(100vh-160px)] flex-col gap-4">
+      <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
       {error && (
-        <div role="alert" className="mb-2 rounded border border-red-500 bg-red-50 p-2 text-sm text-red-600">
+        <div role="alert" className="rounded border border-red-500 bg-red-50 p-2 text-sm text-red-600">
           {error}
         </div>
       )}
-      <ScrollsTable data={releases} />
-    </ScrollsLayout>
+      <div className="flex-1 min-h-0">
+        <ScrollsPageClient data={releases} />
+      </div>
+    </section>
   );
 }
+

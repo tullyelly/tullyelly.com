@@ -8,7 +8,6 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  getExpandedRowModel,
   useReactTable,
   type RowData,
 } from '@tanstack/react-table';
@@ -41,33 +40,11 @@ const TYPE_STYLES: Record<Release['type'], string> = {
   hotfix: 'bg-[#C41E3A] text-white',
 };
 
-const BUILD = process.env.VERCEL_GIT_COMMIT_SHA || 'local';
-
 const columns: ColumnDef<Release, any>[] = [
-  {
-    id: 'expander',
-    size: 40,
-    minSize: 40,
-    header: () => null,
-    cell: ({ row }) => (
-      <button
-        type="button"
-        aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
-        aria-expanded={row.getIsExpanded()}
-        onClick={row.getToggleExpandedHandler()}
-        className="mx-auto block"
-      >
-        {row.getIsExpanded() ? '▾' : '▸'}
-      </button>
-    ),
-    meta: { headerClassName: 'w-10 text-center', cellClassName: 'w-10 text-center shrink-0' },
-    enableSorting: false,
-  },
   {
     accessorKey: 'name',
     header: 'Release Name',
-    size: 600,
-    minSize: 280,
+    minSize: 320,
     cell: info => (
       <span className="block truncate" title={info.getValue<string>()}>
         {info.getValue<string>()}
@@ -79,7 +56,6 @@ const columns: ColumnDef<Release, any>[] = [
     accessorKey: 'status',
     header: 'Status',
     size: 120,
-    minSize: 120,
     cell: info => {
       const v = info.getValue<Release['status']>();
       return (
@@ -94,7 +70,6 @@ const columns: ColumnDef<Release, any>[] = [
     accessorKey: 'type',
     header: 'Type',
     size: 100,
-    minSize: 100,
     cell: info => {
       const v = info.getValue<Release['type']>();
       return (
@@ -109,33 +84,23 @@ const columns: ColumnDef<Release, any>[] = [
     accessorKey: 'semver',
     header: 'SemVer',
     size: 96,
-    minSize: 96,
     cell: info => <code className="font-mono tabular-nums">{info.getValue<string>()}</code>,
     meta: { headerClassName: 'text-right w-24', cellClassName: 'text-right w-24 shrink-0' },
     sortingFn: 'alphanumeric',
-  },
-  {
-    id: 'actions',
-    size: 48,
-    minSize: 48,
-    header: () => null,
-    cell: () => <button className="mx-auto block" aria-label="Row actions">⋯</button>,
-    enableSorting: false,
-    meta: { headerClassName: 'w-12 text-center', cellClassName: 'w-12 text-center shrink-0' },
   },
 ];
 
 export function ScrollsTable({
   data,
+  globalFilter,
   pageSize = 20,
   isLoading = false,
 }: {
   data: Release[];
+  globalFilter: string;
   pageSize?: number;
   isLoading?: boolean;
 }) {
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [scrolled, setScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const memoData = useMemo(() => data, [data]);
@@ -151,34 +116,24 @@ export function ScrollsTable({
   const table = useReactTable({
     data: memoData,
     columns,
-    state: { globalFilter, expanded },
-    onGlobalFilterChange: setGlobalFilter,
-    onExpandedChange: setExpanded,
+    state: { globalFilter },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: () => true,
     initialState: { pagination: { pageSize } },
     columnResizeMode: 'onChange',
   });
 
   const columnCount = table.getAllLeafColumns().length;
+  const BUILD = process.env.VERCEL_GIT_COMMIT_SHA || 'local';
 
   return (
-    <div id="scrolls-table" data-build={BUILD}>
+    <div id="scrolls-table" data-build={BUILD} className="flex h-full flex-col">
       <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
-      <input
-        aria-label="Search releases"
-        value={globalFilter ?? ''}
-        onChange={(e) => setGlobalFilter(e.target.value)}
-        placeholder="Search releases"
-        className="mb-2 w-full rounded border px-2 py-1"
-      />
-      <div ref={containerRef} className="rounded-xl border overflow-auto">
+      <div ref={containerRef} className="flex-1 min-h-0 rounded-xl border overflow-auto">
         <table className="table-fixed w-full border-separate border-spacing-0">
-          <thead className={`sticky top-0 bg-white ${scrolled ? 'shadow-sm' : ''}`}> 
+          <thead className={`sticky top-0 bg-white ${scrolled ? 'shadow-sm' : ''}`}>
             {table.getHeaderGroups().map(hg => (
               <tr key={hg.id}>
                 {hg.headers.map(h => (
