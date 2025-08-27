@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: ['**']   # all branches; we gate deploys below
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-check:
@@ -15,13 +19,20 @@ jobs:
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # needed for diff + preview fast-forward
+
+      # composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
+
+      # sanity-check native bindings
       - name: Verify sharp binding
         env:
           SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
         run: |
           node -p "process.platform + ' ' + process.arch"
           node -e "require('sharp'); console.log('sharp: OK')"
+
       - name: Rebuild native addons (lightningcss + sharp)
         env:
           npm_config_platform: linux
@@ -30,8 +41,57 @@ jobs:
         run: |
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
+
+      # your CI pipeline (lint/typecheck/tests/etc.)
       - name: Run CI pipeline
         run: npm run ci --if-present
+
+      # ── deploy throttling logic ──────────────────────────────────────────────
+      - name: Detect deploy-relevant changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            deploy:
+              - 'app/**'
+              - 'pages/**'
+              - 'src/**'
+              - 'components/**'
+              - 'public/**'
+              - 'next.config.*'
+              - 'vercel.json'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'pnpm-lock.yaml'
+
+      - name: Check for [skip deploy]
+        id: skipmsg
+        run: |
+          msg="$(git log -1 --pretty=%B)"
+          if echo "$msg" | grep -qi "\[skip deploy\]"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # PRs: Vercel's automatic PR Preview handles it (Ignored Build Step will still skip on non-app changes).
+
+      # Non-PR branches: refresh long-lived preview branch & trigger the hook.
+      - name: Fast-forward preview branch to this commit
+        if: github.event_name != 'pull_request' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
+        run: |
+          git fetch origin
+          git branch -f preview HEAD
+          git push origin preview --force-with-lease
+
+      - name: Trigger Vercel Manual Preview Deploy
+        if: github.event_name != 'pull_request' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
+        run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+
+      # Optional: production deploy on main
+      - name: Trigger Vercel Production Deploy
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
+        run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL_PROD }}"
 
   e2e:
     name: E2E Tests
@@ -43,9 +103,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(npx @playwright/test --version | awk '{print $2}')" >> $GITHUB_OUTPUT
+
       - name: Cache Playwright browsers
         id: playwright-cache
         uses: actions/cache@v4
@@ -54,29 +116,34 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
           restore-keys: |
             ${{ runner.os }}-playwright-
+
       - name: Install Playwright system dependencies
         if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
         run: npx playwright install-deps chromium
+
       - name: Install Playwright Chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
         run: npx playwright install chromium
+
       - name: Install system Chromium (fallback)
         if: env.PLAYWRIGHT_USE_SYSTEM_CHROME == '1'
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+
       - name: Run e2e tests
         run: npx playwright test --reporter=html
+
       - name: Upload HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-html-report
           path: playwright-report
+
       - name: Upload Playwright traces
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-traces
           path: test-results/**/trace.zip
-
