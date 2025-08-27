@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
-      <body className="font-sans min-h-screen flex flex-col bg-background text-foreground">
+      <body className="font-sans min-h-screen flex flex-col bg-[#EEE1C6] text-foreground">
         {announcement && (
           <AnnouncementBanner message={announcement} dismissible />
         )}
@@ -31,8 +31,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteHeader />
         </header>
 
-        <main id="content" className="container flex-1" tabIndex={-1}>
-          {children}
+        <main id="content" className="flex-1 p-4" tabIndex={-1}>
+          <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-6">
+            {children}
+          </div>
         </main>
 
         <Footer />
