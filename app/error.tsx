@@ -14,11 +14,9 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html>
-      <body>
-        <h1>Something went sideways.</h1>
-        <button onClick={reset}>Retry</button>
-      </body>
-    </html>
+    <div>
+      <h1>Something went sideways.</h1>
+      <button onClick={reset}>Retry</button>
+    </div>
   );
 }
