@@ -3,7 +3,7 @@ import { logger } from '@/app/lib/server-logger';
 import type { ReleaseListResponse } from '@/types/releases';
 import ScrollsLayout from './components/ScrollsLayout';
 import ScrollsSidebar from './components/ScrollsSidebar';
-import ScrollsTable, { Release } from './_components/ScrollsTable';
+import { ScrollsTable, Release } from './_components/ScrollsTable';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -55,8 +55,12 @@ export default async function Page({ searchParams }: PageProps) {
   return (
     <ScrollsLayout sidebar={<ScrollsSidebar />}>
       <h1 className="mb-4 text-xl font-semibold">Shaolin Scrolls</h1>
-      <ScrollsTable data={releases} error={error} />
+      {error && (
+        <div role="alert" className="mb-2 rounded border border-red-500 bg-red-50 p-2 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+      <ScrollsTable data={releases} />
     </ScrollsLayout>
   );
 }
-
