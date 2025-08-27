@@ -191,11 +191,14 @@ export default function ScrollsTable({ data, pageSize = 20, error }: ScrollsTabl
       />
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse text-sm">
-          <thead className="sticky top-0 bg-white shadow-sm">
+          <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="p-2 text-left">
+                  <th
+                    key={header.id}
+                    className="sticky top-0 z-10 bg-white p-2 text-left shadow-sm"
+                  >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
