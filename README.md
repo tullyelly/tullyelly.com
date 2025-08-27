@@ -85,6 +85,8 @@ This project requires a **Postgres** database.
 - `DATABASE_URL` – runtime connection string
 - `TEST_DATABASE_URL` – local tests
 
+Set `NEXT_PUBLIC_DEBUG_DB_META=1` to expose `/api/env-check` with redacted database env vars for debugging.
+
 For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
 
 ```bash
