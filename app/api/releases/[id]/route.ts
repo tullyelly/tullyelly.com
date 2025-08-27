@@ -2,6 +2,9 @@ import type { NextRequest } from 'next/server';
 import { query } from '@/app/lib/db';
 import { logger } from '@/app/lib/server-logger';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 type RouteContext = { params: Promise<Record<string, string>> };
 
 // curl -s http://localhost:3000/api/releases/1

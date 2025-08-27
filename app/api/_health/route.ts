@@ -1,5 +1,8 @@
 import { query } from '@/app/lib/db';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // curl -s http://localhost:3000/api/_health
 
 type NowRow = { now: string };

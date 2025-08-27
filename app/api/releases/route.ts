@@ -1,15 +1,10 @@
-import { query } from '@/app/lib/db';
 import { logger } from '@/app/lib/server-logger';
+import { getReleases } from '@/lib/releases';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // curl -s 'http://localhost:3000/api/releases?limit=5'
-
-interface DbRow {
-  id: number;
-  release_name: string;
-  status: string;
-  release_type: string;
-  semver: string;
-}
 
 export type Row = {
   id: string;
@@ -17,6 +12,7 @@ export type Row = {
   status: string;
   release_type: string;
   semver: string;
+  created_at: string;
 };
 
 export async function GET(req: Request) {
@@ -31,26 +27,16 @@ export async function GET(req: Request) {
   if (Number.isNaN(offset) || offset < 0) offset = 0;
   if (limit > 100) limit = 100;
 
-  const sql = `
-SELECT
-  id,
-  release_name,
-  status,
-  release_type,
-  semver
-FROM dojo.v_shaolin_scrolls
-ORDER BY created_at DESC
-LIMIT $1 OFFSET $2;
-`;
-
   try {
-    const { rows } = await query<DbRow>(sql, [limit, offset]);
+    logger.log('GET /api/releases', { limit, offset });
+    const rows = await getReleases(limit, offset);
     const items: Row[] = rows.map((r) => ({
       id: String(r.id),
       release_name: r.release_name,
       status: r.status,
       release_type: r.release_type,
       semver: r.semver,
+      created_at: r.created_at,
     }));
     return Response.json({ items, page: { limit, offset } });
   } catch (err) {

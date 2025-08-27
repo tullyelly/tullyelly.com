@@ -44,7 +44,12 @@ export function getPool(): Pool {
     debug('[env:%s] host=%s', env, host)
   }
 
-  _pool = new Pool({ connectionString: dbUrl, max: 5, idleTimeoutMillis: 30_000 })
+  _pool = new Pool({
+    connectionString: dbUrl,
+    max: 5,
+    idleTimeoutMillis: 30_000,
+    ssl: { rejectUnauthorized: false },
+  })
   return _pool
 }
 

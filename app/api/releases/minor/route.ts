@@ -1,6 +1,9 @@
 import { query } from '@/app/lib/db';
 import { logger } from '@/app/lib/server-logger';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // curl -s -X POST -H 'Content-Type: application/json' \
 //   -d '{"label":"First minor"}' http://localhost:3000/api/releases/minor
 
