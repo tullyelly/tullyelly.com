@@ -54,6 +54,9 @@ export async function GET(
     }
     return Response.json({
       ...row,
+      description: row.label,
+      jira: [],
+      commits: [],
       created_at:
         row.created_at instanceof Date
           ? row.created_at.toISOString()

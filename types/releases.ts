@@ -13,6 +13,8 @@ export interface PageMeta {
   total: number;
   sort: string;
   q?: string;
+  status?: string[];
+  type?: string[];
 }
 
 export interface ReleaseListResponse {

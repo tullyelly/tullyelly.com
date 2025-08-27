@@ -28,14 +28,36 @@ export async function GET(req: Request) {
     }
     const qRaw = searchParams.get('q')?.trim();
     const q = qRaw ? qRaw : undefined;
+    const statusParam = searchParams.get('status');
+    const statuses = statusParam ? statusParam.split(',').filter(Boolean) : [];
+    const typeParam = searchParams.get('type');
+    const types = typeParam ? typeParam.split(',').filter(Boolean) : [];
 
     const conditions: string[] = [];
-    const values: Array<string | number> = [];
+    const values: Array<string | number | string[]> = [];
+    const countConditions: string[] = [];
+    const countValues: Array<string | string[]> = [];
     if (q) {
       values.push(`%${q}%`);
-      conditions.push(`release_name ILIKE $${values.length}`);
+      countValues.push(`%${q}%`);
+      const p = `$${values.length}`;
+      conditions.push(`release_name ILIKE ${p}`);
+      countConditions.push(`release_name ILIKE $${countValues.length}`);
+    }
+    if (statuses.length) {
+      values.push(statuses);
+      countValues.push(statuses);
+      conditions.push(`status = ANY($${values.length}::text[])`);
+      countConditions.push(`status = ANY($${countValues.length}::text[])`);
+    }
+    if (types.length) {
+      values.push(types);
+      countValues.push(types);
+      conditions.push(`release_type = ANY($${values.length}::text[])`);
+      countConditions.push(`release_type = ANY($${countValues.length}::text[])`);
     }
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const countWhere = countConditions.length ? `WHERE ${countConditions.join(' AND ')}` : '';
     values.push(limit);
     const limitParam = values.length;
     values.push(offset);
@@ -50,11 +72,10 @@ export async function GET(req: Request) {
       OFFSET $${offsetParam};
     `;
 
-    const countValues = q ? [`%${q}%`] : [];
     const sqlCount = `
       SELECT COUNT(*)::int AS total
       FROM dojo.v_shaolin_scrolls
-      ${where};
+      ${countWhere};
     `;
 
     const db = getPool();
@@ -70,6 +91,8 @@ export async function GET(req: Request) {
     const total = countRes.rows[0]?.total || 0;
     const page: PageMeta = { limit, offset, total, sort };
     if (q) page.q = q;
+    if (statuses.length) page.status = statuses;
+    if (types.length) page.type = types;
 
     return NextResponse.json({ items, page } as ReleaseListResponse);
   } catch (err) {
