@@ -31,14 +31,14 @@ export default function Page() {
         <header>
           <h1 className="text-3xl font-bold tracking-tight">Roadwork Rappin’</h1>
           <p className="mt-2 text-sm text-neutral-500">
-            Aesop Rock’s track “Roadwork Rappin’” stands as a hallmark of indie hip-hop and underground rap, blending sharp lyricism with distinct production.
+            Welcome to my newest experiment. Please excuse any bugs or lack of polish. Early days. 
           </p>
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">About the Track</h2>
+          <h2 className="text-xl font-semibold">To Parents Of Young Children</h2>
           <p>
-            “Roadwork Rappin’” showcases Aesop Rock’s unique approach to hip-hop and rap. This section provides context for the song’s place within his catalog and the broader landscape of underground music.
+            "Expect me to be converting between 3-5 children into fans of Aesop Rock utilizing this song. We'll keep it clean, promise. 😉"
           </p>
         </section>
 
@@ -55,16 +55,28 @@ export default function Page() {
               allowFullScreen
             />
           </div>
-          <p className="text-sm text-neutral-500">
-            Embedded directly from YouTube using the privacy-enhanced player.
-          </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Notes</h2>
+          <h2 className="text-xl font-semibold">Aesop Rock Bio</h2>
           <p>
-            Aesop Rock remains a central figure in indie and underground hip-hop. This page highlights “Roadwork Rappin’” as both a work of art and a testament to the genre’s creativity and resilience.
+            <strong>About Aesop Rock</strong>
+            <br />
+            Aesop Rock (Ian Bavitz) is a New York–born rapper and producer celebrated for his dense, surreal lyricism and lasting influence on underground hip-hop. What makes him truly stand out is his vocabulary: studies show he’s used more unique words across his career than any other major rapper, a linguistic range so vast it even rivals Shakespeare. That love of language defines his style—songs that unfold like puzzles, packed with imagery and ideas that reward repeated listens.
+            <br />
+            <br />
+            <strong>Albums to Explore</strong>
+            <br />
+            &bull; <em>Labor Days</em> (2001) &mdash; Breakthrough album, socially sharp and lyrically dense.<br />
+            &bull; <em>None Shall Pass</em> (2007) &mdash; Critically acclaimed, balancing abstract wordplay with vivid storytelling.<br />
+            &bull; <em>Skelethon</em> (2012) &mdash; Darker, self-produced record showcasing his full creative control.<br />
+            &bull; <em>The Impossible Kid</em> (2016) &mdash; Personal, playful, and highly accessible entry point.<br />
+            &bull; <em>Spirit World Field Guide</em> (2020) &mdash; Conceptual journey through a surreal, otherworldly manual.<br />
+            &nbsp;&nbsp;&ndash; <strong>uncle jimmy&rsquo;s favorite</strong><br />
+            &bull; <em>Garbology</em> (2021, with Blockhead) &mdash; A return to form with longtime collaborator.<br />
+            &bull; <em>Black Hole Superette</em> (2024) &mdash; His most recent release, expanding his signature style with fresh energy.
           </p>
+
         </section>
       </article>
     </main>
