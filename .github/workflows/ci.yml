@@ -2,51 +2,81 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 jobs:
   build-and-check:
+    name: Build & Check
     runs-on: ubuntu-latest
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
-
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'   # caches ~/.npm, not node_modules
-
-      # ✅ Install for the runner's OS/arch and include optional deps
-      - name: Install deps (linux x64 + optional)
-        env:
-          npm_config_platform: linux
-          npm_config_arch: x64
-          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
-        run: npm ci --include=optional
-
-      # ✅ Verify sharp resolves before running your scripts
+      - uses: ./.github/actions/setup
       - name: Verify sharp binding
         env:
-          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+          SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
         run: |
           node -p "process.platform + ' ' + process.arch"
           node -e "require('sharp'); console.log('sharp: OK')"
-
-      # ✅ Rebuild native addons just in case (belt & suspenders)
       - name: Rebuild native addons (lightningcss + sharp)
         env:
           npm_config_platform: linux
           npm_config_arch: x64
-          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+          SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
         run: |
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
-
-      # 🚦 Your pipeline (lint -> images -> build, etc.)
       - name: Run CI pipeline
         run: npm run ci --if-present
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+      PLAYWRIGHT_USE_SYSTEM_CHROME: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(npx @playwright/test --version | awk '{print $2}')" >> $GITHUB_OUTPUT
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
+        run: npx playwright install-deps chromium
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
+        run: npx playwright install chromium
+      - name: Install system Chromium (fallback)
+        if: env.PLAYWRIGHT_USE_SYSTEM_CHROME == '1'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+      - name: Run e2e tests
+        run: npx playwright test --reporter=html
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: playwright-report
+      - name: Upload Playwright traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/**/trace.zip
+
