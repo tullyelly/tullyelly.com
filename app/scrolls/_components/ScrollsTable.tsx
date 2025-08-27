@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -123,12 +123,31 @@ const columns: ColumnDef<Release, any>[] = [
   },
 ];
 
-export function ScrollsTable({ data, pageSize = 20 }: { data: Release[]; pageSize?: number }) {
+export function ScrollsTable({
+  data,
+  pageSize = 20,
+  isLoading = false,
+}: {
+  data: Release[];
+  pageSize?: number;
+  isLoading?: boolean;
+}) {
   const [globalFilter, setGlobalFilter] = useState('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [scrolled, setScrolled] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const memoData = useMemo(() => data, [data]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => setScrolled(el.scrollTop > 0);
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   const table = useReactTable({
-    data,
+    data: memoData,
     columns,
     state: { globalFilter, expanded },
     onGlobalFilterChange: setGlobalFilter,
@@ -143,6 +162,8 @@ export function ScrollsTable({ data, pageSize = 20 }: { data: Release[]; pageSiz
     columnResizeMode: 'onChange',
   });
 
+  const columnCount = table.getAllLeafColumns().length;
+
   return (
     <div>
       <input
@@ -152,9 +173,9 @@ export function ScrollsTable({ data, pageSize = 20 }: { data: Release[]; pageSiz
         placeholder="Search releases"
         className="mb-2 w-full rounded border px-2 py-1"
       />
-      <div className="rounded-xl border overflow-auto">
+      <div ref={containerRef} className="rounded-xl border overflow-auto">
         <table className="table-fixed w-full border-separate border-spacing-0">
-          <thead className="sticky top-0 bg-white shadow-sm">
+          <thead className={`sticky top-0 bg-white ${scrolled ? 'shadow-sm' : ''}`}> 
             {table.getHeaderGroups().map(hg => (
               <tr key={hg.id}>
                 {hg.headers.map(h => (
@@ -187,19 +208,37 @@ export function ScrollsTable({ data, pageSize = 20 }: { data: Release[]; pageSiz
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map(r => (
-              <tr key={r.id} className="odd:bg-neutral-50 hover:bg-neutral-100">
-                {r.getVisibleCells().map(c => (
-                  <td
-                    key={c.id}
-                    style={{ width: c.column.getSize() }}
-                    className={`px-3 py-2 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
-                  >
-                    {flexRender(c.column.columnDef.cell, c.getContext())}
-                  </td>
-                ))}
+            {isLoading ? (
+              Array.from({ length: pageSize }).map((_, i) => (
+                <tr key={i} className="odd:bg-neutral-50">
+                  {columns.map((col, idx) => (
+                    <td key={col.id ?? idx} className="px-3 py-2">
+                      <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map(r => (
+                <tr key={r.id} className="odd:bg-neutral-50 hover:bg-neutral-100">
+                  {r.getVisibleCells().map(c => (
+                    <td
+                      key={c.id}
+                      style={{ width: c.column.getSize() }}
+                      className={`px-3 py-2 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
+                    >
+                      {flexRender(c.column.columnDef.cell, c.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columnCount} className="p-4 text-center text-sm">
+                  No releases found
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
