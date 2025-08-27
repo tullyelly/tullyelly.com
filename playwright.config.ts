@@ -30,6 +30,7 @@ export default defineConfig({
     timeout: 120 * 1000,
     env: {
       DATABASE_URL: 'postgres://localhost:5432/placeholder',
+      USE_FAKE_DATA: '1',
     },
   },
 });

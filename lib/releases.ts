@@ -18,6 +18,18 @@ type RawReleaseRow = {
 };
 
 export async function getReleases(limit = 20): Promise<ReleaseRow[]> {
+  if (process.env.USE_FAKE_DATA === '1') {
+    return [
+      {
+        id: 1,
+        release_name: 'v0.0.1 Stub',
+        status: 'planned',
+        release_type: 'minor',
+        created_at: new Date().toISOString(),
+      },
+    ];
+  }
+
   const db = getPool();
   const { rows } = await db.query<RawReleaseRow>(
     'select id, release_name, status, release_type, created_at from dojo.v_shaolin_scrolls order by created_at desc limit $1',
