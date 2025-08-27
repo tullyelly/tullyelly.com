@@ -38,13 +38,13 @@ type Album = {
 }
 
 const albums: Album[] = [
-  { title: "Flygod", year: 2016, note: "His breakout, blending raw Buffalo grit with his emerging taste for artful extravagance." },
+  { title: "FLYGOD", year: 2016, note: "His breakout, blending raw Buffalo grit with his emerging taste for artful extravagance." },
   { title: "Supreme Blientele", year: 2018, note: "A milestone record, full of cinematic beats and sharp, painterly verses." },
   { title: "Pray for Paris", year: 2020, note: "A fan favorite that perfectly fuses fashion, art, and grimy rap, recorded after Gunn’s trip to Paris Fashion Week." },
   { title: "Hitler Wears Hermes 8: Sincerely, Adolf", year: 2021, note: "Grand finale to his signature series, showing his range from ruthless to reflective." },
   { title: "Peace “Fly” God", year: 2022, note: "A raw, minimal experiment produced in just two days, spotlighting Gunn’s instinctive artistry." },
   { title: "And Then You Pray for Me", year: 2023, note: "Intended as his retirement album, a sprawling, ornate statement piece." },
-  { title: "Heels Have Eyes", year: 2024, note: "Wrestling-inspired and concept-heavy, a bold continuation of his storytelling." },
+  { title: "HEELS HAVE EYES", year: 2024, note: "Wrestling-inspired and concept-heavy, a bold continuation of his storytelling." },
 ]
 
 const items: CardItem[] = mapDomainToCardItem(albums, (a) => ({
@@ -54,7 +54,7 @@ const items: CardItem[] = mapDomainToCardItem(albums, (a) => ({
   description: a.note,
 }))
 
-const isFav = (item: CardItem) => item.title === "Heels Have Eyes"
+const isFav = (item: CardItem) => item.title === "HEELS HAVE EYES"
 
 export default function Page() {
   return (
@@ -68,12 +68,12 @@ export default function Page() {
         </header>
 
         <section aria-labelledby="video-title" className="space-y-3">
-          <h2 id="video-title" className="text-xl font-semibold">Heels Have Eyes Video</h2>
+          <h2 id="video-title" className="text-xl font-semibold">DAVEY BOY SMITH Video</h2>
           <figure className="space-y-2">
             <div className="yt-wrapper-bucks">
               <iframe
-                src="https://www.tullyelly.com/heels-have-eyes"
-                title="Westside Gunn — Heels Have Eyes video"
+                src="https://www.youtube.com/watch?v=-mnJEnjyaY4"
+                title="Westside Gunn — DAVEY BOY SMITH music video"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
@@ -81,7 +81,7 @@ export default function Page() {
               />
             </div>
             <figcaption className="text-xs text-fg/60">
-              Embedded via tullyelly.com.
+              Embedded via YouTube’s privacy-enhanced player.
             </figcaption>
           </figure>
         </section>
