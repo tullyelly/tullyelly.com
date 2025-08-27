@@ -1,6 +1,6 @@
 -- 002_fn_next_release.sql
 -- Purpose: smoke-test fn_next_hotfix and fn_next_minor.
--- Run with: psql $NEON_DATABASE_URL -f db/verification/002_fn_next_release.sql
+-- Run with: psql $DATABASE_URL -f db/verification/002_fn_next_release.sql
 -- The transaction rolls back to avoid side effects.
 
 BEGIN;

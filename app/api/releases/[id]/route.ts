@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { query } from '@/app/lib/db';
+import { getPool } from '@/db/pool';
 import { logger } from '@/app/lib/server-logger';
 
 export const runtime = 'nodejs';
@@ -46,7 +46,8 @@ export async function GET(
   WHERE id = $1;`;
 
   try {
-    const { rows } = await query<ReleaseRow>(sql, [numId]);
+    const db = getPool();
+    const { rows } = await db.query<ReleaseRow>(sql, [numId]);
     const row = rows[0];
     if (!row) {
       return Response.json({ error: 'not found' }, { status: 404 });
@@ -57,4 +58,3 @@ export async function GET(
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }
-
