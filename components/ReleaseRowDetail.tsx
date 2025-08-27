@@ -22,12 +22,17 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
   const [error, setError] = useState<string | null>(null);
 
   const onToggle = async (e: React.SyntheticEvent<HTMLDetailsElement>) => {
-    if (!e.currentTarget.open || data || loading) return;
+    const target = e.currentTarget;
+    if (!target.open || data || loading) return;
+
+    const controller = new AbortController();
+    const abortIfClosed = () => {
+      if (!target.open) controller.abort();
+    };
+    target.addEventListener('toggle', abortIfClosed, { once: true });
 
     setLoading(true);
     setError(null);
-
-    const controller = new AbortController();
 
     try {
       const res = await fetch(`/api/releases/${id}`, { signal: controller.signal });
@@ -41,15 +46,6 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
     } finally {
       setLoading(false);
     }
-
-    // Cleanup if the details close before fetch resolves
-    e.currentTarget.addEventListener(
-      'toggle',
-      () => {
-        if (!e.currentTarget.open) controller.abort();
-      },
-      { once: true }
-    );
   };
 
   let content: React.ReactNode = null;

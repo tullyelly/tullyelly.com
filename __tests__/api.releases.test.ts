@@ -1,5 +1,41 @@
+import type { ReleaseListResponse, ReleaseListItem } from '@/types/releases';
+
+const rows: ReleaseListItem[] = [
+  {
+    id: 1,
+    release_name: 'Alpha',
+    status: 'open',
+    release_type: 'minor',
+    created_at: new Date('2024-01-01').toISOString(),
+    semver: '0.1.0',
+  },
+  {
+    id: 2,
+    release_name: 'Beta',
+    status: 'closed',
+    release_type: 'major',
+    created_at: new Date('2024-02-01').toISOString(),
+    semver: '1.0.0',
+  },
+];
+
+jest.mock('@/db/pool', () => ({
+  getPool: () => ({
+    query: (sql: string, params: unknown[]) => {
+      if (sql.includes('COUNT')) {
+        const q = params[0] as string | undefined;
+        return Promise.resolve({ rows: [{ total: q ? 0 : rows.length }] });
+      }
+      const hasQ = params.length === 3;
+      const limit = params[params.length - 2] as number;
+      const offset = params[params.length - 1] as number;
+      const sliced = hasQ ? [] : rows.slice(offset, offset + limit);
+      return Promise.resolve({ rows: sliced });
+    },
+  }),
+}));
+
 import { GET } from '@/app/api/releases/route';
-import type { ReleaseListResponse } from '@/types/releases';
 
 function makeReq(query = '') {
   return new Request(`http://localhost/api/releases${query}`);
@@ -10,7 +46,7 @@ describe('/api/releases', () => {
     const res = await GET(makeReq('?limit=1&offset=0&sort=created_at:desc'));
     const json = (await res.json()) as ReleaseListResponse;
     expect(json.items.length).toBeLessThanOrEqual(1);
-    expect(json.page.total).toBeGreaterThanOrEqual(json.items.length);
+    expect(json.page.total).toBe(rows.length);
     expect(json.page.sort).toBe('created_at:desc');
   });
 
