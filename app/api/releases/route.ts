@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logger } from '@/app/lib/server-logger';
 import { getPool } from '@/db/pool';
+import type { QueryResult } from 'pg';
 import type { ReleaseListItem, PageMeta, ReleaseListResponse } from '@/types/releases';
 
 type RawReleaseItem = Omit<ReleaseListItem, 'created_at'> & { created_at: Date | string };
@@ -58,9 +59,9 @@ export async function GET(req: Request) {
     `;
 
     const db = getPool();
-    const [itemsRes, countRes] = await Promise.all([
-      db.query<RawReleaseItem>(sqlItems, values),
-      db.query<{ total: number }>(sqlCount, countValues),
+    const [itemsRes, countRes]: [QueryResult<RawReleaseItem>, QueryResult<{ total: number }>] = await Promise.all([
+      db.query(sqlItems, values),
+      db.query(sqlCount, countValues),
     ]);
 
     const items: ReleaseListItem[] = itemsRes.rows.map((row) => ({
@@ -77,3 +78,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'database error' }, { status: 500 });
   }
 }
+

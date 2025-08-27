@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { getPool } from '@/db/pool';
 import { logger } from '@/app/lib/server-logger';
+import type { QueryResult } from 'pg';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,8 +48,8 @@ export async function GET(
 
   try {
     const db = getPool();
-    const { rows } = await db.query<ReleaseRow>(sql, [numId]);
-    const row = rows[0];
+    const res: QueryResult<ReleaseRow> = await db.query(sql, [numId]);
+    const row = res.rows[0];
     if (!row) {
       return Response.json({ error: 'not found' }, { status: 404 });
     }
@@ -68,3 +69,4 @@ export async function GET(
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }
+
