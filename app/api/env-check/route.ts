@@ -1,5 +1,6 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 function redact(u: string | null | undefined) {
   if (!u) return null;
@@ -24,7 +25,9 @@ export async function GET() {
   if (process.env.NEXT_PUBLIC_DEBUG_DB_META !== '1') {
     return new Response('Not Found', { status: 404 });
   }
-  const data: Record<(typeof VARS)[number], string | null> = {
+  const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'unknown';
+  const data: { vercelEnv: string } & Record<(typeof VARS)[number], string | null> = {
+    vercelEnv: env,
     DATABASE_URL: null,
     POSTGRES_URL: null,
     POSTGRES_PRISMA_URL: null,
@@ -32,12 +35,7 @@ export async function GET() {
     PGDATABASE_URL: null,
   };
   for (const key of VARS) {
-    const raw = process.env[key];
-    data[key] = redact(raw);
+    data[key] = redact(process.env[key]);
   }
   return Response.json(data);
-}
-
-export default function NotFound() {
-  return new Response('Not Found', { status: 404 });
 }
