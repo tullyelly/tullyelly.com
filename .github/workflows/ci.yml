@@ -2,51 +2,71 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches: ['**']   # all branches; we'll gate deploys below
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-check:
+    name: Build & Check
     runs-on: ubuntu-latest
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
-
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'   # caches ~/.npm, not node_modules
+          fetch-depth: 0      # needed for diff + branch fast-forward
 
-      # ✅ Install for the runner's OS/arch and include optional deps
-      - name: Install deps (linux x64 + optional)
-        env:
-          npm_config_platform: linux
-          npm_config_arch: x64
-          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
-        run: npm ci --include=optional
+      # your composite setup (node, cache, deps)
+      - uses: ./.github/actions/setup
 
-      # ✅ Verify sharp resolves before running your scripts
+      # your native addon sanity + rebuilds
       - name: Verify sharp binding
         env:
-          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+          SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
         run: |
           node -p "process.platform + ' ' + process.arch"
           node -e "require('sharp'); console.log('sharp: OK')"
-
-      # ✅ Rebuild native addons just in case (belt & suspenders)
       - name: Rebuild native addons (lightningcss + sharp)
         env:
           npm_config_platform: linux
           npm_config_arch: x64
-          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+          SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
         run: |
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
 
-      # 🚦 Your pipeline (lint -> images -> build, etc.)
+      # your CI pipeline (lint/typecheck/tests/etc.)
       - name: Run CI pipeline
         run: npm run ci --if-present
+
+      # ── deploy throttling logic ──────────────────────────────────────────────
+      - name: Detect deploy-relevant changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            deploy:
+              - 'app/**'
+              - 'pages/**'
+              - 'src/**'
+              - 'components/**'
+              - 'public/**'
+              - 'next.config.*'
+              - 'vercel.json'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'pnpm-lock.yaml'
+
+      - name: Check for [skip deploy]
+        id: skipmsg
+        run: |
+          msg="$(git log -1 --pretty=%B)"
+          if echo "$msg" | grep -qi "\[skip deploy\]"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          el
