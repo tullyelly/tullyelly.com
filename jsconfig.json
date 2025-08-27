@@ -1,7 +1,10 @@
 {
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./*"]
+    "compilerOptions": {
+      "paths": {
+        "@/*": ["./*"],
+        "@components/*": ["components/*"],
+        "@ui": ["components/ui"],
+        "@ui/*": ["components/ui/*"]
+      }
     }
   }
-}
