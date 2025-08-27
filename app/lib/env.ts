@@ -16,17 +16,9 @@ function must(name: string) {
 }
 
 export function getDatabaseUrl() {
-  const { vercelEnv, nodeEnv } = getRuntimeEnv();
+  const { nodeEnv } = getRuntimeEnv();
   if (nodeEnv === 'test') {
     return must('TEST_DATABASE_URL');
   }
-  switch (vercelEnv) {
-    case 'production':
-      return must('DATABASE_URL');
-    case 'preview':
-      return must('PREVIEW_DATABASE_URL');
-    case 'development':
-    default:
-      return must('TEST_DATABASE_URL');
-  }
+  return must('NEON_DATABASE_URL');
 }
