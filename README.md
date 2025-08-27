@@ -144,6 +144,17 @@ Recommended Node version: **20**.
 
 ---
 
+## 🧪 CI
+
+Pull requests run two GitHub Actions checks:
+
+- **Build & Check** – lint, typecheck, image checks, and build
+- **E2E Tests** – Playwright end-to-end suite
+
+Vercel posts preview deployments separately.
+
+---
+
 ## Running E2E
 
 **Cache-first (recommended):**
