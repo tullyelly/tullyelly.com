@@ -1,6 +1,8 @@
 # Environment variables
 .env
 .env.*.local
+.env.local
+.env.test
 
 # Build output
 .next/
@@ -17,9 +19,18 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
-.env.local
-.env.test
 
+# VS Code (ignore personal settings, keep useful project configs)
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/*.code-snippets
+.vscode/history/
+
+# Allow sharing of recommended extensions & launch configs
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# Prisma generated
 /app/generated/prisma
 
 # Generated assets
@@ -33,4 +44,6 @@ app-tree.txt
 playwright-report
 test-results
 .pw-browsers
+
+# Vercel
 .vercel
