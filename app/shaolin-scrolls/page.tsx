@@ -1,6 +1,4 @@
-import { readSearchParams } from '@/lib/server/search-params';
-import { logger } from '@/app/lib/server-logger';
-import type { ReleaseListResponse } from '@/types/releases';
+import type { ReleaseListResponse } from '@/app/api/releases/route';
 import type { Release } from './_components/ScrollsTable';
 import ScrollsPageClient from './_components/ScrollsPageClient';
 
@@ -12,13 +10,28 @@ interface PageProps {
   searchParams: Promise<{ limit?: string; offset?: string; sort?: string; q?: string }>;
 }
 
+function parseSearchParams(params: PageProps['searchParams']) {
+  return params.then((p = {}) => {
+    const limitNum = Number.parseInt(p.limit ?? '', 10);
+    const limit = Math.min(Math.max(Number.isNaN(limitNum) ? 20 : limitNum, 1), 100);
+
+    const offsetNum = Number.parseInt(p.offset ?? '', 10);
+    const offset = Math.max(Number.isNaN(offsetNum) ? 0 : offsetNum, 0);
+
+    const sort = p.sort ?? 'semver:desc';
+    const qVal = p.q ? p.q.trim() : undefined;
+
+    return { limit, offset, sort, q: qVal };
+  });
+}
+
 function parsePlannedDate(name: string) {
   const match = name.match(/\u2013\s*(\d{4}-\d{2})/);
   return match ? match[1] : '';
 }
 
 export default async function Page({ searchParams }: PageProps) {
-  const { limit, offset, sort, q } = await readSearchParams(searchParams);
+  const { limit, offset, sort, q } = await parseSearchParams(searchParams);
 
   const params = new URLSearchParams({ limit: String(limit), offset: String(offset), sort });
   if (q) params.set('q', q);
@@ -38,7 +51,7 @@ export default async function Page({ searchParams }: PageProps) {
     if (res.ok) data = await res.json();
     else error = 'Failed to load releases';
   } catch (err) {
-    logger.error('[shaolin-scrolls] failed to load releases', err);
+    console.error('[shaolin-scrolls] failed to load releases', err);
     error = 'Failed to load releases';
   }
 

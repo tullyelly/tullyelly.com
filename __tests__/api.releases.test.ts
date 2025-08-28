@@ -1,4 +1,4 @@
-import type { ReleaseListResponse, ReleaseRow } from '@/types/releases';
+import type { ReleaseListResponse, ReleaseRow } from '@/app/api/releases/route';
 
 const rows: ReleaseRow[] = [
   {
@@ -69,3 +69,4 @@ describe('/api/releases', () => {
     expect(json.page.sort).toBe('created_at:asc');
   });
 });
+

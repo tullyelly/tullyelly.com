@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { logger } from '@/app/lib/server-logger';
 import { getPool } from '@/db/pool';
-import type { PageMeta, ReleaseListResponse } from '@/types/releases';
 import type { QueryResult } from 'pg';
 
 export const runtime = 'nodejs';
@@ -25,7 +23,7 @@ const ORDER_BY = {
 
 type Sort = keyof typeof ORDER_BY;
 
-type ReleaseItem = {
+interface DbReleaseRow {
   id: string | number;
   name: string;
   status: string;
@@ -35,7 +33,32 @@ type ReleaseItem = {
   sem_minor: number;
   sem_patch: number;
   sem_hotfix: number;
-};
+}
+
+export interface ReleaseRow {
+  id: string;
+  name: string;
+  status: string;
+  type: string;
+  semver: string;
+  sem_major: number;
+  sem_minor: number;
+  sem_patch: number;
+  sem_hotfix: number;
+}
+
+export interface PageMeta {
+  limit: number;
+  offset: number;
+  total: number;
+  sort: string;
+  q?: string;
+}
+
+export interface ReleaseListResponse {
+  items: ReleaseRow[];
+  page: PageMeta;
+}
 
 class InputError extends Error {}
 
@@ -126,10 +149,10 @@ export async function GET(req: Request) {
     const db = getPool();
     await db.query('SELECT 1');
 
-    const [itemsRes, countRes]: [QueryResult<ReleaseItem>, QueryResult<{ total: number }>] =
+    const [itemsRes, countRes]: [QueryResult<DbReleaseRow>, QueryResult<{ total: number }>]=
       await Promise.all([db.query(sqlItems, values), db.query(sqlCount, countValues)]);
 
-    const items = itemsRes.rows.map((row) => ({
+    const items: ReleaseRow[] = itemsRes.rows.map((row) => ({
       ...row,
       id: String(row.id),
     }));
@@ -139,7 +162,7 @@ export async function GET(req: Request) {
     if (q) page.q = q;
 
     return NextResponse.json(
-      { items, page } as ReleaseListResponse,
+      { items, page } satisfies ReleaseListResponse,
       {
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -152,7 +175,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
     console.error('[API:/releases] unexpected error', err); // eslint-disable-line no-console
-    logger.error('[API:/releases] unexpected error', err);
     return NextResponse.json({ error: 'internal error' }, { status: 500 });
   }
 }

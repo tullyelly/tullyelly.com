@@ -1,6 +1,5 @@
 import type { NextRequest } from 'next/server';
 import { getPool } from '@/db/pool';
-import { logger } from '@/app/lib/server-logger';
 import type { QueryResult } from 'pg';
 
 export const runtime = 'nodejs';
@@ -68,7 +67,7 @@ export async function GET(
           : row.updated_at,
     });
   } catch (err) {
-    logger.error('releases id query failed:', err);
+    console.error('releases id query failed:', err);
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }
