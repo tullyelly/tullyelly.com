@@ -1,18 +1,27 @@
-import React from 'react'
+import * as React from 'react'
 import { cn } from '@/lib/cn'
 
-export type BadgeProps = {
+export type BadgeIntent =
+  | 'planned'
+  | 'released'
+  | 'minor'
+  | 'hotfix'
+  | 'archived'
+  | 'neutral'
+  | 'success'
+  | 'warning'
+
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  intent?: BadgeIntent
   tone?: 'neutral' | 'success' | 'warning'
-  className?: string
   children: React.ReactNode
 }
 
-export function Badge({ tone = 'neutral', className, children }: BadgeProps) {
-  const base = 'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] leading-4 font-medium'
-  const tones = {
-    neutral: 'border border-border text-fg/80',
-    success: 'bg-[var(--success)] text-white',
-    warning: 'bg-warning/10 text-warning ring-1 ring-warning/20',
-  }
-  return <span className={cn(base, tones[tone], className)}>{children}</span>
+export function Badge({ intent, tone, className, children, ...props }: BadgeProps) {
+  const applied = intent ?? tone ?? 'neutral'
+  return (
+    <span className={cn('badge', `badge--${applied}`, className)} {...props}>
+      {children}
+    </span>
+  )
 }

@@ -11,6 +11,7 @@ import {
   useReactTable,
   type RowData,
 } from '@tanstack/react-table';
+import { Badge, type BadgeProps } from '@/components/ui/Badge';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -28,16 +29,16 @@ export type Release = {
   semver: string;
 };
 
-const STATUS_STYLES: Record<Release['status'], string> = {
-  planned: 'bg-[#0077C0] text-white',
-  released: 'bg-[#008000] text-white',
-  archived: 'bg-[#EEE1C6] text-black',
+const statusIntent: Record<Release['status'], BadgeProps['intent']> = {
+  planned: 'planned',
+  released: 'released',
+  archived: 'archived',
 };
 
-const TYPE_STYLES: Record<Release['type'], string> = {
-  patch: 'bg-[#F0EBD2] text-black',
-  minor: 'bg-[#008000] text-white',
-  hotfix: 'bg-[#C41E3A] text-white',
+const typeIntent: Record<Release['type'], BadgeProps['intent']> = {
+  patch: 'neutral',
+  minor: 'minor',
+  hotfix: 'hotfix',
 };
 
 const columns: ColumnDef<Release, any>[] = [
@@ -58,11 +59,7 @@ const columns: ColumnDef<Release, any>[] = [
     size: 120,
     cell: info => {
       const v = info.getValue<Release['status']>();
-      return (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[v]}`}>
-          {v}
-        </span>
-      );
+      return <Badge intent={statusIntent[v]}>{v}</Badge>;
     },
     meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
   },
@@ -72,11 +69,7 @@ const columns: ColumnDef<Release, any>[] = [
     size: 100,
     cell: info => {
       const v = info.getValue<Release['type']>();
-      return (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_STYLES[v]}`}>
-          {v}
-        </span>
-      );
+      return <Badge intent={typeIntent[v]}>{v}</Badge>;
     },
     meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
   },
@@ -121,7 +114,7 @@ export function ScrollsTable({
   return (
     <div id="scrolls-table" data-build={BUILD} className="flex flex-col">
       <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
-      <div className="rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+      <div className="rounded-xl border border-brand-border bg-brand-card p-4 md:p-6 shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto">
             <thead className="bg-gray-50 sticky top-0 z-10">
