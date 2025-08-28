@@ -1,10 +1,11 @@
-import { STATUS_STYLES, TYPE_STYLES } from "@/app/ui/badge-maps";
+import { BADGE_VARIANTS, getBadgeClass } from "@/app/ui/badge-maps";
 
-test("status and type maps contain expected keys", () => {
-  for (const k of ["planned", "released", "hotfix", "archived"]) {
-    expect(STATUS_STYLES[k]).toBeTruthy();
+test("badge variants contain expected keys", () => {
+  for (const k of ["planned", "released", "hotfix", "archived", "minor", "major", "classic"]) {
+    expect(BADGE_VARIANTS[k]).toBeTruthy();
   }
-  for (const k of ["hotfix", "minor", "major", "planned"]) {
-    expect(TYPE_STYLES[k]).toBeTruthy();
-  }
+});
+
+test("getBadgeClass falls back to archived", () => {
+  expect(getBadgeClass("unknown" as any)).toBe(BADGE_VARIANTS.archived);
 });

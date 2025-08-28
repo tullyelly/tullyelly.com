@@ -12,7 +12,7 @@ import {
   type RowData,
 } from '@tanstack/react-table';
 import { Badge } from '../../ui/Badge';
-import { STATUS_STYLES, TYPE_STYLES, NEUTRAL_BADGE } from '../../ui/badge-maps';
+import { getBadgeClass, type BadgeVariant } from '../../ui/badge-maps';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -49,7 +49,7 @@ const columns: ColumnDef<Release, any>[] = [
     cell: info => {
       const raw = info.getValue<Release['status'] | undefined>()
       const v = (raw ?? '').toLowerCase().trim()
-      const cls = STATUS_STYLES[v] ?? NEUTRAL_BADGE
+      const cls = getBadgeClass(v as BadgeVariant)
       return <Badge className={cls}>{v || 'unknown'}</Badge>
     },
     meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
@@ -61,7 +61,7 @@ const columns: ColumnDef<Release, any>[] = [
     cell: info => {
       const raw = info.getValue<Release['type'] | undefined>()
       const v = (raw ?? '').toLowerCase().trim()
-      const cls = TYPE_STYLES[v] ?? NEUTRAL_BADGE
+      const cls = getBadgeClass(v as BadgeVariant)
       return <Badge className={cls}>{v || 'unknown'}</Badge>
     },
     meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
