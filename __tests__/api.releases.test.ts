@@ -27,14 +27,18 @@ const rows: ReleaseRow[] = [
 
 jest.mock('@/db/pool', () => ({
   getPool: () => ({
-    query: (sql: string, params: unknown[]) => {
+    query: (sql: string, params: unknown[] = []) => {
+      // health check ping
+      if (sql.includes('SELECT 1')) {
+        return Promise.resolve({ rows: [{ result: 1 }] });
+      }
       if (sql.includes('COUNT')) {
         const q = params[0] as string | undefined;
         return Promise.resolve({ rows: [{ total: q ? 0 : rows.length }] });
       }
       const hasQ = params.length === 3;
-      const limit = params[params.length - 2] as number;
-      const offset = params[params.length - 1] as number;
+      const limit = (params[params.length - 2] as number) ?? rows.length;
+      const offset = (params[params.length - 1] as number) ?? 0;
       const sliced = hasQ ? [] : rows.slice(offset, offset + limit);
       return Promise.resolve({ rows: sliced });
     },
@@ -69,4 +73,3 @@ describe('/api/releases', () => {
     expect(json.page.sort).toBe('created_at:asc');
   });
 });
-
