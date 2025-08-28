@@ -1,5 +1,4 @@
 import { getPool } from '@/db/pool';
-import { logger } from '@/app/lib/server-logger';
 import type { QueryResult } from 'pg';
 
 export const runtime = 'nodejs';
@@ -39,7 +38,7 @@ export async function POST(req: Request) {
     const item: Row = { id: String(row.scroll_id), generated_name: row.generated_name };
     return Response.json(item);
   } catch (err) {
-    logger.error('fn_next_patch failed:', err);
+    console.error('fn_next_patch failed:', err);
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }
