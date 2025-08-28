@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -11,6 +11,7 @@ import {
   useReactTable,
   type RowData,
 } from '@tanstack/react-table';
+import { Badge, type BadgeIntent } from '@/components/ui/Badge';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -24,21 +25,20 @@ export type Release = {
   name: string;
   plannedDate: string;
   status: 'planned' | 'released' | 'archived';
-  type: 'patch' | 'minor' | 'hotfix';
+  type: 'planned' | 'patch' | 'minor' | 'hotfix';
   semver: string;
 };
 
-const STATUS_STYLES: Record<Release['status'], string> = {
-  planned: 'bg-[#0077C0] text-white',
-  released: 'bg-[#008000] text-white',
-  archived: 'bg-[#EEE1C6] text-black',
-};
-
-const TYPE_STYLES: Record<Release['type'], string> = {
-  patch: 'bg-[#F0EBD2] text-black',
-  minor: 'bg-[#008000] text-white',
-  hotfix: 'bg-[#C41E3A] text-white',
-};
+const toIntent = (value?: string): BadgeIntent => {
+  const v = (value ?? '').toLowerCase()
+  if (v === 'planned') return 'planned'
+  if (v === 'released') return 'released'
+  if (v === 'minor') return 'minor'
+  if (v === 'hotfix') return 'hotfix'
+  if (v === 'archived') return 'archived'
+  if (v === 'patch') return 'patch'
+  return 'neutral'
+}
 
 const columns: ColumnDef<Release, any>[] = [
   {
@@ -57,12 +57,8 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Status',
     size: 120,
     cell: info => {
-      const v = info.getValue<Release['status']>();
-      return (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[v]}`}>
-          {v}
-        </span>
-      );
+      const v = info.getValue<Release['status']>()
+      return <Badge intent={toIntent(v)}>{v}</Badge>
     },
     meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
   },
@@ -71,12 +67,8 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Type',
     size: 100,
     cell: info => {
-      const v = info.getValue<Release['type']>();
-      return (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_STYLES[v]}`}>
-          {v}
-        </span>
-      );
+      const v = info.getValue<Release['type']>()
+      return <Badge intent={toIntent(v)}>{v}</Badge>
     },
     meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
   },
@@ -101,17 +93,7 @@ export function ScrollsTable({
   pageSize?: number;
   isLoading?: boolean;
 }) {
-  const [scrolled, setScrolled] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const memoData = useMemo(() => data, [data]);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onScroll = () => setScrolled(el.scrollTop > 0);
-    el.addEventListener('scroll', onScroll);
-    return () => el.removeEventListener('scroll', onScroll);
-  }, []);
 
   const table = useReactTable({
     data: memoData,
@@ -129,18 +111,18 @@ export function ScrollsTable({
   const BUILD = process.env.VERCEL_GIT_COMMIT_SHA || 'local';
 
   return (
-    <div id="scrolls-table" data-build={BUILD} className="flex h-full flex-col">
+    <div id="scrolls-table" data-build={BUILD} className="flex flex-col">
       <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
-      <div ref={containerRef} className="flex-1 min-h-0 rounded-xl border overflow-auto">
-        <table className="table-fixed w-full border-separate border-spacing-0">
-          <thead className={`sticky top-0 bg-white ${scrolled ? 'shadow-sm' : ''}`}>
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+        <table className="min-w-full table-auto">
+          <thead className="bg-gray-50 sticky top-0 z-10">
             {table.getHeaderGroups().map(hg => (
               <tr key={hg.id}>
                 {hg.headers.map(h => (
                   <th
                     key={h.id}
                     style={{ width: h.getSize() }}
-                    className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide align-middle ${h.column.columnDef.meta?.headerClassName ?? ''}`}
+                    className={`px-4 py-3 text-left text-sm font-medium text-gray-700 ${h.column.columnDef.meta?.headerClassName ?? ''}`}
                   >
                     {h.isPlaceholder ? null : (
                       <button
@@ -165,12 +147,12 @@ export function ScrollsTable({
               </tr>
             ))}
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {isLoading ? (
               Array.from({ length: pageSize }).map((_, i) => (
-                <tr key={i} className="odd:bg-neutral-50">
+                <tr key={i} className="hover:bg-gray-50">
                   {columns.map((col, idx) => (
-                    <td key={col.id ?? idx} style={{ width: col.size }} className="px-3 py-2">
+                    <td key={col.id ?? idx} style={{ width: col.size }} className="px-4 py-3">
                       <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
                     </td>
                   ))}
@@ -178,12 +160,12 @@ export function ScrollsTable({
               ))
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(r => (
-                <tr key={r.id} className="odd:bg-neutral-50 hover:bg-neutral-100">
+                <tr key={r.id} className="hover:bg-gray-50">
                   {r.getVisibleCells().map(c => (
                     <td
                       key={c.id}
                       style={{ width: c.column.getSize() }}
-                      className={`px-3 py-2 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
+                      className={`px-4 py-3 text-sm text-gray-800 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
                     >
                       {flexRender(c.column.columnDef.cell, c.getContext())}
                     </td>

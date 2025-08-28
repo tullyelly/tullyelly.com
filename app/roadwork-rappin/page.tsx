@@ -125,7 +125,7 @@ export default function Page() {
                     </p>
                   )}
                   {isFav(item) && (
-                    <Badge tone="success" className="absolute bottom-2 right-2">
+                    <Badge intent="released" className="absolute bottom-2 right-2">
                       unclejimmy classic
                     </Badge>
                   )}
