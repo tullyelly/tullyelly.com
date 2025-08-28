@@ -7,7 +7,7 @@
 -- Verification:
 --   psql $DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
 --   psql $DATABASE_URL -c "SELECT * FROM dojo.fn_next_minor('Test minor');"
---   psql $DATABASE_URL -c "SELECT * FROM dojo.fn_next_hotfix('Test hotfix');"
+--   psql $DATABASE_URL -c "SELECT * FROM dojo.fn_next_patch('Test hotfix');"
 
 CREATE OR REPLACE FUNCTION dojo.fn_next_patch(p_label TEXT)
 RETURNS TABLE(scroll_id BIGINT, generated_name TEXT)

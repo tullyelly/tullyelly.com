@@ -4,8 +4,9 @@ import type { QueryResult } from 'pg';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// curl -s -X POST -H 'Content-Type: application/json' \
-//   -d '{"label":"First hotfix"}' http://localhost:3000/api/releases/patch
+// curl -s -X POST -H 'Content-Type: application/json' \\
+//   -d '{"label":"First hotfix","statusCode":"planned","releaseTypeCode":"hotfix"}' \\
+//   http://localhost:3000/api/releases/patch
 
 interface DbRow {
   scroll_id: number;
@@ -19,21 +20,25 @@ export type Row = {
 
 export async function POST(req: Request) {
   let label: string;
+  let statusCode: string;
+  let releaseTypeCode: string;
   try {
     const body = await req.json();
     label = typeof body.label === 'string' ? body.label.trim() : '';
+    statusCode = typeof body.statusCode === 'string' ? body.statusCode.trim() : '';
+    releaseTypeCode = typeof body.releaseTypeCode === 'string' ? body.releaseTypeCode.trim() : '';
   } catch {
     return Response.json({ error: 'invalid body' }, { status: 400 });
   }
 
-  if (!label || label.length > 120) {
-    return Response.json({ error: 'invalid label' }, { status: 400 });
+  if (!label || label.length > 120 || !statusCode || !releaseTypeCode) {
+    return Response.json({ error: 'invalid input' }, { status: 400 });
   }
 
-  const sql = 'SELECT * FROM dojo.fn_next_patch($1::text);';
+  const sql = 'SELECT * FROM dojo.fn_next_patch($1::text, $2::text, $3::text);';
   try {
     const db = getPool();
-    const res: QueryResult<DbRow> = await db.query(sql, [label]);
+    const res: QueryResult<DbRow> = await db.query(sql, [label, statusCode, releaseTypeCode]);
     const row = res.rows[0];
     const item: Row = { id: String(row.scroll_id), generated_name: row.generated_name };
     return Response.json(item);
@@ -42,4 +47,3 @@ export async function POST(req: Request) {
     return Response.json({ error: 'database error' }, { status: 500 });
   }
 }
-

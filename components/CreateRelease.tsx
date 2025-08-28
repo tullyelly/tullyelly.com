@@ -44,10 +44,13 @@ export default function CreateRelease() {
     }
 
     try {
+      const body = isPatch
+        ? { label, statusCode: "planned", releaseTypeCode: "hotfix" }
+        : { label };
       const res = await fetch(`/api/releases/${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) throw new Error("Request failed");
