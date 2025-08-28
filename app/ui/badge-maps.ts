@@ -1,6 +1,3 @@
-const v = (k: string) =>
-  `bg-[var(--badge-${k}-bg)] text-[var(--badge-${k}-fg)] ring-[var(--badge-${k}-ring)]`;
-
 /** Global variants used across the app */
 export const BADGE_VARIANTS = {
   planned:  "bg-[#0077C0] text-white ring-[#0077C0]/40",
@@ -10,8 +7,8 @@ export const BADGE_VARIANTS = {
   minor:    "bg-[#00471B] text-white ring-[#00471B]/40",
   major:    "bg-[#EEE1C6] text-[#1A1A1A] ring-[#1A1A1A]/20",
 
-  // new global special variant
-  classic:  v("classic"),
+  // alias to planned
+  classic:  "bg-[#0077C0] text-white ring-[#0077C0]/40",
 } as const;
 
 export type BadgeVariant = keyof typeof BADGE_VARIANTS;
