@@ -4,7 +4,6 @@ on:
   push:
     branches: ['**']   # all branches; we'll gate deploys below
   pull_request:
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,9 +17,8 @@ jobs:
   build-and-check:
     name: Build & Check
     runs-on: ubuntu-latest
-    # This job pushes the 'preview' branch on non-PR runs, so it needs write.
     permissions:
-      contents: write
+      contents: read
       pull-requests: read
 
     env:
@@ -77,7 +75,7 @@ jobs:
 
           CHANGED="$(git diff --name-only ${RANGE} || true)"
 
-          # Paths that should trigger a preview/prod deploy
+          # Paths that should trigger a deploy
           if echo "${CHANGED}" | grep -E -q '^(app/|pages/|src/|components/|public/|next\.config(\..*)?$|vercel\.json|package\.json|package-lock\.json|pnpm-lock\.yaml)'; then
             DEPLOY_CHANGED=true
           else
@@ -109,26 +107,12 @@ jobs:
           echo "Changed files (for info):"
           echo "${CHANGED}"
 
-      # PRs: Vercel automatically builds preview for PRs.
-
-      # Non-PR branches: refresh long-lived preview branch & trigger hooks.
-      - name: Fast-forward preview branch to this commit
-        if: steps.flags.outputs.should_deploy == 'true' && success()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git fetch origin
-          git branch -f preview HEAD
-          git push --force-with-lease origin preview
-
-      - name: Trigger Vercel Manual Preview Deploy
-        if: steps.flags.outputs.should_deploy == 'true' && success()
-        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
-
       # Optional: production deploy on main
       - name: Trigger Vercel Production Deploy
         if: steps.flags.outputs.should_deploy == 'true' && github.ref == 'refs/heads/main' && success()
-        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL_PROD }}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel --prod --token "$VERCEL_TOKEN"
 
   e2e:
     name: E2E Tests
