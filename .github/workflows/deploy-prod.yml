@@ -1,0 +1,18 @@
+name: Deploy to Vercel (Production)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Remove the next line if you don't want approval gates
+    environment: production
+
+    steps:
+      - name: Trigger Vercel Production Deploy
+        run: curl -fsS -X POST "$VERCEL_PROD_DEPLOY_HOOK_URL"
+        env:
+          VERCEL_PROD_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL_PROD }}

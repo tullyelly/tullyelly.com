@@ -123,12 +123,12 @@ jobs:
 
       - name: Trigger Vercel Manual Preview Deploy
         if: steps.flags.outputs.should_deploy == 'true' && success()
-        run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
 
       # Optional: production deploy on main
       - name: Trigger Vercel Production Deploy
         if: steps.flags.outputs.should_deploy == 'true' && github.ref == 'refs/heads/main' && success()
-        run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL_PROD }}"
+        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL_PROD }}"
 
   e2e:
     name: E2E Tests
