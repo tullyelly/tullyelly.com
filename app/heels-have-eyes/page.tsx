@@ -42,7 +42,7 @@ const albums: Album[] = [
   { title: "Supreme Blientele", year: 2018, note: "A milestone record, full of cinematic beats and sharp, painterly verses." },
   { title: "Pray for Paris", year: 2020, note: "A fan favorite that perfectly fuses fashion, art, and grimy rap, recorded after Gunn&apos;s trip to Paris Fashion Week." },
   { title: "Hitler Wears Hermes 8: Sincerely, Adolf", year: 2021, note: "Grand finale to his signature series, showing his range from ruthless to reflective." },
-  { title: "Peace &ldquo;Fly&rdquo; God", year: 2022, note: "A raw, minimal experiment produced in just two days, spotlighting Gunn&apos;s instinctive artistry." },
+  { title: "Peace \"Fly\" God", year: 2022, note: "A raw, minimal experiment produced in just two days, spotlighting Gunn&apos;s instinctive artistry." },
   { title: "And Then You Pray for Me", year: 2023, note: "Intended as his retirement album, a sprawling, ornate statement piece." },
   { title: "HEELS HAVE EYES", year: 2024, note: "Wrestling-inspired and concept-heavy, a bold continuation of his storytelling." },
 ]
@@ -68,9 +68,9 @@ export default function Page() {
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Parental Discrection Advised</h2>
+          <h2 className="text-xl font-semibold">Parental Discretion Advised</h2>
           <p className="leading-relaxed">
-            There&apos;s been a ton of new albums to explore this summer (tyler, clipse, jid, freddie gibbs, ghostface, raekwon, etc..) and the one EP I keep returning to more than any other is HEELS HAVE EYES by Westside Gunn. He&apos;s shown up here and there in the almighty algorithm, but I&apos;ve never done a deep dive until now.
+            There&apos;s been a ton of new albums to explore this summer (tyler, clipse, jid, freddie gibbs, ghostface, raekwon, etc..) and the one EP I keep returning to more than any other album is HEELS HAVE EYES by Westside Gunn. He&apos;s shown up here and there in the almighty algorithm, but I&apos;ve never done a deep dive until now.
           </p>
           <p className="leading-relaxed">
             Well, I&apos;m hooked and DAVEY BOY SMITH is the beat of the year for me so far. A simple piano loop will get me every time. Shouts to Denny LaFlare.

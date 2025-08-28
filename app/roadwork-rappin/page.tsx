@@ -72,7 +72,7 @@ export default function Page() {
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Parental Discrection Advised</h2>
+          <h2 className="text-xl font-semibold">Parental Discretion Advised</h2>
           <p className="leading-relaxed">
             Expect me to be converting between 3–5 children into fans of Aesop Rock utilizing this song.
             We&rsquo;ll keep it clean, promise. 😉
