@@ -11,7 +11,8 @@ import {
   useReactTable,
   type RowData,
 } from '@tanstack/react-table';
-import { Badge, type BadgeIntent } from '@/components/ui/Badge';
+import { Badge } from '../../ui/Badge';
+import { STATUS_STYLES, TYPE_STYLES, NEUTRAL_BADGE } from '../../ui/badge-maps';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -24,21 +25,10 @@ export type Release = {
   id: string;
   name: string;
   plannedDate: string;
-  status: 'planned' | 'released' | 'archived';
-  type: 'planned' | 'patch' | 'minor' | 'hotfix';
+  status: 'planned' | 'released' | 'archived' | 'failed';
+  type: 'planned' | 'patch' | 'minor' | 'hotfix' | 'major';
   semver: string;
 };
-
-const toIntent = (value?: string): BadgeIntent => {
-  const v = (value ?? '').toLowerCase()
-  if (v === 'planned') return 'planned'
-  if (v === 'released') return 'released'
-  if (v === 'minor') return 'minor'
-  if (v === 'hotfix') return 'hotfix'
-  if (v === 'archived') return 'archived'
-  if (v === 'patch') return 'patch'
-  return 'neutral'
-}
 
 const columns: ColumnDef<Release, any>[] = [
   {
@@ -57,8 +47,10 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Status',
     size: 120,
     cell: info => {
-      const v = info.getValue<Release['status']>()
-      return <Badge intent={toIntent(v)}>{v}</Badge>
+      const raw = info.getValue<Release['status'] | undefined>()
+      const v = (raw ?? '').toLowerCase().trim()
+      const cls = STATUS_STYLES[v] ?? NEUTRAL_BADGE
+      return <Badge className={cls}>{v || 'unknown'}</Badge>
     },
     meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
   },
@@ -67,8 +59,10 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Type',
     size: 100,
     cell: info => {
-      const v = info.getValue<Release['type']>()
-      return <Badge intent={toIntent(v)}>{v}</Badge>
+      const raw = info.getValue<Release['type'] | undefined>()
+      const v = (raw ?? '').toLowerCase().trim()
+      const cls = TYPE_STYLES[v] ?? NEUTRAL_BADGE
+      return <Badge className={cls}>{v || 'unknown'}</Badge>
     },
     meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
   },
