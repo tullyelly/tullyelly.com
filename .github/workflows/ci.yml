@@ -6,7 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Default, least-privilege token for all jobs
 permissions:
   contents: read
   pull-requests: read
@@ -23,16 +22,16 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
+
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0                # needed for diff + preview fast-forward
-          # persist-credentials defaults to true; token is auto-injected.
-          # token: ${{ secrets.GITHUB_TOKEN }}  # optional explicitness
+          fetch-depth: 0
 
       # composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
@@ -54,64 +53,86 @@ jobs:
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
 
-      # your CI pipeline (lint/typecheck/tests/etc.)
       - name: Run CI pipeline
         run: npm run ci --if-present
 
-      # ── deploy throttling logic ──────────────────────────────────────────────
-      - name: Detect deploy-relevant changes
-        id: changes
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            deploy:
-              - 'app/**'
-              - 'pages/**'
-              - 'src/**'
-              - 'components/**'
-              - 'public/**'
-              - 'next.config.*'
-              - 'vercel.json'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'pnpm-lock.yaml'
-
-      - name: Check for [skip deploy]
-        id: skipmsg
+      # ── deploy throttling logic (no dynamic keys; fixed outputs) ─────────────
+      - name: Compute deploy flags
+        id: flags
+        shell: bash
         run: |
-          msg="$(git log -1 --pretty=%B)"
-          if echo "$msg" | grep -qi "\[skip deploy\]"; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+
+          EVENT_NAME="${{ github.event_name }}"
+          BEFORE_SHA="${{ github.event.before }}"
+          AFTER_SHA="${{ github.sha }}"
+          COMMIT_MSG="$(git log -1 --pretty=%B || true)"
+
+          # Determine changed files range (push-only relevant; PRs won't deploy)
+          if [[ -z "${BEFORE_SHA}" || "${BEFORE_SHA}" == 0000000000000000000000000000000000000000 ]]; then
+            RANGE="HEAD^..HEAD"
           else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
+            RANGE="${BEFORE_SHA}..${AFTER_SHA}"
           fi
+
+          CHANGED="$(git diff --name-only ${RANGE} || true)"
+
+          # Paths that should trigger a preview/prod deploy
+          if echo "${CHANGED}" | grep -E -q '^(app/|pages/|src/|components/|public/|next\.config(\..*)?$|vercel\.json|package\.json|package-lock\.json|pnpm-lock\.yaml)'; then
+            DEPLOY_CHANGED=true
+          else
+            DEPLOY_CHANGED=false
+          fi
+
+          # Respect "[skip deploy]" in the last commit message
+          if echo "${COMMIT_MSG}" | grep -qi '\[skip deploy\]'; then
+            SKIP_DEPLOY=true
+          else
+            SKIP_DEPLOY=false
+          fi
+
+          # Final gate: only non-PR events may deploy
+          if [[ "${EVENT_NAME}" != "pull_request" && "${DEPLOY_CHANGED}" == true && "${SKIP_DEPLOY}" == false ]]; then
+            SHOULD_DEPLOY=true
+          else
+            SHOULD_DEPLOY=false
+          fi
+
+          # Expose fixed-name outputs (actionlint-safe)
+          {
+            echo "deploy_changed=${DEPLOY_CHANGED}"
+            echo "skip_deploy=${SKIP_DEPLOY}"
+            echo "should_deploy=${SHOULD_DEPLOY}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Event: ${EVENT_NAME}"
+          echo "Changed files (for info):"
+          echo "${CHANGED}"
 
       # PRs: Vercel automatically builds preview for PRs.
 
       # Non-PR branches: refresh long-lived preview branch & trigger hooks.
       - name: Fast-forward preview branch to this commit
-        if: github.event_name != 'pull_request' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
+        if: steps.flags.outputs.should_deploy == 'true' && success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Use authenticated fetch/push to avoid 403s
           git fetch origin
           git branch -f preview HEAD
           git push --force-with-lease origin preview
 
       - name: Trigger Vercel Manual Preview Deploy
-        if: github.event_name != 'pull_request' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
+        if: steps.flags.outputs.should_deploy == 'true' && success()
         run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
 
       # Optional: production deploy on main
       - name: Trigger Vercel Production Deploy
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
+        if: steps.flags.outputs.should_deploy == 'true' && github.ref == 'refs/heads/main' && success()
         run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL_PROD }}"
 
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    # e2e only reads code; default top-level read perms apply.
     env:
       NODE_ENV: test
       PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
