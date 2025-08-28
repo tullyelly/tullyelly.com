@@ -34,7 +34,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Aesop Rock — Roadwork Rappin’",
     description:
-      "Aesop Rock’s 'Roadwork Rappin’'. Build a road where there isn't a road!",
+      "Aesop Rock’s Roadwork Rappin’. Build a road where there isn't a road!",
     images: [
       {
         url: "/images/optimized/roadwork rappin.jpg",
