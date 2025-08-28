@@ -65,16 +65,14 @@ export default async function Page({ searchParams }: PageProps) {
   }));
 
   return (
-    <section className="flex h-[calc(100vh-160px)] flex-col gap-4">
+    <section className="flex flex-col gap-4 min-h-screen">
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
       {error && (
         <div role="alert" className="rounded border border-red-500 bg-red-50 p-2 text-sm text-red-600">
           {error}
         </div>
       )}
-      <div className="flex-1 min-h-0">
-        <ScrollsPageClient data={releases} />
-      </div>
+      <ScrollsPageClient data={releases} />
     </section>
   );
 }

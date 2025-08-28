@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -101,17 +101,7 @@ export function ScrollsTable({
   pageSize?: number;
   isLoading?: boolean;
 }) {
-  const [scrolled, setScrolled] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const memoData = useMemo(() => data, [data]);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onScroll = () => setScrolled(el.scrollTop > 0);
-    el.addEventListener('scroll', onScroll);
-    return () => el.removeEventListener('scroll', onScroll);
-  }, []);
 
   const table = useReactTable({
     data: memoData,
@@ -129,76 +119,78 @@ export function ScrollsTable({
   const BUILD = process.env.VERCEL_GIT_COMMIT_SHA || 'local';
 
   return (
-    <div id="scrolls-table" data-build={BUILD} className="flex h-full flex-col">
+    <div id="scrolls-table" data-build={BUILD} className="flex flex-col">
       <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
-      <div ref={containerRef} className="flex-1 min-h-0 rounded-xl border overflow-auto">
-        <table className="table-fixed w-full border-separate border-spacing-0">
-          <thead className={`sticky top-0 bg-white ${scrolled ? 'shadow-sm' : ''}`}>
-            {table.getHeaderGroups().map(hg => (
-              <tr key={hg.id}>
-                {hg.headers.map(h => (
-                  <th
-                    key={h.id}
-                    style={{ width: h.getSize() }}
-                    className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide align-middle ${h.column.columnDef.meta?.headerClassName ?? ''}`}
-                  >
-                    {h.isPlaceholder ? null : (
-                      <button
-                        className="inline-flex items-center gap-1"
-                        onClick={h.column.getToggleSortingHandler()}
-                        aria-sort={
-                          h.column.getIsSorted() === 'asc'
-                            ? 'ascending'
-                            : h.column.getIsSorted() === 'desc'
-                            ? 'descending'
-                            : 'none'
-                        }
-                      >
-                        {flexRender(h.column.columnDef.header, h.getContext())}
-                        <span className="text-neutral-400">
-                          {h.column.getIsSorted() ? (h.column.getIsSorted() === 'asc' ? '▲' : '▼') : ''}
-                        </span>
-                      </button>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: pageSize }).map((_, i) => (
-                <tr key={i} className="odd:bg-neutral-50">
-                  {columns.map((col, idx) => (
-                    <td key={col.id ?? idx} style={{ width: col.size }} className="px-3 py-2">
-                      <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map(r => (
-                <tr key={r.id} className="odd:bg-neutral-50 hover:bg-neutral-100">
-                  {r.getVisibleCells().map(c => (
-                    <td
-                      key={c.id}
-                      style={{ width: c.column.getSize() }}
-                      className={`px-3 py-2 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
+      <div className="rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="min-w-full table-auto">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              {table.getHeaderGroups().map(hg => (
+                <tr key={hg.id}>
+                  {hg.headers.map(h => (
+                    <th
+                      key={h.id}
+                      style={{ width: h.getSize() }}
+                      aria-sort={
+                        h.column.getIsSorted() === 'asc'
+                          ? 'ascending'
+                          : h.column.getIsSorted() === 'desc'
+                          ? 'descending'
+                          : 'none'
+                      }
+                      className={`px-4 py-3 text-left text-sm font-medium text-gray-700 ${h.column.columnDef.meta?.headerClassName ?? ''}`}
                     >
-                      {flexRender(c.column.columnDef.cell, c.getContext())}
-                    </td>
+                      {h.isPlaceholder ? null : (
+                        <button
+                          className="inline-flex items-center gap-1"
+                          onClick={h.column.getToggleSortingHandler()}
+                        >
+                          {flexRender(h.column.columnDef.header, h.getContext())}
+                          <span className="text-neutral-400">
+                            {h.column.getIsSorted() ? (h.column.getIsSorted() === 'asc' ? '▲' : '▼') : ''}
+                          </span>
+                        </button>
+                      )}
+                    </th>
                   ))}
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={columnCount} className="p-4 text-center text-sm">
-                  No releases found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {isLoading ? (
+                Array.from({ length: pageSize }).map((_, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
+                    {columns.map((col, idx) => (
+                      <td key={col.id ?? idx} style={{ width: col.size }} className="px-4 py-3">
+                        <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map(r => (
+                  <tr key={r.id} className="hover:bg-gray-50">
+                    {r.getVisibleCells().map(c => (
+                      <td
+                        key={c.id}
+                        style={{ width: c.column.getSize() }}
+                        className={`px-4 py-3 text-sm text-gray-800 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
+                      >
+                        {flexRender(c.column.columnDef.cell, c.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columnCount} className="p-4 text-center text-sm">
+                    No releases found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div className="mt-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
