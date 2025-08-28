@@ -55,6 +55,11 @@
   --fg: var(--text-primary);
   --success: var(--green);
   --warning: #92400e;
+
+  /* Global badge tokens */
+  --badge-classic-bg: #F0EBD2; /* Championship Gold */
+  --badge-classic-fg: #00471B; /* Bucks Green */
+  --badge-classic-ring: rgba(0, 71, 27, 0.25);
 }
 
 html {
