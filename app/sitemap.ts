@@ -9,10 +9,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: `${baseUrl}/scrolls`,
-      lastModified: new Date(),
-    },
-    {
       url: `${baseUrl}/shaolin-scrolls`,
       lastModified: new Date(),
     },
@@ -34,4 +30,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 }
-

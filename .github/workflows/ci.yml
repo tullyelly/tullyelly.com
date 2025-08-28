@@ -2,9 +2,14 @@ name: CI
 
 on:
   push:
-    branches: ['**']   # all branches; we gate deploys below
+    branches: ['**']   # all branches; we'll gate deploys below
   pull_request:
   workflow_dispatch:
+
+# Default, least-privilege token for all jobs
+permissions:
+  contents: read
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,13 +19,20 @@ jobs:
   build-and-check:
     name: Build & Check
     runs-on: ubuntu-latest
+    # This job pushes the 'preview' branch on non-PR runs, so it needs write.
+    permissions:
+      contents: write
+      pull-requests: read
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0      # needed for diff + preview fast-forward
+          fetch-depth: 0                # needed for diff + preview fast-forward
+          # persist-credentials defaults to true; token is auto-injected.
+          # token: ${{ secrets.GITHUB_TOKEN }}  # optional explicitness
 
       # composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
@@ -74,15 +86,18 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # PRs: Vercel's automatic PR Preview handles it (Ignored Build Step will still skip on non-app changes).
+      # PRs: Vercel automatically builds preview for PRs.
 
-      # Non-PR branches: refresh long-lived preview branch & trigger the hook.
+      # Non-PR branches: refresh long-lived preview branch & trigger hooks.
       - name: Fast-forward preview branch to this commit
         if: github.event_name != 'pull_request' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Use authenticated fetch/push to avoid 403s
           git fetch origin
           git branch -f preview HEAD
-          git push origin preview --force-with-lease
+          git push --force-with-lease origin preview
 
       - name: Trigger Vercel Manual Preview Deploy
         if: github.event_name != 'pull_request' && steps.changes.outputs.deploy == 'true' && steps.skipmsg.outputs.skip == 'false' && success()
@@ -96,12 +111,16 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    # e2e only reads code; default top-level read perms apply.
     env:
       NODE_ENV: test
       PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
       PLAYWRIGHT_USE_SYSTEM_CHROME: '0'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: ./.github/actions/setup
 
       - name: Get Playwright version
