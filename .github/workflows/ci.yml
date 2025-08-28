@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ['**']   # all branches; we'll gate deploys below
+    branches: ['**']
   pull_request:
 
 permissions:
@@ -53,66 +53,6 @@ jobs:
 
       - name: Run CI pipeline
         run: npm run ci --if-present
-
-      # ── deploy throttling logic (no dynamic keys; fixed outputs) ─────────────
-      - name: Compute deploy flags
-        id: flags
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          EVENT_NAME="${{ github.event_name }}"
-          BEFORE_SHA="${{ github.event.before }}"
-          AFTER_SHA="${{ github.sha }}"
-          COMMIT_MSG="$(git log -1 --pretty=%B || true)"
-
-          # Determine changed files range (push-only relevant; PRs won't deploy)
-          if [[ -z "${BEFORE_SHA}" || "${BEFORE_SHA}" == 0000000000000000000000000000000000000000 ]]; then
-            RANGE="HEAD^..HEAD"
-          else
-            RANGE="${BEFORE_SHA}..${AFTER_SHA}"
-          fi
-
-          CHANGED="$(git diff --name-only ${RANGE} || true)"
-
-          # Paths that should trigger a deploy
-          if echo "${CHANGED}" | grep -E -q '^(app/|pages/|src/|components/|public/|next\.config(\..*)?$|vercel\.json|package\.json|package-lock\.json|pnpm-lock\.yaml)'; then
-            DEPLOY_CHANGED=true
-          else
-            DEPLOY_CHANGED=false
-          fi
-
-          # Respect "[skip deploy]" in the last commit message
-          if echo "${COMMIT_MSG}" | grep -qi '\[skip deploy\]'; then
-            SKIP_DEPLOY=true
-          else
-            SKIP_DEPLOY=false
-          fi
-
-          # Final gate: only non-PR events may deploy
-          if [[ "${EVENT_NAME}" != "pull_request" && "${DEPLOY_CHANGED}" == true && "${SKIP_DEPLOY}" == false ]]; then
-            SHOULD_DEPLOY=true
-          else
-            SHOULD_DEPLOY=false
-          fi
-
-          # Expose fixed-name outputs (actionlint-safe)
-          {
-            echo "deploy_changed=${DEPLOY_CHANGED}"
-            echo "skip_deploy=${SKIP_DEPLOY}"
-            echo "should_deploy=${SHOULD_DEPLOY}"
-          } >> "$GITHUB_OUTPUT"
-
-          echo "Event: ${EVENT_NAME}"
-          echo "Changed files (for info):"
-          echo "${CHANGED}"
-
-      # Optional: production deploy on main
-      - name: Trigger Vercel Production Deploy
-        if: steps.flags.outputs.should_deploy == 'true' && github.ref == 'refs/heads/main' && success()
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: npx vercel --prod --token "$VERCEL_TOKEN"
 
   e2e:
     name: E2E Tests

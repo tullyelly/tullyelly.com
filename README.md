@@ -151,8 +151,6 @@ Pull requests run two GitHub Actions checks:
 - **Build & Check** – lint, typecheck, image checks, and build
 - **E2E Tests** – Playwright end-to-end suite
 
-Vercel posts preview deployments separately.
-
 ---
 
 ## Running E2E
@@ -187,8 +185,12 @@ npm run test:e2e
 
 ## ☁️ Deployment
 
-Deploy easily with [Vercel](https://vercel.com/new).
-This repo is already structured for one-click deploys.
+Deploy to production manually via the Vercel CLI:
+
+```bash
+export VERCEL_TOKEN=...
+npx vercel --prod --token "$VERCEL_TOKEN"
+```
 
 ---
 
