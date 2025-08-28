@@ -1,11 +1,12 @@
 import React from "react"
 import {
-  Badge,
   Card,
   CardGrid,
   type CardItem,
   mapDomainToCardItem,
 } from "@ui"
+import { Badge } from "@/app/ui/Badge"
+import { getBadgeClass } from "@/app/ui/badge-maps"
 
 export const metadata = {
   title: "Heels Have Eyes by Westside Gunn | tullyelly",
@@ -126,7 +127,9 @@ export default function Page() {
                 <Card key={item.id} className="relative">
                   <div className="flex items-start justify-between gap-3">
                     <h4 className="font-semibold italic">{item.title}</h4>
-                    {item.meta && <Badge>{item.meta}</Badge>}
+                    {item.meta && (
+                      <Badge className={getBadgeClass('archived')}>{item.meta}</Badge>
+                    )}
                   </div>
                   {item.description && (
                     <p className="mt-2 text-sm text-fg/80 leading-relaxed">
@@ -134,7 +137,9 @@ export default function Page() {
                     </p>
                   )}
                   {isFav(item) && (
-                    <Badge intent="released" className="absolute bottom-2 right-2">
+                    <Badge
+                      className={`${getBadgeClass('classic')} absolute bottom-2 right-2`}
+                    >
                       unclejimmy classic
                     </Badge>
                   )}

@@ -11,7 +11,8 @@ import {
   useReactTable,
   type RowData,
 } from '@tanstack/react-table';
-import { Badge, type BadgeIntent } from '@/components/ui/Badge';
+import { Badge } from '../../ui/Badge';
+import { getBadgeClass, type BadgeVariant } from '../../ui/badge-maps';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -24,21 +25,10 @@ export type Release = {
   id: string;
   name: string;
   plannedDate: string;
-  status: 'planned' | 'released' | 'archived';
-  type: 'planned' | 'patch' | 'minor' | 'hotfix';
+  status: 'planned' | 'released' | 'archived' | 'hotfix';
+  type: 'planned' | 'patch' | 'minor' | 'hotfix' | 'major';
   semver: string;
 };
-
-const toIntent = (value?: string): BadgeIntent => {
-  const v = (value ?? '').toLowerCase()
-  if (v === 'planned') return 'planned'
-  if (v === 'released') return 'released'
-  if (v === 'minor') return 'minor'
-  if (v === 'hotfix') return 'hotfix'
-  if (v === 'archived') return 'archived'
-  if (v === 'patch') return 'patch'
-  return 'neutral'
-}
 
 const columns: ColumnDef<Release, any>[] = [
   {
@@ -57,8 +47,10 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Status',
     size: 120,
     cell: info => {
-      const v = info.getValue<Release['status']>()
-      return <Badge intent={toIntent(v)}>{v}</Badge>
+      const raw = info.getValue<Release['status'] | undefined>()
+      const v = (raw ?? '').toLowerCase().trim()
+      const cls = getBadgeClass(v as BadgeVariant)
+      return <Badge className={cls}>{v || 'unknown'}</Badge>
     },
     meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
   },
@@ -67,8 +59,10 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Type',
     size: 100,
     cell: info => {
-      const v = info.getValue<Release['type']>()
-      return <Badge intent={toIntent(v)}>{v}</Badge>
+      const raw = info.getValue<Release['type'] | undefined>()
+      const v = (raw ?? '').toLowerCase().trim()
+      const cls = getBadgeClass(v as BadgeVariant)
+      return <Badge className={cls}>{v || 'unknown'}</Badge>
     },
     meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
   },
@@ -115,14 +109,14 @@ export function ScrollsTable({
       <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
         <table className="min-w-full table-auto">
-          <thead className="bg-gray-50 sticky top-0 z-10">
+          <thead className="bg-[#00471B] text-[#EEE1C6] sticky top-0 z-10">
             {table.getHeaderGroups().map(hg => (
               <tr key={hg.id}>
                 {hg.headers.map(h => (
                   <th
                     key={h.id}
                     style={{ width: h.getSize() }}
-                    className={`px-4 py-3 text-left text-sm font-medium text-gray-700 ${h.column.columnDef.meta?.headerClassName ?? ''}`}
+                    className={`px-4 py-3 text-left text-sm font-medium ${h.column.columnDef.meta?.headerClassName ?? ''}`}
                   >
                     {h.isPlaceholder ? null : (
                       <button
@@ -150,7 +144,7 @@ export function ScrollsTable({
           <tbody className="divide-y divide-gray-100">
             {isLoading ? (
               Array.from({ length: pageSize }).map((_, i) => (
-                <tr key={i} className="hover:bg-gray-50">
+                <tr key={i} className="odd:bg-white even:bg-[#EEE1C6] hover:bg-[#0077C0]/10">
                   {columns.map((col, idx) => (
                     <td key={col.id ?? idx} style={{ width: col.size }} className="px-4 py-3">
                       <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
@@ -160,7 +154,7 @@ export function ScrollsTable({
               ))
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(r => (
-                <tr key={r.id} className="hover:bg-gray-50">
+                <tr key={r.id} className="odd:bg-white even:bg-[#EEE1C6] hover:bg-[#0077C0]/10">
                   {r.getVisibleCells().map(c => (
                     <td
                       key={c.id}
@@ -173,7 +167,7 @@ export function ScrollsTable({
                 </tr>
               ))
             ) : (
-              <tr>
+              <tr className="odd:bg-white even:bg-[#EEE1C6] hover:bg-[#0077C0]/10">
                 <td colSpan={columnCount} className="p-4 text-center text-sm">
                   No releases found
                 </td>
