@@ -25,7 +25,7 @@ export type Release = {
   id: string;
   name: string;
   plannedDate: string;
-  status: 'planned' | 'released' | 'archived' | 'failed';
+  status: 'planned' | 'released' | 'archived' | 'hotfix';
   type: 'planned' | 'patch' | 'minor' | 'hotfix' | 'major';
   semver: string;
 };

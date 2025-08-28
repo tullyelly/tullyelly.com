@@ -1,15 +1,14 @@
 export const STATUS_STYLES: Record<string, string> = {
-  released: "bg-emerald-100 text-emerald-800 ring-emerald-600/20",
-  planned:  "bg-amber-100   text-amber-800   ring-amber-600/20",
-  archived: "bg-slate-100   text-slate-800   ring-slate-600/20",
-  failed:   "bg-rose-100    text-rose-800    ring-rose-600/20",
+  planned:  "bg-[#E6F2FA] text-[#0077C0] ring-[#0077C0]/30",
+  released: "bg-[#E3F3E8] text-[#00471B] ring-[#00471B]/30",
+  hotfix:   "bg-[#FBE8EB] text-[#C41E3A] ring-[#C41E3A]/30",
+  archived: "bg-[#EEE1C6] text-[#2E2E2E] ring-[#2E2E2E]/20",
 };
 
 export const TYPE_STYLES: Record<string, string> = {
-  hotfix:  "bg-rose-100    text-rose-800    ring-rose-600/20",
-  minor:   "bg-indigo-100  text-indigo-800  ring-indigo-600/20",
-  major:   "bg-blue-100    text-blue-800    ring-blue-600/20",
-  planned: "bg-slate-100   text-slate-800   ring-slate-600/20",
+  hotfix:  "bg-[#FBE8EB] text-[#C41E3A] ring-[#C41E3A]/30",
+  minor:   "bg-[#E3F3E8] text-[#00471B] ring-[#00471B]/30",
+  planned: "bg-[#E6F2FA] text-[#0077C0] ring-[#0077C0]/30",
 };
 
 export const NEUTRAL_BADGE =
