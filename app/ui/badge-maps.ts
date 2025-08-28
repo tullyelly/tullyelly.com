@@ -1,14 +1,14 @@
 export const STATUS_STYLES: Record<string, string> = {
-  planned:  "bg-[#E6F2FA] text-[#0077C0] ring-[#0077C0]/30",
-  released: "bg-[#E3F3E8] text-[#00471B] ring-[#00471B]/30",
-  hotfix:   "bg-[#FBE8EB] text-[#C41E3A] ring-[#C41E3A]/30",
-  archived: "bg-[#EEE1C6] text-[#2E2E2E] ring-[#2E2E2E]/20",
+  planned:  "bg-[#0077C0] text-white ring-[#0077C0]/40", // Great Lakes Blue
+  released: "bg-[#00471B] text-white ring-[#00471B]/40", // Bucks Green
+  hotfix:   "bg-[#C41E3A] text-white ring-[#C41E3A]/40", // Cardinal Red
+  archived: "bg-[#EEE1C6] text-[#1A1A1A] ring-[#1A1A1A]/20", // Cream City Cream
 };
 
 export const TYPE_STYLES: Record<string, string> = {
-  hotfix:  "bg-[#FBE8EB] text-[#C41E3A] ring-[#C41E3A]/30",
-  minor:   "bg-[#E3F3E8] text-[#00471B] ring-[#00471B]/30",
-  planned: "bg-[#E6F2FA] text-[#0077C0] ring-[#0077C0]/30",
+  hotfix: "bg-[#C41E3A] text-white ring-[#C41E3A]/40",
+  minor:  "bg-[#00471B] text-white ring-[#00471B]/40", // Bucks Green
+  planned:"bg-[#0077C0] text-white ring-[#0077C0]/40",
 };
 
 export const NEUTRAL_BADGE =
