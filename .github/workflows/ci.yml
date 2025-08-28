@@ -33,8 +33,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      # composite setup (node, cache, deps)
-      - uses: ./.github/actions/setup
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Clean install
+        run: npm ci --include=optional
+
+      - name: Verify critical deps present
+        run: npm run verify:deps
 
       # sanity-check native bindings
       - name: Verify sharp binding
@@ -142,7 +151,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/setup
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Clean install
+        run: npm ci --include=optional
 
       - name: Get Playwright version
         id: playwright-version
