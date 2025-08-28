@@ -27,6 +27,10 @@ export type Release = {
   status: 'planned' | 'released' | 'archived';
   type: 'patch' | 'minor' | 'hotfix';
   semver: string;
+  semMajor: number;
+  semMinor: number;
+  semPatch: number;
+  semHotfix: number;
 };
 
 const statusIntent: Record<Release['status'], BadgeProps['intent']> = {
@@ -59,7 +63,11 @@ const columns: ColumnDef<Release, any>[] = [
     size: 120,
     cell: info => {
       const v = info.getValue<Release['status']>();
-      return <Badge intent={statusIntent[v]}>{v}</Badge>;
+      return (
+        <Badge intent={statusIntent[v]} title={v}>
+          {info.row.original.semMajor}
+        </Badge>
+      );
     },
     meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
   },
@@ -69,7 +77,13 @@ const columns: ColumnDef<Release, any>[] = [
     size: 100,
     cell: info => {
       const v = info.getValue<Release['type']>();
-      return <Badge intent={typeIntent[v]}>{v}</Badge>;
+      const r = info.row.original;
+      const num = v === 'patch' ? r.semPatch : v === 'minor' ? r.semMinor : r.semHotfix;
+      return (
+        <Badge intent={typeIntent[v]} title={v}>
+          {num}
+        </Badge>
+      );
     },
     meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
   },

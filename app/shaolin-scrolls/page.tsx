@@ -62,6 +62,10 @@ export default async function Page({ searchParams }: PageProps) {
     status: item.status as Release['status'],
     type: item.type as Release['type'],
     semver: item.semver,
+    semMajor: item.sem_major,
+    semMinor: item.sem_minor,
+    semPatch: item.sem_patch,
+    semHotfix: item.sem_hotfix,
   }));
 
   return (
