@@ -101,6 +101,7 @@ export default {
         '.badge--hotfix': { backgroundColor: theme('colors.badge.hotfix'), color: '#fff' },
         '.badge--archived': { backgroundColor: theme('colors.badge.archived'), color: '#111827' },
         '.badge--patch': { backgroundColor: theme('colors.badge.patch'), color: '#111827' },
+        '.badge--neutral': { backgroundColor: theme('colors.badge.neutral'), color: '#fff' },
       })
     }),
   ],

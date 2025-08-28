@@ -11,7 +11,7 @@ import {
   useReactTable,
   type RowData,
 } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/Badge';
+import { Badge, type BadgeIntent } from '@/components/ui/Badge';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -28,6 +28,17 @@ export type Release = {
   type: 'planned' | 'patch' | 'minor' | 'hotfix';
   semver: string;
 };
+
+const toIntent = (value?: string): BadgeIntent => {
+  const v = (value ?? '').toLowerCase()
+  if (v === 'planned') return 'planned'
+  if (v === 'released') return 'released'
+  if (v === 'minor') return 'minor'
+  if (v === 'hotfix') return 'hotfix'
+  if (v === 'archived') return 'archived'
+  if (v === 'patch') return 'patch'
+  return 'neutral'
+}
 
 const columns: ColumnDef<Release, any>[] = [
   {
@@ -46,8 +57,8 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Status',
     size: 120,
     cell: info => {
-      const v = info.getValue<Release['status']>();
-      return <Badge intent={v}>{v}</Badge>;
+      const v = info.getValue<Release['status']>()
+      return <Badge intent={toIntent(v)}>{v}</Badge>
     },
     meta: { headerClassName: 'text-left w-[120px]', cellClassName: 'text-left w-[120px] shrink-0' },
   },
@@ -56,8 +67,8 @@ const columns: ColumnDef<Release, any>[] = [
     header: 'Type',
     size: 100,
     cell: info => {
-      const v = info.getValue<Release['type']>();
-      return <Badge intent={v}>{v}</Badge>;
+      const v = info.getValue<Release['type']>()
+      return <Badge intent={toIntent(v)}>{v}</Badge>
     },
     meta: { headerClassName: 'text-left w-[100px]', cellClassName: 'text-left w-[100px] shrink-0' },
   },
