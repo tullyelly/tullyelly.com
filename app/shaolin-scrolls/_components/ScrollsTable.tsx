@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -102,15 +102,12 @@ export function ScrollsTable({
   isLoading?: boolean;
 }) {
   const [scrolled, setScrolled] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const memoData = useMemo(() => data, [data]);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onScroll = () => setScrolled(el.scrollTop > 0);
-    el.addEventListener('scroll', onScroll);
-    return () => el.removeEventListener('scroll', onScroll);
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const table = useReactTable({
@@ -131,7 +128,7 @@ export function ScrollsTable({
   return (
     <div id="scrolls-table" data-build={BUILD} className="flex h-full flex-col">
       <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
-      <div ref={containerRef} className="flex-1 min-h-0 rounded-xl border overflow-auto">
+      <div className="flex-1 min-h-0 rounded-xl border">
         <table className="table-fixed w-full border-separate border-spacing-0">
           <thead className={`sticky top-0 bg-white ${scrolled ? 'shadow-sm' : ''}`}>
             {table.getHeaderGroups().map(hg => (
@@ -140,7 +137,7 @@ export function ScrollsTable({
                   <th
                     key={h.id}
                     style={{ width: h.getSize() }}
-                    className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide align-middle ${h.column.columnDef.meta?.headerClassName ?? ''}`}
+                    className={`rounded px-3 py-2 text-xs font-semibold uppercase tracking-wide align-middle ${h.column.columnDef.meta?.headerClassName ?? ''}`}
                   >
                     {h.isPlaceholder ? null : (
                       <button
@@ -170,7 +167,7 @@ export function ScrollsTable({
               Array.from({ length: pageSize }).map((_, i) => (
                 <tr key={i} className="odd:bg-neutral-50">
                   {columns.map((col, idx) => (
-                    <td key={col.id ?? idx} style={{ width: col.size }} className="px-3 py-2">
+                    <td key={col.id ?? idx} style={{ width: col.size }} className="rounded px-3 py-2">
                       <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
                     </td>
                   ))}
@@ -183,7 +180,7 @@ export function ScrollsTable({
                     <td
                       key={c.id}
                       style={{ width: c.column.getSize() }}
-                      className={`px-3 py-2 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
+                      className={`rounded px-3 py-2 align-middle whitespace-nowrap ${c.column.columnDef.meta?.cellClassName ?? ''}`}
                     >
                       {flexRender(c.column.columnDef.cell, c.getContext())}
                     </td>

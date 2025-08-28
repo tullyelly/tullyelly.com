@@ -123,7 +123,7 @@ curl -s "http://localhost:3000/api/releases?q=scroll"
 
 # Mutations (creates new releases)
 curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch
+  -d '{"label":"Test patch","statusCode":"planned","releaseTypeCode":"hotfix"}' http://localhost:3000/api/releases/patch
 
 curl -s -X POST -H 'Content-Type: application/json' \
   -d '{"label":"Test minor"}' http://localhost:3000/api/releases/minor
