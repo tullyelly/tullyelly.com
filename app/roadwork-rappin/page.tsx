@@ -18,6 +18,12 @@ export const metadata = {
     description:
       "Hip-hop, rap, and indie music fans can dive into Aesop Rock’s 'Roadwork Rappin’' with video and context on this page.",
     url: "/roadwork-rappin",
+    images: [
+      {
+        url: "/images/optimized/roadwork rappin.jpg",
+        alt: "Roadwork Rappin’ cover art",
+      },
+    ],
     type: "music.song",
     music: {
       musician: "Aesop Rock",
@@ -28,7 +34,13 @@ export const metadata = {
     card: "summary_large_image",
     title: "Aesop Rock — Roadwork Rappin’",
     description:
-      "Aesop Rock’s 'Roadwork Rappin’' with hip-hop and rap context, video embed, and supporting content.",
+      "Aesop Rock’s 'Roadwork Rappin’'. Build a road where there isn't a road!",
+    images: [
+      {
+        url: "/images/optimized/roadwork rappin.jpg",
+        alt: "Roadwork Rappin’ cover art",
+      },
+    ],
   },
 }
 

@@ -34,7 +34,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Westside Gunn &mdash; Heels Have Eyes",
     description:
-      "Westside Gunn&apos;s &apos;Heels Have Eyes&apos; with hip-hop context, video embed, and supporting content.",
+      "Westside Gunn's HEELS HAVE EYES takes over unclejimmy's playlist",
     images: [
       {
         url: "/images/optimized/HEELS HAVE EYES.jpg",
