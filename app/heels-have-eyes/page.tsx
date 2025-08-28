@@ -18,6 +18,12 @@ export const metadata = {
       "Hip-hop and rap fans can dive into Westside Gunn&apos;s &apos;Heels Have Eyes&apos; with video and context on this page.",
     url: "/heels-have-eyes",
     type: "music.song",
+    images: [
+      {
+        url: "/images/optimized/HEELS HAVE EYES.jpg",
+        alt: "HEELS HAVE EYES cover art",
+      },
+    ],
     music: {
       musician: "Westside Gunn",
       genre: ["Hip-Hop", "Rap", "Underground Rap"],
@@ -28,6 +34,12 @@ export const metadata = {
     title: "Westside Gunn &mdash; Heels Have Eyes",
     description:
       "Westside Gunn&apos;s &apos;Heels Have Eyes&apos; with hip-hop context, video embed, and supporting content.",
+    images: [
+      {
+        url: "/images/optimized/HEELS HAVE EYES.jpg",
+        alt: "HEELS HAVE EYES cover art",
+      },
+    ],
   },
 }
 
