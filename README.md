@@ -181,6 +181,20 @@ npm run test:e2e
 
 ---
 
+## 🔏 Build Provenance
+
+Confirm deployments with a build receipt and headers:
+
+```bash
+# JSON receipt
+curl -s https://<app-url>/api/__version | jq
+
+# Headers on any response
+curl -I https://<app-url>/ | grep -i "^x-"
+```
+
+---
+
 ## 📚 Learn More
 
 * [Next.js Documentation](https://nextjs.org/docs)

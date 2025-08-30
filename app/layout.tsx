@@ -1,5 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
+import "@/lib/sentry";
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
