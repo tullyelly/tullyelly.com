@@ -1,10 +1,10 @@
 import BrandedLink from "@/components/BrandedLink";
 import BuildBadge from "@/components/BuildBadge";
-import { BUILD_INFO } from "@/lib/build-info";
+import { buildInfo } from "@/lib/build-info";
 
 export default function Footer() {
-  // Derive year without constructing a Date (ESLint rule-safe)
-  const year = (BUILD_INFO?.buildDateISO ?? "").slice(0, 4);
+  // Prefer the precomputed year; fall back to slicing the ISO if needed
+  const year = buildInfo.buildYear || (buildInfo.buildIso ?? "").slice(0, 4) || "";
 
   return (
     <footer
