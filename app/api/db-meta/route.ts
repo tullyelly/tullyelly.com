@@ -1,5 +1,6 @@
 import { Client, QueryResult } from 'pg';
 import { assertValidDatabaseUrl } from '@/db/assert-database-url';
+import { VERCEL_ENV, NODE_ENV, DATABASE_URL } from '@/lib/env';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,8 +20,8 @@ function redact(u?: string | null) {
 type DbMetaRow = { db: string; usr: string; host_ip: string };
 
 export async function GET() {
-  const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'unknown';
-  const raw = process.env.DATABASE_URL ?? null;
+  const env = VERCEL_ENV ?? NODE_ENV ?? 'unknown';
+  const raw = DATABASE_URL ?? null;
   assertValidDatabaseUrl(raw);
   const safe = redact(raw);
 

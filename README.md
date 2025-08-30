@@ -143,6 +143,7 @@ Recommended Node version: **20**.
 
 * `npm run lint` – lint the codebase
 * `npm run typecheck` – run TypeScript checks
+* `npm run deadcode` – report unused exports with ts-prune
 * `npm run build` – build the production bundle
 * `npm run start` – start the production server
 * `npm run ci` – run lint, image checks, and build

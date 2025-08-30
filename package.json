@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && npm run typecheck && next build",
     "start": "next start",
     "lint": "next lint",
     "images:optimize": "node scripts/optimize-images.mjs",
@@ -19,6 +19,7 @@
     "validate-seo": "node scripts/validate-seo.mjs",
     "ci": "npm run lint && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run build",
     "typecheck": "tsc --noEmit",
+    "deadcode": "ts-prune -e",
     "test": "cross-env NODE_ENV=test jest",
     "test:ci": "cross-env NODE_ENV=test jest --runInBand",
     "preci": "npm rebuild lightningcss --foreground-scripts && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm rebuild sharp --foreground-scripts",
@@ -39,7 +40,8 @@
     "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@eslint/css": "^0.10.0",
@@ -58,6 +60,7 @@
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@types/jest": "^30.0.0",
+    "@types/jest-axe": "^3.5.9",
     "@types/node": "^24.3.0",
     "@types/pg": "^8.15.5",
     "@types/react": "^19.1.10",
@@ -82,9 +85,9 @@
     "server-only": "^0.0.1",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.1",
+    "ts-prune": "^0.10.3",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.41.0",
-    "zod": "^4.0.17"
+    "typescript-eslint": "^8.41.0"
   }
 }

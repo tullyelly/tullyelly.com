@@ -1,5 +1,6 @@
 import { getBaseUrl } from './getBaseUrl';
 import type { ReleaseListResponse, ReleaseRow } from '@/app/api/releases/route';
+import { NODE_ENV, VERCEL_URL } from '@/lib/env';
 
 export async function fetchReleases(): Promise<ReleaseRow[]> {
   const base = getBaseUrl();
@@ -9,8 +10,8 @@ export async function fetchReleases(): Promise<ReleaseRow[]> {
     JSON.stringify({
       tag: 'releases_fetch_begin',
       url,
-      env: process.env.NODE_ENV,
-      vercel_url: process.env.VERCEL_URL ?? null,
+      env: NODE_ENV,
+      vercel_url: VERCEL_URL ?? null,
     })
   );
 

@@ -13,6 +13,7 @@ import {
 } from '@tanstack/react-table';
 import { Badge } from '../../ui/Badge';
 import { getBadgeClass, type BadgeVariant } from '../../ui/badge-maps';
+import { VERCEL_GIT_COMMIT_SHA } from '@/lib/env';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -102,7 +103,7 @@ export function ScrollsTable({
   });
 
   const columnCount = table.getAllLeafColumns().length;
-  const BUILD = process.env.VERCEL_GIT_COMMIT_SHA || 'local';
+  const BUILD = VERCEL_GIT_COMMIT_SHA || 'local';
 
   return (
     <div id="scrolls-table" data-build={BUILD} className="flex flex-col">

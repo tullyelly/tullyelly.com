@@ -2,7 +2,8 @@ import { config } from 'dotenv';
 
 config({ path: '.env.local', override: true });
 
-const url = process.env.DATABASE_URL;
+const { DATABASE_URL } = await import('../lib/env');
+const url = DATABASE_URL;
 if (!url) {
   throw new Error('DATABASE_URL is not set. Define it in .env.local');
 }
