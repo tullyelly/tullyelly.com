@@ -1,6 +1,6 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
-import buildInfo from "@/build-info.json";
+import { buildInfo } from "@/lib/build-info";
 
 export function middleware(_req: NextRequest) {
   const res = NextResponse.next();
