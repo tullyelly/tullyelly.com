@@ -45,8 +45,5 @@ playwright-report
 test-results
 .pw-browsers
 
-# Build metadata
-build-info.json
-
 # Vercel
 .vercel

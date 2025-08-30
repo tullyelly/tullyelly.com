@@ -8,8 +8,8 @@ export async function initSentry() {
   Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
     tracesSampleRate: 1,
-    release: buildInfo.commitSha,
-    environment: buildInfo.env,
+    release: buildInfo.commit,
+    environment: process.env.VERCEL_ENV || process.env.NODE_ENV,
     integrations: (integrations) =>
       integrations.filter((i: any) => i.name !== "Prisma"),
   });

@@ -1,25 +1,31 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const dynamic = "force-static";
+
+function fallbackEnv() {
+  const sha = process.env.GITHUB_SHA ?? "";
+  return {
+    ok: true,
+    buildIso: "",
+    commitSha: sha,
+    shortCommit: sha.slice(0, 7),
+    branch: process.env.GITHUB_REF_NAME ?? "",
+    _note: "fallback payload",
+  };
+}
 
 export async function GET() {
   try {
     const { buildInfo } = await import("@/lib/build-info");
     return NextResponse.json({
       ok: true,
-      buildIso: buildInfo.builtAt ?? "",
-      commitSha: buildInfo.commitSha ?? "",
-      shortCommit: buildInfo.commitShortSha ?? "",
-      branch: buildInfo.ref ?? "",
+      buildIso: buildInfo.buildIso ?? "",
+      commitSha: buildInfo.commit ?? "",
+      shortCommit: buildInfo.shortCommit ?? "",
+      branch: buildInfo.branch ?? "",
     });
   } catch {
-    return NextResponse.json({
-      ok: true,
-      buildIso: "",
-      commitSha: process.env.GITHUB_SHA ?? "",
-      shortCommit: (process.env.GITHUB_SHA || "").slice(0, 7),
-      branch: process.env.GITHUB_REF_NAME ?? "",
-      _note: "fallback payload",
-    });
+    return NextResponse.json(fallbackEnv());
   }
 }

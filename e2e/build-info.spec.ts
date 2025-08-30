@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("/api/__version returns build info", async ({ request }) => {
-  const res = await request.get("/api/__version");
+  const res = await request.get("/api/__version", { headers: { accept: "application/json" } });
   if (!res.ok()) {
     console.error("status", res.status(), "body:", await res.text());
   }
