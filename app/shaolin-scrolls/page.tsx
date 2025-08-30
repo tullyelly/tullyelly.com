@@ -1,4 +1,4 @@
-import type { ReleaseListResponse } from '@/app/api/releases/route';
+import { getReleases, ORDER_BY, type Sort, type ReleaseListResponse } from '@/lib/releases';
 import type { Release } from './_components/ScrollsTable';
 import ScrollsPageClient from './_components/ScrollsPageClient';
 
@@ -10,7 +10,7 @@ interface PageProps {
   searchParams: Promise<{ limit?: string; offset?: string; sort?: string; q?: string }>;
 }
 
-function parseSearchParams(params: PageProps['searchParams']) {
+function parseSearchParams(params: PageProps['searchParams']): Promise<{ limit: number; offset: number; sort: Sort; q?: string }> {
   return params.then((p = {}) => {
     const limitNum = Number.parseInt(p.limit ?? '', 10);
     const limit = Math.min(Math.max(Number.isNaN(limitNum) ? 20 : limitNum, 1), 100);
@@ -18,7 +18,9 @@ function parseSearchParams(params: PageProps['searchParams']) {
     const offsetNum = Number.parseInt(p.offset ?? '', 10);
     const offset = Math.max(Number.isNaN(offsetNum) ? 0 : offsetNum, 0);
 
-    const sort = p.sort ?? 'semver:desc';
+    const sortRaw = p.sort ?? 'semver:desc';
+    const sort = (sortRaw in ORDER_BY ? sortRaw : 'semver:desc') as Sort;
+
     const qVal = p.q ? p.q.trim() : undefined;
 
     return { limit, offset, sort, q: qVal };
@@ -33,9 +35,6 @@ function parsePlannedDate(name: string) {
 export default async function Page({ searchParams }: PageProps) {
   const { limit, offset, sort, q } = await parseSearchParams(searchParams);
 
-  const params = new URLSearchParams({ limit: String(limit), offset: String(offset), sort });
-  if (q) params.set('q', q);
-
   let data: ReleaseListResponse = {
     items: [],
     page: { limit, offset, total: 0, sort, ...(q ? { q } : {}) },
@@ -43,13 +42,7 @@ export default async function Page({ searchParams }: PageProps) {
   let error: string | undefined;
 
   try {
-    const base = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-    const res = await fetch(`${base}/api/releases?${params.toString()}`, {
-      cache: 'no-store',
-      next: { revalidate: 0 },
-    });
-    if (res.ok) data = await res.json();
-    else error = 'Failed to load releases';
+    data = await getReleases({ limit, offset, sort, q });
   } catch (err) {
     console.error('[shaolin-scrolls] failed to load releases', err);
     error = 'Failed to load releases';
@@ -76,4 +69,3 @@ export default async function Page({ searchParams }: PageProps) {
     </section>
   );
 }
-

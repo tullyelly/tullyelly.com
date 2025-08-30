@@ -131,6 +131,12 @@ curl -s -X POST -H 'Content-Type: application/json' \
 
 ---
 
+## ♻️ Hydration
+
+See [docs/hydration.md](docs/hydration.md) for how server-rendered data stays in sync with client hydration.
+
+---
+
 ## 📜 Scripts
 
 Recommended Node version: **20**.

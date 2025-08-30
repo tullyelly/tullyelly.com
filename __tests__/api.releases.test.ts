@@ -11,10 +11,12 @@ const rows: ReleaseRow[] = [
     sem_minor: 1,
     sem_patch: 0,
     sem_hotfix: 0,
+    created_at: '2024-01-01T00:00:00.000Z',
   },
   {
     id: '2',
     name: 'Beta',
+    created_at: '2024-01-02T00:00:00.000Z',
     status: 'released',
     type: 'major',
     semver: '1.0.0',
