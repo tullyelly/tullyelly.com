@@ -65,7 +65,7 @@ export default async function Page({ searchParams }: PageProps) {
           {error}
         </div>
       )}
-      <ScrollsPageClient data={releases} />
+      <ScrollsPageClient initialData={releases} />
     </section>
   );
 }

@@ -5,7 +5,8 @@ import type { Release } from './ScrollsTable';
 import { ScrollsTable } from './ScrollsTable';
 import Toolbar from './filters/Toolbar';
 
-export default function ScrollsPageClient({ data }: { data: Release[] }) {
+export default function ScrollsPageClient({ initialData }: { initialData: Release[] }) {
+  const [data] = useState<Release[]>(() => initialData);
   const [search, setSearch] = useState('');
   return (
     <div className="flex flex-col gap-3">
