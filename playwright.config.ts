@@ -1,11 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const isProd = process.env.E2E_PROD === '1';
+const port = isProd ? 4010 : 3000;
+const command = isProd ? 'npm run start:prod' : 'npm run dev -- -p 3000';
+
 export default defineConfig({
   testDir: 'e2e',
   reporter: [['html', { outputFolder: 'playwright-report' }]],
   retries: 1,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${port}`,
     trace: 'on-first-retry',
   },
   projects: [
@@ -24,8 +28,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev -- -p 3000',
-    port: 3000,
+    command,
+    port,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     env: {

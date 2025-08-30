@@ -33,6 +33,7 @@ export type Release = {
 const columns: ColumnDef<Release, any>[] = [
   {
     accessorKey: 'name',
+    id: 'name',
     header: 'Release Name',
     minSize: 320,
     cell: info => (
@@ -44,6 +45,7 @@ const columns: ColumnDef<Release, any>[] = [
   },
   {
     accessorKey: 'status',
+    id: 'status',
     header: 'Status',
     size: 120,
     cell: info => {
@@ -56,6 +58,7 @@ const columns: ColumnDef<Release, any>[] = [
   },
   {
     accessorKey: 'type',
+    id: 'type',
     header: 'Type',
     size: 100,
     cell: info => {
@@ -68,6 +71,7 @@ const columns: ColumnDef<Release, any>[] = [
   },
   {
     accessorKey: 'semver',
+    id: 'semver',
     header: 'SemVer',
     size: 96,
     cell: info => <code className="font-mono tabular-nums">{info.getValue<string>()}</code>,
@@ -93,6 +97,7 @@ export function ScrollsTable({
     data: memoData,
     columns,
     state: { globalFilter },
+    getRowId: row => row.id,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -143,10 +148,10 @@ export function ScrollsTable({
           </thead>
           <tbody className="divide-y divide-gray-100">
             {isLoading ? (
-              Array.from({ length: pageSize }).map((_, i) => (
-                <tr key={i} className="odd:bg-white even:bg-[#EEE1C6] hover:bg-[#0077C0]/10">
-                  {columns.map((col, idx) => (
-                    <td key={col.id ?? idx} style={{ width: col.size }} className="px-4 py-3">
+              Array.from({ length: pageSize }, (_, i) => `skeleton-${i}`).map(key => (
+                <tr key={key} className="odd:bg-white even:bg-[#EEE1C6] hover:bg-[#0077C0]/10">
+                  {columns.map(col => (
+                    <td key={col.id} style={{ width: col.size }} className="px-4 py-3">
                       <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
                     </td>
                   ))}
