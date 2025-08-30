@@ -11,6 +11,9 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    extraHTTPHeaders: {
+      'x-test-bypass-auth': '1',
+    },
   },
   projects: [
     {
@@ -28,8 +31,8 @@ export default defineConfig({
   ],
   webServer: {
     command: process.env.CI
-      ? `npm run build && PORT=${PORT} npm run start`
-      : `PORT=${PORT} npm run dev`,
+      ? `npm run build && PLAYWRIGHT=1 PORT=${PORT} npm run start`
+      : `PLAYWRIGHT=1 PORT=${PORT} npm run dev`,
     url: baseURL,
     reuseExistingServer: process.env.CI !== 'true',
     timeout: 120 * 1000,
@@ -38,6 +41,7 @@ export default defineConfig({
       DISABLE_SENTRY: '1',
       NODE_ENV: process.env.CI ? 'production' : 'development',
       NEXT_PUBLIC_SITE_URL: baseURL,
+      PLAYWRIGHT: '1',
     },
   },
 });

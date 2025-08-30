@@ -21,6 +21,7 @@ const ServerSchema = z.object({
   POSTGRES_PRISMA_URL: z.string().url().optional(),
   SENTRY_DSN: z.string().url().optional(),
   E2E_MODE: z.string().optional(),
+  PLAYWRIGHT: z.string().optional(),
   DISABLE_SENTRY: z.string().optional(),
 });
 

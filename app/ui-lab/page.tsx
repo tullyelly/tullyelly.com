@@ -15,6 +15,8 @@ const frontmatter = {
 } satisfies PageFrontmatter;
 
 export const metadata = buildPageMetadata(frontmatter);
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export default function Page() {
   return <DemoLab />;
