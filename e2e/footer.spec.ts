@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("footer is present and at bottom on short pages", async ({ page }) => {
   await page.goto("/");
