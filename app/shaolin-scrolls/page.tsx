@@ -35,17 +35,18 @@ function parsePlannedDate(name: string) {
 export default async function Page({ searchParams }: PageProps) {
   const { limit, offset, sort, q } = await parseSearchParams(searchParams);
 
-  let data: ReleaseListResponse = {
-    items: [],
-    page: { limit, offset, total: 0, sort, ...(q ? { q } : {}) },
-  };
-  let error: string | undefined;
-
+  let data: ReleaseListResponse;
   try {
     data = await getReleases({ limit, offset, sort, q });
   } catch (err) {
-    console.error('[shaolin-scrolls] failed to load releases', err);
-    error = 'Failed to load releases';
+    if (process.env.E2E_MODE === '1') {
+      data = {
+        items: [],
+        page: { limit, offset, total: 0, sort, ...(q ? { q } : {}) },
+      };
+    } else {
+      throw err;
+    }
   }
 
   const releases: Release[] = data.items.map((item) => ({
@@ -60,11 +61,6 @@ export default async function Page({ searchParams }: PageProps) {
   return (
     <section className="flex min-h-screen flex-col gap-4">
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
-      {error && (
-        <div role="alert" className="rounded border border-red-500 bg-red-50 p-2 text-sm text-red-600">
-          {error}
-        </div>
-      )}
       <ScrollsPageClient data={releases} />
     </section>
   );
