@@ -34,5 +34,6 @@ describe('getReleases', () => {
     const res = await getReleases({ limit: 10, offset: 0, sort: 'created_at:desc' });
     expect(res.items[0].created_at).toBe('2024-01-01T00:00:00.000Z');
     expect(typeof res.items[0].created_at).toBe('string');
+    expect(() => JSON.stringify(res)).not.toThrow();
   });
 });
