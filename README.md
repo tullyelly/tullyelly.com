@@ -147,6 +147,7 @@ Recommended Node version: **20**.
 * `npm run start` – start the production server
 * `npm run ci` – run lint, image checks, and build
 * `npm run db:ping` – verify DB connectivity (SELECT 1)
+* `npm run check:use-server` – flag invalid `"use server"` exports
 
 ---
 
