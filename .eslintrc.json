@@ -1,9 +1,13 @@
 {
   "root": true,
-  "extends": ["next/core-web-vitals"],
+  "extends": [
+    "next/core-web-vitals"
+  ],
   "overrides": [
     {
-      "files": ["**/*.tsx"],
+      "files": [
+        "**/*.tsx"
+      ],
       "rules": {
         "no-restricted-syntax": [
           "error",
@@ -22,8 +26,13 @@
           {
             "selector": "UnaryExpression[operator='typeof'][argument.name='window']",
             "message": "Avoid typeof window checks in React components."
+          },
+          {
+            "selector": "CallExpression[callee.property.name=/toLocale(?:DateString|String|TimeString)?/]",
+            "message": "Use formatDateDisplay from lib/format.ts instead of toLocaleString."
           }
-        ]
+        ],
+        "react/no-array-index-key": "error"
       }
     }
   ]

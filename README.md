@@ -145,6 +145,7 @@ Recommended Node version: **20**.
 * `npm run typecheck` – run TypeScript checks
 * `npm run build` – build the production bundle
 * `npm run start` – start the production server
+* `npm run start:prod` – build and serve the production bundle on port 4010
 * `npm run ci` – run lint, image checks, and build
 * `npm run db:ping` – verify DB connectivity (SELECT 1)
 * `npm run check:use-server` – flag invalid `"use server"` exports

@@ -7,4 +7,10 @@ Dynamic pages fetch data on the server and pass a serialized snapshot to client 
 - Date objects are converted to ISO strings before being sent to the client.
 - Client components render the snapshot and avoid automatic re-fetching on mount.
 
+## Guardrails
+
+- `npm run start:prod` builds and serves the production bundle locally.
+- Playwright test `shaolin-scrolls.spec.ts` fails on any console hydration mismatch.
+- ESLint bans `toLocaleString`, `Date.now`, `Math.random`, and array index keys in `.tsx` files.
+
 This keeps the server-rendered HTML identical to the first client render and eliminates hydration warnings.
