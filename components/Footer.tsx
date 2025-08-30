@@ -1,6 +1,11 @@
 import BrandedLink from "@/components/BrandedLink";
+import BuildBadge from "@/components/BuildBadge";
+import { buildInfo } from "@/lib/build-info";
 
 export default function Footer() {
+  // Prefer the precomputed year; fall back to slicing the ISO if needed
+  const year = buildInfo.buildYear || (buildInfo.buildIso ?? "").slice(0, 4) || "";
+
   return (
     <footer
       role="contentinfo"
@@ -8,7 +13,8 @@ export default function Footer() {
       style={{ backgroundColor: "var(--brand-chrome)", color: "var(--brand-chrome-fg)" }}
     >
       <div className="mx-auto max-w-7xl px-6 py-6">
-        © <BrandedLink href="/">tullyelly</BrandedLink>. All rights reserved.
+        © {year} <BrandedLink href="/">tullyelly</BrandedLink>. All rights reserved.
+        <BuildBadge />
       </div>
     </footer>
   );

@@ -112,32 +112,39 @@ export function ScrollsTable({
           <thead className="bg-[#00471B] text-[#EEE1C6] sticky top-0 z-10">
             {table.getHeaderGroups().map(hg => (
               <tr key={hg.id}>
-                {hg.headers.map(h => (
-                  <th
-                    key={h.id}
-                    style={{ width: h.getSize() }}
-                    className={`px-4 py-3 text-left text-sm font-medium ${h.column.columnDef.meta?.headerClassName ?? ''}`}
-                  >
-                    {h.isPlaceholder ? null : (
-                      <button
-                        className="inline-flex items-center gap-1"
-                        onClick={h.column.getToggleSortingHandler()}
-                        aria-sort={
-                          h.column.getIsSorted() === 'asc'
-                            ? 'ascending'
-                            : h.column.getIsSorted() === 'desc'
-                            ? 'descending'
-                            : 'none'
-                        }
-                      >
-                        {flexRender(h.column.columnDef.header, h.getContext())}
-                        <span className="text-neutral-400">
-                          {h.column.getIsSorted() ? (h.column.getIsSorted() === 'asc' ? '▲' : '▼') : ''}
-                        </span>
-                      </button>
-                    )}
-                  </th>
-                ))}
+                {hg.headers.map(h => {
+                  const sortState = h.column.getIsSorted();
+                  const ariaSort =
+                    sortState === 'asc'
+                      ? 'ascending'
+                      : sortState === 'desc'
+                      ? 'descending'
+                      : 'none';
+                  const headerText = String(h.column.columnDef.header);
+                  const nextSort = sortState === 'asc' ? 'descending' : 'ascending';
+                  return (
+                    <th
+                      key={h.id}
+                      scope="col"
+                      aria-sort={ariaSort}
+                      style={{ width: h.getSize() }}
+                      className={`px-4 py-3 text-left text-sm font-medium ${h.column.columnDef.meta?.headerClassName ?? ''}`}
+                    >
+                      {h.isPlaceholder ? null : (
+                        <button
+                          className="inline-flex items-center gap-1"
+                          onClick={h.column.getToggleSortingHandler()}
+                          aria-label={`Sort by ${headerText} ${nextSort}`}
+                        >
+                          {flexRender(h.column.columnDef.header, h.getContext())}
+                          <span className="text-neutral-400">
+                            {sortState ? (sortState === 'asc' ? '▲' : '▼') : ''}
+                          </span>
+                        </button>
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             ))}
           </thead>

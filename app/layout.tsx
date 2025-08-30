@@ -1,12 +1,16 @@
 // app/layout.tsx
 import "./globals.css";
+import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { inter, jbMono } from "./fonts";
 
+await initSentry();
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
     default: "tullyelly",
     template: "%s — tullyelly",
