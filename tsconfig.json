@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -13,18 +17,32 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-
-    "plugins": [{ "name": "next" }],
-
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*", "app/*"],
-      "@components/*": ["components/*"],
-      "@ui": ["components/ui"],
-      "@ui/*": ["components/ui/*"]
+      "@/*": [
+        "*",
+        "app/*"
+      ],
+      "@components/*": [
+        "components/*"
+      ],
+      "@ui": [
+        "components/ui"
+      ],
+      "@ui/*": [
+        "components/ui/*"
+      ]
     },
-
-    "types": ["jest", "node"]
+    "types": [
+      "jest",
+      "node"
+    ],
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",
@@ -34,5 +52,7 @@
     "**/*.d.ts",
     "jest.setup.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -15,7 +15,6 @@
     "postbuild": "npm run generate-build-info",
     "start": "next start",
     "lint": "next lint",
-    "prelint": "npm run generate-build-info",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:check": "node scripts/check-images.mjs",
     "new-page": "node scripts/new-page.mjs",
