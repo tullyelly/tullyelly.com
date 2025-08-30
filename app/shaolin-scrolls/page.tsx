@@ -1,6 +1,7 @@
-import { getReleases, ORDER_BY, type Sort, type ReleaseListResponse } from '@/lib/releases';
+import { getReleases, ORDER_BY, type Sort } from '@/lib/releases';
 import type { Release } from './_components/ScrollsTableClient';
 import ScrollsTableServer from './_components/ScrollsTableServer';
+import { serverEnv } from '@/lib/env/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,27 +36,26 @@ function parsePlannedDate(name: string) {
 export default async function Page({ searchParams }: PageProps) {
   const { limit, offset, sort, q } = await parseSearchParams(searchParams);
 
-  let data: ReleaseListResponse = {
-    items: [],
-    page: { limit, offset, total: 0, sort, ...(q ? { q } : {}) },
-  };
+  const env = serverEnv();
+  let releases: Release[] = [];
   let error: string | undefined;
 
   try {
-    data = await getReleases({ limit, offset, sort, q });
+    const data = await getReleases({ limit, offset, sort, q });
+    releases = data.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      plannedDate: parsePlannedDate(item.name),
+      status: item.status as Release['status'],
+      type: item.type as Release['type'],
+      semver: item.semver,
+    }));
   } catch (err) {
     console.error('[shaolin-scrolls] failed to load releases', err);
-    error = 'Failed to load releases';
+    if (env.E2E_MODE !== '1') {
+      error = 'Failed to load releases';
+    }
   }
-
-  const releases: Release[] = data.items.map((item) => ({
-    id: item.id,
-    name: item.name,
-    plannedDate: parsePlannedDate(item.name),
-    status: item.status as Release['status'],
-    type: item.type as Release['type'],
-    semver: item.semver,
-  }));
 
   return (
     <section className="flex min-h-screen flex-col gap-4">

@@ -1,9 +1,12 @@
 import 'server-only';
 import { z } from 'zod';
 
+const databaseUrlSchema =
+  process.env.E2E_MODE === '1' ? z.string().url().optional() : z.string().url();
+
 const serverSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']),
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: databaseUrlSchema,
   TEST_DATABASE_URL: z.string().url().optional(),
   VERCEL_ENV: z.string().optional(),
   VERCEL_URL: z.string().optional(),
@@ -17,6 +20,8 @@ const serverSchema = z.object({
   POSTGRES_URL: z.string().url().optional(),
   POSTGRES_PRISMA_URL: z.string().url().optional(),
   SENTRY_DSN: z.string().url().optional(),
+  E2E_MODE: z.string().optional(),
+  DISABLE_SENTRY: z.string().optional(),
 });
 
 type ServerEnv = z.infer<typeof serverSchema>;

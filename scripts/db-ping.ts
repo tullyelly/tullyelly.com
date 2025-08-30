@@ -18,7 +18,7 @@ async function main() {
     const res = await db.query('SELECT 1');
     console.log('DB response:', res.rows[0]);
   } finally {
-    await db.end();
+    await db.end?.();
   }
 }
 
