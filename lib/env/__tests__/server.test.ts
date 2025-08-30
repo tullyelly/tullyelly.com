@@ -8,5 +8,6 @@ test('loads server env', async () => {
   } as NodeJS.ProcessEnv;
   jest.resetModules();
   const mod = await import('@/lib/env/server');
-  expect(mod.env.DATABASE_URL).toBe('postgres://user:pass@localhost:5432/db');
+  const env = mod.serverEnv({ strict: true });
+  expect(env.DATABASE_URL).toBe('postgres://user:pass@localhost:5432/db');
 });

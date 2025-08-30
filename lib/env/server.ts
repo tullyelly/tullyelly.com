@@ -19,10 +19,26 @@ const serverSchema = z.object({
   SENTRY_DSN: z.string().url().optional(),
 });
 
-const _server = serverSchema.safeParse(process.env);
-if (!_server.success) {
-  console.error('❌ Invalid server env', _server.error.flatten().fieldErrors);
-  throw new Error('Invalid server environment variables');
+type ServerEnv = z.infer<typeof serverSchema>;
+
+/**
+ * Returns validated server env. During `next build`/CI we avoid hard-failing,
+ * because modules can be evaluated while collecting page data.
+ * Pass `strict=true` at true runtime (request handling) to enforce.
+ */
+export function serverEnv(opts?: { strict?: boolean }): Partial<ServerEnv> {
+  const strict = opts?.strict ?? false;
+
+  const isBuildPhase =
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.CI === 'true';
+
+  if (!strict || isBuildPhase) {
+    const parsed = serverSchema.partial().safeParse(process.env);
+    return parsed.success ? parsed.data : {};
+  }
+
+  return serverSchema.parse(process.env);
 }
 
-export const env = _server.data;
+export const env = serverEnv();

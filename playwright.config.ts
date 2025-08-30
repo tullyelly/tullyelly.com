@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
-import { env } from './lib/env/server';
+import { serverEnv } from './lib/env/server';
+
+const env = serverEnv();
 
 export default defineConfig({
   testDir: 'e2e',
@@ -26,7 +28,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev -- -p 3000',
     port: 3000,
-    reuseExistingServer: !env.CI,
+    reuseExistingServer: env.CI !== 'true',
     timeout: 120 * 1000,
     env: {
       DATABASE_URL: 'postgres://localhost:5432/placeholder',

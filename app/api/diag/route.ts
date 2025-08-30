@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/env/server";
+import { serverEnv } from "@/lib/env/server";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 export const revalidate = 0;
 
 export async function GET() {
+  const env = serverEnv({ strict: true });
   return NextResponse.json(
     {
       ok: true,
-      env: env.NODE_ENV,
-      vercel_url: env.VERCEL_URL ?? null,
-      site_url: env.SITE_URL ?? null,
-      ts: new Date().toISOString(),
+      hasDbUrl: Boolean(env.DATABASE_URL),
     },
     { headers: { "Cache-Control": "no-store" } }
   );

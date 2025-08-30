@@ -51,6 +51,14 @@ jobs:
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
 
+      - name: Prepare CI env (DATABASE_URL)
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          PREVIEW_DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+        run: |
+          ./scripts/ci-setup.sh
+          echo "Effective DATABASE_URL set for build-time validation."
+
       - name: Run CI pipeline
         run: npm run ci --if-present
 
