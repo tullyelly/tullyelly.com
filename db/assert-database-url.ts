@@ -1,7 +1,7 @@
-import { serverEnv } from '@/lib/env/server';
+import { Env } from '@/lib/env';
 
 export function assertValidDatabaseUrl(url: string | null) {
-  const { VERCEL_ENV } = serverEnv();
+  const { VERCEL_ENV } = Env;
   if (VERCEL_ENV === 'production' && url) {
     try {
       const parsed = new URL(url);

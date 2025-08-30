@@ -1,5 +1,4 @@
 import 'server-only';
-import { serverEnv } from '@/lib/env/server';
+import { Env } from '@/lib/env';
 
-const env = serverEnv();
-export const isSentryEnabled = env.DISABLE_SENTRY !== '1' && env.NODE_ENV !== 'test';
+export const isSentryEnabled = Env.DISABLE_SENTRY !== '1' && Env.NODE_ENV !== 'test';

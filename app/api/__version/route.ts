@@ -1,28 +1,21 @@
-import { NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { NextResponse } from 'next/server';
+import { Env } from '@/lib/env';
+import { buildInfo } from '@/lib/build-info';
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    const file = resolve(process.cwd(), ".next/generated/build-info.json");
-    const raw = await readFile(file, "utf8");
-    const json = JSON.parse(raw);
-    if (!json.commitSha || typeof json.commitSha !== "string") {
-      json.commitSha = "unknown";
-    }
-    json.ok = true;
-    return NextResponse.json(json, { status: 200 });
-  } catch (err) {
+    const commitSha = buildInfo.commitSha || Env.COMMIT_SHA || 'unknown';
+    const buildTime = buildInfo.buildTime || new Date().toISOString();
+    const version = buildInfo.version || undefined;
+    const payload = { ok: true, commitSha, buildTime, ...(version ? { version } : {}) };
+    return NextResponse.json(payload, { status: 200 });
+  } catch {
     return NextResponse.json(
-      {
-        ok: false,
-        error: "build-info-missing",
-        message: "build-info.json not found or unreadable",
-      },
-      { status: 503 }
+      { ok: false, error: 'version-endpoint-internal-error' },
+      { status: 500 }
     );
   }
 }

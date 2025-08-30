@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
+const PORT = Number(process.env.PORT || 3000);
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${PORT}`;
 const useSystemChrome = process.env.PLAYWRIGHT_USE_SYSTEM_CHROME === '1';
 
 export default defineConfig({
@@ -26,15 +27,17 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run build && npm run start',
+    command: process.env.CI
+      ? `npm run build && PORT=${PORT} npm run start`
+      : `PORT=${PORT} npm run dev`,
     url: baseURL,
     reuseExistingServer: process.env.CI !== 'true',
     timeout: 120 * 1000,
     env: {
       E2E_MODE: '1',
       DISABLE_SENTRY: '1',
-      NODE_ENV: 'production',
-      NEXT_PUBLIC_SITE_URL: 'http://localhost:3000',
+      NODE_ENV: process.env.CI ? 'production' : 'development',
+      NEXT_PUBLIC_SITE_URL: baseURL,
     },
   },
 });

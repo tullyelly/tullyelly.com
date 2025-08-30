@@ -1,10 +1,11 @@
 # Environment Variables
 
-Server-only variables (no `NEXT_PUBLIC_` prefix) are defined and validated in `lib/env/server.ts` and are never sent to the browser.
+Environment variables are validated with Zod in `lib/env.ts`.
 
-Browser-exposed variables must start with `NEXT_PUBLIC_` and live in `lib/env/client.ts`.
+- `Env` exposes server-only values (no `NEXT_PUBLIC_` prefix).
+- `PublicEnv` contains browser-safe variables starting with `NEXT_PUBLIC_`.
 
-Client components may not import `lib/env/server` or access `process.env` directly.
+Client components should import from `lib/env` only when reading `PublicEnv`; never access `process.env` directly.
 
 ## Testing flags
 

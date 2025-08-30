@@ -1,9 +1,9 @@
 import { getBaseUrl } from './getBaseUrl';
 import type { ReleaseListResponse, ReleaseRow } from '@/app/api/releases/route';
-import { serverEnv } from '@/lib/env/server';
+import { Env } from '@/lib/env';
 
 export async function fetchReleases(): Promise<ReleaseRow[]> {
-  const { NODE_ENV, VERCEL_URL } = serverEnv();
+  const { NODE_ENV, VERCEL_URL } = Env;
   const base = getBaseUrl();
   const url = `${base}/api/releases`;
 

@@ -2,8 +2,8 @@ import { config } from 'dotenv';
 
 config({ path: '.env.local', override: true });
 
-const { serverEnv } = await import('../lib/env/server');
-const { DATABASE_URL: url } = serverEnv({ strict: true });
+const { Env } = await import('../lib/env');
+const url = Env.DATABASE_URL;
 if (!url) {
   throw new Error('DATABASE_URL is not set. Define it in .env.local');
 }

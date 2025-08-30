@@ -25,7 +25,7 @@
           },
           {
             "selector": "MemberExpression[object.name='process'][property.name='env']",
-            "message": "Use lib/env/server in server files or lib/env/client in client files. Never access process.env directly in client code."
+            "message": "Use Env from lib/env; never access process.env directly in React code."
           }
         ]
       }

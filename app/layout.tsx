@@ -5,10 +5,10 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { inter, jbMono } from "./fonts";
-import { env } from "@/lib/env/server";
+import { Env } from "@/lib/env";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(env.SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(Env.SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "tullyelly",
     template: "%s — tullyelly",

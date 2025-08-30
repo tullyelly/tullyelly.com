@@ -13,7 +13,7 @@ function redact(u: string | null | undefined) {
   }
 }
 
-import { serverEnv } from '@/lib/env/server';
+import { Env } from '@/lib/env';
 
 const VARS = [
   'DATABASE_URL',
@@ -24,11 +24,10 @@ const VARS = [
 ] as const;
 
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_DEBUG_DB_META !== '1') {
+  if (Env.NEXT_PUBLIC_DEBUG_DB_META !== '1') {
     return new Response('Not Found', { status: 404 });
   }
-  const env = serverEnv();
-  const vercelEnv = env.VERCEL_ENV ?? env.NODE_ENV ?? 'unknown';
+  const vercelEnv = Env.VERCEL_ENV ?? Env.NODE_ENV ?? 'unknown';
   const data: { vercelEnv: string } & Record<(typeof VARS)[number], string | null> = {
     vercelEnv,
     DATABASE_URL: null,
@@ -38,7 +37,7 @@ export async function GET() {
     PGDATABASE_URL: null,
   };
   for (const key of VARS) {
-    data[key] = redact(env[key]);
+    data[key] = redact((Env as any)[key]);
   }
   return Response.json(data);
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { env } from "@/lib/env/client";
+import { PublicEnv } from "@/lib/env";
 
 interface AnnouncementBannerProps {
   message?: string;
@@ -21,7 +21,7 @@ const variantStyles: Record<NonNullable<AnnouncementBannerProps["variant"]>, str
 };
 
 export default function AnnouncementBanner({
-  message = env.NEXT_PUBLIC_ANNOUNCEMENT,
+  message = PublicEnv.NEXT_PUBLIC_ANNOUNCEMENT,
   href,
   variant = "info",
   dismissible = false,

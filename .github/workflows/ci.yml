@@ -60,7 +60,7 @@ jobs:
           echo "Effective DATABASE_URL set for build-time validation."
 
       - name: Write build info
-        run: npm run write:build-info
+        run: npm run generate-build-info
         env:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REF_NAME: ${{ github.ref_name }}

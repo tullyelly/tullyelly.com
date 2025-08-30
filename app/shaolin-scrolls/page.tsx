@@ -1,7 +1,7 @@
 import { getReleases, ORDER_BY, type Sort } from '@/lib/releases';
 import type { Release } from './_components/ScrollsTableClient';
 import ScrollsTableServer from './_components/ScrollsTableServer';
-import { serverEnv } from '@/lib/env/server';
+import { Env } from '@/lib/env';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,7 +36,6 @@ function parsePlannedDate(name: string) {
 export default async function Page({ searchParams }: PageProps) {
   const { limit, offset, sort, q } = await parseSearchParams(searchParams);
 
-  const env = serverEnv();
   let releases: Release[] = [];
   let error: string | undefined;
 
@@ -52,7 +51,7 @@ export default async function Page({ searchParams }: PageProps) {
     }));
   } catch (err) {
     console.error('[shaolin-scrolls] failed to load releases', err);
-    if (env.E2E_MODE !== '1') {
+    if (Env.E2E_MODE !== '1') {
       error = 'Failed to load releases';
     }
   }
