@@ -15,7 +15,7 @@ Columns are defined with explicit `size`/`minSize` values and optional
 `meta.headerClassName` and `meta.cellClassName` for Tailwind classes.
 To add a column:
 
-1. Extend the `Release` type in `ScrollsTable.tsx`.
+1. Extend the `Release` type in `ScrollsTableClient.tsx`.
 2. Append a `ColumnDef` to the `columns` array with width settings.
 3. Provide `meta` class names to align header and cells.
 

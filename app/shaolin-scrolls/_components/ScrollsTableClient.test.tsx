@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { useState } from 'react';
-import { ScrollsTable, Release } from './ScrollsTable';
+import { ScrollsTableClient, Release } from './ScrollsTableClient';
 
 function makeRelease(i: number): Release {
   return {
@@ -13,19 +12,9 @@ function makeRelease(i: number): Release {
   };
 }
 
-function TableWithSearch({ data }: { data: Release[] }) {
-  const [filter, setFilter] = useState('');
-  return (
-    <>
-      <input aria-label="Search releases" value={filter} onChange={(e) => setFilter(e.target.value)} />
-      <ScrollsTable data={data} pageSize={10} globalFilter={filter} />
-    </>
-  );
-}
-
 test('renders rows', () => {
   const data = [makeRelease(1), makeRelease(2)];
-  render(<ScrollsTable data={data} pageSize={10} globalFilter="" />);
+  render(<ScrollsTableClient initialData={data} build="test" pageSize={10} />);
   expect(screen.getByText('Release 1')).toBeInTheDocument();
   expect(screen.getByText('Release 2')).toBeInTheDocument();
 });
@@ -35,7 +24,7 @@ test('sorts by SemVer', () => {
     { id: '1', name: 'A', plannedDate: '2025-01', status: 'planned', type: 'patch', semver: 'v1.0.1' },
     { id: '2', name: 'B', plannedDate: '2025-01', status: 'planned', type: 'patch', semver: 'v1.0.0' },
   ];
-  render(<ScrollsTable data={data} pageSize={10} globalFilter="" />);
+  render(<ScrollsTableClient initialData={data} build="test" pageSize={10} />);
   const semverHeader = screen.getByRole('button', { name: /semver/i });
   fireEvent.click(semverHeader);
   const rows = screen.getAllByRole('row');
@@ -44,7 +33,7 @@ test('sorts by SemVer', () => {
 
 test('filters by name', () => {
   const data = [makeRelease(1), makeRelease(2), makeRelease(3)];
-  render(<TableWithSearch data={data} />);
+  render(<ScrollsTableClient initialData={data} build="test" pageSize={10} />);
   fireEvent.change(screen.getByLabelText(/search releases/i), { target: { value: 'Release 2' } });
   expect(screen.getByText('Release 2')).toBeInTheDocument();
   expect(screen.queryByText('Release 1')).toBeNull();
@@ -52,9 +41,8 @@ test('filters by name', () => {
 
 test('paginates to next page', () => {
   const data = Array.from({ length: 25 }, (_, i) => makeRelease(i));
-  render(<ScrollsTable data={data} pageSize={10} globalFilter="" />);
+  render(<ScrollsTableClient initialData={data} build="test" pageSize={10} />);
   expect(screen.queryByText('Release 15')).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
   expect(screen.getByText('Release 15')).toBeInTheDocument();
 });
-

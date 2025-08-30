@@ -5,7 +5,6 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { inter, jbMono } from "./fonts";
-import { NEXT_PUBLIC_ANNOUNCEMENT } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: {
@@ -21,13 +20,10 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const announcement = NEXT_PUBLIC_ANNOUNCEMENT;
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
       <body className="font-sans min-h-screen flex flex-col bg-[#EEE1C6] text-foreground">
-        {announcement && (
-          <AnnouncementBanner message={announcement} dismissible />
-        )}
+        <AnnouncementBanner dismissible />
         <header>
           <SiteHeader />
         </header>

@@ -22,6 +22,10 @@
           {
             "selector": "UnaryExpression[operator='typeof'][argument.name='window']",
             "message": "Avoid typeof window checks in React components."
+          },
+          {
+            "selector": "MemberExpression[object.name='process'][property.name='env']",
+            "message": "Use lib/env/server in server files or lib/env/client in client files. Never access process.env directly in client code."
           }
         ]
       }

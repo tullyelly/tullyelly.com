@@ -2,8 +2,8 @@ import { config } from 'dotenv';
 
 config({ path: '.env.local', override: true });
 
-const { DATABASE_URL } = await import('../lib/env');
-const url = DATABASE_URL;
+const { env } = await import('../lib/env/server');
+const url = env.DATABASE_URL;
 if (!url) {
   throw new Error('DATABASE_URL is not set. Define it in .env.local');
 }
@@ -26,4 +26,3 @@ main().catch((err) => {
   console.error('DB ping failed', err);
   process.exit(1);
 });
-

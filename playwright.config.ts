@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { PLAYWRIGHT_USE_SYSTEM_CHROME, PLAYWRIGHT_CHROME_PATH, CI } from './lib/env';
+import { env } from './lib/env/server';
 
 export default defineConfig({
   testDir: 'e2e',
@@ -14,10 +14,10 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        ...(PLAYWRIGHT_USE_SYSTEM_CHROME === '1'
+        ...(env.PLAYWRIGHT_USE_SYSTEM_CHROME === '1'
           ? {
               channel: undefined,
-              executablePath: PLAYWRIGHT_CHROME_PATH || '/usr/bin/chromium-browser',
+              executablePath: env.PLAYWRIGHT_CHROME_PATH || '/usr/bin/chromium-browser',
             }
           : {}),
       },
@@ -26,7 +26,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev -- -p 3000',
     port: 3000,
-    reuseExistingServer: !CI,
+    reuseExistingServer: !env.CI,
     timeout: 120 * 1000,
     env: {
       DATABASE_URL: 'postgres://localhost:5432/placeholder',

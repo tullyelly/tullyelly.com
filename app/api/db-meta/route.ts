@@ -1,6 +1,6 @@
 import { Client, QueryResult } from 'pg';
 import { assertValidDatabaseUrl } from '@/db/assert-database-url';
-import { VERCEL_ENV, NODE_ENV, DATABASE_URL } from '@/lib/env';
+import { env } from '@/lib/env/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,15 +20,15 @@ function redact(u?: string | null) {
 type DbMetaRow = { db: string; usr: string; host_ip: string };
 
 export async function GET() {
-  const env = VERCEL_ENV ?? NODE_ENV ?? 'unknown';
-  const raw = DATABASE_URL ?? null;
+  const vercelEnv = env.VERCEL_ENV ?? env.NODE_ENV ?? 'unknown';
+  const raw = env.DATABASE_URL ?? null;
   assertValidDatabaseUrl(raw);
   const safe = redact(raw);
 
   try {
     if (!raw || safe === 'INVALID_URL') {
       return Response.json(
-        { ok: false, reason: 'NO_OR_BAD_DATABASE_URL', vercelEnv: env, databaseUrlRedacted: safe },
+        { ok: false, reason: 'NO_OR_BAD_DATABASE_URL', vercelEnv, databaseUrlRedacted: safe },
         { status: 500 },
       );
     }
@@ -55,7 +55,7 @@ export async function GET() {
 
     return Response.json({
       ok: true,
-      vercelEnv: env,
+      vercelEnv,
       databaseUrlRedacted: safe,
       meta,
       rowsInView: count,
@@ -63,9 +63,8 @@ export async function GET() {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return Response.json(
-      { ok: false, reason: 'QUERY_FAILED', message, vercelEnv: env, databaseUrlRedacted: safe },
+      { ok: false, reason: 'QUERY_FAILED', message, vercelEnv, databaseUrlRedacted: safe },
       { status: 500 },
     );
   }
 }
-

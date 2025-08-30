@@ -11,6 +11,7 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^server-only$': '<rootDir>/test/shims/server-only.ts',
+    '^client-only$': '<rootDir>/test/shims/client-only.ts',
   },
   // Keep workers low to avoid too many DB connections in CI
   maxWorkers: 1,

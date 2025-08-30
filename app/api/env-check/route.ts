@@ -13,7 +13,7 @@ function redact(u: string | null | undefined) {
   }
 }
 
-import { env, NEXT_PUBLIC_DEBUG_DB_META, VERCEL_ENV, NODE_ENV } from '@/lib/env';
+import { env } from '@/lib/env/server';
 
 const VARS = [
   'DATABASE_URL',
@@ -24,10 +24,10 @@ const VARS = [
 ] as const;
 
 export async function GET() {
-  if (NEXT_PUBLIC_DEBUG_DB_META !== '1') {
+  if (process.env.NEXT_PUBLIC_DEBUG_DB_META !== '1') {
     return new Response('Not Found', { status: 404 });
   }
-  const vercelEnv = VERCEL_ENV ?? NODE_ENV ?? 'unknown';
+  const vercelEnv = env.VERCEL_ENV ?? env.NODE_ENV ?? 'unknown';
   const data: { vercelEnv: string } & Record<(typeof VARS)[number], string | null> = {
     vercelEnv,
     DATABASE_URL: null,

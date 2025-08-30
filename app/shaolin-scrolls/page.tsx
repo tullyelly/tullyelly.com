@@ -1,6 +1,6 @@
 import { getReleases, ORDER_BY, type Sort, type ReleaseListResponse } from '@/lib/releases';
-import type { Release } from './_components/ScrollsTable';
-import ScrollsPageClient from './_components/ScrollsPageClient';
+import type { Release } from './_components/ScrollsTableClient';
+import ScrollsTableServer from './_components/ScrollsTableServer';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,7 +65,7 @@ export default async function Page({ searchParams }: PageProps) {
           {error}
         </div>
       )}
-      <ScrollsPageClient initialData={releases} />
+      <ScrollsTableServer data={releases} />
     </section>
   );
 }

@@ -207,6 +207,7 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 * Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`, `app/typography-demo`
 * `globals.css`: design tokens + Tailwind entry point
 * `tailwind.config.mjs`: maps tokens → Tailwind theme
+* Environment variables split: see `docs/env.md`
 * Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
 * Always run `npm run images:optimize` before committing new images
 * `app/shaolin-scrolls`: responsive grid layout with sidebar and table scaffold

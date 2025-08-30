@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { env } from "@/lib/env/client";
 
 interface AnnouncementBannerProps {
-  message: string;
+  message?: string;
   href?: string;
   variant?: "info" | "success" | "warning" | "error";
   dismissible?: boolean;
@@ -20,7 +21,7 @@ const variantStyles: Record<NonNullable<AnnouncementBannerProps["variant"]>, str
 };
 
 export default function AnnouncementBanner({
-  message,
+  message = env.NEXT_PUBLIC_ANNOUNCEMENT,
   href,
   variant = "info",
   dismissible = false,
@@ -29,7 +30,7 @@ export default function AnnouncementBanner({
   className = "",
 }: AnnouncementBannerProps) {
   const [visible, setVisible] = useState(true);
-  if (!visible) return null;
+  if (!visible || !message) return null;
 
   const role = variant === "error" || variant === "warning" ? "alert" : "status";
   const classes = `${variantStyles[variant]} flex items-center justify-between px-4 py-2 text-sm ${className}`;

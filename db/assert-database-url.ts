@@ -1,7 +1,7 @@
-import { VERCEL_ENV } from '@/lib/env';
+import { env } from '@/lib/env/server';
 
 export function assertValidDatabaseUrl(url: string | null) {
-  if (VERCEL_ENV === 'production' && url) {
+  if (env.VERCEL_ENV === 'production' && url) {
     try {
       const parsed = new URL(url);
       const badUser = parsed.username === 'neondb_owner';

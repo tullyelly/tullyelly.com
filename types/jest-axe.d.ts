@@ -1,2 +1,1 @@
-// types/jest-axe.d.ts
-import "jest-axe/extend-expect";
+declare module 'jest-axe';
