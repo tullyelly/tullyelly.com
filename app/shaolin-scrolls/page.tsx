@@ -10,7 +10,9 @@ interface PageProps {
   searchParams: Promise<{ limit?: string; offset?: string; sort?: string; q?: string }>;
 }
 
-function parseSearchParams(params: PageProps['searchParams']): Promise<{ limit: number; offset: number; sort: Sort; q?: string }> {
+function parseSearchParams(
+  params: PageProps['searchParams'],
+): Promise<{ limit: number; offset: number; sort: Sort; q?: string }> {
   return params.then((p = {}) => {
     const limitNum = Number.parseInt(p.limit ?? '', 10);
     const limit = Math.min(Math.max(Number.isNaN(limitNum) ? 20 : limitNum, 1), 100);
@@ -61,7 +63,7 @@ export default async function Page({ searchParams }: PageProps) {
   return (
     <section className="flex min-h-screen flex-col gap-4">
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
-      <ScrollsPageClient data={releases} />
+      <ScrollsPageClient initialData={releases} />
     </section>
   );
 }
