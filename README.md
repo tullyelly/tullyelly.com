@@ -131,6 +131,12 @@ curl -s -X POST -H 'Content-Type: application/json' \
 
 ---
 
+## ♻️ Hydration
+
+See [docs/hydration.md](docs/hydration.md) for how server-rendered data stays in sync with client hydration.
+
+---
+
 ## 📜 Scripts
 
 Recommended Node version: **20**.
@@ -141,6 +147,7 @@ Recommended Node version: **20**.
 * `npm run start` – start the production server
 * `npm run ci` – run lint, image checks, and build
 * `npm run db:ping` – verify DB connectivity (SELECT 1)
+* `npm run check:use-server` – flag invalid `"use server"` exports
 
 ---
 
