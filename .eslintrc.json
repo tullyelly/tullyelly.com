@@ -1,4 +1,30 @@
 {
   "root": true,
-  "extends": ["next/core-web-vitals"]
+  "extends": ["next/core-web-vitals"],
+  "overrides": [
+    {
+      "files": ["**/*.tsx"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "CallExpression[callee.object.name='Date'][callee.property.name='now']",
+            "message": "Use deterministic timestamps; Date.now() is banned in render paths."
+          },
+          {
+            "selector": "CallExpression[callee.object.name='Math'][callee.property.name='random']",
+            "message": "Math.random() is banned in render paths."
+          },
+          {
+            "selector": "NewExpression[callee.name='Date']",
+            "message": "new Date() is banned in render paths. Use server-provided ISO strings."
+          },
+          {
+            "selector": "UnaryExpression[operator='typeof'][argument.name='window']",
+            "message": "Avoid typeof window checks in React components."
+          }
+        ]
+      }
+    }
+  ]
 }

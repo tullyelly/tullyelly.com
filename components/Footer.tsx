@@ -1,5 +1,3 @@
-"use client";
-
 import BrandedLink from "@/components/BrandedLink";
 
 export default function Footer() {
@@ -10,9 +8,7 @@ export default function Footer() {
       style={{ backgroundColor: "var(--brand-chrome)", color: "var(--brand-chrome-fg)" }}
     >
       <div className="mx-auto max-w-7xl px-6 py-6">
-        © {new Date().getFullYear()}{" "}
-        <BrandedLink href="/">tullyelly</BrandedLink>
-        . All rights reserved.
+        © <BrandedLink href="/">tullyelly</BrandedLink>. All rights reserved.
       </div>
     </footer>
   );
