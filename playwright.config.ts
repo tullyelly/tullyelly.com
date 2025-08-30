@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 const useSystemChrome = process.env.PLAYWRIGHT_USE_SYSTEM_CHROME === '1';
 
 export default defineConfig({
@@ -7,7 +8,7 @@ export default defineConfig({
   reporter: [['html', { outputFolder: 'playwright-report' }]],
   retries: 1,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -26,7 +27,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run build && npm run start',
-    url: 'http://localhost:3000',
+    url: baseURL,
     reuseExistingServer: process.env.CI !== 'true',
     timeout: 120 * 1000,
     env: {
