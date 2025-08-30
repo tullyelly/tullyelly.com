@@ -12,13 +12,13 @@ export const buildInfo: {
   builtAt: string;
   buildYear: string;
 } = {
-  "commitSha": "70b09875573c3af57c17c85d2eef80ff6683c86f",
-  "commitShortSha": "70b0987",
+  "commitSha": "010340ed42e4d279fadc937900dfcefbc1a69da7",
+  "commitShortSha": "010340e",
   "ref": "work",
   "prNumber": null,
   "env": "development",
   "url": "http://localhost:3000",
   "runtime": "node v22.18.0",
-  "builtAt": "2025-08-30T13:32:10.092Z",
+  "builtAt": "2025-08-30T16:43:05.689Z",
   "buildYear": "2025"
 };

@@ -24,14 +24,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev -- -p 3000",
+    command: "npm run build && npm run start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     env: {
+      NODE_ENV: "production",
       E2E_MODE: "1",
       DISABLE_SENTRY: "1",
-      NODE_ENV: "test",
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
     },
   },
