@@ -8,8 +8,11 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "predev": "tsx scripts/write-build-info.ts",
     "postinstall": "prisma generate",
+    "prebuild": "tsx scripts/write-build-info.ts",
     "build": "prisma generate && next build",
+    "postbuild": "tsx scripts/write-build-info.ts",
     "start": "next start",
     "lint": "next lint",
     "images:optimize": "node scripts/optimize-images.mjs",
@@ -33,6 +36,7 @@
   "dependencies": {
     "@prisma/client": "^6.14.0",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@sentry/nextjs": "^10.8.0",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
     "next": "15.4.6",
