@@ -97,13 +97,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: build-and-check
-    # Run E2E only for PRs and main to avoid doubling work on every push
     if: github.event_name == 'pull_request' || github.ref_name == 'main'
     env:
       NODE_ENV: test
       NEXT_TELEMETRY_DISABLED: 1
       VERCEL_ENV: preview
-      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}   # set in repo Settings → Secrets and variables → Actions
+      # point Playwright to a cacheable path
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+
+      # your app env
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       NEXTAUTH_URL: http://localhost:3000
       AUTH_SECRET: ci-dummy
       GOOGLE_CLIENT_ID: ci-dummy
@@ -116,9 +119,25 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # Fast browser setup + caching handled by the action
-      - name: Set up Playwright
-        uses: microsoft/playwright-github-action@v1
+      # grab the local @playwright/test version for cache keying
+      - name: Get Playwright version
+        id: pw
+        shell: bash
+        run: |
+          echo "version=$(node -e 'console.log(require(\"@playwright/test/package.json\").version)')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-pw-${{ steps.pw.outputs.version }}
+          restore-keys: |
+            ${{ runner.os }}-pw-
+
+      # 🌟 New: install browsers + OS deps via CLI (works on Ubuntu 24.04)
+      # Specify chromium to keep it lean; drop "chromium" to install all browsers.
+      - name: Install Playwright (browsers + OS deps)
+        run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
         run: npx playwright test --reporter=html
