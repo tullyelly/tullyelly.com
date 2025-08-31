@@ -1,63 +1,43 @@
-// middleware.ts
-import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { isPublicPath, isProtectedPath, isOwnerOnlyPath, RULES } from "@/lib/auth-config";
-import { buildInfo } from "@/lib/build-info";
+// middleware.ts — NextAuth v4; rules-driven protection from AUTH_RULES_JSON
+import { withAuth } from "next-auth/middleware";
+import {
+  RULES,
+  isProtectedPath,
+  isOwnerOnlyPath,
+  emailIsOwner,
+} from "./lib/auth-config";
 
-function withBuildHeaders(res: NextResponse) {
-  // Preserve build metadata headers on every response (including redirects)
-  try {
-    if (buildInfo?.shortCommit) res.headers.set("X-Commit", buildInfo.shortCommit);
-    if (buildInfo?.prNumber) res.headers.set("X-PR", String(buildInfo.prNumber));
-    if (buildInfo?.branch) res.headers.set("X-Ref", buildInfo.branch);
-    if (buildInfo?.buildIso) res.headers.set("X-Built-At", buildInfo.buildIso);
-    if (buildInfo?.env) res.headers.set("X-Env", buildInfo.env);
-  } catch {
-    // Non-fatal: never block the request due to header setting issues
-  }
-  return res;
-}
+// Build matcher from configured protected + owner-only paths at build time
+const basePrefixes = Array.from(
+  new Set([...(RULES.protectedPaths || []), ...(RULES.ownerOnlyPaths || [])].map((p) => p.replace(/\/+$/, "")))
+);
+const matchers = basePrefixes.flatMap((base) => [base, `${base}/:path*`]);
 
-export async function middleware(req: NextRequest) {
-  const { pathname, search } = req.nextUrl;
+export default withAuth({
+  pages: { signIn: "/login" },
+  callbacks: {
+    authorized: ({ req, token }) => {
+      const pathname = req.nextUrl.pathname;
 
-  // Extra guard if the matcher ever changes: skip framework internals/static
-  if (
-    pathname.startsWith("/_next") ||
-    /\.[^/]+$/.test(pathname) // any "file.ext" at the end of the path
-  ) {
-    return withBuildHeaders(NextResponse.next());
-  }
+      // Only enforce auth on protected paths
+      if (!isProtectedPath(pathname)) return true;
 
-  // Public routes always pass; routes not listed as protected are public by default
-  if (isPublicPath(pathname) || !isProtectedPath(pathname)) {
-    return withBuildHeaders(NextResponse.next());
-  }
+      // Require a valid session token for any protected path
+      if (!token) return false;
 
-  // Protected area → require a session (unless preview override is enabled)
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-  const isPreview = process.env.VERCEL_ENV === "preview";
-  const allowAny = !!RULES.toggles?.allowAnyEmailOnPreview;
+      // Owner-only segments require owner email (unless preview override is on)
+      if (isOwnerOnlyPath(pathname)) {
+        const email = (token as any)?.email as string | undefined;
+        const allowAnyEmail = !!RULES.toggles?.allowAnyEmailOnPreview && process.env.VERCEL_ENV !== "production";
+        return allowAnyEmail ? true : emailIsOwner(email);
+      }
 
-  if (!token) {
-    if (isPreview && allowAny) {
-      return withBuildHeaders(NextResponse.next());
-    }
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("callbackUrl", pathname + search);
-    return withBuildHeaders(NextResponse.redirect(loginUrl));
-  }
-
-  // Owner-only sections → require owner role @ts-expect-error custom claim attached in NextAuth callbacks
-  const role = token.role as "owner" | "user" | undefined;
-  if (isOwnerOnlyPath(pathname) && role !== "owner") {
-    return withBuildHeaders(NextResponse.redirect(new URL("/", req.url)));
-  }
-
-  return withBuildHeaders(NextResponse.next());
-}
+      // Authenticated; allow
+      return true;
+    },
+  },
+});
 
 export const config = {
-  // Your original matcher: runs on all paths except /api, /_next, and any path containing a dot (e.g., /file.css)
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: matchers,
 };

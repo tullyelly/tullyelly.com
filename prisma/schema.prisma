@@ -1,8 +1,69 @@
+// prisma/schema.prisma
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // Only let Prisma manage the auth schema
+  schemas  = ["auth"]
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma — models mapped to your existing auth.* tables
+
+model User {
+  id            String    @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("emailVerified")
+  image         String?
+
+  accounts      Account[]
+  sessions      Session[]
+
+  @@schema("auth")
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  userId            String  @db.Uuid @map("userId")
+  type              String
+  provider          String
+  providerAccountId String  @map("providerAccountId")
+  refresh_token     String?
+  access_token      String?
+  expires_at        BigInt? @db.BigInt   // ← was Int?; must be BigInt?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@schema("auth")
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String  @id @map("sessionToken")
+  userId       String  @db.Uuid @map("userId")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@schema("auth")
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@schema("auth")
+  @@map("verification_tokens")
 }
