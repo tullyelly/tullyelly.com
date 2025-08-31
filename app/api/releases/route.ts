@@ -49,7 +49,6 @@ function parseQuery(url: string) {
 export async function GET(req: Request) {
   try {
     const { limit, offset, sort, q } = parseQuery(req.url);
-    console.log('[API:/releases] params', { limit, offset, sort, q }); // eslint-disable-line no-console
 
     const { items, page } = await getReleases({ limit, offset, sort, q });
 
@@ -63,10 +62,8 @@ export async function GET(req: Request) {
     );
   } catch (err) {
     if (err instanceof InputError) {
-      console.error('[API:/releases] bad input', err); // eslint-disable-line no-console
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
-    console.error('[API:/releases] unexpected error', err); // eslint-disable-line no-console
     return NextResponse.json({ error: 'internal error' }, { status: 500 });
   }
 }

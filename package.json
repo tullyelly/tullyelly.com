@@ -14,7 +14,8 @@
     "build": "prisma generate && next build",
     "postbuild": "npm run generate-build-info",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --cache --report-unused-disable-directives --max-warnings=0",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:check": "node scripts/check-images.mjs",
     "new-page": "node scripts/new-page.mjs",
@@ -36,13 +37,16 @@
     "generate-build-info": "tsx scripts/generate-build-info.ts"
   },
   "dependencies": {
+    "@auth/core": "0.40.0",
+    "@auth/pg-adapter": "1.10.0",
     "@prisma/client": "^6.14.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@sentry/nextjs": "^10.8.0",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
-    "next": "15.4.6",
-    "pg": "^8.16.3",
+    "next": "^15.5.2",
+    "next-auth": "5.0.0-beta.27",
+    "pg": "8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sharp": "^0.34.3"
@@ -92,5 +96,8 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
     "zod": "^4.0.17"
+  },
+  "overrides": {
+    "@auth/core": "0.40.0"
   }
 }
