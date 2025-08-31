@@ -9,7 +9,6 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console
     console.error('[GLOBAL_ERROR]', { message: error.message, digest: error.digest });
   }, [error]);
 

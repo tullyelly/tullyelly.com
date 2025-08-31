@@ -20,21 +20,19 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # composite setup (node, cache, deps)
+      # Composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
 
-      # sanity-check native bindings
+      # Sanity-check native bindings
       - name: Verify sharp binding
         env:
           SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
@@ -51,7 +49,15 @@ jobs:
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
 
+      # Full CI pipeline (lint, images, checks, build)
+      # Provide harmless env so Next/Auth never crash during *build time*
       - name: Run CI pipeline
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
+          NEXTAUTH_URL: http://localhost:3000
+          AUTH_SECRET: ci-dummy
+          GOOGLE_CLIENT_ID: ci-dummy
+          GOOGLE_CLIENT_SECRET: ci-dummy
         run: npm run ci --if-present
 
   e2e:
@@ -59,8 +65,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
+      NEXT_TELEMETRY_DISABLED: 1
       PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
       PLAYWRIGHT_USE_SYSTEM_CHROME: '0'
+      # Make the dev server (spawned by Playwright) see a DB and allow protected-route bypass
+      VERCEL_ENV: preview
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}   # add this in repo settings → Secrets and variables → Actions
+      NEXTAUTH_URL: http://localhost:3000
+      AUTH_SECRET: ci-dummy
+      GOOGLE_CLIENT_ID: ci-dummy
+      GOOGLE_CLIENT_SECRET: ci-dummy
+      AUTH_RULES_JSON: '{"ownerDomains":["tullyelly.com"],"publicPaths":["/","/login","/api/auth"],"protectedPaths":["/shaolin-scrolls","/admin"],"ownerOnlyPaths":["/shaolin-scrolls/admin"],"toggles":{"allowAnyEmailOnPreview":true}}'
     steps:
       - uses: actions/checkout@v4
         with:
