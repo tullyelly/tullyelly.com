@@ -44,6 +44,48 @@ const config = [
       'import/no-anonymous-default-export': 'off',
     },
   },
+
+  // Guard against deprecated storage APIs
+  {
+    files: ['**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      // Prefer standardized navigator.storage APIs
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'navigator',
+          property: 'webkitPersistentStorage',
+          message:
+            'Deprecated: use navigator.storage.estimate()/persist()/persisted() instead.',
+        },
+        {
+          object: 'navigator',
+          property: 'webkitTemporaryStorage',
+          message: 'Deprecated: use navigator.storage.estimate() instead.',
+        },
+        {
+          object: 'window',
+          property: 'PERSISTENT',
+          message: 'Deprecated: use navigator.storage APIs; quota is UA-managed.',
+        },
+        {
+          object: 'window',
+          property: 'TEMPORARY',
+          message: 'Deprecated: use navigator.storage APIs; quota is UA-managed.',
+        },
+        {
+          object: 'window',
+          property: 'webkitRequestFileSystem',
+          message: 'Deprecated File System API; consider OPFS via navigator.storage.getDirectory().',
+        },
+        {
+          object: 'StorageType',
+          property: 'persistent',
+          message: 'Deprecated: use navigator.storage instead of StorageType.persistent.',
+        },
+      ],
+    },
+  },
 ]
 
 export default config
