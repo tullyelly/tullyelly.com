@@ -37,16 +37,15 @@
     "generate-build-info": "tsx scripts/generate-build-info.ts"
   },
   "dependencies": {
-    "@auth/core": "0.40.0",
-    "@auth/pg-adapter": "1.10.0",
-    "@prisma/client": "^6.14.0",
+    "@next-auth/prisma-adapter": "^1.0.7",
+    "@prisma/client": "^6.15.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@sentry/nextjs": "^10.8.0",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
     "next": "^15.5.2",
-    "next-auth": "5.0.0-beta.27",
-    "pg": "8.16.3",
+    "next-auth": "^4.24.11",
+    "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sharp": "^0.34.3"
@@ -86,7 +85,7 @@
     "jest-environment-jsdom": "^30.0.5",
     "jiti": "^2.5.1",
     "prettier": "^3.6.2",
-    "prisma": "^6.14.0",
+    "prisma": "^6.15.0",
     "remark-frontmatter": "^5.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
     "server-only": "^0.0.1",
@@ -96,8 +95,5 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
     "zod": "^4.0.17"
-  },
-  "overrides": {
-    "@auth/core": "0.40.0"
   }
 }
