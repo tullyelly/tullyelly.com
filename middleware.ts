@@ -1,17 +1,10 @@
 // middleware.ts — NextAuth v4; rules-driven protection from AUTH_RULES_JSON
 import { withAuth } from "next-auth/middleware";
-import {
-  RULES,
-  isProtectedPath,
-  isOwnerOnlyPath,
-  emailIsOwner,
-} from "./lib/auth-config";
+import { RULES, isProtectedPath, isOwnerOnlyPath, emailIsOwner } from "./lib/auth-config";
 
-// Build matcher from configured protected + owner-only paths at build time
-const basePrefixes = Array.from(
-  new Set([...(RULES.protectedPaths || []), ...(RULES.ownerOnlyPaths || [])].map((p) => p.replace(/\/+$/, "")))
-);
-const matchers = basePrefixes.flatMap((base) => [base, `${base}/:path*`]);
+// Note: Next.js requires `config.matcher` to be statically analyzable.
+// We therefore use a broad, static matcher and do fine-grained checks
+// in `authorized()` using AUTH_RULES_JSON from lib/auth-config.
 
 export default withAuth({
   pages: { signIn: "/login" },
@@ -39,5 +32,6 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: matchers,
+  // Run middleware for all non-static, non-API routes
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
