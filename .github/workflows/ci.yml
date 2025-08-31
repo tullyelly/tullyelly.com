@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches: ['**']          # fast feedback on all branches
   pull_request:
+    branches: [main]          # full suite when proposing changes to main
 
 permissions:
   contents: read
@@ -17,9 +18,7 @@ jobs:
   build-and-check:
     name: Build & Check
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
+    timeout-minutes: 10
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
@@ -27,13 +26,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1        # bump to 0 if a task needs full history
 
       # Composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
 
-      # Sanity-check native bindings
+      # Skip heavy work when irrelevant
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            images:
+              - 'public/**/*'
+              - '**/*.{png,jpg,jpeg,webp,avif,svg,gif}'
+            native:
+              - 'package.json'
+              - 'package-lock.json'
+              - 'scripts/**'
+
+      # Native addon sanity only when it matters (native deps changed or on main)
       - name: Verify sharp binding
+        if: github.ref_name == 'main' || steps.filter.outputs.native == 'true'
         env:
           SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
         run: |
@@ -41,6 +55,7 @@ jobs:
           node -e "require('sharp'); console.log('sharp: OK')"
 
       - name: Rebuild native addons (lightningcss + sharp)
+        if: github.ref_name == 'main' || steps.filter.outputs.native == 'true'
         env:
           npm_config_platform: linux
           npm_config_arch: x64
@@ -49,28 +64,49 @@ jobs:
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
 
-      # Full CI pipeline (lint, images, checks, build)
-      # Provide harmless env so Next/Auth never crash during *build time*
-      - name: Run CI pipeline
+      # Split the CI pipeline so we can selectively skip heavy steps
+      - name: Lint
+        run: npm run lint
+
+      - name: Optimize images (changed only)
+        if: steps.filter.outputs.images == 'true'
+        run: npm run images:optimize
+
+      - name: Images check (changed only)
+        if: steps.filter.outputs.images == 'true'
+        run: npm run images:check
+
+      - name: Validate frontmatter
+        run: npm run validate-frontmatter
+
+      - name: Validate SEO
+        run: npm run validate-seo
+
+      - name: Build
+        # harmless env so Next/Auth won't crash during build
         env:
           DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
           NEXTAUTH_URL: http://localhost:3000
           AUTH_SECRET: ci-dummy
           GOOGLE_CLIENT_ID: ci-dummy
           GOOGLE_CLIENT_SECRET: ci-dummy
-        run: npm run ci --if-present
+        run: npm run build
 
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build-and-check
+    if: github.event_name == 'pull_request' || github.ref_name == 'main'
     env:
       NODE_ENV: test
       NEXT_TELEMETRY_DISABLED: 1
-      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
-      PLAYWRIGHT_USE_SYSTEM_CHROME: '0'
-      # Make the dev server (spawned by Playwright) see a DB and allow protected-route bypass
       VERCEL_ENV: preview
-      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}   # add this in repo settings → Secrets and variables → Actions
+      # point Playwright to a cacheable path
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+
+      # your app env
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       NEXTAUTH_URL: http://localhost:3000
       AUTH_SECRET: ci-dummy
       GOOGLE_CLIENT_ID: ci-dummy
@@ -79,38 +115,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - uses: ./.github/actions/setup
 
+      # grab the local @playwright/test version for cache keying
       - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(npx @playwright/test --version | awk '{print $2}')" >> $GITHUB_OUTPUT
+        id: pw
+        shell: bash
+        run: |
+          echo "version=$(node -e 'console.log(require(\"@playwright/test/package.json\").version)')" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
-        id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+          key: ${{ runner.os }}-pw-${{ steps.pw.outputs.version }}
           restore-keys: |
-            ${{ runner.os }}-playwright-
+            ${{ runner.os }}-pw-
 
-      - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
-        run: npx playwright install-deps chromium
+      # 🌟 New: install browsers + OS deps via CLI (works on Ubuntu 24.04)
+      # Specify chromium to keep it lean; drop "chromium" to install all browsers.
+      - name: Install Playwright (browsers + OS deps)
+        run: npx playwright install --with-deps chromium
 
-      - name: Install Playwright Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true' && env.PLAYWRIGHT_USE_SYSTEM_CHROME != '1'
-        run: npx playwright install chromium
-
-      - name: Install system Chromium (fallback)
-        if: env.PLAYWRIGHT_USE_SYSTEM_CHROME == '1'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
-
-      - name: Run e2e tests
+      - name: Run E2E tests
         run: npx playwright test --reporter=html
 
       - name: Upload HTML report
