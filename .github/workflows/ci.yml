@@ -31,10 +31,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      # composite setup (node, cache, deps)
+      # Composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
 
-      # sanity-check native bindings
+      # Sanity-check native bindings
       - name: Verify sharp binding
         env:
           SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
@@ -51,7 +51,15 @@ jobs:
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
 
+      # Run full CI script (lint, images, checks, build)
+      # Provide harmless dummy env so Next/Auth never crash during *build time*
       - name: Run CI pipeline
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
+          NEXTAUTH_URL: http://localhost:3000
+          AUTH_SECRET: ci-dummy
+          GOOGLE_CLIENT_ID: ci-dummy
+          GOOGLE_CLIENT_SECRET: ci-dummy
         run: npm run ci --if-present
 
   e2e:
