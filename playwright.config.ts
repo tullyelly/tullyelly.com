@@ -33,6 +33,10 @@ export default defineConfig({
       E2E_MODE: "1",
       DISABLE_SENTRY: "1",
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+      // Make all routes public for e2e to avoid auth flows
+      AUTH_RULES_JSON:
+        '{"ownerDomains":["tullyelly.com"],"publicPaths":["/","/login","/api/auth"],"protectedPaths":[],"ownerOnlyPaths":[],"toggles":{"allowAnyEmailOnPreview":true}}',
+      AUTH_SECRET: "test-secret",
     },
   },
 });
