@@ -14,6 +14,7 @@
     "build": "prisma generate && next build",
     "postbuild": "npm run generate-build-info",
     "start": "next start",
+    "start:prod:local": "npm run build && cross-env NODE_ENV=production PORT=4010 npm start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --cache --report-unused-disable-directives --max-warnings=0",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "images:optimize": "node scripts/optimize-images.mjs",

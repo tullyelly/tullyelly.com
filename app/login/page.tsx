@@ -6,13 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-// Accept undefined to keep TS happy; keep redirects same-origin
+// Accept undefined to keep TS happy; restrict to path-only callbacks (same-origin)
 function sanitizeCallback(raw?: string | null): string {
   if (!raw) return "/";
   try {
-    const base = typeof window !== "undefined" ? window.location.origin : "http://localhost";
-    const url = new URL(raw, base);
-    if (typeof window === "undefined" || url.origin === base) {
+    // Only allow path-relative values; reject absolute URLs (avoids cross-origin redirects)
+    const url = new URL(raw, "http://localhost");
+    if (!url.protocol || raw.startsWith("/")) {
       return url.pathname + url.search + url.hash;
     }
   } catch {}
