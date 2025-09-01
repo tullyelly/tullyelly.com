@@ -1,8 +1,9 @@
 import { getReleases, ORDER_BY, type Sort, type ReleaseListResponse } from '@/lib/releases';
-import { signSnapshot } from '@/lib/sig';
+import { signSnapshot, stableStringify } from '@/lib/sig';
 import type { Release } from './_components/ScrollsTable';
 import ScrollsPageClient from './_components/ScrollsPageClient';
 import HydrationCanary from './_components/HydrationCanary';
+import ZoneCanary from '@/app/_diag/ZoneCanary';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -66,6 +67,12 @@ export default async function Page({ searchParams }: PageProps) {
   const enabled = Boolean(process.env.NEXT_PUBLIC_HYDRATION_DIAG);
   const ssrSig = enabled ? signSnapshot(ssrPayload) : undefined;
 
+  // Zone canary props
+  const actionBarProps = { q: q ?? '' };
+  const tableProps = { items: releases, page: data.page };
+  const navProps = { brand: 'tullyelly' };
+  const footerProps = {} as Record<string, never>;
+
   return (
     <section
       id="scrolls-root"
@@ -75,6 +82,24 @@ export default async function Page({ searchParams }: PageProps) {
     >
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
       <HydrationCanary initial={ssrPayload} enabled={enabled} />
+      {enabled && (
+        <>
+          <ZoneCanary
+            id="action-zone"
+            zone="ActionBar"
+            enabled={enabled}
+            ssrSignature={signSnapshot(stableStringify(actionBarProps))}
+            ssrPropsJSON={stableStringify(actionBarProps)}
+          />
+          <ZoneCanary
+            id="table-zone"
+            zone="Table"
+            enabled={enabled}
+            ssrSignature={signSnapshot(stableStringify(tableProps))}
+            ssrPropsJSON={stableStringify(tableProps)}
+          />
+        </>
+      )}
       <ScrollsPageClient initialData={releases} />
     </section>
   );

@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
+import ZoneCanary from "@/app/_diag/ZoneCanary";
+import { stableStringify, signSnapshot } from "@/lib/sig";
 
 await initSentry();
 
@@ -28,6 +30,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const enableHydrationDiag = Boolean(process.env.NEXT_PUBLIC_HYDRATION_DIAG);
+  const navProps = { brand: 'tullyelly' };
+  const footerProps = {} as Record<string, never>;
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
@@ -64,7 +68,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           {announcement && <AnnouncementBanner message={announcement} dismissible />}
 
-          <header>
+          <header id="nav-zone">
+            {enableHydrationDiag ? (
+              <ZoneCanary
+                id="nav-zone"
+                zone="NavBar"
+                enabled={enableHydrationDiag}
+                ssrSignature={signSnapshot(stableStringify(navProps))}
+                ssrPropsJSON={stableStringify(navProps)}
+              />
+            ) : null}
             <SiteHeader />
           </header>
 
@@ -73,8 +86,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </div>
           </main>
-
-          <Footer />
+          <div id="footer-zone">
+            {enableHydrationDiag ? (
+              <ZoneCanary
+                id="footer-zone"
+                zone="Footer"
+                enabled={enableHydrationDiag}
+                ssrSignature={signSnapshot(stableStringify(footerProps))}
+                ssrPropsJSON={stableStringify(footerProps)}
+              />
+            ) : null}
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>
