@@ -104,11 +104,9 @@ export function ScrollsTable({
   });
 
   const columnCount = table.getAllLeafColumns().length;
-  const BUILD = process.env.VERCEL_GIT_COMMIT_SHA || 'local';
 
   return (
-    <div id="scrolls-table" data-build={BUILD} className="flex flex-col">
-      <div className="mb-2 text-xs text-neutral-500">Build: {BUILD}</div>
+    <div id="scrolls-table" className="flex flex-col">
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
         <table className="min-w-full table-auto">
           <thead className="bg-[#00471B] text-[#EEE1C6] sticky top-0 z-10">

@@ -21,7 +21,10 @@ declare global {
 export default function ZoneCanary({ id, zone, ssrSignature, enabled, ssrPropsJSON }: Props) {
   useEffect(() => {
     if (!enabled) return;
-    const root = document.getElementById(id);
+    // For table zone, hash only the <table> content to avoid stray header text
+    const root = id === 'table-zone'
+      ? (document.querySelector('#table-zone table') as HTMLElement | null)
+      : document.getElementById(id);
     const domText = (root?.textContent || '').slice(0, 800);
     const domSig = tinyHash(domText);
     const entry = {

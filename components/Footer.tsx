@@ -1,5 +1,4 @@
 import BrandedLink from "@/components/BrandedLink";
-import BuildBadge from "@/components/BuildBadge";
 import { buildInfo } from "@/lib/build-info";
 
 export default function Footer() {
@@ -14,7 +13,6 @@ export default function Footer() {
     >
       <div className="mx-auto max-w-7xl px-6 py-6">
         © {year} <BrandedLink href="/">tullyelly</BrandedLink>. All rights reserved.
-        <BuildBadge />
       </div>
     </footer>
   );

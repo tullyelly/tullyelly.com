@@ -3,8 +3,9 @@ import "./globals.css";
 import Script from "next/script";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
-import SiteHeader from "@/components/SiteHeader";
-import Footer from "@/components/Footer";
+import NavBar from "@/app/_components/NavBar";
+import Footer from "@/app/_components/Footer";
+import { buildInfo } from "@/lib/build-info";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
@@ -31,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const enableHydrationDiag = Boolean(process.env.NEXT_PUBLIC_HYDRATION_DIAG);
   const navProps = { brand: 'tullyelly' };
-  const footerProps = {} as Record<string, never>;
+  const footerText = `© ${buildInfo.buildYear || (buildInfo.buildIso ?? '').slice(0, 4) || ''} tullyelly. All rights reserved.`;
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
@@ -78,7 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 ssrPropsJSON={stableStringify(navProps)}
               />
             ) : null}
-            <SiteHeader />
+            <NavBar />
           </header>
 
           <main id="content" className="flex-1 p-4" tabIndex={-1}>
@@ -86,18 +87,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </div>
           </main>
-          <div id="footer-zone">
-            {enableHydrationDiag ? (
-              <ZoneCanary
-                id="footer-zone"
-                zone="Footer"
-                enabled={enableHydrationDiag}
-                ssrSignature={signSnapshot(stableStringify(footerProps))}
-                ssrPropsJSON={stableStringify(footerProps)}
-              />
-            ) : null}
-            <Footer />
-          </div>
+          {enableHydrationDiag ? (
+            <ZoneCanary
+              id="footer-zone"
+              zone="Footer"
+              enabled={enableHydrationDiag}
+              ssrSignature={signSnapshot(footerText)}
+              ssrPropsJSON={stableStringify({ footerText })}
+            />
+          ) : null}
+          <Footer />
         </Providers>
       </body>
     </html>
