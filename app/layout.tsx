@@ -1,16 +1,12 @@
 // app/layout.tsx
 import "./globals.css";
-import Script from "next/script";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
 import NavBar from "@/app/_components/NavBar";
 import Footer from "@/app/_components/Footer";
-import { buildInfo } from "@/lib/build-info";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
-import ZoneCanary from "@/app/_diag/ZoneCanary";
-import { stableStringify, signSnapshot } from "@/lib/sig";
 
 await initSentry();
 
@@ -30,55 +26,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
-  const enableHydrationDiag = Boolean(process.env.NEXT_PUBLIC_HYDRATION_DIAG);
-  const navProps = { brand: 'tullyelly' };
-  const footerText = `© ${buildInfo.buildYear || (buildInfo.buildIso ?? '').slice(0, 4) || ''} tullyelly. All rights reserved.`;
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
-      <head>
-        {enableHydrationDiag ? (
-          <Script id="hydration-console-tap" strategy="beforeInteractive">
-            {`
-              (function(){
-                try {
-                  var origError = console.error;
-                  console.error = function(){
-                    try {
-                      var args = Array.prototype.slice.call(arguments);
-                      var msg = (args && args[0] && args[0].toString()) || '';
-                      if (/Hydration failed|did not match/i.test(msg)) {
-                        (window.__HYDRATION_DIAG__ ||= []).push({
-                          tag: 'hydration:console',
-                          when: new Date().toISOString(),
-                          url: location.href,
-                          message: String(args[0]),
-                          args: args.slice(1)
-                        });
-                      }
-                    } catch {}
-                    return origError.apply(console, arguments);
-                  };
-                } catch {}
-              })();
-            `}
-          </Script>
-        ) : null}
-      </head>
+      <head></head>
       <body className="font-sans min-h-screen flex flex-col bg-[#EEE1C6] text-foreground">
         <Providers>
           {announcement && <AnnouncementBanner message={announcement} dismissible />}
 
           <header id="nav-zone">
-            {enableHydrationDiag ? (
-              <ZoneCanary
-                id="nav-zone"
-                zone="NavBar"
-                enabled={enableHydrationDiag}
-                ssrSignature={signSnapshot(stableStringify(navProps))}
-                ssrPropsJSON={stableStringify(navProps)}
-              />
-            ) : null}
             <NavBar />
           </header>
 
@@ -87,15 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </div>
           </main>
-          {enableHydrationDiag ? (
-            <ZoneCanary
-              id="footer-zone"
-              zone="Footer"
-              enabled={enableHydrationDiag}
-              ssrSignature={signSnapshot(footerText)}
-              ssrPropsJSON={stableStringify({ footerText })}
-            />
-          ) : null}
           <Footer />
         </Providers>
       </body>

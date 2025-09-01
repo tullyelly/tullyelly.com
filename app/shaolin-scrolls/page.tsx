@@ -1,9 +1,6 @@
 import { getReleases, ORDER_BY, type Sort, type ReleaseListResponse } from '@/lib/releases';
-import { signSnapshot, stableStringify } from '@/lib/sig';
 import type { Release } from './_components/ScrollsTable';
 import ScrollsPageClient from './_components/ScrollsPageClient';
-import HydrationCanary from './_components/HydrationCanary';
-import ZoneCanary from '@/app/_diag/ZoneCanary';
 import ActionBar from './_components/ActionBar';
 
 export const runtime = 'nodejs';
@@ -64,44 +61,13 @@ export default async function Page({ searchParams }: PageProps) {
     semver: item.semver,
   }));
 
-  const ssrPayload = { items: releases, page: data.page };
-  const enabled = Boolean(process.env.NEXT_PUBLIC_HYDRATION_DIAG);
-  const ssrSig = enabled ? signSnapshot(ssrPayload) : undefined;
-
-  // Zone canary props
-  const actionBarProps = { q: q ?? '' };
-  const tableProps = { items: releases, page: data.page };
-  const navProps = { brand: 'tullyelly' };
-  const footerProps = {} as Record<string, never>;
+  const enabled = false;
 
   return (
-    <section
-      id="scrolls-root"
-      className="flex min-h-screen flex-col gap-4"
-      {...(ssrSig ? { 'data-ssr-sig': ssrSig } : {})}
-    >
+    <section id="scrolls-root" className="flex min-h-screen flex-col gap-4">
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
-      <HydrationCanary initial={ssrPayload} enabled={enabled} />
-      {/* Server-stable ActionBar with client-only upgrades mounted after hydrate */}
+      {/* Server-stable ActionBar with server forms */}
       <ActionBar q={q ?? ''} />
-      {enabled && (
-        <>
-          <ZoneCanary
-            id="action-zone"
-            zone="ActionBar"
-            enabled={enabled}
-            ssrSignature={signSnapshot(stableStringify(actionBarProps))}
-            ssrPropsJSON={stableStringify(actionBarProps)}
-          />
-          <ZoneCanary
-            id="table-zone"
-            zone="Table"
-            enabled={enabled}
-            ssrSignature={signSnapshot(stableStringify(tableProps))}
-            ssrPropsJSON={stableStringify(tableProps)}
-          />
-        </>
-      )}
       <ScrollsPageClient initialData={releases} />
     </section>
   );
