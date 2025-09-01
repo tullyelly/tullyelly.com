@@ -58,7 +58,7 @@ begin
   returning ss.id into scroll_id;
 
   return query
-    select vs.id, vs.release_name::text as generated_name
+    select vs.id, vs.generated_name::text as generated_name
       from dojo.v_shaolin_scrolls vs
      where vs.id = scroll_id;
 end;
