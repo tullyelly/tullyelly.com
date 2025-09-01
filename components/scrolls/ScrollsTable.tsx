@@ -20,6 +20,12 @@ export function ScrollsTable({
   showStatus = true,
   renderStatus,
   renderType,
+  sort,
+  buildSortHref,
+  pageSize = 20,
+  pageIndex = 0,
+  total = 0,
+  buildPageHref,
   className = '',
 }: {
   rows: ScrollRow[];
@@ -27,9 +33,19 @@ export function ScrollsTable({
   showStatus?: boolean;
   renderStatus?: RenderStatus;
   renderType?: (type: string | undefined) => React.ReactNode;
+  sort?: 'semver:asc' | 'semver:desc';
+  buildSortHref?: (next: 'semver:asc' | 'semver:desc') => string;
+  pageSize?: number;
+  pageIndex?: number;
+  total?: number;
+  buildPageHref?: (index: number) => string;
   className?: string;
 }) {
   const cellPad = dense ? 'px-3 py-2' : 'px-4 py-3';
+  const pageCount = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
+  const canPrev = pageIndex > 0;
+  const canNext = pageIndex + 1 < pageCount;
+  const nextSort: 'semver:asc' | 'semver:desc' = sort === 'semver:asc' ? 'semver:desc' : 'semver:asc';
 
   return (
     <div id="scrolls-table" className={["flex flex-col", className].join(' ').trim()}>
@@ -52,7 +68,20 @@ export function ScrollsTable({
                 Type
               </th>
               <th scope="col" className={[cellPad, 'text-right text-sm font-medium w-24'].join(' ')}>
-                SemVer
+                {buildSortHref ? (
+                  <a
+                    href={buildSortHref(nextSort)}
+                    aria-label={`Sort by SemVer ${nextSort === 'semver:asc' ? 'ascending' : 'descending'}`}
+                    className="inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                  >
+                    SemVer
+                    <span className="text-[#EEE1C6]/80">
+                      {sort === 'semver:asc' ? '▲' : sort === 'semver:desc' ? '▼' : ''}
+                    </span>
+                  </a>
+                ) : (
+                  'SemVer'
+                )}
               </th>
             </tr>
           </thead>
@@ -88,6 +117,48 @@ export function ScrollsTable({
           </tbody>
         </table>
       </div>
+      {buildPageHref && (
+        <div className="mt-2 flex items-center justify-between">
+          <div className="text-sm">Rows per page: {pageSize}</div>
+          <div className="flex items-center gap-1">
+            <a
+              aria-label="First page"
+              aria-disabled={!canPrev}
+              className={`rounded border px-2 py-1 ${!canPrev ? 'pointer-events-none opacity-50' : ''}`}
+              href={canPrev ? buildPageHref(0) : '#'}
+            >
+              {'<<'}
+            </a>
+            <a
+              aria-label="Previous page"
+              aria-disabled={!canPrev}
+              className={`rounded border px-2 py-1 ${!canPrev ? 'pointer-events-none opacity-50' : ''}`}
+              href={canPrev ? buildPageHref(pageIndex - 1) : '#'}
+            >
+              {'<'}
+            </a>
+            <span className="px-2 text-sm">
+              Page {pageIndex + 1} of {pageCount}
+            </span>
+            <a
+              aria-label="Next page"
+              aria-disabled={!canNext}
+              className={`rounded border px-2 py-1 ${!canNext ? 'pointer-events-none opacity-50' : ''}`}
+              href={canNext ? buildPageHref(pageIndex + 1) : '#'}
+            >
+              {'>'}
+            </a>
+            <a
+              aria-label="Last page"
+              aria-disabled={!canNext}
+              className={`rounded border px-2 py-1 ${!canNext ? 'pointer-events-none opacity-50' : ''}`}
+              href={canNext ? buildPageHref(pageCount - 1) : '#'}
+            >
+              {'>>'}
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

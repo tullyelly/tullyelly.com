@@ -13,9 +13,8 @@ export default function ReleasesAdminPage() {
         <CreatePatchDialog />
       </div>
       <Suspense fallback={<div className="rounded border bg-white p-4">Loading releases…</div>}>
-        <ScrollsTablePanel limit={50} />
+        <ScrollsTablePanel basePath="/releases" limit={20} />
       </Suspense>
     </main>
   );
 }
-
