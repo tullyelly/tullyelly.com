@@ -86,7 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </div>
           </main>
-          <footer id="footer-zone">
+          <div id="footer-zone">
             {enableHydrationDiag ? (
               <ZoneCanary
                 id="footer-zone"
@@ -97,7 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               />
             ) : null}
             <Footer />
-          </footer>
+          </div>
         </Providers>
       </body>
     </html>
