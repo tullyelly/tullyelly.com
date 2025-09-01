@@ -1,0 +1,86 @@
+'use client';
+
+import * as Dialog from '@radix-ui/react-dialog';
+import { useEffect, useId, useRef, useState } from 'react';
+
+type Props = { q: string };
+
+export default function ActionBarClient({ q }: Props) {
+  useEffect(() => {
+    // noop to ensure we're on client
+  }, []);
+  return (
+    <>
+      <CreatePatchDialog />
+      <CreateMinorDialog />
+      <SearchBox initial={q} />
+    </>
+  );
+}
+
+function CreatePatchDialog() {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger asChild>
+        <button type="button" aria-controls={`patch-${id}`} aria-expanded={open}>
+          Create Patch
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Portal forceMount>
+        <Dialog.Overlay data-state={open ? 'open' : 'closed'} hidden={!open} />
+        <Dialog.Content id={`patch-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
+          {/* form content placeholder */}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function CreateMinorDialog() {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger asChild>
+        <button type="button" aria-controls={`minor-${id}`} aria-expanded={open}>
+          Create Minor
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Portal forceMount>
+        <Dialog.Overlay data-state={open ? 'open' : 'closed'} hidden={!open} />
+        <Dialog.Content id={`minor-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
+          {/* form content placeholder */}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function SearchBox({ initial }: { initial: string }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== initial) {
+      inputRef.current.value = initial;
+    }
+  }, [initial]);
+  return (
+    <form role="search" action="/shaolin-scrolls" method="get" className="inline-flex items-center gap-2">
+      <input
+        ref={inputRef}
+        name="q"
+        type="search"
+        placeholder="Search releases"
+        aria-label="Search releases"
+        defaultValue={initial ?? ''}
+        className="rounded border px-2 py-1"
+        autoComplete="off"
+      />
+      <button type="submit" className="rounded border px-2 py-1">
+        Search
+      </button>
+    </form>
+  );
+}
+

@@ -4,6 +4,7 @@ import type { Release } from './_components/ScrollsTable';
 import ScrollsPageClient from './_components/ScrollsPageClient';
 import HydrationCanary from './_components/HydrationCanary';
 import ZoneCanary from '@/app/_diag/ZoneCanary';
+import ActionBar from './_components/ActionBar';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -78,10 +79,11 @@ export default async function Page({ searchParams }: PageProps) {
       id="scrolls-root"
       className="flex min-h-screen flex-col gap-4"
       {...(ssrSig ? { 'data-ssr-sig': ssrSig } : {})}
-      data-build={process.env.NEXT_PUBLIC_BUILD_FLAVOR || 'prod'}
     >
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
       <HydrationCanary initial={ssrPayload} enabled={enabled} />
+      {/* Server-stable ActionBar with client-only upgrades mounted after hydrate */}
+      <ActionBar q={q ?? ''} />
       {enabled && (
         <>
           <ZoneCanary
