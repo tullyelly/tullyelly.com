@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { getPool } from '@/db/pool';
 
 function normalizeLabel(label: string) {
@@ -12,6 +12,7 @@ async function revalidateScrollPaths() {
   revalidatePath('/');
   revalidatePath('/shaolin-scrolls');
   revalidatePath('/releases');
+  revalidateTag('scrolls');
 }
 
 export async function createPatch(label: string) {
@@ -41,4 +42,3 @@ export async function createMinor(label: string) {
   await revalidateScrollPaths();
   return { id: String(row.scroll_id), generated_name: row.generated_name };
 }
-

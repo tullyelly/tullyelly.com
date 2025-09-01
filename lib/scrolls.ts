@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { cache } from 'react';
+import { unstable_cache as cache } from 'next/cache';
 import { getPool } from '@/db/pool';
 
 export type ScrollDbRow = {
@@ -21,13 +21,7 @@ export type ScrollRow = {
   created_at: string;
 };
 
-export const getScrolls = cache(async function getScrolls({
-  limit = 20,
-  q,
-}: {
-  limit?: number;
-  q?: string;
-} = {}): Promise<ScrollRow[]> {
+async function fetchScrolls({ limit = 20, q }: { limit?: number; q?: string } = {}): Promise<ScrollRow[]> {
   const db = getPool();
 
   const values: Array<string | number> = [];
@@ -44,7 +38,6 @@ export const getScrolls = cache(async function getScrolls({
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  // Order by semver (major, minor, patch, hotfix) descending, fallback created_at
   const orderClause = `ORDER BY
     COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 1), ''), '0')::int DESC,
     COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 2), ''), '0')::int DESC,
@@ -79,5 +72,10 @@ export const getScrolls = cache(async function getScrolls({
         ? row.created_at.toISOString()
         : String(row.created_at),
   }));
-});
+}
 
+export async function getScrolls(params: { limit?: number; q?: string } = {}): Promise<ScrollRow[]> {
+  const key = `scrolls:${params.limit ?? 20}:${params.q?.trim() ?? ''}`;
+  const cached = cache(async () => fetchScrolls(params), [key], { tags: ['scrolls'] });
+  return cached();
+}

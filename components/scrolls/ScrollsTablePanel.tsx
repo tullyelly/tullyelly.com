@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { cache } from 'react';
 import { ScrollsTable, type ScrollRow } from './ScrollsTable';
 import { getScrolls } from '@/lib/scrolls';
 import { Badge } from '@/app/ui/Badge';
@@ -11,8 +10,8 @@ function parsePlannedDate(name: string) {
   return match ? match[1] : '';
 }
 
-const mapToRows = cache((items: Awaited<ReturnType<typeof getScrolls>>) => {
-  const rows: ScrollRow[] = items.map((item) => ({
+function mapToRows(items: Awaited<ReturnType<typeof getScrolls>>): ScrollRow[] {
+  return items.map((item) => ({
     id: String(item.id),
     name: item.name,
     plannedDate: parsePlannedDate(item.name),
@@ -20,8 +19,7 @@ const mapToRows = cache((items: Awaited<ReturnType<typeof getScrolls>>) => {
     type: item.type,
     semver: item.semver,
   }));
-  return rows;
-});
+}
 
 export default async function ScrollsTablePanel({
   limit = 20,
