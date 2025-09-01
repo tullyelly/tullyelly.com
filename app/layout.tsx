@@ -1,5 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
+import Script from "next/script";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
@@ -26,9 +27,39 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
+  const enableHydrationDiag = Boolean(process.env.NEXT_PUBLIC_HYDRATION_DIAG);
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
+      <head>
+        {enableHydrationDiag ? (
+          <Script id="hydration-console-tap" strategy="beforeInteractive">
+            {`
+              (function(){
+                try {
+                  var origError = console.error;
+                  console.error = function(){
+                    try {
+                      var args = Array.prototype.slice.call(arguments);
+                      var msg = (args && args[0] && args[0].toString()) || '';
+                      if (/Hydration failed|did not match/i.test(msg)) {
+                        (window.__HYDRATION_DIAG__ ||= []).push({
+                          tag: 'hydration:console',
+                          when: new Date().toISOString(),
+                          url: location.href,
+                          message: String(args[0]),
+                          args: args.slice(1)
+                        });
+                      }
+                    } catch {}
+                    return origError.apply(console, arguments);
+                  };
+                } catch {}
+              })();
+            `}
+          </Script>
+        ) : null}
+      </head>
       <body className="font-sans min-h-screen flex flex-col bg-[#EEE1C6] text-foreground">
         <Providers>
           {announcement && <AnnouncementBanner message={announcement} dismissible />}

@@ -17,3 +17,6 @@ export function formatDateDisplay(d: string | Date): string {
   }).format(date);
 }
 
+export function nowIso(): string {
+  return new Date().toISOString();
+}

@@ -1,6 +1,8 @@
 import { getReleases, ORDER_BY, type Sort, type ReleaseListResponse } from '@/lib/releases';
+import { signSnapshot } from '@/lib/sig';
 import type { Release } from './_components/ScrollsTable';
 import ScrollsPageClient from './_components/ScrollsPageClient';
+import HydrationCanary from './_components/HydrationCanary';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,9 +62,19 @@ export default async function Page({ searchParams }: PageProps) {
     semver: item.semver,
   }));
 
+  const ssrPayload = { items: releases, page: data.page };
+  const enabled = Boolean(process.env.NEXT_PUBLIC_HYDRATION_DIAG);
+  const ssrSig = enabled ? signSnapshot(ssrPayload) : undefined;
+
   return (
-    <section className="flex min-h-screen flex-col gap-4">
+    <section
+      id="scrolls-root"
+      className="flex min-h-screen flex-col gap-4"
+      {...(ssrSig ? { 'data-ssr-sig': ssrSig } : {})}
+      data-build={process.env.NEXT_PUBLIC_BUILD_FLAVOR || 'prod'}
+    >
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
+      <HydrationCanary initial={ssrPayload} enabled={enabled} />
       <ScrollsPageClient initialData={releases} />
     </section>
   );
