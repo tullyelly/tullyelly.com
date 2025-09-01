@@ -10,9 +10,12 @@ export default function ScrollsPageClient({ initialData }: { initialData: Releas
   const [search, setSearch] = useState('');
   return (
     <div className="flex flex-col gap-3">
-      <Toolbar search={search} onSearchChange={setSearch} />
-      <ScrollsTable data={data} globalFilter={search} />
+      <section id="action-zone">
+        <Toolbar search={search} onSearchChange={setSearch} />
+      </section>
+      <section id="table-zone">
+        <ScrollsTable data={data} globalFilter={search} />
+      </section>
     </div>
   );
 }
-
