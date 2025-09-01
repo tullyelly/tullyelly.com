@@ -16,15 +16,15 @@ export interface BuildInfo {
 }
 
 export const buildInfo: BuildInfo = {
-  "commit": "3b1d4d0bb1f3a5682a07941cd438919bb82a7857",
-  "shortCommit": "3b1d4d0",
-  "branch": "giannis/fix-deprecated-property",
+  "commit": "71f35a030622fef375e3621fb8aa5e3994b0d578",
+  "shortCommit": "71f35a0",
+  "branch": "giannis/hydration-mismatch-fix",
   "prNumber": null,
   "ciRunId": null,
   "env": "development",
   "url": "http://localhost:3000",
   "runtime": "node v22.18.0",
-  "buildIso": "2025-08-31T23:56:22.504Z",
+  "buildIso": "2025-09-01T02:44:23.534Z",
   "buildYear": "2025",
   "isProd": false
 } as const;

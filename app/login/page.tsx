@@ -6,13 +6,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-// Accept undefined to keep TS happy; keep redirects same-origin
-function sanitizeCallback(raw?: string | null): string {
+// Accept undefined to keep TS happy; restrict to path-only callbacks (same-origin)
+function sanitizeCallback(raw?: string | null, currentOrigin?: string): string {
   if (!raw) return "/";
   try {
-    const base = typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    const base = currentOrigin || "http://localhost";
     const url = new URL(raw, base);
-    if (typeof window === "undefined" || url.origin === base) {
+    // Allow relative paths always. Allow absolute URLs only if same-origin.
+    const isRelative = raw.startsWith("/") || !/^https?:/i.test(raw);
+    const isSameOrigin = !!currentOrigin && url.origin === currentOrigin;
+    if (isRelative || isSameOrigin) {
       return url.pathname + url.search + url.hash;
     }
   } catch {}
@@ -23,15 +26,14 @@ function LoginInner() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Simple derive (no memo needed → no exhaustive-deps warnings)
-  const callbackUrl = sanitizeCallback(searchParams?.get("callbackUrl") ?? null);
+  const rawCallback = searchParams?.get("callbackUrl") ?? null;
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace(callbackUrl);
+      const safe = sanitizeCallback(rawCallback, window.location.origin);
+      router.replace(safe);
     }
-  }, [status, callbackUrl, router]);
+  }, [status, rawCallback, router]);
 
   return (
     <main className="mx-auto max-w-sm p-8 text-center">
@@ -39,7 +41,10 @@ function LoginInner() {
       <p className="mb-6">Sign in with Google to continue.</p>
       <button
         className="rounded-xl px-4 py-2 shadow"
-        onClick={() => signIn("google", { callbackUrl })}
+        onClick={() => {
+          const safe = sanitizeCallback(rawCallback, window.location.origin);
+          void signIn("google", { callbackUrl: safe });
+        }}
       >
         Continue with Google
       </button>
