@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { unstable_cache as cache } from 'next/cache';
 import { getPool } from '@/db/pool';
+import { ORDER_BY, type Sort, getReleases, type ReleaseListResponse } from '@/lib/releases';
 
 export type ScrollDbRow = {
   id: string | number;
@@ -74,8 +74,33 @@ async function fetchScrolls({ limit = 20, q }: { limit?: number; q?: string } = 
   }));
 }
 
+export interface ScrollsPageParams {
+  limit?: number;
+  offset?: number;
+  sort?: Sort;
+  q?: string;
+}
+
+export interface ScrollsPageResponse {
+  items: ScrollRow[];
+  page: { limit: number; offset: number; total: number; sort: Sort; q?: string };
+}
+
+export async function getScrollsPage({ limit = 20, offset = 0, sort = 'semver:desc', q }: ScrollsPageParams): Promise<ScrollsPageResponse> {
+  // Delegate to releases API helper for consistency and total count
+  const { items, page } = await getReleases({ limit, offset, sort, q });
+  const mapped: ScrollRow[] = items.map((r) => ({
+    id: r.id,
+    name: r.name,
+    status: r.status,
+    type: r.type,
+    semver: r.semver,
+    created_at: r.created_at,
+  }));
+  return { items: mapped, page: page as ScrollsPageResponse['page'] };
+}
+
 export async function getScrolls(params: { limit?: number; q?: string } = {}): Promise<ScrollRow[]> {
-  const key = `scrolls:${params.limit ?? 20}:${params.q?.trim() ?? ''}`;
-  const cached = cache(async () => fetchScrolls(params), [key], { tags: ['scrolls'] });
-  return cached();
+  const { items } = await getScrollsPage({ limit: params.limit, offset: 0, sort: 'semver:desc', q: params.q });
+  return items;
 }

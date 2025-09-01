@@ -17,6 +17,16 @@ export function formatDateDisplay(d: string | Date): string {
   }).format(date);
 }
 
+export function formatDateOnly(d: string | Date): string {
+  const date = typeof d === 'string' ? new Date(d) : d;
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: ISO_TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 export function nowIso(): string {
   return new Date().toISOString();
 }
