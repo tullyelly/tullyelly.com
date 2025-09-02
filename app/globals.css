@@ -7,6 +7,8 @@
  */
 
 :root {
+  --bucks-green: #00471B;
+  --gold: #F0EBD2;
   --font-inter: system-ui, sans-serif;
   --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
@@ -264,4 +266,17 @@ p {
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 0;
+}
+
+.bucks-surface {
+  background: var(--cream);
+  color: var(--bucks-green);
+}
+
+.bucks-border {
+  border-color: var(--bucks-green);
+}
+
+.bucks-accent {
+  color: var(--blue);
 }

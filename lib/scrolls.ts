@@ -1,78 +1,23 @@
 import 'server-only';
 
 import { getPool } from '@/db/pool';
-import { ORDER_BY, type Sort, getReleases, type ReleaseListResponse } from '@/lib/releases';
+import { ORDER_BY, type Sort } from '@/lib/releases';
 
 export type ScrollDbRow = {
   id: string | number;
-  name: string;
+  label: string;
   status: string;
   type: string;
-  semver: string;
-  created_at: Date | string;
+  release_date: Date | string | null;
 };
 
 export type ScrollRow = {
   id: string;
-  name: string;
+  label: string;
   status: string;
   type: string;
-  semver: string;
-  created_at: string;
+  release_date: string | null;
 };
-
-async function fetchScrolls({ limit = 20, q }: { limit?: number; q?: string } = {}): Promise<ScrollRow[]> {
-  const db = getPool();
-
-  const values: Array<string | number> = [];
-  const conditions: string[] = [];
-
-  if (q && q.trim()) {
-    values.push(`%${q.trim()}%`);
-    const p = `$${values.length}`;
-    conditions.push(`release_name ILIKE ${p}`);
-  }
-
-  values.push(limit);
-  const limitParam = values.length;
-
-  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-
-  const orderClause = `ORDER BY
-    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 1), ''), '0')::int DESC,
-    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 2), ''), '0')::int DESC,
-    COALESCE(NULLIF(split_part(regexp_replace(semver, '^[^0-9]*', ''), '.', 3), ''), '0')::int DESC,
-    created_at DESC, id DESC`;
-
-  const sql = `
-    SELECT
-      id,
-      release_name AS name,
-      status,
-      release_type AS type,
-      semver,
-      created_at
-    FROM dojo.v_shaolin_scrolls
-    ${where}
-    ${orderClause}
-    LIMIT $${limitParam};
-  `;
-
-  await db.query('SELECT 1');
-  const res = await db.query<ScrollDbRow>(sql, values);
-
-  return res.rows.map((row) => ({
-    id: String(row.id),
-    name: row.name,
-    status: row.status,
-    type: row.type,
-    semver: row.semver,
-    created_at:
-      row.created_at instanceof Date
-        ? row.created_at.toISOString()
-        : String(row.created_at),
-  }));
-}
 
 export interface ScrollsPageParams {
   limit?: number;
@@ -86,18 +31,80 @@ export interface ScrollsPageResponse {
   page: { limit: number; offset: number; total: number; sort: Sort; q?: string };
 }
 
-export async function getScrollsPage({ limit = 20, offset = 0, sort = 'semver:desc', q }: ScrollsPageParams): Promise<ScrollsPageResponse> {
-  // Delegate to releases API helper for consistency and total count
-  const { items, page } = await getReleases({ limit, offset, sort, q });
-  const mapped: ScrollRow[] = items.map((r) => ({
-    id: r.id,
-    name: r.name,
-    status: r.status,
-    type: r.type,
-    semver: r.semver,
-    created_at: r.created_at,
+export async function getScrollsPage({
+  limit = 20,
+  offset = 0,
+  sort = 'semver:desc',
+  q,
+}: ScrollsPageParams): Promise<ScrollsPageResponse> {
+  const db = getPool();
+
+  const conditions: string[] = [];
+  const values: Array<string | number> = [];
+  const countConditions: string[] = [];
+  const countValues: Array<string> = [];
+
+  if (q) {
+    values.push(`%${q}%`);
+    countValues.push(`%${q}%`);
+    const p = `$${values.length}`;
+    conditions.push(`release_name ILIKE ${p}`);
+    countConditions.push(`release_name ILIKE $${countValues.length}`);
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const countWhere = countConditions.length ? `WHERE ${countConditions.join(' AND ')}` : '';
+
+  values.push(limit);
+  const limitParam = values.length;
+  values.push(offset);
+  const offsetParam = values.length;
+
+  const orderClause = ORDER_BY[sort];
+
+  const sqlItems = `
+      SELECT
+        id,
+        release_name AS label,
+        status,
+        release_type AS type,
+        release_date
+      FROM dojo.v_shaolin_scrolls
+      ${where}
+      ${orderClause}
+      LIMIT $${limitParam}
+      OFFSET $${offsetParam};
+    `;
+
+  const sqlCount = `
+      SELECT COUNT(*)::int AS total
+      FROM dojo.v_shaolin_scrolls
+      ${countWhere};
+    `;
+
+  await db.query('SELECT 1');
+
+  const [itemsRes, countRes] = await Promise.all([
+    db.query<ScrollDbRow>(sqlItems, values),
+    db.query<{ total: number }>(sqlCount, countValues),
+  ]);
+
+  const items: ScrollRow[] = itemsRes.rows.map((row) => ({
+    id: String(row.id),
+    label: row.label,
+    status: row.status,
+    type: row.type,
+    release_date:
+      row.release_date instanceof Date
+        ? row.release_date.toISOString()
+        : row.release_date ?? null,
   }));
-  return { items: mapped, page: page as ScrollsPageResponse['page'] };
+
+  const total = countRes.rows[0]?.total ?? 0;
+  const page = { limit, offset, total, sort } as ScrollsPageResponse['page'];
+  if (q) page.q = q;
+
+  return { items, page };
 }
 
 export async function getScrolls(params: { limit?: number; q?: string } = {}): Promise<ScrollRow[]> {

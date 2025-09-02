@@ -7,14 +7,19 @@ test('Shaolin Scrolls page hydrates without errors across interactions', async (
   await expect(tableWrap).toBeVisible();
 
   // Headers are present
+  await expect(page.getByRole('columnheader', { name: 'ID' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Release Name' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Status' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Type' })).toBeVisible();
-  await expect(page.getByRole('columnheader', { name: 'SemVer' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Release Date' })).toBeVisible();
 
-  // Use search input (server form submit)
-  const search = page.getByLabel('Search releases');
-  await search.fill('foo');
-  await search.press('Enter');
-  await expect(page).toHaveURL(/\/shaolin-scrolls\?q=foo/);
+  // Click first ID to open dialog
+  const firstTrigger = tableWrap.locator('tbody tr').first().locator('button').first();
+  await firstTrigger.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('SemVer')).toBeVisible();
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(firstTrigger).toBeFocused();
 });
