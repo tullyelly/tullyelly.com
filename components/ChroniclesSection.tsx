@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import FlowersInline from '@/components/flowers/FlowersInline';
 
 type Item = {
   slug: string;
@@ -99,10 +100,10 @@ export function ChroniclesSection({ date }: { date?: string }) {
 
       {/* Intro space */}
       <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
-        This project is my first crack at AI-human collaboration. I&rsquo;ve provided about half of the vision, structure, and problem-solving, while ChatGPT and Codex have written 90–95% of the code and guided me through the environment setup. It&rsquo;s the most fun I&rsquo;ve ever had building and executing against a project plan.
+        This project is my first crack at AI-human collaboration. I’ve provided about half of the vision, structure, and problem-solving, while ChatGPT and Codex have written 90–95% of the code and guided me through the environment setup. It’s the most fun I’ve ever had building and executing against a project plan.
       </p>
       <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
-        Here&rsquo;s our pal summarizing the foundation of what we build upon:
+        Here’s our pal summarizing the foundation of what we build upon:
       </p>
 
       {/* Intro bookend paragraph (Purpose) */}
@@ -165,17 +166,19 @@ export function ChroniclesSection({ date }: { date?: string }) {
         </div>
       )}
 
-      {/* Closing shout with external link */}
+      {/* Closing acknowledgments */}
       <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
-        shouts to the chronicles wiki{' '}
-        <a
-          href="https://dragonlance.fandom.com/wiki/Raistlin_Majere"
-          className="underline hover:no-underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Raistlin Majere
-        </a>
+        <FlowersInline>
+          Chronicles Wiki &{' '}
+          <a
+            href="https://dragonlance.fandom.com/wiki/Raistlin_Majere"
+            className="underline hover:no-underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Raistlin Majere
+          </a>
+        </FlowersInline>
       </p>
     </section>
   );

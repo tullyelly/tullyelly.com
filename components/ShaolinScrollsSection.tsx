@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import FlowersInline from '@/components/flowers/FlowersInline';
 import ScrollsTablePanel from '@/components/scrolls/ScrollsTablePanel';
 
 export function ShaolinScrollsSection({ date }: { date?: string }) {
@@ -18,36 +19,37 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
         <ScrollsTablePanel limit={20} />
       </Suspense>
 
-      {/* Closing shout with external links */}
+      {/* Closing acknowledgments */}
       <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
-        shouts to{' '}
-        <a
-          href="https://www.postgresql.org/"
-          className="underline hover:no-underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Postgres
-        </a>
-        {', '}
-        <a
-          href="https://neon.tech/"
-          className="underline hover:no-underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Neon
-        </a>
-        {' & '}
-        <a
-          href="https://www.jetbrains.com/datagrip/"
-          className="underline hover:no-underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          DataGrip
-        </a>{' '}
-        for helping with my falling in love with databases all over again.
+        <FlowersInline>
+          <a
+            href="https://www.postgresql.org/"
+            className="underline hover:no-underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Postgres
+          </a>
+          {', '}
+          <a
+            href="https://neon.tech/"
+            className="underline hover:no-underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Neon
+          </a>
+          {' & '}
+          <a
+            href="https://www.jetbrains.com/datagrip/"
+            className="underline hover:no-underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            DataGrip
+          </a>
+          {'—rekindled my database crush.'}
+        </FlowersInline>
       </p>
     </section>
   );
