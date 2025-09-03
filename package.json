@@ -36,7 +36,7 @@
     "test:e2e:ci": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --reporter=html",
     "db:ping": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/db-ping.ts",
     "check:use-server": "bash scripts/check-use-server.sh",
-    "gen:build-info": "node scripts/gen-build-info.mjs",
+    "gen:build-info": "node scripts/gen-build-info.js",
     "prepare": "node -e \"require('fs').mkdirSync('.build',{recursive:true})\""
   },
   "dependencies": {

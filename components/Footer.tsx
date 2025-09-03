@@ -1,8 +1,9 @@
 import BrandedLink from "@/components/BrandedLink";
-import { buildInfo } from "@/lib/build-info";
+import { getBuildInfo } from "@/lib/build-info";
 
-export default function Footer() {
-  const year = (buildInfo.buildTime ?? "").slice(0, 4) || "";
+export default async function Footer() {
+  const info = await getBuildInfo();
+  const year = (info.builtAt ?? "").slice(0, 4) || "";
 
   return (
     <footer

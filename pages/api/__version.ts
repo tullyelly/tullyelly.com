@@ -1,15 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { buildInfo } from "@/lib/build-info";
+import { getBuildInfo } from "@/lib/build-info";
 
 export default async function handler(_req: NextApiRequest, res: NextApiResponse) {
   try {
+    const info = await getBuildInfo();
     res.status(200).json({
       ok: true,
-      buildIso: buildInfo.buildTime ?? "",
-      commitSha: buildInfo.commit ?? "",
-      shortCommit: (buildInfo.commit ?? '').slice(0, 7),
-      branch: buildInfo.branch ?? "",
-      version: buildInfo.version ?? "",
+      buildIso: info.builtAt ?? "",
+      commitSha: info.commit ?? "",
+      shortCommit: info.commit ?? "",
+      branch: info.branch ?? "",
+      version: info.version ?? "",
     });
   } catch {
     const sha = process.env.GITHUB_SHA ?? "";
