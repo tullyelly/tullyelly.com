@@ -16,15 +16,15 @@ export interface BuildInfo {
 }
 
 export const buildInfo: BuildInfo = {
-  "commit": "73011abe0440812b047327f396ad101e943d6b65",
-  "shortCommit": "73011ab",
-  "branch": "cipher/shaolin-scrolls-id",
+  "commit": "dbe758f54640abb8fe46fe89efeee290a9061602",
+  "shortCommit": "dbe758f",
+  "branch": "cipher/refactor-shaolin-scrolls-release-list",
   "prNumber": null,
   "ciRunId": null,
-  "env": "production",
+  "env": "development",
   "url": "http://localhost:3000",
   "runtime": "node v22.18.0",
-  "buildIso": "2025-09-02T04:07:01.833Z",
+  "buildIso": "2025-09-03T05:05:24.772Z",
   "buildYear": "2025",
-  "isProd": true
+  "isProd": false
 } as const;

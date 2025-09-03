@@ -1,6 +1,8 @@
-'use client';
+"use client";
 
-import { ScrollDetailsDialog } from './ScrollDetailsDialog';
+import { ScrollDetailsDialog } from "./ScrollDetailsDialog";
+import { Badge } from "@/app/ui/Badge";
+import { getBadgeClass } from "@/app/ui/badge-maps";
 
 export type Row = {
   id: number;
@@ -11,28 +13,31 @@ export type Row = {
 };
 
 export function formatReleaseDate(d: string | null): string {
-  return d ? d.slice(0, 10) : '—';
+  return d ? d.slice(0, 10) : "—";
 }
 
 export default function ScrollsTable({ rows }: { rows: Row[] }) {
   return (
-    <div className="w-full">
+    <div id="scrolls-table" className="w-full">
       {/* Desktop table */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100">
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+        <table className="min-w-full text-sm table-auto">
+          <thead className="bg-[#00471B] text-[#EEE1C6]">
             <tr>
-              <th className="text-left p-2">ID</th>
-              <th className="text-left p-2">Release Name</th>
-              <th className="text-left p-2">Status</th>
-              <th className="text-left p-2">Type</th>
-              <th className="text-left p-2">Release Date</th>
+              <th className="text-left px-4 py-3">ID</th>
+              <th className="text-left px-4 py-3">Release Name</th>
+              <th className="text-left px-4 py-3">Status</th>
+              <th className="text-left px-4 py-3">Type</th>
+              <th className="text-left px-4 py-3">Release Date</th>
             </tr>
           </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-b">
-                <td className="p-2">
+          <tbody className="divide-y divide-gray-100">
+            {rows.map((r, idx) => (
+              <tr
+                key={r.id}
+                className={idx % 2 === 0 ? "bg-white" : "bg-[#EEE1C6]"}
+              >
+                <td className="px-4 py-3 align-middle">
                   <ScrollDetailsDialog
                     id={r.id}
                     trigger={
@@ -42,10 +47,22 @@ export default function ScrollsTable({ rows }: { rows: Row[] }) {
                     }
                   />
                 </td>
-                <td className="p-2">{r.label}</td>
-                <td className="p-2">{r.status}</td>
-                <td className="p-2">{r.type}</td>
-                <td className="p-2">{formatReleaseDate(r.releaseDate)}</td>
+                <td className="px-4 py-3 align-middle">
+                  <span className="block truncate" title={r.label}>
+                    {r.label}
+                  </span>
+                </td>
+                <td className="px-4 py-3 align-middle">
+                  <Badge className={getBadgeClass(r.status as any)}>
+                    {r.status}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3 align-middle">
+                  <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
+                </td>
+                <td className="px-4 py-3 align-middle">
+                  {formatReleaseDate(r.releaseDate)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -55,7 +72,10 @@ export default function ScrollsTable({ rows }: { rows: Row[] }) {
       {/* Mobile cards */}
       <ul className="md:hidden space-y-3">
         {rows.map((r) => (
-          <li key={r.id} className="rounded-xl border bucks-border p-3 bucks-surface">
+          <li
+            key={r.id}
+            className="rounded-xl border bucks-border p-3 bucks-surface"
+          >
             <div className="flex items-center justify-between">
               <ScrollDetailsDialog
                 id={r.id}
@@ -65,12 +85,14 @@ export default function ScrollsTable({ rows }: { rows: Row[] }) {
                   </button>
                 }
               />
-              <span className="text-xs opacity-80">{formatReleaseDate(r.releaseDate)}</span>
+              <span className="text-xs opacity-80">
+                {formatReleaseDate(r.releaseDate)}
+              </span>
             </div>
             <div className="mt-1">{r.label}</div>
             <div className="mt-2 flex gap-2 text-xs">
-              <span className="px-2 py-0.5 rounded-full border bucks-border">{r.status}</span>
-              <span className="px-2 py-0.5 rounded-full border bucks-border">{r.type}</span>
+              <Badge className={getBadgeClass(r.status as any)}>{r.status}</Badge>
+              <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
             </div>
           </li>
         ))}

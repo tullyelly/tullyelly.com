@@ -26,8 +26,8 @@ export async function GET(
       ss.major, ss.minor, ss.patch,
       ss.year, ss.month,
       ss.release_date,
-      rs.name as status_name,
-      rt.name as type_name
+      rs.code as status_name,
+      rt.code as type_name
     from shaolin_scrolls ss
     join release_status rs on rs.id = ss.release_status_id
     join release_type rt on rt.id = ss.release_type_id
