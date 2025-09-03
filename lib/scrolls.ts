@@ -111,3 +111,44 @@ export async function getScrolls(params: { limit?: number; q?: string } = {}): P
   const { items } = await getScrollsPage({ limit: params.limit, offset: 0, sort: 'semver:desc', q: params.q });
   return items;
 }
+
+export interface ScrollDetail {
+  id: string;
+  release_name: string;
+  release_type: string;
+  status: string;
+  release_date: string | null;
+  label: string | null;
+}
+
+export async function getScroll(id: string | number): Promise<ScrollDetail | null> {
+  const db = getPool();
+  await db.query('SELECT 1');
+  const sql = `
+    SELECT id, release_name, release_type, status, release_date, label
+    FROM dojo.v_shaolin_scrolls
+    WHERE id = $1;
+  `;
+  const res = await db.query<{
+    id: number | string;
+    release_name: string;
+    release_type: string;
+    status: string;
+    release_date: Date | string | null;
+    label: string | null;
+  }>(sql, [id]);
+  const row = res.rows[0];
+  if (!row) return null;
+  return {
+    id: String(row.id),
+    release_name: row.release_name,
+    release_type: row.release_type,
+    status: row.status,
+    release_date:
+      row.release_date instanceof Date
+        ? row.release_date.toISOString()
+        : row.release_date ?? null,
+    label: row.label,
+  };
+}
+
