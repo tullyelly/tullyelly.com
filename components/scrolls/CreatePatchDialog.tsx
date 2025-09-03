@@ -40,8 +40,8 @@ export default function CreatePatchDialog() {
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/20" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 w-[90vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-4 shadow-lg outline-none">
+        <Dialog.Overlay className="app-dialog-overlay" />
+        <Dialog.Content className="app-dialog-content outline-none">
           <Dialog.Title className="text-lg font-medium">Create Patch</Dialog.Title>
           <Dialog.Description className="mt-1 text-sm opacity-70">
             Enter a label for the new patch release.
@@ -81,4 +81,3 @@ export default function CreatePatchDialog() {
     </Dialog.Root>
   );
 }
-

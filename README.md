@@ -225,5 +225,5 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 * `tailwind.config.mjs`: maps tokens → Tailwind theme
 * Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
 * Always run `npm run images:optimize` before committing new images
-* `app/shaolin-scrolls`: responsive grid layout with sidebar and table scaffold
+* `app/shaolin-scrolls`: responsive release list with Radix details dialog
 * Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.

@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: PageProps) {
       {/* Server-stable ActionBar with server forms */}
       <ActionBar q={q} />
       <Suspense fallback={<div className="rounded border bg-white p-4">Loading releases…</div>}>
-        <ScrollsTablePanel basePath="/shaolin-scrolls" q={q || undefined} offset={offset} sort={sort} />
+        <ScrollsTablePanel q={q || undefined} offset={offset} sort={sort} />
       </Suspense>
     </section>
   );

@@ -29,8 +29,8 @@ function CreatePatchDialog() {
         </button>
       </Dialog.Trigger>
       <Dialog.Portal forceMount>
-        <Dialog.Overlay data-state={open ? 'open' : 'closed'} hidden={!open} />
-        <Dialog.Content id={`patch-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
+        <Dialog.Overlay className="app-dialog-overlay" data-state={open ? 'open' : 'closed'} hidden={!open} />
+        <Dialog.Content className="app-dialog-content" id={`patch-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
           {/* form content placeholder */}
         </Dialog.Content>
       </Dialog.Portal>
@@ -49,8 +49,8 @@ function CreateMinorDialog() {
         </button>
       </Dialog.Trigger>
       <Dialog.Portal forceMount>
-        <Dialog.Overlay data-state={open ? 'open' : 'closed'} hidden={!open} />
-        <Dialog.Content id={`minor-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
+        <Dialog.Overlay className="app-dialog-overlay" data-state={open ? 'open' : 'closed'} hidden={!open} />
+        <Dialog.Content className="app-dialog-content" id={`minor-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
           {/* form content placeholder */}
         </Dialog.Content>
       </Dialog.Portal>
@@ -83,4 +83,3 @@ function SearchBox({ initial }: { initial: string }) {
     </form>
   );
 }
-
