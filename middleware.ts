@@ -14,7 +14,7 @@ export default withAuth(
     const res = NextResponse.next();
     res.headers.set("x-commit", buildInfo.commit);
     res.headers.set("x-ref", buildInfo.branch);
-    res.headers.set("x-built-at", buildInfo.buildIso);
+    res.headers.set("x-built-at", buildInfo.buildTime);
     res.headers.set("x-env", buildInfo.env);
     return res;
   },

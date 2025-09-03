@@ -31,6 +31,9 @@ jobs:
       # Composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
 
+      - name: Generate build info
+        run: npm run gen:build-info
+
       # Skip heavy work when irrelevant
       - name: Paths filter
         id: filter
