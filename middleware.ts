@@ -1,7 +1,7 @@
 // middleware.ts — NextAuth v4; rules-driven protection from AUTH_RULES_JSON
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { getBuildInfoSync } from "@/lib/build-info";
+import { buildInfo } from "@/lib/build-info";
 import { RULES, isProtectedPath, isOwnerOnlyPath, emailIsOwner } from "./lib/auth-config";
 
 // Note: Next.js requires `config.matcher` to be statically analyzable.
@@ -10,13 +10,12 @@ import { RULES, isProtectedPath, isOwnerOnlyPath, emailIsOwner } from "./lib/aut
 
 export default withAuth(
   (req) => {
-    const info = getBuildInfoSync();
     // Attach build metadata headers for e2e visibility
     const res = NextResponse.next();
-    res.headers.set("x-commit", info.commit);
-    res.headers.set("x-ref", info.branch);
-    res.headers.set("x-built-at", info.builtAt);
-    res.headers.set("x-env", process.env.VERCEL_ENV || process.env.NODE_ENV || "");
+    res.headers.set("x-commit", buildInfo.commit);
+    res.headers.set("x-ref", buildInfo.branch);
+    res.headers.set("x-built-at", buildInfo.buildTime);
+    res.headers.set("x-env", buildInfo.env);
     return res;
   },
   {
