@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import ShoutOut from '@/components/shout-out';
+import FlowersInline from '@/components/flowers/FlowersInline';
 
 type Item = {
   slug: string;
@@ -166,9 +166,10 @@ export function ChroniclesSection({ date }: { date?: string }) {
         </div>
       )}
 
-      {/* Closing shout with external link */}
+      {/* Closing acknowledgments */}
       <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
-        <ShoutOut>shouts to the chronicles wiki{' '}
+        <FlowersInline>
+          Chronicles Wiki &{' '}
           <a
             href="https://dragonlance.fandom.com/wiki/Raistlin_Majere"
             className="underline hover:no-underline"
@@ -177,7 +178,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
           >
             Raistlin Majere
           </a>
-        </ShoutOut>
+        </FlowersInline>
       </p>
     </section>
   );

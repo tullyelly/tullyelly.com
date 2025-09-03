@@ -25,6 +25,13 @@ const nextConfig = {
   images: {
     // Use Next.js defaults; no custom loader/path.
   },
+  async redirects() {
+    return [
+      { source: '/shouts', destination: '/credits', permanent: true },
+      { source: '/liner-notes', destination: '/credits', permanent: true },
+      { source: '/shout-outs', destination: '/credits', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

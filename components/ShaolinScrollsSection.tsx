@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import ShoutOut from '@/components/shout-out';
+import FlowersInline from '@/components/flowers/FlowersInline';
 import ScrollsTablePanel from '@/components/scrolls/ScrollsTablePanel';
 
 export function ShaolinScrollsSection({ date }: { date?: string }) {
@@ -19,9 +19,9 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
         <ScrollsTablePanel limit={20} />
       </Suspense>
 
-      {/* Closing shout with external links */}
+      {/* Closing acknowledgments */}
       <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
-        <ShoutOut>shouts to{' '}
+        <FlowersInline>
           <a
             href="https://www.postgresql.org/"
             className="underline hover:no-underline"
@@ -29,7 +29,8 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
             rel="noopener noreferrer"
           >
             Postgres
-          </a>,{' '}
+          </a>
+          {', '}
           <a
             href="https://neon.tech/"
             className="underline hover:no-underline"
@@ -37,7 +38,8 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
             rel="noopener noreferrer"
           >
             Neon
-          </a>{' & '}
+          </a>
+          {' & '}
           <a
             href="https://www.jetbrains.com/datagrip/"
             className="underline hover:no-underline"
@@ -45,8 +47,9 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
             rel="noopener noreferrer"
           >
             DataGrip
-          </a>{' '}for helping with my falling in love with databases all over again.
-        </ShoutOut>
+          </a>
+          {'—rekindled my database crush.'}
+        </FlowersInline>
       </p>
     </section>
   );

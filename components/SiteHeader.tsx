@@ -15,6 +15,7 @@ export default function SiteHeader() {
         <nav className="flex items-center gap-6">
           <BrandedLink href="/ui-lab">UI Lab</BrandedLink>
           <BrandedLink href="/typography-demo">Typography</BrandedLink>
+          <BrandedLink href="/credits" title="Sources, credits, and shout-outs.">Flowers</BrandedLink>
         </nav>
       </div>
     </header>

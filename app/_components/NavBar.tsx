@@ -15,6 +15,9 @@ export default function NavBar() {
             <li>
               <Link href="/typography-demo" className="underline underline-offset-4">Typography</Link>
             </li>
+            <li>
+              <Link href="/credits" className="underline underline-offset-4" title="Sources, credits, and shout-outs.">Flowers</Link>
+            </li>
           </ul>
         </nav>
       </div>

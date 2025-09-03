@@ -53,6 +53,10 @@ export default function DemoLab() {
           <h2 id="shout-out" className="text-xl font-semibold">Shout Out</h2>
           <p><a href="/ui-lab/shout-out" className="underline hover:no-underline">Open Shout Out lab</a></p>
         </section>
+        <section className="card space-y-4" aria-labelledby="flowers">
+          <h2 id="flowers" className="text-xl font-semibold">Flowers</h2>
+          <p><a href="/ui-lab/flowers" className="underline hover:no-underline">Open Flowers demo</a></p>
+        </section>
         <section className="card space-y-4" aria-labelledby="announcement-banner">
           <h2 id="announcement-banner" className="text-xl font-semibold">Announcement Banner</h2>
           <div className="space-y-4">
@@ -193,4 +197,3 @@ export default function DemoLab() {
     </div>
   );
 }
-
