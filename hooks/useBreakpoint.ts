@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 
 const MD_QUERY = '(min-width: 768px)';
 
-export function useBreakpoint(): boolean | null {
-  const [isMd, setIsMd] = useState<boolean | null>(null);
+export function useBreakpoint(): boolean {
+  const [isMd, setIsMd] = useState(true);
 
   useEffect(() => {
     const mq = window.matchMedia(MD_QUERY);

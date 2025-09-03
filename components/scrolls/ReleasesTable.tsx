@@ -18,6 +18,7 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
     <div className="w-full" data-testid="releases-table-wrapper">
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
         <table
+          id="scrolls-table"
           aria-label="Releases table"
           data-testid="releases-table"
           className="min-w-full table-auto text-sm"
