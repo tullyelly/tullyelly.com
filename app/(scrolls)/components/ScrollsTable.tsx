@@ -1,6 +1,7 @@
 "use client";
 
 import { ScrollDetailsDialog } from "./ScrollDetailsDialog";
+import { formatReleaseDate as formatReleaseDateUtil } from "./formatReleaseDate";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 
@@ -12,8 +13,9 @@ export type Row = {
   releaseDate: string | null;
 };
 
+// Re-export for existing tests/imports
 export function formatReleaseDate(d: string | null): string {
-  return d ? d.slice(0, 10) : "—";
+  return formatReleaseDateUtil(d);
 }
 
 export default function ScrollsTable({ rows }: { rows: Row[] }) {
@@ -65,7 +67,7 @@ export default function ScrollsTable({ rows }: { rows: Row[] }) {
                   <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
                 </td>
                 <td className="px-4 py-3 align-middle">
-                  {formatReleaseDate(r.releaseDate)}
+                  {formatReleaseDateUtil(r.releaseDate)}
                 </td>
               </tr>
             ))}
@@ -90,7 +92,7 @@ export default function ScrollsTable({ rows }: { rows: Row[] }) {
                 }
               />
               <span className="text-xs opacity-80">
-                {formatReleaseDate(r.releaseDate)}
+                {formatReleaseDateUtil(r.releaseDate)}
               </span>
             </div>
             <div className="mt-1">{r.label}</div>

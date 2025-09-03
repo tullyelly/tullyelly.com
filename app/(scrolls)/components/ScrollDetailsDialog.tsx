@@ -2,6 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
+import { formatReleaseDate } from './formatReleaseDate';
 
 type Details = {
   id: number;
@@ -48,7 +49,7 @@ export function ScrollDetailsDialog({ id, trigger }: { id: number; trigger: Reac
                 {data.year} / {data.month}
               </div>
               <div className="font-medium">Release Date</div>
-              <div>{data.release_date ?? '—'}</div>
+              <div>{formatReleaseDate(data.release_date)}</div>
             </div>
           ) : (
             <p className="mt-4">Loading…</p>
