@@ -31,6 +31,9 @@
   --text-primary: var(--black);
   --text-on-blue: var(--white);
   --text-on-green: var(--white);
+  /* ShoutOut defaults */
+  --so-accent: hsl(var(--muted-foreground));
+  --so-bg: color-mix(in oklab, currentColor 6%, transparent);
 
   /* Links */
   --link-on-white: var(--blue);
@@ -250,6 +253,35 @@ p {
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
   white-space: nowrap;
+}
+
+/* ShoutOut component */
+.so-inline {
+  --_so-underline: color-mix(in oklab, currentColor 30%, transparent);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--so-accent);
+} 
+.so-inline .so-icon {
+  width: 0.9em;
+  height: 0.9em;
+  color: var(--so-accent);
+}
+.so-inline[data-variant='note'] {
+  border-left-style: dotted;
+  background-color: var(--so-bg);
+  border-radius: 0.125rem;
+}
+.so-inline[data-variant='spark'] {
+  border-left-width: 0;
+  padding-left: 0;
+  border-bottom: 1px dotted var(--_so-underline);
+} 
+.so-inline[data-variant='spark']:hover,
+.so-inline[data-variant='spark']:focus {
+  border-bottom-color: currentColor;
 }
 
 

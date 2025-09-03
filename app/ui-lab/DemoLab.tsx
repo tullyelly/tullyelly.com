@@ -49,6 +49,10 @@ export default function DemoLab() {
     <div className="mx-auto max-w-container space-y-8 p-4">
       <h1 className="text-4xl font-extrabold">UI Lab</h1>
       <div className="grid gap-6 md:grid-cols-2">
+        <section className="card space-y-4" aria-labelledby="shout-out">
+          <h2 id="shout-out" className="text-xl font-semibold">Shout Out</h2>
+          <p><a href="/ui-lab/shout-out" className="underline hover:no-underline">Open Shout Out lab</a></p>
+        </section>
         <section className="card space-y-4" aria-labelledby="announcement-banner">
           <h2 id="announcement-banner" className="text-xl font-semibold">Announcement Banner</h2>
           <div className="space-y-4">

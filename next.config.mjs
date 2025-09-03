@@ -2,11 +2,20 @@
 import createMDX from '@next/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
+import jiti from 'jiti';
+
+const remarkPlugins = [remarkFrontmatter, remarkMdxFrontmatter]
+if (process.env.ENABLE_SHOUT_OUT_REMARK === '1') {
+  const j = jiti(import.meta.url)
+  const remarkDirective = j('remark-directive').default
+  const shoutOutRemark = j('./lib/mdx/shout-out-remark.ts').default
+  remarkPlugins.push(remarkDirective, shoutOutRemark)
+}
 
 const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
-    remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+    remarkPlugins,
   },
 });
 
