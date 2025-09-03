@@ -1,18 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import type { Release } from './ScrollsTable';
-import { ScrollsTable } from './ScrollsTable';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import ReleaseCards from '@/components/scrolls/ReleaseCards';
+import ReleasesTable, { type ReleaseRow } from '@/components/scrolls/ReleasesTable';
 
-export default function ScrollsPageClient({ initialData }: { initialData: Release[] }) {
-  const [data] = useState<Release[]>(() => initialData);
-  // Keep client filter empty for SSR/CSR parity; search now submits through ActionBar form
-  const [search] = useState('');
-  return (
-    <div className="flex flex-col gap-3">
-      <section id="table-zone">
-        <ScrollsTable data={data} globalFilter={search} />
-      </section>
-    </div>
-  );
+export default function ScrollsPageClient({ rows }: { rows: ReleaseRow[] }) {
+  const isMd = useBreakpoint();
+  if (isMd === null) {
+    return <div className="rounded border bg-white p-4">Loading releases…</div>;
+  }
+  return isMd ? <ReleasesTable rows={rows} /> : <ReleaseCards rows={rows} />;
 }
+

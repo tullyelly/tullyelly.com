@@ -1,4 +1,4 @@
-import { formatReleaseDate } from './ScrollsTable';
+import { formatReleaseDate } from './formatReleaseDate';
 
 describe('formatReleaseDate', () => {
   it('formats null as em dash', () => {
@@ -9,3 +9,4 @@ describe('formatReleaseDate', () => {
     expect(formatReleaseDate('2024-01-02T00:00:00Z')).toBe('2024-01-02');
   });
 });
+
