@@ -2,8 +2,7 @@ import BrandedLink from "@/components/BrandedLink";
 import { buildInfo } from "@/lib/build-info";
 
 export default function Footer() {
-  // Prefer the precomputed year; fall back to slicing the ISO if needed
-  const year = buildInfo.buildYear || (buildInfo.buildIso ?? "").slice(0, 4) || "";
+  const year = (buildInfo.buildTime ?? "").slice(0, 4) || "";
 
   return (
     <footer

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildInfo } from "@/lib/build-info";
 
 export const runtime = "nodejs";
 export const dynamic = "force-static";
@@ -17,14 +18,13 @@ function fallbackEnv() {
 
 export async function GET() {
   try {
-    const { buildInfo } = await import("@/lib/build-info");
     return NextResponse.json({
       ok: true,
-      buildIso: buildInfo.buildIso ?? "",
+      buildIso: buildInfo.buildTime ?? "",
       commitSha: buildInfo.commit ?? "",
-      shortCommit: buildInfo.shortCommit ?? "",
+      shortCommit: (buildInfo.commit ?? '').slice(0, 7),
       branch: buildInfo.branch ?? "",
-      ciRunId: buildInfo.ciRunId ?? null,
+      version: buildInfo.version ?? "",
     });
   } catch {
     return NextResponse.json(fallbackEnv());

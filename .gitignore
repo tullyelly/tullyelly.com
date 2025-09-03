@@ -48,3 +48,12 @@ test-results
 # Vercel
 .vercel
 .env*.local
+
+# ESLint + other local caches
+.cache/
+.eslintcache
+ 
+# Generated build artifacts and runtime build info
+.build/
+lib/build-info.ts
+lib/build-info.ts
