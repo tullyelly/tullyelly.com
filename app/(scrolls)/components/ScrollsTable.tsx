@@ -21,14 +21,18 @@ export default function ScrollsTable({ rows }: { rows: Row[] }) {
     <div id="scrolls-table" className="w-full">
       {/* Desktop table */}
       <div className="block overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
-        <table className="min-w-full text-sm table-auto">
+        <table
+          aria-label="Releases table"
+          data-testid="releases-table"
+          className="min-w-full text-sm table-auto"
+        >
           <thead className="bg-[#00471B] text-[#EEE1C6]">
             <tr>
-              <th className="text-left px-4 py-3">ID</th>
-              <th className="text-left px-4 py-3">Release Name</th>
-              <th className="text-left px-4 py-3">Status</th>
-              <th className="text-left px-4 py-3">Type</th>
-              <th className="text-left px-4 py-3">Release Date</th>
+              <th scope="col" data-testid="col-id" className="text-left px-4 py-3">ID</th>
+              <th scope="col" data-testid="col-release-name" className="text-left px-4 py-3">Release Name</th>
+              <th scope="col" data-testid="col-status" className="text-left px-4 py-3">Status</th>
+              <th scope="col" data-testid="col-type" className="text-left px-4 py-3">Type</th>
+              <th scope="col" data-testid="col-release-date" className="text-left px-4 py-3">Release Date</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">

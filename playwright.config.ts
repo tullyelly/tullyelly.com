@@ -7,6 +7,10 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
+    // Prefer desktop viewport to avoid responsive header collapse in tables
+    viewport: { width: 1366, height: 900 },
+    // Treat data-testid as first-class for stable hooks
+    testIdAttribute: 'data-testid',
   },
   projects: [
     {
