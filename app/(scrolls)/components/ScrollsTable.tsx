@@ -20,7 +20,7 @@ export default function ScrollsTable({ rows }: { rows: Row[] }) {
   return (
     <div id="scrolls-table" className="w-full">
       {/* Desktop table */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+      <div className="block overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
         <table className="min-w-full text-sm table-auto">
           <thead className="bg-[#00471B] text-[#EEE1C6]">
             <tr>
