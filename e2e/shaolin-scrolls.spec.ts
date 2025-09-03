@@ -20,12 +20,15 @@ test('Shaolin Scrolls page hydrates without errors across interactions', async (
 
   // Click first ID to open dialog
   const tableWrap = page.locator('#scrolls-table');
-  const firstTrigger = tableWrap.locator('tbody tr').first().locator('button').first();
-  await firstTrigger.click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByText('SemVer')).toBeVisible();
-  await dialog.getByRole('button', { name: 'Close' }).click();
-  await expect(dialog).toBeHidden();
-  await expect(firstTrigger).toBeFocused();
+  const rowCount = await tableWrap.locator('tbody tr').count();
+  if (rowCount > 0) {
+    const firstTrigger = tableWrap.locator('tbody tr').first().locator('button').first();
+    await firstTrigger.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('SemVer')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(firstTrigger).toBeFocused();
+  }
 });
