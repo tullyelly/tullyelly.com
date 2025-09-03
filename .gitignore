@@ -56,4 +56,3 @@ test-results
 # Generated build artifacts and runtime build info
 .build/
 lib/build-info.ts
-lib/build-info.ts
