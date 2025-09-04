@@ -1,8 +1,8 @@
 import { formatReleaseDate } from './formatReleaseDate';
 
 describe('formatReleaseDate', () => {
-  it('formats null as semicolon', () => {
-    expect(formatReleaseDate(null)).toBe(';');
+  it('returns empty string for null', () => {
+    expect(formatReleaseDate(null)).toBe('');
   });
 
   it('formats ISO date string to Chicago time without timezone label', () => {

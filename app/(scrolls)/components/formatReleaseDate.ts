@@ -3,5 +3,6 @@
 import { formatDateTimeChicago } from '@/lib/dates';
 
 export function formatReleaseDate(d: string | null): string {
+  if (!d) return '';
   return formatDateTimeChicago(d);
 }
