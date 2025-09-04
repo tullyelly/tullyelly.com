@@ -34,6 +34,10 @@ Humans: see `README.md` for introductions and contributor docs.
 - Scope: MD/MDX text and JSX/TSX JSXText.
 - Exceptions: tests, vendor, or quotes annotated with `// punctuation-allowed` or frontmatter `punctuation: allowed`.
 
+## Flowers & Credits
+
+- Use `FlowersInline` for section-level acknowledgments; mirror the Chronicles and Shaolin Scrolls patterns.
+- Show at most one Flowers call per section and surface matching items on `/credits`.
 
 ## Testing & CI Expectations
 

@@ -62,6 +62,37 @@ export default function Page() {
               </a>
             </span>
           ),
+          (
+            <span key="3">
+              nikkigirl, Big Ter,{" "}
+              <a
+                href="https://www.youtube.com/"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                YouTube
+              </a>
+              {", "}
+              <a
+                href="https://www.python.org/"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Python
+              </a>
+              {" & "}
+              <a
+                href="https://www.kapwing.com/"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Kapwing
+              </a>
+            </span>
+          ),
         ]}
       />
     </main>
