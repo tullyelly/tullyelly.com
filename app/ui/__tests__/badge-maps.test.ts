@@ -18,3 +18,9 @@ test("badge variants contain expected keys", () => {
 test("getBadgeClass falls back to archived", () => {
   expect(getBadgeClass("unknown" as any)).toBe(BADGE_VARIANTS.archived);
 });
+
+test("year badge uses Bucks green with white text", () => {
+  const cls = getBadgeClass('year');
+  expect(cls).toContain('bg-brand-bucksGreen');
+  expect(cls).toContain('text-white');
+});

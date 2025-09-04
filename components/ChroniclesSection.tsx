@@ -134,7 +134,8 @@ export function ChroniclesSection({ date }: { date?: string }) {
         {/* Center image card (placed at mid, centered column on md+) */}
         <Card
           as="figure"
-          className="p-2 place-self-center md:col-start-2 border-brand-greatLakesBlue"
+          accent="greatLakesBlue"
+          className="p-2 place-self-center md:col-start-2"
         >
           <Image
             src="/images/optimized/raistlin black robes.webp"

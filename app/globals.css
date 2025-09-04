@@ -153,13 +153,6 @@ textarea:focus-visible {
   padding: 1rem;
 }
 
-.card {
-  background: var(--white);
-  border: 2px solid var(--bucks-green);
-  border-radius: 12px;
-  padding: 1rem;
-}
-
 .button {
   display: inline-block;
   padding: 0.5rem 1rem;
