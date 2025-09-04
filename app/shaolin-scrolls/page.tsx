@@ -56,7 +56,7 @@ export default async function Page({ searchParams }: PageProps) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Postgres
+            PostgreSQL
           </a>
           {', '}
           <a
