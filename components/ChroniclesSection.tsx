@@ -95,7 +95,8 @@ export function ChroniclesSection({ date }: { date?: string }) {
     <section id="chronicles" aria-labelledby="chronicles-heading" className="scroll-mt-24">
       {/* Heading */}
       <h2 id="chronicles-heading" className="text-xl md:text-2xl font-semibold leading-snug">
-        <span aria-hidden>📓</span>Chronicle of Chronicles{date ? `; ${date}` : ''}
+        <span aria-hidden>📓</span>Chronicle of Chronicles
+        {date && <span className="ml-1 whitespace-nowrap">; {date}</span>}
       </h2>
 
       {/* Intro space */}

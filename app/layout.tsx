@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
       <head></head>
-      <body className="font-sans min-h-screen flex flex-col bg-[#EEE1C6] text-foreground">
+      <body className="font-sans min-h-screen flex flex-col bg-white text-foreground">
         <Providers>
           {announcement && <AnnouncementBanner message={announcement} dismissible />}
 
@@ -38,8 +38,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <NavBar />
           </header>
 
-          <main id="content" className="flex-1 p-4" tabIndex={-1}>
-            <div className="mx-auto w-full max-w-7xl bg-white rounded-lg shadow-sm p-6">
+          <main id="content" className="flex-1 bg-white" tabIndex={-1}>
+            <div className="mx-auto w-full max-w-7xl px-4 py-6">
               {children}
             </div>
           </main>
