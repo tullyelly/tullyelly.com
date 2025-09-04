@@ -2,6 +2,7 @@
 import { FlatCompat } from '@eslint/eslintrc'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import noEmdashInJsx from './eslint-rules/no-emdash-in-jsx.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -43,6 +44,13 @@ const config = [
     rules: {
       'import/no-anonymous-default-export': 'off',
     },
+  },
+
+  // Punctuation: forbid em dashes in JSXText
+  {
+    files: ['**/*.{jsx,tsx}'],
+    plugins: { local: { rules: { 'no-emdash-in-jsx': noEmdashInJsx } } },
+    rules: { 'local/no-emdash-in-jsx': 'error' },
   },
 
   // Guard against deprecated storage APIs

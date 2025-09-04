@@ -76,7 +76,7 @@ export default async function Page({ searchParams }: PageProps) {
           >
             DataGrip
           </a>
-          {'—rekindled my database crush.'}
+          {'; rekindled my database crush.'}
         </FlowersInline>
       </p>
     </section>
