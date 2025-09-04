@@ -71,6 +71,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Optimize images (changed only)
         if: steps.filter.outputs.images == 'true'
         run: npm run images:optimize

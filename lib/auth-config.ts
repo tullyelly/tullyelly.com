@@ -43,7 +43,7 @@ function parseRules(): Rules {
           : DEFAULT_RULES.toggles?.allowAnyEmailOnPreview)
     };
     return {
-      ownerDomains: unique(ownerDomains.map(s => s.toLowerCase())),
+      ownerDomains: unique(ownerDomains.map((s: string) => s.toLowerCase())),
       publicPaths: unique(publicPaths),
       protectedPaths: unique(protectedPaths),
       ownerOnlyPaths: unique(ownerOnlyPaths),
