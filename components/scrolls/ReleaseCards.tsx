@@ -8,12 +8,13 @@ import type { ReleaseRow } from './ReleasesTable';
 
 export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
   return (
-    <ul className="space-y-3" data-testid="release-cards">
+    <ul className="space-y-3" data-testid="release-cards" data-zebra>
       {rows.map((r) => (
         <li
           key={r.id}
           data-testid="release-card"
-          className="rounded-xl border bucks-border p-3 bucks-surface"
+          data-card
+          className="bucks-border p-3"
         >
           <div className="flex items-center justify-between">
             <Link

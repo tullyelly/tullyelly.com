@@ -3,13 +3,22 @@ import { cn } from '@/lib/cn'
 
 export type CardProps = React.HTMLAttributes<HTMLElement> & {
   as?: React.ElementType
+  zebraIgnore?: boolean
 }
 
-export function Card({ as: As = 'li', className, children, ...props }: CardProps) {
+export function Card({
+  as: As = 'li',
+  zebraIgnore,
+  className,
+  children,
+  ...rest
+}: CardProps) {
   return (
     <As
-      className={cn('rounded-2xl border border-border bg-surface p-4 shadow-sm', className)}
-      {...props}
+      data-card
+      className={cn('card', className)}
+      {...(zebraIgnore ? { 'data-zebra-ignore': '' } : {})}
+      {...rest}
     >
       {children}
     </As>

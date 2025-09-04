@@ -22,6 +22,7 @@ Pages auto-update when you edit files in the `app/` folder.
 
 * Tokens are defined as CSS variables in `app/globals.css`.
 * Tailwind (`tailwind.config.mjs`) maps tokens to classes.
+* Add `data-zebra` to a container to opt-in to alternating card backgrounds (`--surface-1`, `--surface-2`).
 * Use them like this:
 
 ```jsx
