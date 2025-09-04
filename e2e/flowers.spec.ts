@@ -14,7 +14,7 @@ test('home page shows Flowers inline notes for sections', async ({ page }) => {
   await expect(
     page
       .getByLabel('Acknowledgments')
-      .filter({ hasText: 'PostgreSQL, Neon & DataGrip—rekindled my database crush.' })
+      .filter({ hasText: 'PostgreSQL, Neon & DataGrip; rekindled my database crush.' })
   ).toBeVisible();
 });
 

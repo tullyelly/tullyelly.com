@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
     default: "tullyelly",
-    template: "%s — tullyelly",
+    template: "%s; tullyelly",
   },
   description: "Dead-simple static pages with a tiny design system.",
   openGraph: {

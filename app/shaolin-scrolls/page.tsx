@@ -20,8 +20,16 @@ export default async function Page({ searchParams }: PageProps) {
       sort,
     };
   });
+
   const { q, offset, sort } = parsed;
-  const { items } = await getScrollsPage({ limit: 20, offset, sort, q: q || undefined });
+
+  const { items } = await getScrollsPage({
+    limit: 20,
+    offset,
+    sort,
+    q: q || undefined,
+  });
+
   const rows = items.map((item) => ({
     id: Number(item.id),
     label: item.label,
@@ -29,6 +37,7 @@ export default async function Page({ searchParams }: PageProps) {
     type: item.type,
     releaseDate: item.release_date,
   }));
+
   return (
     <section id="scrolls-root" className="flex min-h-screen flex-col gap-4">
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
