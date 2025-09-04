@@ -297,6 +297,8 @@ p {
   top: 50%;
   transform: translate(-50%, -50%);
   width: min(90vw, 640px);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   background: var(--white);
   color: var(--black);
   border: 6px solid var(--cream); /* Cream City Cream */
