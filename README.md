@@ -227,6 +227,6 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 * Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
 * Always run `npm run images:optimize` before committing new images
 * `app/shaolin-scrolls`: responsive release list with Radix details dialog
-* `app/page.tsx`: homepage with Mother's Day 2025, Chronicle of Chronicles, and Shaolin Scrolls sections
+* `app/page.tsx`: homepage with Mother's Day 2025, Musical Guests, Chronicle of Chronicles, and Shaolin Scrolls sections
 * `app/credits`: sources & acknowledgments via Flowers
 * Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.
