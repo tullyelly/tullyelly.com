@@ -11,10 +11,10 @@ import { getBadgeClass } from "@/app/ui/badge-maps"
 export const metadata = {
   title: "Roadwork Rappin’ by Aesop Rock | tullyelly",
   description:
-    "Explore 'Roadwork Rappin’' by Aesop Rock — a defining track in indie hip-hop and underground rap. This page features the music video, context, and supporting content for fans of hip-hop, rap, and experimental lyricism.",
+    "Explore 'Roadwork Rappin’' by Aesop Rock;  a defining track in indie hip-hop and underground rap. This page features the music video, context, and supporting content for fans of hip-hop, rap, and experimental lyricism.",
   alternates: { canonical: "/roadwork-rappin" },
   openGraph: {
-    title: "Aesop Rock — Roadwork Rappin’",
+    title: "Aesop Rock; Roadwork Rappin’",
     description:
       "Hip-hop, rap, and indie music fans can dive into Aesop Rock’s 'Roadwork Rappin’' with video and context on this page.",
     url: "/roadwork-rappin",
@@ -32,7 +32,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aesop Rock — Roadwork Rappin’",
+    title: "Aesop Rock; Roadwork Rappin’",
     description:
       "Aesop Rock’s Roadwork Rappin’. Build a road where there isn't a road!",
     images: [
@@ -102,7 +102,7 @@ export default function Page() {
             <div className="yt-wrapper-bucks">
               <iframe
                 src="https://www.youtube-nocookie.com/embed/jRHqjDnEFiE?si=-aVzrmGAmDuJ0PL0&loop=1&playlist=jRHqjDnEFiE"
-                title="Aesop Rock — Roadwork Rappin’ music video"
+                title="Aesop Rock; Roadwork Rappin’ music video"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
@@ -119,7 +119,7 @@ export default function Page() {
           <header className="space-y-1">
             <h2 className="text-xl font-semibold">Aesop Rock Bio</h2>
             <p className="leading-relaxed">
-              Aesop Rock (Ian Bavitz) is a New York–born rapper and producer celebrated for his dense, surreal lyricism and lasting influence on underground hip-hop. What makes him truly stand out is his vocabulary: studies show he’s used more unique words across his career than any other major rapper, a linguistic range so vast it even rivals Shakespeare. That love of language defines his style—songs that unfold like puzzles, packed with imagery and ideas that reward repeated listens.
+              Aesop Rock (Ian Bavitz) is a New York–born rapper and producer celebrated for his dense, surreal lyricism and lasting influence on underground hip-hop. What makes him truly stand out is his vocabulary: studies show he’s used more unique words across his career than any other major rapper, a linguistic range so vast it even rivals Shakespeare. That love of language defines his style; songs that unfold like puzzles, packed with imagery and ideas that reward repeated listens.
             </p>
           </header>
 
