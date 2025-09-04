@@ -95,8 +95,16 @@ export function ChroniclesSection({ date }: { date?: string }) {
   return (
     <section id="chronicles" aria-labelledby="chronicles-heading" className="scroll-mt-24">
       {/* Heading */}
-      <h2 id="chronicles-heading" className="text-xl md:text-2xl font-semibold leading-snug">
-        <span aria-hidden>📓</span>Chronicle of Chronicles{date ? `; ${date}` : ''}
+      <h2
+        id="chronicles-heading"
+        className="flex items-baseline text-xl md:text-2xl font-semibold leading-snug"
+      >
+        <span aria-hidden className="mr-2">📓</span>
+        <span>
+          Chronicle of Chronicles{date && (
+            <span className="whitespace-nowrap">; {date}</span>
+          )}
+        </span>
       </h2>
 
       {/* Intro space */}
@@ -173,7 +181,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
       )}
 
       {/* Closing acknowledgments */}
-      <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 mb-0 text-sm md:text-[15px] text-muted-foreground">
         <FlowersInline>
           Chronicles Wiki &{' '}
           <a

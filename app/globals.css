@@ -52,6 +52,7 @@
 
   /* Layout scale */
   --container: 72rem;
+  --content-max: 80rem;
 
   /* UI tokens */
   --surface: var(--surface-card);
@@ -67,13 +68,29 @@
   --badge-classic-ring: rgba(0, 71, 27, 0.25);
 }
 
+html, body {
+  height: 100%;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
+  background:
+    linear-gradient(
+      to right,
+      var(--cream) 0,
+      var(--cream) calc((100vw - var(--content-max)) / 2),
+      transparent calc((100vw - var(--content-max)) / 2),
+      transparent calc(100% - (100vw - var(--content-max)) / 2),
+      var(--cream) calc(100% - (100vw - var(--content-max)) / 2),
+      var(--cream) 100%
+    );
+  background-attachment: fixed;
+  background-color: var(--cream);
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: transparent !important;
   color: var(--fg);
   font-family: var(--font-inter);
   line-height: 1.6;
@@ -316,4 +333,7 @@ p {
       z-index: 1;
     }
   }
+
+  .crop-block-margins > :first-child { margin-top: 0 !important; }
+  .crop-block-margins > :last-child { margin-bottom: 0 !important; }
 }
