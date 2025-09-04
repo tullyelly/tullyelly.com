@@ -1,3 +1,5 @@
+import FlowersInline from '@/components/flowers/FlowersInline';
+
 type Props = { date?: string };
 
 export function MothersDaySection({ date }: Props) {
@@ -14,62 +16,63 @@ export function MothersDaySection({ date }: Props) {
           <div className="yt-wrapper-bucks">
             <iframe
               src="https://www.youtube-nocookie.com/embed/n8fOQ4DOZTk"
-              title="Mother&apos;s Day video 1"
+              title="Mother's Day video 1"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             />
           </div>
-          <figcaption className="space-y-1 text-xs text-fg/60">
-            <p>Embedded via YouTube&apos;s privacy-enhanced player.</p>
-            <p>
-              <span aria-hidden>🌸</span> nikkigirl, Big Ter,{' '}
-              <a className="underline" href="https://www.youtube.com/">
-                YouTube
-              </a>
-              ,{' '}
-              <a className="underline" href="https://www.python.org/">
-                Python
-              </a>
-              , &{' '}
-              <a className="underline" href="https://www.kapwing.com/">
-                Kapwing
-              </a>{' '}
-              <span aria-hidden>🌸</span>
-            </p>
+          <figcaption className="text-xs text-fg/60">
+            Embedded via YouTube&apos;s privacy-enhanced player.
           </figcaption>
         </figure>
         <figure className="space-y-2">
           <div className="yt-wrapper-bucks">
             <iframe
               src="https://www.youtube-nocookie.com/embed/br1qpJ2mCpE"
-              title="Mother&apos;s Day video 2"
+              title="Mother's Day video 2"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             />
           </div>
-          <figcaption className="space-y-1 text-xs text-fg/60">
-            <p>Embedded via YouTube&apos;s privacy-enhanced player.</p>
-            <p>
-              <span aria-hidden>🌸</span> nikkigirl, Big Ter,{' '}
-              <a className="underline" href="https://www.youtube.com/">
-                YouTube
-              </a>
-              ,{' '}
-              <a className="underline" href="https://www.python.org/">
-                Python
-              </a>
-              , &{' '}
-              <a className="underline" href="https://www.kapwing.com/">
-                Kapwing
-              </a>{' '}
-              <span aria-hidden>🌸</span>
-            </p>
+          <figcaption className="text-xs text-fg/60">
+            Embedded via YouTube&apos;s privacy-enhanced player.
           </figcaption>
         </figure>
+        <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+          <FlowersInline>
+            nikkigirl, Big Ter,{" "}
+            <a
+              className="underline hover:no-underline"
+              href="https://www.youtube.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              YouTube
+            </a>
+            {", "}
+            <a
+              className="underline hover:no-underline"
+              href="https://www.python.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Python
+            </a>
+            {" & "}
+            <a
+              className="underline hover:no-underline"
+              href="https://www.kapwing.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Kapwing
+            </a>
+          </FlowersInline>
+        </p>
       </div>
     </section>
   );
