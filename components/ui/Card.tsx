@@ -3,12 +3,20 @@ import { cn } from '@/lib/cn'
 
 export type CardProps = React.HTMLAttributes<HTMLElement> & {
   as?: React.ElementType
+  variant?: 'accent' | 'brand'
 }
 
-export function Card({ as: As = 'li', className, children, ...props }: CardProps) {
+export function Card({
+  as: As = 'li',
+  className,
+  variant,
+  children,
+  ...props
+}: CardProps) {
   return (
     <As
-      className={cn('rounded-2xl border border-border bg-surface p-4 shadow-sm', className)}
+      data-variant={variant}
+      className={cn('card', className)}
       {...props}
     >
       {children}

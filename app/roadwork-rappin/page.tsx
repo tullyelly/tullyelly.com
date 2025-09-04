@@ -1,7 +1,7 @@
 import React from "react"
 import {
   Card,
-  CardGrid,
+  CardGroup,
   type CardItem,
   mapDomainToCardItem,
 } from "@ui"
@@ -125,7 +125,7 @@ export default function Page() {
 
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">Albums to Explore</h3>
-            <CardGrid>
+            <CardGroup className="grid gap-3 sm:grid-cols-2">
               {items.map((item) => (
                 <Card key={item.id} className="relative">
                   <div className="flex items-start justify-between gap-3">
@@ -148,7 +148,7 @@ export default function Page() {
                   )}
                 </Card>
               ))}
-            </CardGrid>
+            </CardGroup>
           </div>
         </section>
       </article>

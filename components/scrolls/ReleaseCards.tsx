@@ -7,6 +7,7 @@ import { formatReleaseDate } from '@/app/(scrolls)/components/formatReleaseDate'
 import ScrollDialog from '@/app/(components)/shaolin/ScrollDialog';
 import { useScrollDialog } from '@/app/(components)/shaolin/useScrollDialog';
 import type { ReleaseRow } from './ReleasesTable';
+import { Card, CardGroup } from '@ui';
 
 export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
   const { open, setOpen, id, openWithId } = useScrollDialog();
@@ -29,12 +30,13 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
 
   return (
     <>
-      <ul className="space-y-3" data-testid="release-cards">
+      <CardGroup as="ul" className="space-y-3" data-testid="release-cards">
         {rows.map((r) => (
-          <li
+          <Card
+            as="li"
             key={r.id}
             data-testid="release-card"
-            className="rounded-xl border bucks-border p-3 bucks-surface"
+            className="text-[var(--bucks-green)]"
           >
             <div className="flex items-center justify-between">
               <a
@@ -56,9 +58,9 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
               <Badge className={getBadgeClass(r.status as any)}>{r.status}</Badge>
               <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
             </div>
-          </li>
+          </Card>
         ))}
-      </ul>
+      </CardGroup>
       <ScrollDialog open={open} onOpenChange={handleOpenChange} id={id} />
     </>
   );

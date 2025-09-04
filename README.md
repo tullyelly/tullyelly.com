@@ -34,6 +34,12 @@ This keeps typography, colors, and spacing consistent across the site.
 
 ---
 
+## 🧩 UI Components
+
+Standard cards live in `components/ui/Card.tsx` and `components/ui/CardGroup.tsx`. `CardGroup` adds optional zebra striping with pure CSS.
+
+---
+
 ## 🖼️ Image Optimization Pipeline
 
 Optimize large images before pushing to the repo:

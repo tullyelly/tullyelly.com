@@ -59,6 +59,14 @@
   --success: var(--green);
   --warning: #92400e;
 
+  /* Card tokens */
+  --card-radius: 1rem;
+  --card-padding: 1rem;
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  --card-border-weight: 2px;
+  --card-border-color: var(--green);
+  --card-zebra-cream: var(--cream);
+
   /* Global badge tokens */
   --badge-classic-bg: #F0EBD2; /* Championship Gold */
   --badge-classic-fg: #00471B; /* Bucks Green */
@@ -282,6 +290,41 @@ p {
 
 .bucks-accent {
   color: var(--blue);
+}
+
+/* Card component */
+.card {
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  border: var(--card-border-weight) solid var(--card-border-color);
+  background: var(--surface-card);
+  box-shadow: var(--card-shadow);
+}
+
+.card-group > .card:nth-child(even):not([data-variant]) {
+  background: var(--card-zebra-cream);
+}
+
+.card[data-variant='brand'] {
+  background: var(--card-zebra-cream);
+  color: var(--bucks-green);
+}
+
+.card[data-variant='accent'] {
+  background: var(--blue);
+  color: var(--text-on-blue);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card-zebra-cream: color-mix(in srgb, var(--surface) 85%, var(--cream));
+  }
+}
+
+@media (prefers-contrast: more) {
+  .card-group > .card:nth-child(even):not([data-variant]) {
+    background: var(--surface-card);
+  }
 }
 
 /* Standardized Radix Dialog styles */
