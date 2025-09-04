@@ -16,8 +16,8 @@ export default function Home() {
   return (
     <main className="space-y-4">
       <h1 className="text-2xl font-semibold">Welcome</h1>
-      <MothersDaySection date={mothersDate} />
       <MusicalGuestsSection date={musicalDate} />
+      <MothersDaySection date={mothersDate} />
       <ChroniclesSection date={chroniclesDate} />
       <ShaolinScrollsSection date={scrollsDate} />
     </main>

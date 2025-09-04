@@ -9,16 +9,16 @@ export function MusicalGuestsSection({ date }: Props) {
       <h2 className="text-xl md:text-2xl font-semibold leading-snug">
         <span aria-hidden>🎤</span>Musical Guests{date ? `; ${date}` : ''}
       </h2>
-      <p className="text-sm md:text-[15px] text-muted-foreground">Opening blurb placeholder.</p>
+      <p className="text-sm md:text-[15px] text-muted-foreground">If you are around me long enough, you will be subjected to music takes. Wu-Tang is for the children. Run The Jewels fast.</p>
       <ul className="list-disc list-inside text-sm md:text-[15px] space-y-1">
         <li>
           <Link href="/heels-have-eyes" className="underline hover:no-underline">
-            Heels Have Eyes
+            HEELS HAVE EYES
           </Link>
         </li>
         <li>
           <Link href="/roadwork-rappin" className="underline hover:no-underline">
-            Roadwork Rappin
+            Roadwork Rappin'
           </Link>
         </li>
       </ul>
