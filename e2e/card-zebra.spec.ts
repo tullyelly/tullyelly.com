@@ -12,13 +12,13 @@ test('card backgrounds alternate in zebra container', async ({ page }) => {
   expect(colors[0]).not.toBe(colors[1]);
 });
 
-test('roadwork rappin albums screenshot', async ({ page }) => {
-  await page.goto('/roadwork-rappin');
-  const grid = page.locator('[data-zebra]').first();
+test('zebra demo screenshot', async ({ page }) => {
+  await page.goto('/ui-lab');
+  const grid = page.locator('[data-testid="zebra-demo"]').first();
   await grid.evaluate((el) => {
     Object.assign(el.style, { width: '64px', height: '64px', overflow: 'hidden' });
   });
   const screenshot = await grid.screenshot();
   const base64 = screenshot.toString('base64');
-  expect(base64).toMatchSnapshot('roadwork-rappin-zebra.txt');
+  expect(base64).toMatchSnapshot('zebra-demo.txt');
 });
