@@ -9,6 +9,7 @@ test("badge variants contain expected keys", () => {
     "minor",
     "major",
     "classic",
+    "year",
   ] as Array<keyof typeof BADGE_VARIANTS>) {
     expect(BADGE_VARIANTS[k]).toBeTruthy();
   }

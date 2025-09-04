@@ -144,10 +144,16 @@ textarea:focus-visible {
   color: var(--text-on-green);
 }
 
-.article,
-.card {
+.article {
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.card {
+  background: var(--white);
+  border: 2px solid var(--bucks-green);
   border-radius: 12px;
   padding: 1rem;
 }
@@ -269,15 +275,6 @@ p {
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 0;
-}
-
-.bucks-surface {
-  background: var(--cream);
-  color: var(--bucks-green);
-}
-
-.bucks-border {
-  border-color: var(--bucks-green);
 }
 
 .bucks-accent {

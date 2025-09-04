@@ -128,7 +128,7 @@ export default function Page() {
                   <div className="flex items-start justify-between gap-3">
                     <h4 className="font-semibold italic">{item.title}</h4>
                     {item.meta && (
-                      <Badge className={getBadgeClass('archived')}>{item.meta}</Badge>
+                      <Badge className={getBadgeClass('year')}>{item.meta}</Badge>
                     )}
                   </div>
                   {item.description && (

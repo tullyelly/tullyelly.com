@@ -6,6 +6,7 @@ import { getBadgeClass } from '@/app/ui/badge-maps';
 import { formatReleaseDate } from '@/app/(scrolls)/components/formatReleaseDate';
 import ScrollDialog from '@/app/(components)/shaolin/ScrollDialog';
 import { useScrollDialog } from '@/app/(components)/shaolin/useScrollDialog';
+import { Card } from '@ui';
 
 export interface ReleaseRow {
   id: number;
@@ -37,14 +38,14 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
   return (
     <>
       <div className="w-full" data-testid="releases-table-wrapper">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+        <Card as="div" className="overflow-x-auto p-4 md:p-6">
           <table
             id="scrolls-table"
             aria-label="Releases table"
             data-testid="releases-table"
             className="min-w-full table-auto text-sm"
           >
-            <thead className="bg-[#00471B] text-[#EEE1C6]">
+            <thead className="bg-brand-bucksGreen text-brand-creamCityCream">
               <tr>
                 <th scope="col" className="px-4 py-3 text-left">ID</th>
                 <th scope="col" className="px-4 py-3 text-left">Release Name</th>
@@ -55,7 +56,7 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {rows.map((r, idx) => (
-                <tr key={r.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#EEE1C6]'}>
+                <tr key={r.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-brand-creamCityCream'}>
                   <td className="px-4 py-3 align-middle">
                     <a
                       href={`/shaolin-scrolls/${r.id}`}
@@ -86,7 +87,7 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
         <ScrollDialog open={open} onOpenChange={handleOpenChange} id={id} />
       </div>
     </>

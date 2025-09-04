@@ -8,7 +8,7 @@ export type CardProps = React.HTMLAttributes<HTMLElement> & {
 export function Card({ as: As = 'li', className, children, ...props }: CardProps) {
   return (
     <As
-      className={cn('rounded-2xl border border-border bg-surface p-4 shadow-sm', className)}
+      className={cn('rounded-2xl border-2 border-brand-bucksGreen bg-white p-4 shadow-sm', className)}
       {...props}
     >
       {children}
