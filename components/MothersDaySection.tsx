@@ -9,7 +9,7 @@ export function MothersDaySection({ date }: Props) {
         <span aria-hidden>🌷</span>Mother&apos;s Day 2025{date ? `; ${date}` : ''}
       </h2>
       <p className="text-sm">
-        A heartfelt introduction will appear here when the time is right; for now please enjoy the videos below.
+        Before we dive too deep into the nerd, here's some additional wholesome Mother's Day content for you to enjoy! I found them to be just as impactful as the first time around.
       </p>
       <div className="space-y-4">
         <figure className="space-y-2">
@@ -22,10 +22,7 @@ export function MothersDaySection({ date }: Props) {
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             />
-          </div>
-          <figcaption className="text-xs text-fg/60">
-            Embedded via YouTube&apos;s privacy-enhanced player.
-          </figcaption>
+          </div>          
         </figure>
         <figure className="space-y-2">
           <div className="yt-wrapper-bucks">
