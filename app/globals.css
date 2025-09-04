@@ -50,6 +50,7 @@
 
   /* Layout scale */
   --container: 72rem;
+  --content-max: 80rem;
 
   /* UI tokens */
   --surface: var(--surface-card);
@@ -67,11 +68,23 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  height: 100%;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  height: 100%;
+  background-color: var(--white);
+  background-image: linear-gradient(
+    to right,
+    var(--cream) 0,
+    var(--cream) calc((100vw - var(--content-max)) / 2),
+    transparent calc((100vw - var(--content-max)) / 2),
+    transparent calc(100% - (100vw - var(--content-max)) / 2),
+    var(--cream) calc(100% - (100vw - var(--content-max)) / 2),
+    var(--cream) 100%
+  );
+  background-attachment: fixed;
   color: var(--fg);
   font-family: var(--font-inter);
   line-height: 1.6;
