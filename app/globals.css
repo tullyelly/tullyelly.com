@@ -7,7 +7,11 @@
  */
 
 :root {
-  --bucks-green: #00471B;
+  --cream: #EEE1C6;            /* Cream City Cream */
+  --white: #FFFFFF;
+  --ink: #0C1B0C;              /* near-black text */
+  --green-900: #00471B;        /* Bucks Green (header badges etc.) */
+  --bucks-green: var(--green-900);
   --gold: #F0EBD2;
   --font-inter: system-ui, sans-serif;
   --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -17,21 +21,19 @@
   --brand-chrome-fg: #ffffff;   /* text on chrome */
 
   /* Brand bases */
-  --cream: #EEE1C6;            /* Cream City Cream */
   --blue: #0077C0;             /* Great Lakes Blue */
   --blue-contrast: #0069A9;    /* Darkened for AA on cream */
-  --green: #00471B;            /* Bucks Green */
+  --green: var(--green-900);   /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
 
   /* Neutrals for readability */
-  --white: #FFFFFF;
-  --black: #0B0B0B;            /* body text */
+  --black: var(--ink);
 
   /* Text */
-  --text-primary: var(--black);
+  --text-primary: var(--ink);
   --text-on-blue: var(--white);
   --text-on-green: var(--white);
-  
+
 
   /* Links */
   --link-on-white: var(--blue);
@@ -61,7 +63,7 @@
 
   /* Global badge tokens */
   --badge-classic-bg: #F0EBD2; /* Championship Gold */
-  --badge-classic-fg: #00471B; /* Bucks Green */
+  --badge-classic-fg: var(--green-900); /* Bucks Green */
   --badge-classic-ring: rgba(0, 71, 27, 0.25);
 }
 
@@ -302,4 +304,23 @@ p {
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+}
+
+@layer utilities {
+  @media (min-width: 768px) {
+    .zebra-desktop tbody tr:nth-child(even) td {
+      background-color: var(--cream);
+    }
+    .zebra-desktop tbody tr:nth-child(odd) td {
+      background-color: var(--white);
+    }
+    .zebra-desktop tbody tr:hover td {
+      filter: brightness(0.98);
+    }
+    .thead-sticky thead tr {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+  }
 }
