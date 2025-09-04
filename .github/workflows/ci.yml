@@ -77,10 +77,11 @@ jobs:
       - name: Unit tests
         env:
           TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-        run: npm run test:ci -- --coverage
+        run: npm run test:ci -- --coverage --coverageReporters=lcov --coverageReporters=json-summary --coverageReporters=text
 
       - name: Check coverage threshold
-        run: node -e "const fs=require('fs');const pct=JSON.parse(fs.readFileSync('coverage/coverage-summary.json')).total.lines.pct; if(pct<80){console.error(`Coverage ${pct}% below 80%`);process.exit(1);}"
+        run: |
+          node -e "const fs=require('fs');const pct=JSON.parse(fs.readFileSync('coverage/coverage-summary.json')).total.lines.pct;if(pct<80){console.error('Coverage '+pct+'% below 80%');process.exit(1);}" 
 
       - name: Upload coverage summary
         uses: actions/upload-artifact@v4
@@ -89,7 +90,8 @@ jobs:
           path: coverage/coverage-summary.json
 
       - name: Generate coverage badge
-        run: node -e "const fs=require('fs');const summary=JSON.parse(fs.readFileSync('coverage/coverage-summary.json'));const pct=Math.round(summary.total.lines.pct);const color=pct>=90?'brightgreen':pct>=80?'green':pct>=70?'yellow':'orange';fs.writeFileSync('coverage/badge.json',JSON.stringify({schemaVersion:1,label:'coverage',message:pct+'%',color}));"
+        run: |
+          node -e "const fs=require('fs');const summary=JSON.parse(fs.readFileSync('coverage/coverage-summary.json'));const pct=Math.round(summary.total.lines.pct);const color=pct>=90?'brightgreen':pct>=80?'green':pct>=70?'yellow':'orange';fs.writeFileSync('coverage/badge.json',JSON.stringify({schemaVersion:1,label:'coverage',message:pct+'%',color}));" 
 
       - name: Setup Pages
         if: github.ref_name == 'main'
