@@ -174,7 +174,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
       )}
 
       {/* Closing acknowledgments */}
-      <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 mb-0 text-sm md:text-[15px] text-muted-foreground">
         <FlowersInline>
           Chronicles Wiki &{' '}
           <a

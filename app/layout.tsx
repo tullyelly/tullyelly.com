@@ -38,8 +38,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <NavBar />
             </header>
 
-            <main id="content" tabIndex={-1} className="bg-white">
-              <div className="mx-auto w-full max-w-[var(--content-max)] p-6 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+            <main id="content" tabIndex={-1} className="m-0 p-0 bg-transparent">
+              <div
+                id="content-pane"
+                className="mx-auto max-w-[var(--content-max)] bg-white shadow-sm px-6 md:px-8 lg:px-10 py-6 md:py-8 crop-block-margins"
+              >
                 {children}
               </div>
             </main>
