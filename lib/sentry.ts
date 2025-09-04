@@ -10,8 +10,8 @@ export async function initSentry() {
     tracesSampleRate: 1,
     release: buildInfo.commit,
     environment: process.env.VERCEL_ENV || process.env.NODE_ENV,
-    integrations: (integrations) =>
-      integrations.filter((i: any) => i.name !== "Prisma"),
+    integrations: (integrations: Array<{ name?: string }>) =>
+      integrations.filter((i) => i.name !== "Prisma"),
   });
 }
 

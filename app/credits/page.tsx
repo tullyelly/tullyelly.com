@@ -2,7 +2,7 @@ import { flowersConfig } from "@/lib/flowersConfig";
 import FlowersBlock from "@/components/flowers/FlowersBlock";
 
 export const metadata = {
-  title: `${flowersConfig.displayLabel} — tullyelly`,
+  title: `${flowersConfig.displayLabel}; tullyelly`,
   description: flowersConfig.tooltip,
   alternates: { canonical: `https://tullyelly.com${flowersConfig.slug}` },
 };
@@ -46,7 +46,7 @@ export default function Page() {
               >
                 DataGrip
               </a>
-              {'—rekindled my database crush.'}
+              {'; rekindled my database crush.'}
             </span>
           ),
           (

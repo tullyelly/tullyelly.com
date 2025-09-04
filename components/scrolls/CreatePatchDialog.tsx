@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
+import * as Dialog from '@ui/dialog';
 import { useRouter } from 'next/navigation';
 import { createPatch } from '@/lib/actions/scrolls';
 
@@ -42,7 +42,18 @@ export default function CreatePatchDialog() {
       <Dialog.Portal>
         <Dialog.Overlay className="app-dialog-overlay" />
         <Dialog.Content className="app-dialog-content outline-none">
-          <Dialog.Title className="text-lg font-medium">Create Patch</Dialog.Title>
+          <div
+            data-dialog-handle
+            className="-mx-6 -mt-6 px-6 py-2 bg-[var(--blue)] text-white cursor-move touch-none flex items-center"
+            style={{ borderTopLeftRadius: '13px', borderTopRightRadius: '13px' }}
+          >
+            <Dialog.Title className="text-base font-semibold leading-6">Create Patch</Dialog.Title>
+            <div className="ml-auto">
+              <Dialog.Close className="inline-flex items-center justify-center rounded border border-white/80 px-2 py-0.5 text-white hover:opacity-80" aria-label="Close">
+                ×
+              </Dialog.Close>
+            </div>
+          </div>
           <Dialog.Description className="mt-1 text-sm opacity-70">
             Enter a label for the new patch release.
           </Dialog.Description>

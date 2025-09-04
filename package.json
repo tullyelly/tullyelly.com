@@ -25,9 +25,10 @@
     "validate-frontmatter": "node scripts/validate-frontmatter.mjs",
     "validate-seo": "node scripts/validate-seo.mjs",
     "ensure:diag-off": "node -e \"if(process.env.NEXT_PUBLIC_HYDRATION_DIAG && process.env.NEXT_PUBLIC_HYDRATION_DIAG !== '0'){console.error('Hydration diagnostics must be disabled in prod');process.exit(1)}\"",
-    "ci": "npm run ensure:diag-off && npm run lint && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run build",
+    "ci": "npm run ensure:diag-off && npm run lint && npm run typecheck && npm run images:optimize && npm run images:check && npm run validate-frontmatter && npm run validate-seo && npm run check:emdash && npm run build",
     "typecheck": "tsc --noEmit",
     "pretypecheck": "node scripts/gen-build-info.mjs",
+    "deadcode": "ts-prune",
     "test": "cross-env NODE_ENV=test jest",
     "pretest": "npm run gen:build-info",
     "test:ci": "cross-env NODE_ENV=test jest --runInBand",
@@ -40,7 +41,8 @@
     "db:ping": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/db-ping.ts",
     "check:use-server": "bash scripts/check-use-server.sh",
     "gen:build-info": "node scripts/gen-build-info.mjs",
-    "prepare": "node -e \"require('fs').mkdirSync('.build',{recursive:true})\""
+    "prepare": "husky",
+    "check:emdash": "node scripts/check-emdash.mjs"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
@@ -54,7 +56,8 @@
     "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "@eslint/css": "^0.10.0",
@@ -75,6 +78,8 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
     "@types/pg": "^8.15.5",
+    "@types/jest-axe": "^3.5.9",
+    "@types/fs-extra": "^11.0.4",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "cross-env": "^7.0.3",
@@ -101,8 +106,14 @@
     "tailwindcss": "^4",
     "ts-jest": "^29.4.1",
     "tsx": "^4.20.5",
+    "ts-prune": "^0.10.3",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
-    "zod": "^4.0.17"
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,jsx,js}": "eslint --fix",
+    "*.{md,mdx}": "node scripts/fix-md-semicolons.mjs"
   }
 }
