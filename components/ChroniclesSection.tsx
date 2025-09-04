@@ -28,7 +28,7 @@ const items: Item[] = [
     icon: '💡',
     title: 'Idea',
     body:
-      'Used for early sparks—feature thoughts, business directions, design notions. Captures context so we can evaluate potential before committing.',
+      'Used for early sparks; feature thoughts, business directions, design notions. Captures context so we can evaluate potential before committing.',
   },
   {
     slug: 'roundup',
@@ -95,7 +95,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
     <section id="chronicles" aria-labelledby="chronicles-heading" className="scroll-mt-24">
       {/* Heading */}
       <h2 id="chronicles-heading" className="text-xl md:text-2xl font-semibold leading-snug">
-        <span aria-hidden>📓</span>Chronicle of Chronicles{date ? ` — ${date}` : ''}
+        <span aria-hidden>📓</span>Chronicle of Chronicles{date ? `; ${date}` : ''}
       </h2>
 
       {/* Intro space */}

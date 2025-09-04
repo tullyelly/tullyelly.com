@@ -1,8 +1,8 @@
 import { formatReleaseDate } from './formatReleaseDate';
 
 describe('formatReleaseDate', () => {
-  it('formats null as em dash', () => {
-    expect(formatReleaseDate(null)).toBe('—');
+  it('formats null as semicolon', () => {
+    expect(formatReleaseDate(null)).toBe(';');
   });
 
   it('formats ISO date string as YYYY-MM-DD', () => {

@@ -66,7 +66,7 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
         </div>
         <div>
           <dt>Description</dt>
-          <dd>{data.description ?? data.label ?? '—'}</dd>
+          <dd>{data.description ?? data.label ?? ';'}</dd>
         </div>
         <div>
           <dt>Status</dt>
