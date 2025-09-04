@@ -18,7 +18,7 @@ export function MusicalGuestsSection({ date }: Props) {
         </li>
         <li>
           <Link href="/roadwork-rappin" className="underline hover:no-underline">
-            Roadwork Rappin'
+            Roadwork Rappin&lsquo;
           </Link>
         </li>
       </ul>
