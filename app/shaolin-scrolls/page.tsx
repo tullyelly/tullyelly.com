@@ -1,6 +1,5 @@
 import ActionBar from './_components/ActionBar';
 import ScrollsPageClient from './_components/ScrollsPageClient';
-import FlowersInline from '@/components/flowers/FlowersInline';
 import { getScrollsPage } from '@/lib/scrolls';
 import type { Sort } from '@/lib/releases';
 
@@ -34,51 +33,7 @@ export default async function Page({ searchParams }: PageProps) {
     <section id="scrolls-root" className="flex min-h-screen flex-col gap-4">
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
       <ActionBar q={q} />
-      <p className="text-sm md:text-[15px] text-muted-foreground">
-        <FlowersInline>
-          Chronicles wiki &{' '}
-          <a
-            href="https://dragonlance.fandom.com/wiki/Raistlin_Majere"
-            className="underline hover:no-underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Raistlin Majere
-          </a>
-        </FlowersInline>
-      </p>
       <ScrollsPageClient rows={rows} />
-      <p className="text-sm md:text-[15px] text-muted-foreground">
-        <FlowersInline>
-          <a
-            href="https://www.postgresql.org/"
-            className="underline hover:no-underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            PostgreSQL
-          </a>
-          {', '}
-          <a
-            href="https://neon.tech/"
-            className="underline hover:no-underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Neon
-          </a>
-          {' & '}
-          <a
-            href="https://www.jetbrains.com/datagrip/"
-            className="underline hover:no-underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            DataGrip
-          </a>
-          {'—rekindled my database crush.'}
-        </FlowersInline>
-      </p>
     </section>
   );
 }
