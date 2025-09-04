@@ -1,6 +1,6 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
+import * as Dialog from '@ui/dialog';
 import { useEffect, useId, useRef, useState } from 'react';
 
 type Props = { q: string };
@@ -31,6 +31,8 @@ function CreatePatchDialog() {
       <Dialog.Portal forceMount>
         <Dialog.Overlay className="app-dialog-overlay" data-state={open ? 'open' : 'closed'} hidden={!open} />
         <Dialog.Content className="app-dialog-content" id={`patch-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
+          <div data-dialog-handle style={{ cursor: 'move', touchAction: 'none', height: 0 }} aria-label="Drag dialog" />
+          <Dialog.Description className="sr-only">Create a new patch</Dialog.Description>
           {/* form content placeholder */}
         </Dialog.Content>
       </Dialog.Portal>
@@ -51,6 +53,8 @@ function CreateMinorDialog() {
       <Dialog.Portal forceMount>
         <Dialog.Overlay className="app-dialog-overlay" data-state={open ? 'open' : 'closed'} hidden={!open} />
         <Dialog.Content className="app-dialog-content" id={`minor-${id}`} data-state={open ? 'open' : 'closed'} hidden={!open} aria-hidden={!open}>
+          <div data-dialog-handle style={{ cursor: 'move', touchAction: 'none', height: 0 }} aria-label="Drag dialog" />
+          <Dialog.Description className="sr-only">Create a new minor release</Dialog.Description>
           {/* form content placeholder */}
         </Dialog.Content>
       </Dialog.Portal>
