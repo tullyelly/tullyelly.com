@@ -13,7 +13,7 @@ export function MothersDaySection({ date }: Props) {
         <figure className="space-y-2">
           <div className="yt-wrapper-bucks">
             <iframe
-              src="https://www.youtube-nocookie.com/embed/br1qpJ2mCpE"
+              src="https://www.youtube-nocookie.com/embed/n8fOQ4DOZTk"
               title="Mother&apos;s Day video 1"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -28,7 +28,7 @@ export function MothersDaySection({ date }: Props) {
         <figure className="space-y-2">
           <div className="yt-wrapper-bucks">
             <iframe
-              src="https://www.youtube-nocookie.com/embed/n8fOQ4DOZTk"
+              src="https://www.youtube-nocookie.com/embed/br1qpJ2mCpE"
               title="Mother&apos;s Day video 2"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
