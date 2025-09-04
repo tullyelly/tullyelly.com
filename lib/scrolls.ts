@@ -89,7 +89,7 @@ export async function getScrollsPage({
     db.query<{ total: number }>(sqlCount, countValues),
   ]);
 
-  const items: ScrollRow[] = itemsRes.rows.map((row) => ({
+  const items: ScrollRow[] = itemsRes.rows.map((row: ScrollDbRow) => ({
     id: String(row.id),
     label: row.label,
     status: row.status,

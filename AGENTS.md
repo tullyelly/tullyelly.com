@@ -27,6 +27,14 @@ Humans: see `README.md` for introductions and contributor docs.
 - Formatting: follow existing Prettier settings; single source of truth is repo config.
 - UI: Tailwind; keep styles minimal and token-ish; no inline color hexes outside design tokens.
 
+## Voice & Punctuation
+
+- Em dashes are prohibited in user-visible copy.
+- Use a semicolon instead of any em dash.
+- Scope: MD/MDX text and JSX/TSX JSXText.
+- Exceptions: tests, vendor, or quotes annotated with `// punctuation-allowed` or frontmatter `punctuation: allowed`.
+
+
 ## Testing & CI Expectations
 
 - Before committing: `npm run lint && npm run typecheck && npm test`

@@ -1,7 +1,7 @@
 import FlowersDemo from "@/app/ui-lab/FlowersDemo";
 
 export const metadata = {
-  title: 'Flowers — UI Lab',
+  title: 'Flowers; UI Lab',
   description: 'Acknowledgments inline and block components',
   alternates: { canonical: 'https://tullyelly.com/ui-lab/flowers' },
 };

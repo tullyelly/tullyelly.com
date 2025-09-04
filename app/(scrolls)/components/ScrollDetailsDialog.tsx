@@ -1,8 +1,10 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
+import * as Dialog from '@ui/dialog';
 import { useEffect, useState } from 'react';
 import { formatReleaseDate } from './formatReleaseDate';
+import { Badge } from '@/app/ui/Badge';
+import { getBadgeClass } from '@/app/ui/badge-maps';
 
 type Details = {
   id: number;
@@ -33,23 +35,57 @@ export function ScrollDetailsDialog({ id, trigger }: { id: number; trigger: Reac
       <Dialog.Portal>
         <Dialog.Overlay className="app-dialog-overlay data-[state=open]:animate-in" />
         <Dialog.Content className="app-dialog-content">
-          <Dialog.Title className="text-xl font-semibold">Release #{id}</Dialog.Title>
+          <div
+            data-dialog-handle
+            className="-mx-6 -mt-6 px-6 py-2 bg-[var(--blue)] text-white cursor-move touch-none flex items-center"
+            style={{ borderTopLeftRadius: '13px', borderTopRightRadius: '13px' }}
+          >
+            <Dialog.Title className="text-base font-semibold leading-6">Release #{id}</Dialog.Title>
+            <div className="ml-auto">
+              <Dialog.Close className="inline-flex items-center justify-center rounded border border-white/80 px-2 py-0.5 text-white hover:opacity-80" aria-label="Close">
+                ×
+              </Dialog.Close>
+            </div>
+          </div>
+          <Dialog.Description className="sr-only">Details for this release</Dialog.Description>
           {data ? (
-            <div className="mt-4 grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
-              <div className="font-medium">Label</div>
-              <div>{data.label}</div>
-              <div className="font-medium">SemVer</div>
-              <div>{data.semver}</div>
-              <div className="font-medium">Status</div>
-              <div>{data.status}</div>
-              <div className="font-medium">Type</div>
-              <div>{data.type}</div>
-              <div className="font-medium">Year / Month</div>
-              <div>
-                {data.year} / {data.month}
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">ID</div>
+                <div className="text-sm font-medium break-words">{data.id}</div>
               </div>
-              <div className="font-medium">Release Date</div>
-              <div>{formatReleaseDate(data.release_date)}</div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">Label</div>
+                <div className="text-sm font-medium break-words">{data.label ?? ''}</div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">SemVer</div>
+                <div className="text-sm font-medium break-words">{data.semver ?? ''}</div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">Status</div>
+                <div className="text-sm font-medium break-words">
+                  {data.status ? <Badge className={getBadgeClass(data.status as any)}>{data.status}</Badge> : ''}
+                </div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">Release Type</div>
+                <div className="text-sm font-medium break-words">
+                  {data.type ? <Badge className={getBadgeClass(data.type as any)}>{data.type}</Badge> : ''}
+                </div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">Release Date</div>
+                <div className="text-sm font-medium break-words">{formatReleaseDate(data.release_date)}</div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">Year</div>
+                <div className="text-sm font-medium break-words">{data.year ?? ''}</div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">Month</div>
+                <div className="text-sm font-medium break-words">{data.month ?? ''}</div>
+              </div>
             </div>
           ) : (
             <p className="mt-4">Loading…</p>
