@@ -54,10 +54,10 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
                 <th scope="col" className="px-4 py-3 text-left">Release Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {rows.map((r, idx) => (
-                <tr key={r.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-brand-creamCityCream'}>
-                  <td className="px-4 py-3 align-middle">
+            <tbody className="divide-y divide-gray-100 [&>tr:nth-child(odd)]:bg-white [&>tr:nth-child(even)]:bg-brand-creamCityCream">
+              {rows.map((r) => (
+                <tr key={r.id}>
+                  <td className="bg-inherit px-4 py-3 align-middle">
                     <a
                       href={`/shaolin-scrolls/${r.id}`}
                       onClick={onIdClick(r.id)}
@@ -69,18 +69,18 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
                       {r.id}
                     </a>
                   </td>
-                  <td className="px-4 py-3 align-middle">
+                  <td className="bg-inherit px-4 py-3 align-middle">
                     <span className="block truncate" title={r.label}>
                       {r.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 align-middle">
+                  <td className="bg-inherit px-4 py-3 align-middle">
                     <Badge className={getBadgeClass(r.status as any)}>{r.status}</Badge>
                   </td>
-                  <td className="px-4 py-3 align-middle">
+                  <td className="bg-inherit px-4 py-3 align-middle">
                     <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
                   </td>
-                  <td className="px-4 py-3 align-middle">
+                  <td className="bg-inherit px-4 py-3 align-middle">
                     {formatReleaseDate(r.releaseDate)}
                   </td>
                 </tr>
