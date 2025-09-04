@@ -8,8 +8,9 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
       <h2 className="flex items-baseline text-xl md:text-2xl font-semibold leading-snug">
         <span aria-hidden className="mr-2">📜</span>
         <span>
-          Shaolin Scrolls
-          {date && <span className="ml-1 whitespace-nowrap">; {date}</span>}
+          Shaolin Scrolls{date && (
+            <span className="whitespace-nowrap">; {date}</span>
+          )}
         </span>
       </h2>
       <p className="text-sm">

@@ -100,8 +100,9 @@ export function ChroniclesSection({ date }: { date?: string }) {
       >
         <span aria-hidden className="mr-2">📓</span>
         <span>
-          Chronicle of Chronicles
-          {date && <span className="ml-1 whitespace-nowrap">; {date}</span>}
+          Chronicle of Chronicles{date && (
+            <span className="whitespace-nowrap">; {date}</span>
+          )}
         </span>
       </h2>
 
