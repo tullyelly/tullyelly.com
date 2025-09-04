@@ -21,8 +21,23 @@ export function MothersDaySection({ date }: Props) {
               allowFullScreen
             />
           </div>
-          <figcaption className="text-xs text-fg/60">
-            Embedded via YouTube&apos;s privacy-enhanced player.
+          <figcaption className="space-y-1 text-xs text-fg/60">
+            <p>Embedded via YouTube&apos;s privacy-enhanced player.</p>
+            <p>
+              <span aria-hidden>🌸</span> nikkigirl, Big Ter,{' '}
+              <a className="underline" href="https://www.youtube.com/">
+                YouTube
+              </a>
+              ,{' '}
+              <a className="underline" href="https://www.python.org/">
+                Python
+              </a>
+              , &{' '}
+              <a className="underline" href="https://www.kapwing.com/">
+                Kapwing
+              </a>{' '}
+              <span aria-hidden>🌸</span>
+            </p>
           </figcaption>
         </figure>
         <figure className="space-y-2">
@@ -36,8 +51,23 @@ export function MothersDaySection({ date }: Props) {
               allowFullScreen
             />
           </div>
-          <figcaption className="text-xs text-fg/60">
-            Embedded via YouTube&apos;s privacy-enhanced player.
+          <figcaption className="space-y-1 text-xs text-fg/60">
+            <p>Embedded via YouTube&apos;s privacy-enhanced player.</p>
+            <p>
+              <span aria-hidden>🌸</span> nikkigirl, Big Ter,{' '}
+              <a className="underline" href="https://www.youtube.com/">
+                YouTube
+              </a>
+              ,{' '}
+              <a className="underline" href="https://www.python.org/">
+                Python
+              </a>
+              , &{' '}
+              <a className="underline" href="https://www.kapwing.com/">
+                Kapwing
+              </a>{' '}
+              <span aria-hidden>🌸</span>
+            </p>
           </figcaption>
         </figure>
       </div>
