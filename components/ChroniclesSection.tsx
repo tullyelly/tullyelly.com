@@ -135,6 +135,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
         <Card
           as="figure"
           accent="great-lakes-blue"
+          thickness="thick"
           className="p-2 place-self-center md:col-start-2"
         >
           <Image
