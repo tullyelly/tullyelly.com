@@ -132,13 +132,16 @@ export function ChroniclesSection({ date }: { date?: string }) {
         ))}
 
         {/* Center image card (placed at mid, centered column on md+) */}
-        <Card as="figure" className="p-2 place-self-center md:col-start-2">
+        <Card
+          as="figure"
+          className="p-2 place-self-center md:col-start-2 border-brand-greatLakesBlue"
+        >
           <Image
             src="/images/optimized/raistlin black robes.webp"
             alt="Raistlin in black robes, atmospheric portrait"
             width={320}
             height={420}
-            className="rounded-xl border-2 border-brand-greatLakesBlue shadow-md"
+            className="rounded-xl shadow-md"
             priority={false}
           />
           <figcaption className="sr-only">Raistlin illustration</figcaption>
