@@ -138,7 +138,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
             alt="Raistlin in black robes, atmospheric portrait"
             width={320}
             height={420}
-            className="rounded-xl border-2 border-brand-bucksGreen shadow-md"
+            className="rounded-xl border-2 border-brand-greatLakesBlue shadow-md"
             priority={false}
           />
           <figcaption className="sr-only">Raistlin illustration</figcaption>
