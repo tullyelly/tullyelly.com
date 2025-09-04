@@ -14,12 +14,12 @@ export default function Home() {
   const mothersDate = '2025-09-04';
   const musicalDate = '2025-09-04';
   return (
-    <main className="space-y-4">
+    <>
       <h1 className="text-2xl font-semibold">Welcome</h1>
       <MusicalGuestsSection date={musicalDate} />
       <MothersDaySection date={mothersDate} />
       <ChroniclesSection date={chroniclesDate} />
       <ShaolinScrollsSection date={scrollsDate} />
-    </main>
+    </>
   );
 }

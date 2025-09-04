@@ -7,6 +7,7 @@ import {
 } from "@ui"
 import { Badge } from "@/app/ui/Badge"
 import { getBadgeClass } from "@/app/ui/badge-maps"
+import { YearBadge } from "@/app/ui/YearBadge"
 
 export const metadata = {
   title: "Roadwork Rappin’ by Aesop Rock | tullyelly",
@@ -128,12 +129,8 @@ export default function Page() {
             <CardGrid>
               {items.map((item) => (
                 <Card key={item.id} className="relative">
-                  <div className="flex items-start justify-between gap-3">
-                    <h4 className="font-semibold italic">{item.title}</h4>
-                    {item.meta && (
-                      <Badge className={getBadgeClass('archived')}>{item.meta}</Badge>
-                    )}
-                  </div>
+                  {item.meta && <YearBadge year={item.meta} />}
+                  <h4 className="font-semibold italic">{item.title}</h4>
                   {item.description && (
                     <p className="mt-2 text-sm text-fg/80 leading-relaxed">
                       {item.description}

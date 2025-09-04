@@ -9,6 +9,7 @@ test("badge variants contain expected keys", () => {
     "minor",
     "major",
     "classic",
+    "year",
   ] as Array<keyof typeof BADGE_VARIANTS>) {
     expect(BADGE_VARIANTS[k]).toBeTruthy();
   }
@@ -16,4 +17,10 @@ test("badge variants contain expected keys", () => {
 
 test("getBadgeClass falls back to archived", () => {
   expect(getBadgeClass("unknown" as any)).toBe(BADGE_VARIANTS.archived);
+});
+
+test("year badge uses Bucks green with Cream City Cream text", () => {
+  const cls = getBadgeClass('year');
+  expect(cls).toContain('bg-brand-bucksGreen');
+  expect(cls).toContain('text-brand-creamCityCream');
 });

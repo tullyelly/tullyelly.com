@@ -9,6 +9,7 @@ export const BADGE_VARIANTS = {
 
   // alias to planned
   classic:  "bg-[#0077C0] text-white ring-[#0077C0]/40",
+  year:     "bg-brand-bucksGreen text-brand-creamCityCream ring-brand-bucksGreen/40",
 } as const;
 
 export type BadgeVariant = keyof typeof BADGE_VARIANTS;

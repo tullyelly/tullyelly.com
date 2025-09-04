@@ -10,7 +10,7 @@ export default function Footer() {
       className="w-full text-center text-sm"
       style={{ backgroundColor: "var(--brand-chrome)", color: "var(--brand-chrome-fg)" }}
     >
-      <div className="mx-auto max-w-7xl px-6 py-6">
+      <div className="mx-auto flex h-12 max-w-[var(--content-max)] items-center justify-center px-6">
         © {year} <BrandedLink href="/">tullyelly</BrandedLink>. All rights reserved.
       </div>
     </footer>
