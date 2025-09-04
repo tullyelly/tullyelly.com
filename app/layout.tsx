@@ -30,20 +30,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
       <head></head>
-      <body className="font-sans min-h-screen flex flex-col bg-[#EEE1C6] text-foreground">
+      <body className="font-sans text-foreground">
         <Providers>
-          {announcement && <AnnouncementBanner message={announcement} dismissible />}
+          <div id="site-layout" className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0">
+            <header id="nav-zone">
+              {announcement && <AnnouncementBanner message={announcement} dismissible />}
+              <NavBar />
+            </header>
 
-          <header id="nav-zone">
-            <NavBar />
-          </header>
-
-          <main id="content" className="flex-1 p-4" tabIndex={-1}>
-            <div className="mx-auto w-full max-w-7xl bg-white rounded-lg shadow-sm p-6">
-              {children}
-            </div>
-          </main>
-          <Footer />
+            <main id="content" tabIndex={-1} className="m-0 p-0 bg-transparent">
+              <div
+                id="content-pane"
+                className="mx-auto max-w-[var(--content-max)] bg-white shadow-sm px-6 md:px-8 lg:px-10 py-6 md:py-8 crop-block-margins"
+              >
+                {children}
+              </div>
+            </main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>
