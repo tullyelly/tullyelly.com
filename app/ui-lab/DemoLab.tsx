@@ -7,6 +7,7 @@ import Hero from '@/components/Hero';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import { Card, CardGrid } from '@/components/ui';
 
 const paletteTokens = {
   brand: [
@@ -52,6 +53,14 @@ export default function DemoLab() {
         <section className="card space-y-4" aria-labelledby="flowers">
           <h2 id="flowers" className="text-xl font-semibold">Flowers</h2>
           <p><a href="/ui-lab/flowers" className="underline hover:no-underline">Open Flowers demo</a></p>
+        </section>
+        <section className="card space-y-4" aria-labelledby="card-zebra">
+          <h2 id="card-zebra" className="text-xl font-semibold">Card Zebra</h2>
+          <CardGrid zebra data-testid="zebra-demo">
+            {['a', 'b', 'c', 'd'].map((id, i) => (
+              <Card key={id}>Card {i + 1}</Card>
+            ))}
+          </CardGrid>
         </section>
         <section className="card space-y-4" aria-labelledby="announcement-banner">
           <h2 id="announcement-banner" className="text-xl font-semibold">Announcement Banner</h2>

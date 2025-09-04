@@ -125,7 +125,7 @@ export default function Page() {
 
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">Albums to Explore</h3>
-            <CardGrid>
+            <CardGrid zebra>
               {items.map((item) => (
                 <Card key={item.id} className="relative">
                   <div className="flex items-start justify-between gap-3">

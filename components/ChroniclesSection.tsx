@@ -118,10 +118,18 @@ export function ChroniclesSection({ date }: { date?: string }) {
       )}
 
       {/* Grid of cards with centered image as a grid item */}
-      <dl className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 md:gap-y-5 leading-6 md:leading-7">
+      <dl
+        className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 md:gap-y-5 leading-6 md:leading-7"
+        data-zebra
+      >
         {/* First half of items */}
         {cards.slice(0, mid).map((it) => (
-          <div key={it.slug} id={it.slug} className="space-y-1 rounded-2xl border bg-card/50 p-4 shadow-sm">
+          <div
+            key={it.slug}
+            id={it.slug}
+            data-card
+            className="space-y-1 p-4"
+          >
             <dt className="flex items-baseline font-medium">
               <span aria-hidden className="mr-2 min-w-5 text-base">{it.icon}</span>
               <span>{it.title}</span>
@@ -131,7 +139,10 @@ export function ChroniclesSection({ date }: { date?: string }) {
         ))}
 
         {/* Center image card (placed at mid, centered column on md+) */}
-        <figure className="rounded-2xl border bg-card/50 p-2 shadow-sm place-self-center md:col-start-2">
+        <figure
+          data-card
+          className="p-2 place-self-center md:col-start-2"
+        >
           <Image
             src="/images/optimized/raistlin black robes.webp"
             alt="Raistlin in black robes, atmospheric portrait"
@@ -145,7 +156,12 @@ export function ChroniclesSection({ date }: { date?: string }) {
 
         {/* Second half of items */}
         {cards.slice(mid).map((it) => (
-          <div key={it.slug} id={it.slug} className="space-y-1 rounded-2xl border bg-card/50 p-4 shadow-sm">
+          <div
+            key={it.slug}
+            id={it.slug}
+            data-card
+            className="space-y-1 p-4"
+          >
             <dt className="flex items-baseline font-medium">
               <span aria-hidden className="mr-2 min-w-5 text-base">{it.icon}</span>
               <span>{it.title}</span>
