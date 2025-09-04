@@ -125,7 +125,7 @@ export async function getReleases({ limit, offset, sort, q }: ReleaseListParams)
     db.query<{ total: number }>(sqlCount, countValues),
   ]);
 
-  const items: ReleaseRow[] = itemsRes.rows.map(row => ({
+  const items: ReleaseRow[] = itemsRes.rows.map((row: DbReleaseRow) => ({
     ...row,
     id: String(row.id),
     created_at: new Date(row.created_at).toISOString(),
