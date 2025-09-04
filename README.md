@@ -22,7 +22,7 @@ Pages auto-update when you edit files in the `app/` folder.
 
 * Tokens are defined as CSS variables in `app/globals.css`.
 * Tailwind (`tailwind.config.mjs`) maps tokens to classes.
-* Cards use a white background with Bucks green 2px borders for consistency; pass `accent="greatLakesBlue"` to `Card` for the special blue-bordered case.
+* Cards use a white background with Bucks green 2px borders for consistency; pass `accent="great-lakes-blue"` to `Card` for the special blue-bordered case.
 * Desktop tables use the shared `Table` component with `.zebra-desktop` striping.
 * Use them like this:
 

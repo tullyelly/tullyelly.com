@@ -134,7 +134,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
         {/* Center image card (placed at mid, centered column on md+) */}
         <Card
           as="figure"
-          accent="greatLakesBlue"
+          accent="great-lakes-blue"
           className="p-2 place-self-center md:col-start-2"
         >
           <Image

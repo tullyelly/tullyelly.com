@@ -1,33 +1,32 @@
-import React from 'react'
+import * as React from 'react'
 import { cn } from '@/lib/cn'
 
-export type CardProps = React.HTMLAttributes<HTMLElement> & {
-  as?: React.ElementType
-  accent?: 'default' | 'greatLakesBlue'
-}
+type CardProps<T extends React.ElementType = 'div'> = {
+  as?: T
+  accent?: 'default' | 'great-lakes-blue'
+  className?: string
+} & React.ComponentPropsWithoutRef<T>
 
-export function Card({
-  as: As = 'li',
+const ACCENTS = {
+  default: 'border-brand-bucksGreen ring-brand-bucksGreen/40',
+  'great-lakes-blue': 'border-brand-greatLakesBlue ring-brand-greatLakesBlue/40',
+} as const
+
+export function Card<T extends React.ElementType = 'div'>({
+  as,
   accent = 'default',
   className,
-  children,
-  ...props
-}: CardProps) {
-  const accentClasses =
-    accent === 'greatLakesBlue'
-      ? 'border-brand-greatLakesBlue ring-1 ring-inset ring-brand-greatLakesBlue/40'
-      : 'border-brand-bucksGreen'
-
+  ...rest
+}: CardProps<T>) {
+  const Tag = as ?? 'div'
   return (
-    <As
+    <Tag
       className={cn(
-        'rounded-2xl border-2 bg-white p-4 shadow-sm',
-        accentClasses,
+        'rounded-2xl border-2 ring-1 ring-inset bg-white p-4 shadow-sm',
+        ACCENTS[accent],
         className
       )}
-      {...props}
-    >
-      {children}
-    </As>
+      {...rest}
+    />
   )
 }
