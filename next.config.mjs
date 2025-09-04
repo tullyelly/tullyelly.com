@@ -2,7 +2,8 @@
 import createMDX from '@next/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
-const remarkPlugins = [remarkFrontmatter, remarkMdxFrontmatter]
+import remarkSemicolons from './mdx/remark-semicolons-instead-of-emdash.mjs';
+const remarkPlugins = [remarkFrontmatter, remarkMdxFrontmatter, remarkSemicolons];
 
 const withMDX = createMDX({
   extension: /\.mdx?$/,

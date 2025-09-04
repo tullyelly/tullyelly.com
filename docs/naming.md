@@ -8,7 +8,7 @@ We replace legacy “shout” patterns with the Flowers convention.
 - ARIA label: “Acknowledgments” (emoji is aria-hidden)
 
 Examples
-- Inline: `💐 Flowers: PostgreSQL, Neon, DataGrip—rekindled my database crush.`
+- Inline: `💐 Flowers: PostgreSQL, Neon, DataGrip; rekindled my database crush.`
 - Block title: `Flowers`
 
 Codemod rules (used by `scripts/refactor-flowers.ts`)
