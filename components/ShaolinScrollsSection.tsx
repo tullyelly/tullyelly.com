@@ -28,7 +28,7 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Postgres
+            PostgreSQL
           </a>
           {', '}
           <a

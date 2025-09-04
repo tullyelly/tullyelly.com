@@ -26,7 +26,7 @@ export default function Page() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Postgres
+                PostgreSQL
               </a>
               {', '}
               <a

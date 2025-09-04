@@ -2,15 +2,7 @@
 import createMDX from '@next/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
-import jiti from 'jiti';
-
 const remarkPlugins = [remarkFrontmatter, remarkMdxFrontmatter]
-if (process.env.ENABLE_SHOUT_OUT_REMARK === '1') {
-  const j = jiti(import.meta.url)
-  const remarkDirective = j('remark-directive').default
-  const shoutOutRemark = j('./lib/mdx/shout-out-remark.ts').default
-  remarkPlugins.push(remarkDirective, shoutOutRemark)
-}
 
 const withMDX = createMDX({
   extension: /\.mdx?$/,
@@ -25,13 +17,7 @@ const nextConfig = {
   images: {
     // Use Next.js defaults; no custom loader/path.
   },
-  async redirects() {
-    return [
-      { source: '/shouts', destination: '/credits', permanent: true },
-      { source: '/liner-notes', destination: '/credits', permanent: true },
-      { source: '/shout-outs', destination: '/credits', permanent: true },
-    ];
-  },
+  // No legacy redirects required.
   async headers() {
     return [
       {
