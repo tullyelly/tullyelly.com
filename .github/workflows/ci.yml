@@ -75,6 +75,8 @@ jobs:
         run: npm run typecheck
 
       - name: Unit tests
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
         run: npm run test:ci -- --coverage
 
       - name: Check coverage threshold
