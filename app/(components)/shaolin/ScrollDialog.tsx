@@ -1,7 +1,10 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
-import { useEffect, useState } from 'react';
+import * as Dialog from '@ui/dialog';
+import { useEffect, useMemo, useState } from 'react';
+import { formatDateTimeChicago, isTimestampKey } from '@/lib/dates';
+import { Badge } from '@/app/ui/Badge';
+import { getBadgeClass } from '@/app/ui/badge-maps';
 
 type ScrollDialogProps = {
   open: boolean;
@@ -48,24 +51,76 @@ export default function ScrollDialog({ open, onOpenChange, id }: ScrollDialogPro
       <Dialog.Portal>
         <Dialog.Overlay className="app-dialog-overlay" />
         <Dialog.Content className="app-dialog-content">
-          <Dialog.Title className="text-xl font-semibold">Scroll {id}</Dialog.Title>
-          <Dialog.Close className="absolute right-4 top-4" aria-label="Close">
-            ×
-          </Dialog.Close>
-          <div className="mt-4">
+          <div
+            data-dialog-handle
+            className="-mx-6 -mt-6 px-6 py-2 bg-[var(--blue)] text-white cursor-move touch-none flex items-center"
+            style={{ borderTopLeftRadius: '13px', borderTopRightRadius: '13px' }}
+          >
+            <Dialog.Title className="text-base font-semibold leading-6">Scroll {id}</Dialog.Title>
+            <div className="ml-auto">
+              <Dialog.Close className="inline-flex items-center justify-center rounded border border-white/80 px-2 py-0.5 text-white hover:opacity-80" aria-label="Close">
+                ×
+              </Dialog.Close>
+            </div>
+          </div>
+          <Dialog.Description className="sr-only">Details for this scroll</Dialog.Description>
+          {/* Close button moved into header above */}
+          <div className="mt-3">
             {loading && <p>Loading…</p>}
             {error && <p>Error loading scroll.</p>}
             {!loading && !error && row && (
-              <dl className="space-y-2 text-sm">
-                {Object.entries(row).map(([key, value]) => (
-                  <div key={key} className="flex justify-between gap-4">
-                    <dt className="font-medium">{key}</dt>
-                    <dd className="text-right">
-                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {(() => {
+                  const order: Array<{ key: string; label: string }> = [
+                    { key: 'id', label: 'ID' },
+                    { key: 'release_name', label: 'Release Name' },
+                    { key: 'semver', label: 'SemVer' },
+
+                    { key: 'status', label: 'Status' },
+                    { key: 'release_type', label: 'Release Type' },
+                    { key: 'release_date', label: 'Release Date' },
+
+                    { key: 'major', label: 'Major' },
+                    { key: 'minor', label: 'Minor' },
+                    { key: 'patch', label: 'Patch' },
+
+                    { key: 'created_at', label: 'Created At' },
+                    { key: 'created_by', label: 'Created By' },
+                    { key: 'updated_at', label: 'Updated At' },
+
+                    { key: 'updated_by', label: 'Updated By' },
+                    { key: 'year', label: 'Year' },
+                    { key: 'month', label: 'Month' },
+                  ];
+
+                  const r = row as Record<string, unknown>;
+
+                  const renderValue = (key: string, value: unknown): React.ReactNode => {
+                    if (value == null || value === '') return '';
+                    if (key === 'status') {
+                      const v = String(value).toLowerCase() as any;
+                      return <Badge className={getBadgeClass(v)}>{String(value)}</Badge>;
+                    }
+                    if (key === 'release_type') {
+                      const v = String(value).toLowerCase() as any;
+                      return <Badge className={getBadgeClass(v)}>{String(value)}</Badge>;
+                    }
+                    if (isTimestampKey(key)) {
+                      return formatDateTimeChicago(String(value));
+                    }
+                    return typeof value === 'object' ? JSON.stringify(value) : String(value);
+                  };
+
+                  return order.map(({ key, label }) => (
+                    <div key={key} className="rounded border border-[var(--border-subtle)] p-2">
+                      <div className="text-[11px] uppercase tracking-wide opacity-70">{label}</div>
+                      <div className="text-sm font-medium break-words">
+                        {renderValue(key, r[key])}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
             )}
           </div>
         </Dialog.Content>
@@ -73,4 +128,3 @@ export default function ScrollDialog({ open, onOpenChange, id }: ScrollDialogPro
     </Dialog.Root>
   );
 }
-

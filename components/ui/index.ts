@@ -13,5 +13,6 @@ export function mapDomainToCardItem<T>(items: T[], mapper: (item: T) => CardItem
 }
 
 export { Card } from './Card'
-export { Badge } from './Badge'
+// Re-export the canonical Badge to keep a single source of truth
+export { Badge } from '@/app/ui/Badge'
 export { CardGrid } from './CardGrid'
