@@ -14,6 +14,6 @@ test('shaolin scrolls shows Flowers inline notes at top and bottom', async ({ pa
   await expect(
     page
       .getByLabel('Acknowledgments')
-      .filter({ hasText: 'PostgreSQL, Neon & DataGrip—rekindled my database crush.' })
+      .filter({ hasText: 'PostgreSQL, Neon & DataGrip; rekindled my database crush.' })
   ).toBeVisible();
 });
