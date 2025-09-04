@@ -13,11 +13,6 @@ const ACCENT = {
   'great-lakes-blue': 'border-brand-greatLakesBlue ring-brand-greatLakesBlue/40',
 } as const
 
-const THICKNESS = {
-  thin: 'border',
-  thick: 'border-2',
-} as const
-
 export function Card<T extends React.ElementType = 'div'>({
   as,
   accent = 'bucks',
@@ -29,8 +24,10 @@ export function Card<T extends React.ElementType = 'div'>({
   return (
     <Tag
       className={cn(
-        'rounded-2xl ring-1 ring-inset bg-white p-4 shadow-sm',
-        THICKNESS[thickness],
+        // Base surface with thin border by default; no ring at base
+        'rounded-2xl bg-white p-4 shadow-sm',
+        // Thickness controls border width; thick also adds a subtle ring
+        thickness === 'thick' ? 'border-2 ring-1 ring-inset' : 'border',
         ACCENT[accent],
         className
       )}
