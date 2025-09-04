@@ -9,7 +9,7 @@ export function MothersDaySection({ date }: Props) {
         <span aria-hidden>🌷</span>Mother&apos;s Day 2025{date ? `; ${date}` : ''}
       </h2>
       <p className="text-sm">
-        Before we dive too deep into the nerd, here's some additional wholesome Mother's Day content for you to enjoy! I found them to be just as impactful as the first time around.
+        Before we dive too deep into the nerd, here&apos;s some additional wholesome Mother&apos;s Day content for you to enjoy! I found them to be just as impactful as the first time around.
       </p>
       <div className="space-y-4">
         <figure className="space-y-2">
