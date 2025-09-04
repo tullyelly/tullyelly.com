@@ -41,6 +41,10 @@ export default defineConfig({
       AUTH_RULES_JSON:
         '{"ownerDomains":["tullyelly.com"],"publicPaths":["/","/login","/api/auth"],"protectedPaths":[],"ownerOnlyPaths":[],"toggles":{"allowAnyEmailOnPreview":true}}',
       AUTH_SECRET: "test-secret",
+      DATABASE_URL:
+        process.env.TEST_DATABASE_URL ||
+        process.env.DATABASE_URL ||
+        "postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic",
     },
   },
 });
