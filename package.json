@@ -17,6 +17,7 @@
     "start:prod:local": "npm run build && cross-env NODE_ENV=production PORT=4010 npm start",
     "lint": "eslint . --cache --cache-location .cache/eslint/.eslintcache",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format:check": "npm run check:emdash",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:check": "node scripts/check-images.mjs",
     "new-page": "node scripts/new-page.mjs",

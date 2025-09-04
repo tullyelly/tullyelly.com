@@ -1,5 +1,7 @@
 # tullyelly.com
 
+[![Coverage](https://img.shields.io/endpoint?url=https://tullyelly.github.io/tullyelly.com/badge.json)](https://tullyelly.github.io/tullyelly.com/lcov-report/)
+
 A [Next.js](https://nextjs.org) project customized with **Tailwind v4 design tokens** and an **image optimization pipeline**.
 
 ---
@@ -156,7 +158,7 @@ Recommended Node version: **20**.
 
 Pull requests run two GitHub Actions checks:
 
-- **Build & Check** – lint, typecheck, image checks, and build
+- **Build & Check** – lint, format check, typecheck, unit tests with coverage, image checks, and build
 - **E2E Tests** – Playwright end-to-end suite
 
 ---

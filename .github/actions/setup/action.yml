@@ -13,7 +13,15 @@ runs:
       with:
         path: .cache/eslint
         key: eslint-${{ runner.os }}-${{ hashFiles('package-lock.json', '.eslintrc*', 'eslint.config.*') }}
+    - name: Cache node modules
+      id: cache-node-modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: node-modules-${{ runner.os }}-
     - name: Install dependencies
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
       shell: bash
       env:
         npm_config_platform: linux
