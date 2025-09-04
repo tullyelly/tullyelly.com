@@ -94,9 +94,15 @@ export function ChroniclesSection({ date }: { date?: string }) {
   return (
     <section id="chronicles" aria-labelledby="chronicles-heading" className="scroll-mt-24">
       {/* Heading */}
-      <h2 id="chronicles-heading" className="text-xl md:text-2xl font-semibold leading-snug">
-        <span aria-hidden>📓</span>Chronicle of Chronicles
-        {date && <span className="ml-1 whitespace-nowrap">; {date}</span>}
+      <h2
+        id="chronicles-heading"
+        className="flex items-baseline text-xl md:text-2xl font-semibold leading-snug"
+      >
+        <span aria-hidden className="mr-2">📓</span>
+        <span>
+          Chronicle of Chronicles
+          {date && <span className="ml-1 whitespace-nowrap">; {date}</span>}
+        </span>
       </h2>
 
       {/* Intro space */}
