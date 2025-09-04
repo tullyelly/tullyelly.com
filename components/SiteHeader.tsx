@@ -8,7 +8,7 @@ export default function SiteHeader() {
       className="w-full"
       style={{ backgroundColor: "var(--brand-chrome)", color: "var(--brand-chrome-fg)" }}
     >
-      <div className="mx-auto max-w-[var(--content-max)] px-6 py-4 flex items-center justify-between">
+      <div className="mx-auto flex h-12 max-w-[var(--content-max)] items-center justify-between px-6">
         <BrandedLink href="/" aria-label="tullyelly; home">
           tullyelly
         </BrandedLink>

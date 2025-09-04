@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function NavBar() {
   return (
     <div className="w-full border-b on-blue">
-      <div className="mx-auto flex max-w-[var(--content-max)] items-center px-6 py-3 text-white">
+      <div className="mx-auto flex h-12 max-w-[var(--content-max)] items-center px-6 text-white">
         <Link href="/" className="font-semibold underline underline-offset-4" aria-label="tullyelly; home">
           tullyelly
         </Link>
