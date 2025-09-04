@@ -24,7 +24,7 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
       </Suspense>
 
       {/* Closing acknowledgments */}
-      <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 mb-0 text-sm md:text-[15px] text-muted-foreground">
         <FlowersInline>
           <a
             href="https://www.postgresql.org/"
