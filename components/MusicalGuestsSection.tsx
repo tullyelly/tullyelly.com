@@ -9,7 +9,7 @@ export function MusicalGuestsSection({ date }: Props) {
       <h2 className="text-xl md:text-2xl font-semibold leading-snug">
         <span aria-hidden>🎤</span>Musical Guests{date ? `; ${date}` : ''}
       </h2>
-      <p className="text-sm md:text-[15px] text-muted-foreground">{/* opening blurb */}</p>
+      <p className="text-sm md:text-[15px] text-muted-foreground">Opening blurb placeholder.</p>
       <ul className="list-disc list-inside text-sm md:text-[15px] space-y-1">
         <li>
           <Link href="/heels-have-eyes" className="underline hover:no-underline">

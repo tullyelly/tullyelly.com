@@ -93,6 +93,27 @@ export default function Page() {
               </a>
             </span>
           ),
+          (
+            <span key="4">
+              <a
+                href="https://www.instagram.com/westsidegunn/?hl=en"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                westside gunn
+              </a>
+              {" & "}
+              <a
+                href="https://www.instagram.com/aesoprockwins/?hl=en"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                aesop rock
+              </a>
+            </span>
+          ),
         ]}
       />
     </main>
