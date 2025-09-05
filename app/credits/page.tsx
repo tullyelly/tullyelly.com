@@ -46,7 +46,19 @@ export default function Page() {
               >
                 DataGrip
               </a>
-              {'; rekindled my database crush.'}
+              {'; rekindled my database crush. '}
+              {'I always '}
+              <span aria-hidden>❤️</span>
+              {' '}
+              <a
+                href="https://www.atlassian.com/"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Atlassian
+              </a>
+              {'.'}
             </span>
           ),
           (
@@ -103,7 +115,7 @@ export default function Page() {
               >
                 westside gunn
               </a>
-              {" & "}
+              {", "}
               <a
                 href="https://www.instagram.com/aesoprockwins/?hl=en"
                 className="underline hover:no-underline"
@@ -111,6 +123,55 @@ export default function Page() {
                 rel="noopener noreferrer"
               >
                 aesop rock
+              </a>
+              {", "}
+              <a
+                href="https://www.instagram.com/wutangclan/?hl=en"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                wu-tang clan
+              </a>
+              {" & "}
+              <a
+                href="https://www.instagram.com/runthejewels/?hl=en"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                rjt
+              </a>
+            </span>
+          ),
+          (
+            <span key="5">
+              me,{' '}
+              <a
+                href="https://openai.com/index/chatgpt/"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ChatGPT
+              </a>
+              {', '}
+              <a
+                href="https://openai.com/index/introducing-codex/"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Codex
+              </a>
+              {' & '}
+              <a
+                href="https://github.com/"
+                className="underline hover:no-underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
               </a>
             </span>
           ),

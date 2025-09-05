@@ -110,9 +110,6 @@ export default function Page() {
                 allowFullScreen
               />
             </div>
-            <figcaption className="text-xs text-fg/60">
-              Embedded via YouTube’s privacy-enhanced player.
-            </figcaption>
           </figure>
         </section>
 

@@ -99,17 +99,14 @@ export default function Page() {
           <figure className="space-y-2">
             <div className="yt-wrapper-bucks">
               <iframe
-                src="https://www.youtube-nocookie.com/embed/-mnJEnjyaY4?si=LMJt5-8BmEL4cFlQ"
+                src="https://www.youtube-nocookie.com/embed/-mnJEnjyaY4?si=LMJt5-8BmEL4cFlQ&loop=1&playlist=-mnJEnjyaY4"
                 title="Westside Gunn &mdash; DAVEY BOY SMITH music video"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
-            </div>
-            <figcaption className="text-xs text-fg/60">
-              Embedded via YouTube&apos;s privacy-enhanced player.
-            </figcaption>
+            </div>          
           </figure>
         </section>
 
