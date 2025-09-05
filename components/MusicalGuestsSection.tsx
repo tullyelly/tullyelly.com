@@ -9,8 +9,8 @@ export function MusicalGuestsSection({ date }: Props) {
       <h2 className="text-xl md:text-2xl font-semibold leading-snug">
         <span aria-hidden>🎤</span>Musical Guests{date ? `; ${date}` : ''}
       </h2>
-      <p className="text-sm md:text-[15px] text-muted-foreground">If you are around me long enough, you will be subjected to music takes. Wu-Tang is for the children, so please Run The Jewels fast.</p>
-      <ul className="list-disc list-inside text-sm md:text-[15px] space-y-1">
+      <p className="text-[16px] md:text-[18px] text-muted-foreground">If you are around me long enough, you will be subjected to music takes. Wu-Tang is for the children, so please Run The Jewels fast.</p>
+      <ul className="list-disc list-inside text-[16px] md:text-[18px] space-y-1">
         <li>
           <Link href="/heels-have-eyes" className="underline hover:no-underline">
             HEELS HAVE EYES
@@ -22,7 +22,7 @@ export function MusicalGuestsSection({ date }: Props) {
           </Link>
         </li>
       </ul>
-      <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 text-[16px] md:text-[18px] text-muted-foreground">
         <FlowersInline>
           <a
             href="https://www.instagram.com/westsidegunn/?hl=en"

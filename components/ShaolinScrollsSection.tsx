@@ -13,7 +13,7 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
           )}
         </span>
       </h2>
-      <p className="text-sm md:text-[15px] text-muted-foreground">
+      <p className="text-[16px] md:text-[18px] text-muted-foreground">
         One of the first things I did was start building out a project plan and documenting it in Jira and Confluence.
         As part of that process, I designed a release system; major.minor.patch; to govern the entire creative space.
         Major meant direction shifts, minor captured meaningful progress, and patch handled the small calibrations.
@@ -24,15 +24,15 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
         <ScrollsTablePanel limit={20} />
       </Suspense>
       
-      <p className="text-sm md:text-[15px] text-muted-foreground">
+      <p className="text-[16px] md:text-[18px] text-muted-foreground">
         In less than 30 days, I have accumulated a project plan 260+ tasks long, holding 50+ pages of documentation, and I am 500+ commits deep. Nerd alert.
       </p>
-      <p className="text-sm md:text-[15px] text-muted-foreground">
+      <p className="text-[16px] md:text-[18px] text-muted-foreground">
         I think I see something over there - hop aboard, kids.
       </p>
 
       {/* Closing acknowledgments */}
-      <p className="mt-3 mb-0 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 mb-0 text-[16px] md:text-[18px] text-muted-foreground">
         <FlowersInline>
           <a
             href="https://www.postgresql.org/"
