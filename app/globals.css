@@ -33,7 +33,6 @@
   --text-on-blue: var(--white);
   --text-on-green: var(--white);
 
-
   /* Links */
   --link-on-white: var(--blue);
   --link-on-cream: var(--blue-contrast);
@@ -42,7 +41,6 @@
   --surface-page: var(--cream);   /* page wrap/gutters */
   --surface-card: var(--white);   /* reading surfaces */
   --border-subtle: color-mix(in srgb, var(--blue) 12%, var(--white));
-
 
   /* Layout scale */
   --container: 72rem;
@@ -87,10 +85,6 @@ body {
   line-height: 1.6;
 }
 
-.main-surface {
-  background: var(--surface);
-}
-
 code,
 pre,
 kbd,
@@ -102,14 +96,6 @@ a {
   color: var(--link-on-cream);
   text-decoration: underline;
   text-underline-offset: 2px;
-}
-
-.on-white a {
-  color: var(--link-on-white);
-}
-
-.on-cream a {
-  color: var(--link-on-cream);
 }
 
 a:hover,

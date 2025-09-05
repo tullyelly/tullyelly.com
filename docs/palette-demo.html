@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" class="on-cream">
+<html lang="en" class="bg-cream text-text-primary">
 <head>
   <meta charset="UTF-8" />
   <title>Bucks Palette Demo</title>
   <link rel="stylesheet" href="../app/globals.css" />
   <style>
     .demo-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
-    .card { width: 280px; }
   </style>
 </head>
 <body>
@@ -15,21 +14,21 @@
     <p>This page shows usage of the Milwaukee Bucks Cream City color tokens.</p>
 
     <div class="demo-grid">
-      <div class="card">
+      <div class="rounded-2xl bg-white p-4 border-2 border-brand-bucksGreen shadow-sm" style="width:280px">
         <h2>Card Heading</h2>
         <p>Body text on white surface. <a href="#">Link example</a>.</p>
         <button class="inline-block px-4 py-2 rounded font-semibold cursor-pointer bg-blue text-text-on-blue hover:brightness-90">Primary</button>
         <button class="inline-block px-4 py-2 rounded font-semibold cursor-pointer bg-green text-text-on-green hover:brightness-90">Secondary</button>
       </div>
 
-      <div class="card on-cream">
+      <div class="rounded-2xl p-4 border-2 border-brand-bucksGreen shadow-sm on-cream" style="width:280px">
         <h2>Cream Surface</h2>
         <p>Links adapt color: <a href="#">example link</a>.</p>
       </div>
 
       <div class="alert">This is an alert using Bucks Green.</div>
 
-      <form class="card">
+      <form class="rounded-2xl bg-white p-4 border-2 border-brand-bucksGreen shadow-sm" style="width:280px">
         <label for="name">Name</label>
         <input id="name" placeholder="Your name" />
         <label for="state">State</label>
