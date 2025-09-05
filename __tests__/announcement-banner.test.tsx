@@ -25,9 +25,11 @@ test('link renders focusable when href provided', () => {
 
 test('variants apply classes', () => {
   const { rerender, container } = render(<AnnouncementBanner message="v" variant="info" />);
-  expect(container.firstChild).toHaveClass('on-blue');
+  expect(container.firstChild).toHaveClass('bg-blue');
+  expect(container.firstChild).toHaveClass('text-text-on-blue');
   rerender(<AnnouncementBanner message="v" variant="success" />);
-  expect(container.firstChild).toHaveClass('on-green');
+  expect(container.firstChild).toHaveClass('bg-green');
+  expect(container.firstChild).toHaveClass('text-text-on-green');
   rerender(<AnnouncementBanner message="v" variant="warning" />);
   expect(container.firstChild).toHaveClass('bg-amber-200');
   expect(container.firstChild).toHaveClass('text-black');

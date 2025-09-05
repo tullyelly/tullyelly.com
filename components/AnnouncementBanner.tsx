@@ -13,8 +13,8 @@ interface AnnouncementBannerProps {
 }
 
 const variantStyles: Record<NonNullable<AnnouncementBannerProps["variant"]>, string> = {
-  info: "on-blue",
-  success: "on-green",
+  info: "bg-blue text-text-on-blue",
+  success: "bg-green text-text-on-green",
   warning: "bg-amber-200 text-black",
   error: "bg-red-600 text-white",
 };
@@ -49,7 +49,7 @@ export default function AnnouncementBanner({
   return (
     <div role={role} className={classes}>
       {href ? (
-        <a href={href} className="underline decoration-current">
+        <a href={href} className="underline decoration-current text-inherit">
           {content}
         </a>
       ) : (
