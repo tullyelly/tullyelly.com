@@ -14,7 +14,7 @@ The `/ui-lab` page showcases design tokens and reusable components.
 
 ### Adding a demo tile
 
-1. Edit `app/ui-lab/DemoLab.tsx` and insert a new `<section>` with the `card` class and a unique heading referenced by
+1. Edit `app/ui-lab/DemoLab.tsx` and insert a new `<Card as="section" className="space-y-4">` tile (import `Card` from `@ui`) with a unique heading referenced by
    `aria-labelledby`.
 2. Use theme tokens via Tailwind utilities; avoid inline styles.
 3. Offer preset examples and, when helpful, controls that let visitors tweak props live.
