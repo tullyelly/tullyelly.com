@@ -12,7 +12,7 @@ type Rules = {
 const DEFAULT_RULES: Rules = {
   ownerDomains: ["tullyelly.com"],
   publicPaths: ["/", "/login", "/api/auth"],
-  protectedPaths: ["/shaolin-scrolls", "/admin"],
+  protectedPaths: ["/admin"],
   ownerOnlyPaths: ["/shaolin-scrolls/admin"],
   toggles: { allowAnyEmailOnPreview: false }
 };

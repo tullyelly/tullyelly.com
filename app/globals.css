@@ -241,6 +241,27 @@ p {
   border: 0;
 }
 
+/* Variant: compact 16:9 wrapper for homepage embeds */
+.yt-wrapper-bucks--compact {
+  width: min(100%, 768px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Variant: vertical Shorts (9:16) */
+.yt-wrapper-bucks--vertical > iframe,
+.yt-wrapper-bucks--vertical > .youtube-embed {
+  aspect-ratio: 9 / 16;
+}
+
+/* Constrain Shorts embeds for comfortable viewport fit */
+.yt-wrapper-bucks--vertical {
+  /* Scales responsively but never overwhelms the page */
+  width: clamp(240px, 40vw, 420px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .bucks-accent {
   color: var(--blue);
 }

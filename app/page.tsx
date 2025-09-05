@@ -8,15 +8,19 @@ import { ShaolinScrollsSection } from '@/components/ShaolinScrollsSection';
 import { MothersDaySection } from '@/components/MothersDaySection';
 import { MusicalGuestsSection } from '@/components/MusicalGuestsSection';
 import { SectionDivider } from '@/components/SectionDivider';
+import { FirstOffTheLineSection } from '@/components/FirstOffTheLineSection';
 
 export default function Home() {
   const chroniclesDate = '2025-09-03';
   const scrollsDate = '2025-09-01';
   const mothersDate = '2025-09-04';
   const musicalDate = '2025-09-04';
+  const firstOffDate = '2025-09-05';
   return (
     <>
-      <h1 className="text-2xl font-semibold">Welcome</h1>
+      <h1 className="text-3xl md:text-4xl font-semibold font-mono">]allow me to reintroduce myself[</h1>
+      <FirstOffTheLineSection date={firstOffDate} />
+      <SectionDivider />
       <MusicalGuestsSection date={musicalDate} />
       <SectionDivider />
       <MothersDaySection date={mothersDate} />
