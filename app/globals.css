@@ -96,10 +96,6 @@ body {
   line-height: 1.6;
 }
 
-.main-surface {
-  background: var(--surface);
-}
-
 code,
 pre,
 kbd,
@@ -111,14 +107,6 @@ a {
   color: var(--link-on-cream);
   text-decoration: underline;
   text-underline-offset: 2px;
-}
-
-.on-white a {
-  color: var(--link-on-white);
-}
-
-.on-cream a {
-  color: var(--link-on-cream);
 }
 
 a:hover,
@@ -133,41 +121,6 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--blue-contrast);
   outline-offset: 2px;
-}
-
-.on-white {
-  background: var(--surface-card);
-  color: var(--text-primary);
-}
-
-.on-cream {
-  background: var(--surface-page);
-  color: var(--text-primary);
-}
-
-.on-blue {
-  background: var(--blue);
-  color: var(--text-on-blue);
-}
-
-.on-blue a {
-  color: var(--text-on-blue);
-}
-
-.on-green {
-  background: var(--green);
-  color: var(--text-on-green);
-}
-
-.on-green a {
-  color: var(--text-on-green);
-}
-
-.article {
-  background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 1rem;
 }
 
 .button {
