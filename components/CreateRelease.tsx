@@ -85,7 +85,7 @@ export default function CreateRelease() {
           onChange={(e) => setPatchLabel(e.target.value)}
           maxLength={120}
           required
-          className="rounded border px-2 py-1"
+          className="form-input"
           placeholder="e.g. hotfix: correct audit trail ordering"
         />
         <button
@@ -111,7 +111,7 @@ export default function CreateRelease() {
           onChange={(e) => setMinorLabel(e.target.value)}
           maxLength={120}
           required
-          className="rounded border px-2 py-1"
+          className="form-input"
           placeholder="e.g. v0.6: add scrolls list filters"
         />
         <button

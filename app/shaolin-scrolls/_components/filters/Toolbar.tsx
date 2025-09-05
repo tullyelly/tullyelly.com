@@ -74,7 +74,7 @@ export default function Toolbar({ search, onSearchChange }: ToolbarProps) {
             onChange={(e) => setPatchLabel(e.target.value)}
             maxLength={120}
             placeholder="Patch label"
-            className="rounded border px-2 py-1"
+            className="form-input"
             required
           />
           <button
@@ -98,7 +98,7 @@ export default function Toolbar({ search, onSearchChange }: ToolbarProps) {
             onChange={(e) => setMinorLabel(e.target.value)}
             maxLength={120}
             placeholder="Minor label"
-            className="rounded border px-2 py-1"
+            className="form-input"
             required
           />
           <button
@@ -119,7 +119,7 @@ export default function Toolbar({ search, onSearchChange }: ToolbarProps) {
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder="Search releases"
-        className="rounded border px-2 py-1"
+        className="form-input"
       />
     </div>
   );
