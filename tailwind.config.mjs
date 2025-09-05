@@ -33,6 +33,8 @@ export default {
         fg: "var(--fg)",
         success: "var(--success)",
         warning: "var(--warning)",
+        brandPrimary: "var(--brand-primary)",
+        brandDivider: "var(--brand-divider)",
         brand: {
           bucksGreen: '#00471B',
           creamCityCream: '#EEE1C6',

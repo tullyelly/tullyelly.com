@@ -20,6 +20,11 @@
   --brand-chrome: #0077C0;      /* Great Lakes Blue */
   --brand-chrome-fg: #ffffff;   /* text on chrome */
 
+  /* Brand semantic tokens (single source of truth) */
+  --brand-primary: #0077C0;     /* Great Lakes Blue */
+  --brand-primary-contrast: #0069A9; /* slightly darker for contrast uses */
+  --brand-divider: var(--brand-primary); /* used for thin separators */
+
   /* Brand bases */
   --blue: #0077C0;             /* Great Lakes Blue */
   --blue-contrast: #0069A9;    /* Darkened for AA on cream */
@@ -243,9 +248,12 @@ p {
 
 /* YouTube embed wrapper */
 .yt-wrapper-bucks {
-  background: var(--green);
-  padding: 1rem;
+  /* Use a true border instead of padding so the green frame matches token thickness */
+  background: transparent;
+  padding: 0;
+  border: 4px solid var(--green);
   border-radius: 12px;
+  overflow: hidden; /* ensures iframe corners clip to radius */
 }
 
 .yt-wrapper-bucks > iframe,
