@@ -7,6 +7,7 @@ import Hero from '@/components/Hero';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import Button from '@ui/Button';
 
 const paletteTokens = {
   brand: [
@@ -140,7 +141,7 @@ export default function DemoLab() {
             <div className="space-y-4 text-center md:text-left">
               <h1 className="text-5xl font-extrabold">Design, delivered.</h1>
               <p className="text-lg">Reusable tokens and components to build quickly.</p>
-              <a href="#" className="button primary inline-block">Get started</a>
+              <Button as="a" href="#" variant="primary">Get started</Button>
             </div>
             {showHeroImage && (
               <Hero
