@@ -10,8 +10,7 @@
   --cream: #EEE1C6;            /* Cream City Cream */
   --white: #FFFFFF;
   --ink: #0C1B0C;              /* near-black text */
-  --green-900: #00471B;        /* Bucks Green (header badges etc.) */
-  --bucks-green: var(--green-900);
+  --bucks-green: #00471B;      /* Bucks Green (header badges etc.) */
   --gold: #F0EBD2;
   --font-inter: system-ui, sans-serif;
   --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -20,15 +19,10 @@
   --brand-chrome: #0077C0;      /* Great Lakes Blue */
   --brand-chrome-fg: #ffffff;   /* text on chrome */
 
-  /* Brand semantic tokens (single source of truth) */
-  --brand-primary: #0077C0;     /* Great Lakes Blue */
-  --brand-primary-contrast: #0069A9; /* slightly darker for contrast uses */
-  --brand-divider: var(--brand-primary); /* used for thin separators */
-
   /* Brand bases */
   --blue: #0077C0;             /* Great Lakes Blue */
   --blue-contrast: #0069A9;    /* Darkened for AA on cream */
-  --green: var(--green-900);   /* Bucks Green */
+  --green: #00471B;            /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
 
   /* Neutrals for readability */
@@ -54,15 +48,12 @@
 
   /* UI tokens */
   --surface: var(--surface-card);
-  --bg: var(--surface-page);
   --border: var(--border-subtle);
   --fg: var(--text-primary);
-  --success: var(--green);
-  --warning: #92400e;
 
   /* Global badge tokens */
   --badge-classic-bg: #F0EBD2; /* Championship Gold */
-  --badge-classic-fg: var(--green-900); /* Bucks Green */
+  --badge-classic-fg: #00471B; /* Bucks Green */
   --badge-classic-ring: rgba(0, 71, 27, 0.25);
 }
 
@@ -296,6 +287,12 @@ p {
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+}
+
+@layer components {
+  .form-input {
+    @apply rounded border px-2 py-1;
+  }
 }
 
 @layer utilities {
