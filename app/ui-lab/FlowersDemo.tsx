@@ -1,9 +1,10 @@
 import FlowersInline from "@/components/flowers/FlowersInline";
 import FlowersBlock from "@/components/flowers/FlowersBlock";
+import { Card } from "@ui";
 
 export default function FlowersDemo() {
   return (
-    <section className="card space-y-3" aria-labelledby="flowers-demo">
+    <Card as="section" className="space-y-3" aria-labelledby="flowers-demo">
       <h2 id="flowers-demo" className="text-xl font-semibold">Flowers</h2>
       <p className="text-sm text-muted-foreground">Screen readers announce &quot;Acknowledgments&quot;; the emoji is aria-hidden.</p>
       <div className="space-y-2">
@@ -16,6 +17,6 @@ export default function FlowersDemo() {
           <span key="2">Chronicles wiki &amp; Raistlin Majere</span>,
         ]}
       />
-    </section>
+    </Card>
   );
 }
