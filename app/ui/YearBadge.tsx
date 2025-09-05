@@ -7,7 +7,8 @@ export function YearBadge({ year, className }: { year: number | string; classNam
       className={cn(
         "absolute right-3 top-3 z-10 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm",
         getBadgeClass("year"),
-        "!bg-brand-bucksGreen !text-brand-creamCityCream",
+        // Force Bucks green via CSS var to win specificity/purge battles
+        "!bg-[var(--green)] !text-white",
         className
       )}
     >
