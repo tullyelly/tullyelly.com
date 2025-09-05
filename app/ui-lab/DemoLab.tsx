@@ -8,6 +8,7 @@ import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import Button from '@ui/Button';
+import { Card } from '@ui';
 
 const paletteTokens = {
   brand: [
@@ -50,11 +51,11 @@ export default function DemoLab() {
     <div className="mx-auto max-w-container space-y-8 p-4">
       <h1 className="text-4xl font-extrabold">UI Lab</h1>
       <div className="grid gap-6 md:grid-cols-2">
-        <section className="card space-y-4" aria-labelledby="flowers">
+        <Card as="section" className="space-y-4" aria-labelledby="flowers">
           <h2 id="flowers" className="text-xl font-semibold">Flowers</h2>
           <p><a href="/ui-lab/flowers" className="underline hover:no-underline">Open Flowers demo</a></p>
-        </section>
-        <section className="card space-y-4" aria-labelledby="announcement-banner">
+        </Card>
+        <Card as="section" className="space-y-4" aria-labelledby="announcement-banner">
           <h2 id="announcement-banner" className="text-xl font-semibold">Announcement Banner</h2>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -118,24 +119,24 @@ export default function DemoLab() {
               </div>
             </div>
           </div>
-        </section>
-        <section className="card space-y-4" aria-labelledby="header-footer">
+        </Card>
+        <Card as="section" className="space-y-4" aria-labelledby="header-footer">
           <h2 id="header-footer" className="text-xl font-semibold">Header & Footer</h2>
           <div className="border border-border-subtle rounded">
             <SiteHeader />
             <div className="p-4 text-center">Page content</div>
             <Footer />
           </div>
-        </section>
-        <section className="card space-y-4" aria-labelledby="callout">
+        </Card>
+        <Card as="section" className="space-y-4" aria-labelledby="callout">
           <h2 id="callout" className="text-xl font-semibold">Callout</h2>
           <Callout>Remember to stay hydrated.</Callout>
-        </section>
-        <section className="card space-y-4" aria-labelledby="quote">
+        </Card>
+        <Card as="section" className="space-y-4" aria-labelledby="quote">
           <h2 id="quote" className="text-xl font-semibold">Quote</h2>
           <Quote cite="tullyelly">Design is both art and science.</Quote>
-        </section>
-        <section className="card space-y-4 md:col-span-2" aria-labelledby="hero">
+        </Card>
+        <Card as="section" className="space-y-4 md:col-span-2" aria-labelledby="hero">
           <h2 id="hero" className="text-xl font-semibold">Hero</h2>
           <div className="flex flex-col-reverse items-center gap-6 md:flex-row md:gap-8">
             <div className="space-y-4 text-center md:text-left">
@@ -161,8 +162,8 @@ export default function DemoLab() {
             />
             Show image
           </label>
-        </section>
-        <section className="card space-y-4 md:col-span-2" aria-labelledby="palette">
+        </Card>
+        <Card as="section" className="space-y-4 md:col-span-2" aria-labelledby="palette">
           <h2 id="palette" className="text-xl font-semibold">Palette</h2>
           <label className="inline-flex items-center gap-2 text-sm">
             Palette
@@ -189,7 +190,7 @@ export default function DemoLab() {
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       </div>
     </div>
   );
