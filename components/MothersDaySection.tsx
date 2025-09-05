@@ -8,7 +8,7 @@ export function MothersDaySection({ date }: Props) {
       <h2 className="text-xl md:text-2xl font-semibold leading-snug">
         <span aria-hidden>🌷</span>Mother&apos;s Day 2025{date ? `; ${date}` : ''}
       </h2>
-      <p className="text-sm md:text-[15px] text-muted-foreground">
+      <p className="text-[16px] md:text-[18px] text-muted-foreground">
         Before we dive too deep into the nerd, here&apos;s some additional wholesome Mother&apos;s Day content for you to enjoy! I found them to be just as impactful as the first time around.
       </p>
       <div className="space-y-4">
@@ -36,7 +36,7 @@ export function MothersDaySection({ date }: Props) {
             />
           </div>
         </figure>
-        <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+        <p className="mt-3 text-[16px] md:text-[18px] text-muted-foreground">
           <FlowersInline>
             nikkigirl, Big Ter,{" "}
             <a

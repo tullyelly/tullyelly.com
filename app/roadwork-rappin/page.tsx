@@ -86,19 +86,19 @@ export default function Page() {
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Parental Discretion Advised</h2>
-          <p className="leading-relaxed">
+          <h2 className="text-xl md:text-2xl font-semibold leading-snug">Parental Discretion Advised</h2>
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
             Expect me to be converting between 3–5 children into fans of Aesop Rock utilizing this song.
             We&rsquo;ll keep it clean, promise. 😉
           </p>
-          <p className="leading-relaxed">
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
             The video will loop itself to keep them out of the almighty algorithm as long as possible.
             Long live the algorithm!
           </p>
         </section>
 
         <section aria-labelledby="video-title" className="space-y-3">
-          <h2 id="video-title" className="text-xl font-semibold">Roadwork Rappin’ Video</h2>
+          <h2 id="video-title" className="text-xl md:text-2xl font-semibold leading-snug">Roadwork Rappin’ Video</h2>
           <figure className="space-y-2">
             <div className="yt-wrapper-bucks">
               <iframe
@@ -115,8 +115,8 @@ export default function Page() {
 
         <section className="space-y-6">
           <header className="space-y-1">
-            <h2 className="text-xl font-semibold">Aesop Rock Bio</h2>
-            <p className="leading-relaxed">
+            <h2 className="text-xl md:text-2xl font-semibold leading-snug">Aesop Rock Bio</h2>
+            <p className="text-[16px] md:text-[18px] text-muted-foreground">
               Aesop Rock (Ian Bavitz) is a New York–born rapper and producer celebrated for his dense, surreal lyricism and lasting influence on underground hip-hop. What makes him truly stand out is his vocabulary: studies show he’s used more unique words across his career than any other major rapper, a linguistic range so vast it even rivals Shakespeare. That love of language defines his style; songs that unfold like puzzles, packed with imagery and ideas that reward repeated listens.
             </p>
           </header>

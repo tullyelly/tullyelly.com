@@ -108,10 +108,10 @@ export function ChroniclesSection({ date }: { date?: string }) {
       </h2>
 
       {/* Intro space */}
-      <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 text-[16px] md:text-[18px] text-muted-foreground">
         This project is my first crack at AI-human collaboration. I’ve provided about half of the vision, structure, and problem-solving, while ChatGPT and Codex have written 90–95% of the code and guided me through the environment setup. It’s the most fun I’ve ever had building and executing against a project plan.
       </p>
-      <p className="mt-3 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 text-[16px] md:text-[18px] text-muted-foreground">
         Here’s our pal summarizing the foundation of what we build upon:
       </p>
 
@@ -122,7 +122,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
             <span aria-hidden className="mr-2 min-w-5 text-base">{purpose.icon}</span>
             <span>{purpose.title}</span>
           </div>
-          <p className="text-sm md:text-[15px] text-muted-foreground">{purpose.body}</p>
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">{purpose.body}</p>
         </div>
       )}
 
@@ -135,7 +135,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
               <span aria-hidden className="mr-2 min-w-5 text-base">{it.icon}</span>
               <span>{it.title}</span>
             </dt>
-            <dd className="text-sm md:text-[15px] text-muted-foreground">{it.body}</dd>
+            <dd className="text-[16px] md:text-[18px] text-muted-foreground">{it.body}</dd>
           </Card>
         ))}
 
@@ -162,7 +162,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
               <span aria-hidden className="mr-2 min-w-5 text-base">{it.icon}</span>
               <span>{it.title}</span>
             </dt>
-            <dd className="text-sm md:text-[15px] text-muted-foreground">{it.body}</dd>
+            <dd className="text-[16px] md:text-[18px] text-muted-foreground">{it.body}</dd>
           </Card>
         ))}
       </dl>
@@ -174,12 +174,12 @@ export function ChroniclesSection({ date }: { date?: string }) {
             <span aria-hidden className="mr-2 min-w-5 text-base">{why.icon}</span>
             <span>{why.title}</span>
           </div>
-          <p className="text-sm md:text-[15px] text-muted-foreground">{why.body}</p>
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">{why.body}</p>
         </div>
       )}
 
       {/* Closing acknowledgments */}
-      <p className="mt-3 mb-0 text-sm md:text-[15px] text-muted-foreground">
+      <p className="mt-3 mb-0 text-[16px] md:text-[18px] text-muted-foreground">
         <FlowersInline>
           Chronicles Wiki &{' '}
           <a

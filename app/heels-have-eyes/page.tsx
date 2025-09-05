@@ -82,20 +82,20 @@ export default function Page() {
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Parental Discretion Advised</h2>
-          <p className="leading-relaxed">
+          <h2 className="text-xl md:text-2xl font-semibold leading-snug">Parental Discretion Advised</h2>
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
             There&apos;s been a ton of new albums to explore this summer (tyler, clipse, jid, freddie gibbs, ghostface, raekwon, etc..) and the one EP I keep returning to more than any other album is HEELS HAVE EYES by Westside Gunn. He&apos;s shown up here and there in the almighty algorithm, but I&apos;ve never done a deep dive until now.
           </p>
-          <p className="leading-relaxed">
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
             Well, I&apos;m hooked and DAVEY BOY SMITH is the beat of the year for me so far. A simple piano loop will get me every time. Shouts to Denny LaFlare.
           </p>          
-          <p className="leading-relaxed">
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
             Anywho, FLYGOD told me to put this up on my kid&apos;s wall. Consider it done, king.
           </p>
         </section>
 
         <section aria-labelledby="video-title" className="space-y-3">
-          <h2 id="video-title" className="text-xl font-semibold">DAVEY BOY SMITH Video</h2>
+          <h2 id="video-title" className="text-xl md:text-2xl font-semibold leading-snug">DAVEY BOY SMITH Video</h2>
           <figure className="space-y-2">
             <div className="yt-wrapper-bucks">
               <iframe
@@ -112,8 +112,8 @@ export default function Page() {
 
         <section className="space-y-6">
           <header className="space-y-1">
-            <h2 className="text-xl font-semibold">Westside Gunn Bio</h2>
-            <p className="leading-relaxed">
+            <h2 className="text-xl md:text-2xl font-semibold leading-snug">Westside Gunn Bio</h2>
+            <p className="text-[16px] md:text-[18px] text-muted-foreground">
               Westside Gunn (Alvin Worthy) is a Buffalo-born rapper, curator, and co-founder of the influential Griselda collective. His music fuses gritty street narratives with a flair for high fashion, fine art, and wrestling references, turning raw street rap into something operatic and luxurious. What makes him stand out is his ear for aesthetics: ad-libs delivered like brushstrokes, beats that sound like gallery pieces, and an instinct for curation that has reshaped modern underground hip-hop. Gunn isn&apos;t just rapping; he&apos;s directing an entire scene.
             </p>
           </header>

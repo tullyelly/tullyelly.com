@@ -262,6 +262,40 @@ p {
   margin-right: auto;
 }
 
+/* === First Off The Line — single-video responsive embed (scoped) === */
+#first-off-the-line-video.fol-video {
+  /* center, fill small screens, and cap width sensibly */
+  width: min(100%, 720px);
+  margin-inline: auto;
+}
+
+#first-off-the-line-video .fol-video__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16; /* vertical video */
+  border: 4px solid var(--green);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000; /* avoid flash before load */
+}
+
+#first-off-the-line-video .fol-video__frame > iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@media (min-width: 768px) {
+  #first-off-the-line-video.fol-video {
+    max-height: calc(100vh - 160px);
+  }
+  #first-off-the-line-video .fol-video__frame {
+    max-height: inherit;
+  }
+}
+
 .bucks-accent {
   color: var(--blue);
 }
