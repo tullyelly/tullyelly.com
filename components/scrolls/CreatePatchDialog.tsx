@@ -69,7 +69,7 @@ export default function CreatePatchDialog() {
                 onChange={(e) => setLabel(e.target.value)}
                 maxLength={120}
                 required
-                className="w-full rounded border px-2 py-1"
+                className="form-input w-full"
                 placeholder="e.g. hotfix: correct audit trail ordering"
               />
             </div>

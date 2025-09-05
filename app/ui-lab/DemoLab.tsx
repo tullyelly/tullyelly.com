@@ -76,7 +76,7 @@ export default function DemoLab() {
                 <label className="flex flex-col">
                   Message
                   <input
-                    className="border border-border-subtle rounded p-1"
+                    className="form-input"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                   />
@@ -84,7 +84,7 @@ export default function DemoLab() {
                 <label className="flex flex-col">
                   Link
                   <input
-                    className="border border-border-subtle rounded p-1"
+                    className="form-input"
                     value={href}
                     onChange={(e) => setHref(e.target.value)}
                     placeholder="https://example.com"
@@ -93,7 +93,7 @@ export default function DemoLab() {
                 <label className="flex flex-col">
                   Variant
                   <select
-                    className="border border-border-subtle rounded p-1"
+                    className="form-input"
                     value={variant}
                     onChange={(e) =>
                       setVariant(
@@ -167,7 +167,7 @@ export default function DemoLab() {
           <label className="inline-flex items-center gap-2 text-sm">
             Palette
             <select
-              className="border border-border-subtle rounded p-1"
+              className="form-input"
               value={paletteGroup}
               onChange={(e) => setPaletteGroup(e.target.value as PaletteGroup)}
             >

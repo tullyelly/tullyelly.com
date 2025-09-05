@@ -30,7 +30,7 @@ export default function ActionBar({ q }: ActionBarProps) {
           placeholder="Search releases"
           aria-label="Search releases"
           defaultValue={qVal}
-          className="rounded border px-2 py-1"
+          className="form-input"
           autoComplete="off"
         />
         <button type="submit" className="rounded border px-2 py-1">Search</button>

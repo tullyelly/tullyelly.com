@@ -70,20 +70,20 @@ function SearchBox({ initial }: { initial: string }) {
     }
   }, [initial]);
   return (
-    <form role="search" action="/shaolin-scrolls" method="get" className="inline-flex items-center gap-2">
-      <input
-        ref={inputRef}
-        name="q"
-        type="search"
-        placeholder="Search releases"
-        aria-label="Search releases"
-        defaultValue={initial ?? ''}
-        className="rounded border px-2 py-1"
-        autoComplete="off"
-      />
-      <button type="submit" className="rounded border px-2 py-1">
-        Search
-      </button>
-    </form>
+      <form role="search" action="/shaolin-scrolls" method="get" className="inline-flex items-center gap-2">
+        <input
+          ref={inputRef}
+          name="q"
+          type="search"
+          placeholder="Search releases"
+          aria-label="Search releases"
+          defaultValue={initial ?? ''}
+          className="form-input"
+          autoComplete="off"
+        />
+        <button type="submit" className="rounded border px-2 py-1">
+          Search
+        </button>
+      </form>
   );
 }
