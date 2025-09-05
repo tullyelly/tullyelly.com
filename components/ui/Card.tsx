@@ -9,8 +9,8 @@ type CardProps<T extends React.ElementType = 'div'> = {
 } & React.ComponentPropsWithoutRef<T>
 
 const ACCENT = {
-  bucks: 'border-brand-bucksGreen ring-brand-bucksGreen/40',
-  'great-lakes-blue': 'border-brand-greatLakesBlue ring-brand-greatLakesBlue/40',
+  bucks: 'border-brand-bucksGreen',
+  'great-lakes-blue': 'border-brand-greatLakesBlue',
 } as const
 
 export function Card<T extends React.ElementType = 'div'>({
@@ -24,10 +24,10 @@ export function Card<T extends React.ElementType = 'div'>({
   return (
     <Tag
       className={cn(
-        // Base surface with thin border by default; no ring at base
+        // Base surface with Bucks green 2px borders by default
         'rounded-2xl bg-white p-4 shadow-sm',
-        // Thickness controls border width; thick also adds a subtle ring
-        thickness === 'thick' ? 'border-2 ring-1 ring-inset' : 'border',
+        // Standardize on a 2px border; remove rings to avoid inner edges
+        'border-2',
         ACCENT[accent],
         className
       )}
