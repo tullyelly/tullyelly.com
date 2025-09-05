@@ -38,13 +38,14 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
   return (
     <>
       <Table
+        variant="bucks"
         id="scrolls-table"
         aria-label="Releases table"
         data-testid="releases-table"
         aria-rowcount={rows.length}
         className="thead-sticky"
       >
-        <THead>
+        <THead variant="bucks">
           <th scope="col" className="w-[72px]">
             ID
           </th>
@@ -96,4 +97,3 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
     </>
   );
 }
-

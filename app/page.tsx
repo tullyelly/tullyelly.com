@@ -7,6 +7,7 @@ import { ChroniclesSection } from '@/components/ChroniclesSection';
 import { ShaolinScrollsSection } from '@/components/ShaolinScrollsSection';
 import { MothersDaySection } from '@/components/MothersDaySection';
 import { MusicalGuestsSection } from '@/components/MusicalGuestsSection';
+import { SectionDivider } from '@/components/SectionDivider';
 
 export default function Home() {
   const chroniclesDate = '2025-09-03';
@@ -17,8 +18,11 @@ export default function Home() {
     <>
       <h1 className="text-2xl font-semibold">Welcome</h1>
       <MusicalGuestsSection date={musicalDate} />
+      <SectionDivider />
       <MothersDaySection date={mothersDate} />
+      <SectionDivider />
       <ChroniclesSection date={chroniclesDate} />
+      <SectionDivider />
       <ShaolinScrollsSection date={scrollsDate} />
     </>
   );

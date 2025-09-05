@@ -20,6 +20,11 @@
   --brand-chrome: #0077C0;      /* Great Lakes Blue */
   --brand-chrome-fg: #ffffff;   /* text on chrome */
 
+  /* Brand semantic tokens (single source of truth) */
+  --brand-primary: #0077C0;     /* Great Lakes Blue */
+  --brand-primary-contrast: #0069A9; /* slightly darker for contrast uses */
+  --brand-divider: var(--brand-primary); /* used for thin separators */
+
   /* Brand bases */
   --blue: #0077C0;             /* Great Lakes Blue */
   --blue-contrast: #0069A9;    /* Darkened for AA on cream */
@@ -34,7 +39,6 @@
   --text-on-blue: var(--white);
   --text-on-green: var(--white);
 
-
   /* Links */
   --link-on-white: var(--blue);
   --link-on-cream: var(--blue-contrast);
@@ -43,12 +47,6 @@
   --surface-page: var(--cream);   /* page wrap/gutters */
   --surface-card: var(--white);   /* reading surfaces */
   --border-subtle: color-mix(in srgb, var(--blue) 12%, var(--white));
-
-  /* Buttons */
-  --btn-primary-bg: var(--blue);
-  --btn-primary-fg: var(--text-on-blue);
-  --btn-secondary-bg: var(--green);
-  --btn-secondary-fg: var(--text-on-green);
 
   /* Layout scale */
   --container: 72rem;
@@ -123,39 +121,46 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-.button {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.25rem;
-  font-weight: 600;
-  cursor: pointer;
+.on-white {
+  background: var(--surface-card);
+  color: var(--text-primary);
 }
 
-.button.primary {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-fg);
+.on-cream {
+  background: var(--surface-page);
+  color: var(--text-primary);
 }
 
-.button.secondary {
-  background: var(--btn-secondary-bg);
-  color: var(--btn-secondary-fg);
+.on-blue {
+  background: var(--blue);
+  color: var(--text-on-blue);
 }
 
-.button:hover {
-  filter: brightness(0.9);
+.on-blue a {
+  color: var(--text-on-blue);
 }
 
-.button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.on-green {
+  background: var(--green);
+  color: var(--text-on-green);
+}
+
+.on-green a {
+  color: var(--text-on-green);
+}
+
+.article {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1rem;
 }
 
 .alert {
   padding: 1rem;
   border-radius: 0.25rem;
-  background: var(--btn-secondary-bg);
-  color: var(--btn-secondary-fg);
+  background: var(--green);
+  color: var(--text-on-green);
 }
 
 input,
@@ -229,9 +234,12 @@ p {
 
 /* YouTube embed wrapper */
 .yt-wrapper-bucks {
-  background: var(--green);
-  padding: 1rem;
+  /* Use a true border instead of padding so the green frame matches token thickness */
+  background: transparent;
+  padding: 0;
+  border: 4px solid var(--green);
   border-radius: 12px;
+  overflow: hidden; /* ensures iframe corners clip to radius */
 }
 
 .yt-wrapper-bucks > iframe,

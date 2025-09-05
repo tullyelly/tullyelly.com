@@ -140,22 +140,20 @@ export function ChroniclesSection({ date }: { date?: string }) {
         ))}
 
         {/* Center image card (placed at mid, centered column on md+) */}
-        <Card
-          as="figure"
-          accent="great-lakes-blue"
-          thickness="thick"
-          className="p-2 place-self-center md:col-start-2"
+        <figure
+          className="rounded-2xl bg-white p-2 place-self-center md:col-start-2 border-[4px] border-[var(--blue)] shadow-sm"
+          style={{ borderColor: 'var(--blue)' }}
         >
           <Image
             src="/images/optimized/raistlin black robes.webp"
             alt="Raistlin in black robes, atmospheric portrait"
             width={320}
             height={420}
-            className="rounded-xl shadow-md"
+            className="rounded-xl shadow-none"
             priority={false}
           />
           <figcaption className="sr-only">Raistlin illustration</figcaption>
-        </Card>
+        </figure>
 
         {/* Second half of items */}
         {cards.slice(mid).map((it) => (

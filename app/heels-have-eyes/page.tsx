@@ -125,9 +125,12 @@ export default function Page() {
             <h3 className="text-lg font-semibold">Albums to Explore</h3>
             <CardGrid>
               {items.map((item) => (
-                <Card key={item.id} className="relative">
+                <Card
+                  key={item.id}
+                  className={`relative ${isFav(item) ? 'border-[4px] border-[var(--blue)]' : ''}`}
+                >
                   {item.meta && <YearBadge year={item.meta} />}
-                  <h4 className="font-semibold italic">{item.title}</h4>
+                  <h4 className="font-semibold italic pr-16">{item.title}</h4>
                   {item.description && (
                     <p className="mt-2 text-sm text-fg/80 leading-relaxed">
                       {item.description}
