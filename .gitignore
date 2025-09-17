@@ -56,3 +56,6 @@ test-results
 # Generated build artifacts and runtime build info
 .build/
 lib/build-info.ts
+
+# files used to help codex debug
+cipher/
