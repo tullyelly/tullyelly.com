@@ -40,7 +40,7 @@ function LoginInner() {
       <h1 className="text-2xl font-bold mb-4">Welcome</h1>
       <p className="mb-6">Sign in with Google to continue.</p>
       <button
-        className="rounded-xl px-4 py-2 shadow"
+        className="btn rounded-xl px-4 py-2 shadow"
         onClick={() => {
           const safe = sanitizeCallback(rawCallback, window.location.origin);
           void signIn("google", { callbackUrl: safe });

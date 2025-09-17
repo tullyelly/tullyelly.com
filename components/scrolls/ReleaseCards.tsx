@@ -43,7 +43,7 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
                 href={`/shaolin-scrolls/${r.id}`}
                 onClick={onIdClick(r.id)}
                 aria-label={`Open release ${r.id} details`}
-                className="font-semibold underline decoration-[var(--bucks-green)]"
+                className="font-semibold link-blue"
                 role="button"
                 aria-haspopup="dialog"
               >
@@ -65,4 +65,3 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
     </>
   );
 }
-

@@ -93,14 +93,14 @@ samp {
 }
 
 a {
-  color: var(--link-on-cream);
+  color: var(--blue);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 a:hover,
 a:focus {
-  color: color-mix(in srgb, currentColor 80%, var(--black));
+  color: var(--blue-contrast);
 }
 
 a:focus-visible,
@@ -327,9 +327,23 @@ p {
   .form-input {
     @apply rounded border px-2 py-1;
   }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded bg-[var(--blue)] px-3 py-1 text-sm font-medium text-white transition hover:bg-[var(--blue-contrast)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60;
+  }
 }
 
 @layer utilities {
+  .link-blue {
+    color: var(--blue);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .link-blue:hover,
+  .link-blue:focus {
+    color: var(--blue-contrast);
+  }
+
   @media (min-width: 768px) {
     .zebra-desktop tbody tr:nth-child(even) td {
       background-color: var(--cream);

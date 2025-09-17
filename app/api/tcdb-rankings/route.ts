@@ -211,7 +211,7 @@ export async function GET(req: NextRequest) {
     const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
 
     const pageSizeParam = Number.parseInt(searchParams.get('pageSize') ?? '', 10);
-    const pageSize = clamp(Number.isFinite(pageSizeParam) ? pageSizeParam : 50, 1, 200);
+    const pageSize = clamp(Number.isFinite(pageSizeParam) ? pageSizeParam : 20, 1, 500);
 
     const qRaw = searchParams.get('q');
     const q = qRaw ? qRaw.trim() : '';
@@ -266,7 +266,7 @@ export async function GET(req: NextRequest) {
         diff_sign_changed
       FROM homie_tcdb_ranking_rt
       ${whereClause}
-      ORDER BY ranking ASC, ranking_at DESC
+      ORDER BY card_count DESC, ranking ASC, ranking_at DESC
       LIMIT $${limitIndex} OFFSET $${offsetIndex}`,
       dataParams,
     );

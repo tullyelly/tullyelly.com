@@ -15,7 +15,7 @@ export default function GlobalError({
   return (
     <div>
       <h1>Something went sideways.</h1>
-      <button onClick={reset}>Retry</button>
+      <button className="btn" onClick={reset}>Retry</button>
     </div>
   );
 }

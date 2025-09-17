@@ -44,11 +44,10 @@ export default async function Page({ params }: PageProps) {
       </dl>
       <Link
         href="/shaolin-scrolls"
-        className="underline decoration-[var(--bucks-green)] w-fit"
+        className="link-blue w-fit"
       >
         Back to list
       </Link>
     </section>
   );
 }
-

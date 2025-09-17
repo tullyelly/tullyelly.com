@@ -80,7 +80,7 @@ export default function Toolbar({ search, onSearchChange }: ToolbarProps) {
           <button
             type="submit"
             disabled={patchLoading}
-            className="rounded border px-3 py-1 disabled:opacity-50"
+            className="btn"
           >
             {patchLoading ? 'Creating…' : 'Create Patch'}
           </button>
@@ -104,7 +104,7 @@ export default function Toolbar({ search, onSearchChange }: ToolbarProps) {
           <button
             type="submit"
             disabled={minorLoading}
-            className="rounded border px-3 py-1 disabled:opacity-50"
+            className="btn"
           >
             {minorLoading ? 'Creating…' : 'Create Minor'}
           </button>
@@ -124,4 +124,3 @@ export default function Toolbar({ search, onSearchChange }: ToolbarProps) {
     </div>
   );
 }
-
