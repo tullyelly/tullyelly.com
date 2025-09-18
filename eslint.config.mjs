@@ -9,6 +9,68 @@ const __dirname = path.dirname(__filename)
 
 const compat = new FlatCompat({ baseDirectory: __dirname })
 
+const baseRestrictedSyntax = [
+  // Date.now()
+  {
+    selector: "CallExpression[callee.object.name='Date'][callee.property.name='now']",
+    message: 'Do not use Date.now() in render paths; compute on server and pass via props.',
+  },
+  // new Date()
+  {
+    selector: "NewExpression[callee.name='Date']",
+    message: 'Do not construct Date in render; pass serialized values and format deterministically.',
+  },
+  // Math.random()
+  {
+    selector: "CallExpression[callee.object.name='Math'][callee.property.name='random']",
+    message: 'Do not use Math.random() in render paths; compute on server and pass via props.',
+  },
+  // crypto.randomUUID()
+  {
+    selector: "CallExpression[callee.object.name='crypto'][callee.property.name='randomUUID']",
+    message: 'Do not use crypto.randomUUID() in render paths; use stable IDs from data.',
+  },
+  // toLocaleString / toLocaleDateString / toLocaleTimeString
+  {
+    selector: "CallExpression[callee.property.name=/^toLocale(String|DateString|TimeString)$/]",
+    message:
+      'Avoid locale-sensitive toLocale* in SSR; use fmtDate/fmtTime/fmtDateTime/fmtRelative from lib/datetime instead.',
+  },
+  // typeof window/document/navigator checks in components
+  {
+    selector: "UnaryExpression[operator='typeof'][argument.name=/^(window|document|navigator)$/]",
+    message: 'Move client-only branches into dedicated client components; avoid typeof window in render.',
+  },
+  // Array.sort without comparator
+  {
+    selector: "CallExpression[callee.property.name='sort'][arguments.length=0]",
+    message: 'Always provide a stable, pure comparator to Array.sort to avoid non-deterministic order.',
+  },
+]
+
+const serverRestrictedSyntax = [
+  {
+    selector:
+      "CallExpression[callee.name='fetch'][arguments.0.type='Literal'][arguments.0.value^='/api/']",
+    message: 'Do not self-fetch internal API routes from server code. Import from lib/data/* instead.',
+  },
+]
+
+const baseRestrictedImports = [
+  {
+    name: '@/lib/dates',
+    importNames: ['formatDateTimeChicago', 'formatDateOnly'],
+    message: 'Use the fmt* helpers from lib/datetime directly instead of the legacy lib/dates shim.',
+  },
+]
+
+const serverRestrictedImports = [
+  {
+    name: '@/app/lib/getBaseUrl',
+    message: 'Avoid getBaseUrl() in server components—call lib/data/* directly.',
+  },
+]
+
 const config = [
   // Ignore build artifacts
   { ignores: ['.next/**', 'node_modules/**', 'dist/**', 'coverage/**'] },
@@ -103,52 +165,29 @@ const config = [
       'react/no-array-index-key': 'error',
 
       // Disallow runtime randomness and time in components
-      'no-restricted-syntax': [
-        'error',
-        // Date.now()
-        {
-          selector: "CallExpression[callee.object.name='Date'][callee.property.name='now']",
-          message: 'Do not use Date.now() in render paths; compute on server and pass via props.',
-        },
-        // new Date()
-        {
-          selector: "NewExpression[callee.name='Date']",
-          message: 'Do not construct Date in render; pass serialized values and format deterministically.',
-        },
-        // Math.random()
-        {
-          selector: "CallExpression[callee.object.name='Math'][callee.property.name='random']",
-          message: 'Do not use Math.random() in render paths; compute on server and pass via props.',
-        },
-        // crypto.randomUUID()
-        {
-          selector: "CallExpression[callee.object.name='crypto'][callee.property.name='randomUUID']",
-          message: 'Do not use crypto.randomUUID() in render paths; use stable IDs from data.',
-        },
-        // toLocaleString / toLocaleDateString / toLocaleTimeString
-        {
-          selector: "CallExpression[callee.property.name=/^toLocale(String|DateString|TimeString)$/]",
-          message: 'Avoid locale-sensitive toLocale* in SSR; use fmtDate/fmtTime/fmtDateTime/fmtRelative from lib/datetime instead.',
-        },
-        // typeof window/document/navigator checks in components
-        {
-          selector: "UnaryExpression[operator='typeof'][argument.name=/^(window|document|navigator)$/]",
-          message: 'Move client-only branches into dedicated client components; avoid typeof window in render.',
-        },
-        // Array.sort without comparator
-        {
-          selector: "CallExpression[callee.property.name='sort'][arguments.length=0]",
-          message: 'Always provide a stable, pure comparator to Array.sort to avoid non-deterministic order.',
-        },
-      ],
+      'no-restricted-syntax': ['error', ...baseRestrictedSyntax],
+      'no-restricted-imports': ['error', { paths: baseRestrictedImports }],
+    },
+  },
+
+  // Server TSX components: guard against intra-app HTTP and base URL helpers
+  {
+    files: ['app/**/*.{tsx}', 'lib/**/*.{tsx}'],
+    rules: {
+      'no-restricted-syntax': ['error', ...baseRestrictedSyntax, ...serverRestrictedSyntax],
       'no-restricted-imports': [
         'error',
-        {
-          name: '@/lib/dates',
-          importNames: ['formatDateTimeChicago', 'formatDateOnly'],
-          message: 'Use the fmt* helpers from lib/datetime directly instead of the legacy lib/dates shim.',
-        },
+        { paths: [...baseRestrictedImports, ...serverRestrictedImports] },
       ],
+    },
+  },
+
+  // Server TS modules: guard against intra-app HTTP and base URL helpers
+  {
+    files: ['app/**/*.{ts}', 'lib/**/*.{ts}'],
+    rules: {
+      'no-restricted-syntax': ['error', ...serverRestrictedSyntax],
+      'no-restricted-imports': ['error', { paths: serverRestrictedImports }],
     },
   },
 ]

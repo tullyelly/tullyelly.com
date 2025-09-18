@@ -6,6 +6,7 @@ jest.mock('@/db/pool', () => ({
       }
       return Promise.resolve({ rows: [{ result: 1 }] });
     },
+    end: () => Promise.resolve(),
   }),
 }));
 
@@ -26,3 +27,11 @@ describe('database smoke test', () => {
   });
 });
 
+afterAll(async () => {
+  try {
+    const pool = getPool();
+    if (typeof pool.end === 'function') {
+      await pool.end();
+    }
+  } catch {}
+});

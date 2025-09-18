@@ -1,4 +1,6 @@
+/** @jest-environment node */
 import type { ReleaseListResponse, ReleaseRow } from '@/app/api/releases/route';
+import { getPool } from '@/db/pool';
 
 const rows: ReleaseRow[] = [
   {
@@ -44,10 +46,20 @@ jest.mock('@/db/pool', () => ({
       const sliced = hasQ ? [] : rows.slice(offset, offset + limit);
       return Promise.resolve({ rows: sliced });
     },
+    end: () => Promise.resolve(),
   }),
 }));
 
 import { GET } from '@/app/api/releases/route';
+
+afterAll(async () => {
+  try {
+    const pool = getPool();
+    if (typeof pool.end === 'function') {
+      await pool.end();
+    }
+  } catch {}
+});
 
 function makeReq(query = '') {
   return new Request(`http://localhost/api/releases${query}`);
