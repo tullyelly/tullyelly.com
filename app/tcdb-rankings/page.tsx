@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import TCDBRankingTable from '@/components/tcdb/TCDBRankingTable';
-import { getBaseUrl } from '@/app/lib/getBaseUrl';
+// NOTE: intentionally not importing getBaseUrl; we fetch via a relative path to avoid Vercel Protection 401s.
 import { PAGE_SIZE_OPTIONS, coercePage, coercePageSize } from '@/lib/pagination';
 import { Card } from '@ui';
 
@@ -46,8 +46,8 @@ type PageProps = {
 };
 
 async function fetchRankings(searchParams: SearchParams = {}): Promise<RankingResponse> {
-  const base = getBaseUrl();
-  const url = new URL('/api/tcdb-rankings', base);
+  // Build query params safely, but use a RELATIVE fetch path to keep the request internal.
+  const url = new URL('/api/tcdb-rankings', 'http://internal'); // dummy base only for URL API
   const allowedKeys: (keyof SearchParams)[] = ['page', 'pageSize', 'q', 'trend'];
   for (const key of allowedKeys) {
     const value = searchParams?.[key];
@@ -56,8 +56,11 @@ async function fetchRankings(searchParams: SearchParams = {}): Promise<RankingRe
     }
   }
 
-  const response = await fetch(url.toString(), {
+  const relativePath = `/api/tcdb-rankings?${url.searchParams.toString()}`;
+
+  const response = await fetch(relativePath, {
     method: 'GET',
+    // Keep caching behavior identical to the previous implementation.
     next: { revalidate: 300, tags: ['tcdb-rankings'] },
     headers: {
       'x-ssr-fetch': 'tcdb-rankings',
@@ -81,6 +84,7 @@ export default async function Page({ searchParams }: PageProps) {
     page: String(page),
     pageSize: String(pageSize),
   };
+
   const data = await fetchRankings(normalized);
 
   return (
