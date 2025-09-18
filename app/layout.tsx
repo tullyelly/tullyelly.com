@@ -16,10 +16,10 @@ export const metadata: Metadata = {
     default: "tullyelly",
     template: "%s; tullyelly",
   },
-  description: "Dead-simple static pages with a tiny design system.",
+  description: "Watch me lose my mind in real-time.",
   openGraph: {
     title: "tullyelly",
-    description: "Dead-simple static pages with a tiny design system.",
+    description: "Watch me lose my mind in real-time.",
     type: "website",
   },
 };
