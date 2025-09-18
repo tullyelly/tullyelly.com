@@ -1,4 +1,4 @@
-import nextJest from 'next/jest'
+const nextJest = require('next/jest.js')
 
 const createJestConfig = nextJest({ dir: './' })
 
@@ -17,4 +17,4 @@ const customJestConfig = {
   // Do NOT set "transform"—next/jest configures it.
 }
 
-export default createJestConfig(customJestConfig)
+module.exports = createJestConfig(customJestConfig)
