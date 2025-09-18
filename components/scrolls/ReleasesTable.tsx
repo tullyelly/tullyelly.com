@@ -68,7 +68,7 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
                   href={`/shaolin-scrolls/${r.id}`}
                   onClick={onIdClick(r.id)}
                   aria-label={`Open release ${r.id} details`}
-                  className="underline decoration-[var(--bucks-green)] text-[var(--bucks-green)]"
+                  className="link-blue"
                   role="button"
                   aria-haspopup="dialog"
                 >

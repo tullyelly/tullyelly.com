@@ -10,13 +10,13 @@ export default function ActionBar({ q }: ActionBarProps) {
         <>
           <form method="post" action="/api/releases/patch" className="inline">
             <input type="hidden" name="label" value={qVal} />
-            <button type="submit" className="rounded border px-2 py-1" aria-label="Create Patch">
+            <button type="submit" className="btn" aria-label="Create Patch">
               Create Patch
             </button>
           </form>
           <form method="post" action="/api/releases/minor" className="inline">
             <input type="hidden" name="label" value={qVal} />
-            <button type="submit" className="rounded border px-2 py-1" aria-label="Create Minor">
+            <button type="submit" className="btn" aria-label="Create Minor">
               Create Minor
             </button>
           </form>
@@ -33,7 +33,9 @@ export default function ActionBar({ q }: ActionBarProps) {
           className="form-input"
           autoComplete="off"
         />
-        <button type="submit" className="rounded border px-2 py-1">Search</button>
+        <button type="submit" className="btn">
+          Search
+        </button>
       </form>
     </section>
   );

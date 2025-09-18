@@ -23,6 +23,8 @@ This keeps the server-rendered HTML identical to the first client render and eli
   - `typeof window|document|navigator`
   - `Array.sort()` without a comparator
   - React `key` derived from array index
-- Use `lib/format.ts` helpers for deterministic timestamps:
-  - `formatDateISO()` for serialized UTC
-  - `formatDateDisplay()` for explicit `en-US` + `UTC`
+- Use `lib/datetime.ts` helpers for deterministic timestamps:
+  - `fmtDate()` for date-only fields (default `America/Chicago`)
+  - `fmtDateTime()` for timestamps, configurable timezone/style
+  - `fmtTime()` for time-only fields
+  - `fmtRelative()` for humanized diffs

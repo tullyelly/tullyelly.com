@@ -32,10 +32,7 @@ export default function CreatePatchDialog() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button
-          type="button"
-          className="rounded border px-3 py-1 bg-white hover:bg-neutral-50"
-        >
+        <button type="button" className="btn">
           Create Patch
         </button>
       </Dialog.Trigger>
@@ -76,12 +73,12 @@ export default function CreatePatchDialog() {
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex items-center justify-end gap-2">
               <Dialog.Close asChild>
-                <button type="button" className="rounded border px-3 py-1">Cancel</button>
+                <button type="button" className="btn">Cancel</button>
               </Dialog.Close>
               <button
                 type="submit"
                 disabled={isPending}
-                className="rounded border px-3 py-1 bg-[#00471B] text-white disabled:opacity-60"
+                className="btn"
               >
                 {isPending ? 'Creating…' : 'Create Patch'}
               </button>

@@ -24,7 +24,7 @@ function CreatePatchDialog() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button type="button" aria-controls={`patch-${id}`} aria-expanded={open}>
+        <button type="button" className="btn" aria-controls={`patch-${id}`} aria-expanded={open}>
           Create Patch
         </button>
       </Dialog.Trigger>
@@ -46,7 +46,7 @@ function CreateMinorDialog() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button type="button" aria-controls={`minor-${id}`} aria-expanded={open}>
+        <button type="button" className="btn" aria-controls={`minor-${id}`} aria-expanded={open}>
           Create Minor
         </button>
       </Dialog.Trigger>
@@ -81,7 +81,7 @@ function SearchBox({ initial }: { initial: string }) {
           className="form-input"
           autoComplete="off"
         />
-        <button type="submit" className="rounded border px-2 py-1">
+        <button type="submit" className="btn">
           Search
         </button>
       </form>

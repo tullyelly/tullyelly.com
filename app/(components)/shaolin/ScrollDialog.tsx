@@ -2,7 +2,9 @@
 
 import * as Dialog from '@ui/dialog';
 import { useEffect, useMemo, useState } from 'react';
-import { formatDateTimeChicago, isTimestampKey } from '@/lib/dates';
+import type { Dateish } from '@/lib/datetime';
+import { fmtDate, fmtDateTime } from '@/lib/datetime';
+import { isTimestampKey } from '@/lib/dates';
 import { Badge } from '@/app/ui/Badge';
 import { getBadgeClass } from '@/app/ui/badge-maps';
 
@@ -13,6 +15,18 @@ type ScrollDialogProps = {
 };
 
 type ShaolinScroll = Record<string, unknown>;
+
+function formatTimestamp(key: string, value: unknown): string {
+  const lower = key.toLowerCase();
+  const dateish = value as Dateish;
+  if (/_date$/.test(lower)) {
+    return fmtDate(dateish);
+  }
+  if (/(?:_at|time)$/.test(lower)) {
+    return fmtDateTime(dateish);
+  }
+  return fmtDateTime(dateish);
+}
 
 export default function ScrollDialog({ open, onOpenChange, id }: ScrollDialogProps) {
   const [row, setRow] = useState<ShaolinScroll | null>(null);
@@ -96,6 +110,9 @@ export default function ScrollDialog({ open, onOpenChange, id }: ScrollDialogPro
                   const r = row as Record<string, unknown>;
 
                   const renderValue = (key: string, value: unknown): React.ReactNode => {
+                    if (isTimestampKey(key)) {
+                      return formatTimestamp(key, value);
+                    }
                     if (value == null || value === '') return '';
                     if (key === 'status') {
                       const v = String(value).toLowerCase() as any;
@@ -104,9 +121,6 @@ export default function ScrollDialog({ open, onOpenChange, id }: ScrollDialogPro
                     if (key === 'release_type') {
                       const v = String(value).toLowerCase() as any;
                       return <Badge className={getBadgeClass(v)}>{String(value)}</Badge>;
-                    }
-                    if (isTimestampKey(key)) {
-                      return formatDateTimeChicago(String(value));
                     }
                     return typeof value === 'object' ? JSON.stringify(value) : String(value);
                   };
