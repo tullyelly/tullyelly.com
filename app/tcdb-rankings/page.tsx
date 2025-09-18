@@ -87,15 +87,18 @@ export default async function Page({ searchParams }: PageProps) {
     <main className="mx-auto max-w-5xl p-6">
       <h1 className="mb-3 text-2xl font-semibold">TCDB Rankings</h1>
 
-      <div
-        className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900"
-        data-testid="tcdb-intro-placeholder"
-      >
-        <p className="text-sm">
-          TODO: Replace this text with a short description of how TCDB rankings and trends work in this app, including the
-          definition of “difference,” how rank deltas are computed, and any caveats about data freshness.
+      <section className="space-y-4">
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          I love me some{' '}
+          <a href="https://www.tcdb.com" target="_blank" rel="noopener noreferrer">
+            TCDb
+          </a>
+          , and as part of that I started to take snapshots of various portions of my PC so that I can keep an eye on if I am trending up or down when compared to the other wonderful collectors on TCDb. Eventually this will include more players and teams, and this is not a full list of players I PC - just an initial list of players that another project I am working on has come across.
         </p>
-      </div>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          This is in the early MVP (minimum viable product) stages, so please let me know what you think.
+        </p>
+      </section>
 
       <Suspense fallback={<Card className="p-4 text-sm text-ink/70">Loading rankings…</Card>}>
         <TCDBRankingTable serverData={data} />

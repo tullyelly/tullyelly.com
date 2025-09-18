@@ -15,7 +15,7 @@ const iconClass = 'h-4 w-4';
 const trendStyles: Record<TrendValue, string> = {
   up: 'gap-1 bg-[var(--green)] text-white ring-[var(--green)]/40',
   down: 'gap-1 bg-[#C41E3A] text-white ring-[#C41E3A]/40',
-  flat: 'gap-1 bg-[var(--cream)] text-[var(--ink)] ring-[var(--ink)]/10',
+  flat: 'gap-1 bg-[var(--blue)] text-[var(--text-on-blue)] ring-[var(--blue)]/40',
 };
 
 export function TrendPill({ trend }: TrendPillProps) {
