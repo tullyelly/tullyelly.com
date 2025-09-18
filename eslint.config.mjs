@@ -128,7 +128,7 @@ const config = [
         // toLocaleString / toLocaleDateString / toLocaleTimeString
         {
           selector: "CallExpression[callee.property.name=/^toLocale(String|DateString|TimeString)$/]",
-          message: 'Avoid locale-sensitive toLocale* in SSR; use lib/format.ts helpers or client-only upgrade.',
+          message: 'Avoid locale-sensitive toLocale* in SSR; use fmtDate/fmtTime/fmtDateTime/fmtRelative from lib/datetime instead.',
         },
         // typeof window/document/navigator checks in components
         {
@@ -139,6 +139,14 @@ const config = [
         {
           selector: "CallExpression[callee.property.name='sort'][arguments.length=0]",
           message: 'Always provide a stable, pure comparator to Array.sort to avoid non-deterministic order.',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          name: '@/lib/dates',
+          importNames: ['formatDateTimeChicago', 'formatDateOnly'],
+          message: 'Use the fmt* helpers from lib/datetime directly instead of the legacy lib/dates shim.',
         },
       ],
     },

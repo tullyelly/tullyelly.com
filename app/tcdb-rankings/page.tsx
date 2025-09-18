@@ -93,7 +93,7 @@ export default async function Page({ searchParams }: PageProps) {
           <a href="https://www.tcdb.com" target="_blank" rel="noopener noreferrer">
             TCDb
           </a>
-          , and as part of that I started to take snapshots of various portions of my PC so that I can keep an eye on if I am trending up or down when compared to the other wonderful collectors on TCDb. Eventually this will include more players and teams, and this is not a full list of players I PC - just an initial list of players that another project I am working on has come across.
+          , and as part of that I started to take snapshots of various portions of my PC so that I can keep an eye on if I am trending up or down on any given player when compared to the other wonderful collectors on TCDb. Eventually this will include more players and teams, and this is not a full list of players I PC - just an initial list of players that another project I am working on has come across.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           This is in the early MVP (minimum viable product) stages, so please let me know what you think.

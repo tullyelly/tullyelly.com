@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as Dialog from '@ui/dialog';
 import { X } from 'lucide-react';
-import { formatDateTimeChicago } from '@/lib/dates';
+import { fmtDate } from '@/lib/datetime';
 import TrendPill, { TrendValue } from './TrendPill';
 import { Table, TBody, THead } from '@/components/ui/Table';
 import TablePager from '@/components/ui/TablePager';
@@ -45,10 +45,8 @@ function formatSigned(value: number | null | undefined) {
   return signedFormatter.format(value);
 }
 
-function formatRankingTimestamp(value: string) {
-  if (!value) return 'Not available';
-  const formatted = formatDateTimeChicago(value);
-  return formatted === ';' ? 'Not available' : formatted;
+function formatRankingTimestamp(value: string | null | undefined) {
+  return fmtDate(value);
 }
 
 type RankingDetailDialogProps = {

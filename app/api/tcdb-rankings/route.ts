@@ -2,22 +2,14 @@
 export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { neon /*, neonConfig*/ } from '@neondatabase/serverless';
+
+// If you also run this route in Node runtimes at times, you can enable fetch connection caching:
+// neonConfig.fetchConnectionCache = true;
+
+const sql = neon(process.env.DATABASE_URL!);
 
 type Trend = 'up' | 'down' | 'flat';
-
-type RawRankingRow = {
-  homie_id: unknown;
-  name: unknown;
-  card_count: unknown;
-  ranking: unknown;
-  ranking_at: unknown;
-  difference: unknown;
-  rank_delta: unknown;
-  diff_delta: unknown;
-  trend_rank: unknown;
-  trend_overall: unknown;
-  diff_sign_changed: unknown;
-};
 
 type RankingRow = {
   homie_id: number;
@@ -33,186 +25,94 @@ type RankingRow = {
   diff_sign_changed: boolean;
 };
 
-type NeonField = {
-  name: string;
-};
-
-type NeonQueryResponse = {
-  fields: NeonField[];
-  rows: (string | null)[][];
-};
-
-type NeonConfig = {
-  connectionString: string;
-  endpoint: string;
-};
-
-const NEON_ARRAY_MODE_HEADER = 'true';
-const NEON_RAW_TEXT_HEADER = 'true';
-
-let cachedConfig: NeonConfig | null = null;
-
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-function getNeonConfig(): NeonConfig {
-  if (cachedConfig) return cachedConfig;
-
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error('DATABASE_URL is not configured');
-  }
-
-  let endpointHost: string;
-  try {
-    const parsed = new URL(connectionString);
-    if (parsed.protocol !== 'postgres:' && parsed.protocol !== 'postgresql:') {
-      throw new Error(`Unsupported database protocol: ${parsed.protocol || '<unknown>'}`);
-    }
-    const hostname = parsed.hostname;
-    if (!hostname) {
-      throw new Error('DATABASE_URL is missing hostname');
-    }
-    endpointHost = hostname.includes('.') ? hostname.replace(/^[^.]+\./, 'api.') : hostname;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error parsing DATABASE_URL';
-    throw new Error(`Invalid DATABASE_URL: ${message}`);
-  }
-
-  cachedConfig = {
-    connectionString,
-    endpoint: `https://${endpointHost}/sql`,
-  };
-
-  return cachedConfig;
-}
-
-async function runQuery<T extends Record<string, unknown>>(query: string, params: unknown[]) {
-  const { endpoint, connectionString } = getNeonConfig();
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'Neon-Connection-String': connectionString,
-      'Neon-Array-Mode': NEON_ARRAY_MODE_HEADER,
-      'Neon-Raw-Text-Output': NEON_RAW_TEXT_HEADER,
-    },
-    body: JSON.stringify({ query, params }),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Neon query failed (${response.status}): ${text}`);
-  }
-
-  const payload = (await response.json()) as NeonQueryResponse;
-  if (!payload || !Array.isArray(payload.fields) || !Array.isArray(payload.rows)) {
-    throw new Error('Unexpected Neon response shape');
-  }
-
-  return payload.rows.map((row) => {
-    const record: Record<string, unknown> = {};
-    payload.fields.forEach((field, index) => {
-      record[field.name] = row[index] ?? null;
-    });
-    return record as T;
-  });
-}
-
-function parseNumber(value: unknown) {
+function toNumber(value: unknown, field: string): number {
   if (typeof value === 'number') {
-    if (Number.isNaN(value)) {
-      throw new Error('Encountered NaN for numeric field');
-    }
+    if (Number.isNaN(value)) throw new Error(`Encountered NaN for numeric field ${field}`);
     return value;
   }
-  if (typeof value === 'string') {
+  if (typeof value === 'string' && value.trim().length) {
     const parsed = Number(value);
-    if (Number.isNaN(parsed)) {
-      throw new Error(`Invalid numeric value: ${value}`);
-    }
-    return parsed;
+    if (!Number.isNaN(parsed)) return parsed;
   }
-  throw new Error(`Unexpected numeric value: ${String(value)}`);
+  throw new Error(`Invalid numeric value for ${field}: ${String(value)}`);
 }
 
-function parseNullableNumber(value: unknown) {
+function toNullableNumber(value: unknown): number | null {
   if (value === null || value === undefined) return null;
+  if (typeof value === 'number') return Number.isNaN(value) ? null : value;
   if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    const parsed = Number(trimmed);
-    return Number.isNaN(parsed) ? null : parsed;
-  }
-  if (typeof value === 'number') {
-    return Number.isNaN(value) ? null : value;
+    const t = value.trim();
+    if (!t) return null;
+    const n = Number(t);
+    return Number.isNaN(n) ? null : n;
   }
   return null;
 }
 
-function parseBoolean(value: unknown) {
+function toBoolean(value: unknown): boolean {
   if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 't' || normalized === 'true' || normalized === '1') return true;
-    if (normalized === 'f' || normalized === 'false' || normalized === '0') return false;
-  }
   if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const v = value.trim().toLowerCase();
+    if (v === 't' || v === 'true' || v === '1') return true;
+    if (v === 'f' || v === 'false' || v === '0') return false;
+  }
   return Boolean(value);
 }
 
-function parseTrend(value: unknown): Trend {
-  if (value === 'up' || value === 'down' || value === 'flat') {
-    return value;
-  }
+function toTrend(value: unknown, field: string): Trend {
+  if (value === 'up' || value === 'down' || value === 'flat') return value;
   if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 'up' || normalized === 'down' || normalized === 'flat') {
-      return normalized as Trend;
-    }
+    const v = value.trim().toLowerCase();
+    if (v === 'up' || v === 'down' || v === 'flat') return v as Trend;
   }
-  throw new Error(`Unexpected trend value: ${String(value)}`);
+  throw new Error(`Unexpected trend value for ${field}: ${String(value)}`);
 }
 
-function parseString(value: unknown) {
-  if (typeof value === 'string') {
-    return value;
-  }
-  if (value === null || value === undefined) {
-    return '';
-  }
+function toStringValue(value: unknown): string {
+  if (value == null) return '';
+  if (value instanceof Date) return value.toISOString();
   return String(value);
 }
 
-function mapRankingRow(row: RawRankingRow): RankingRow {
+function mapRow(row: any): RankingRow {
   return {
-    homie_id: parseNumber(row.homie_id),
-    name: parseString(row.name),
-    card_count: parseNumber(row.card_count),
-    ranking: parseNumber(row.ranking),
-    ranking_at: parseString(row.ranking_at),
-    difference: parseNumber(row.difference),
-    rank_delta: parseNullableNumber(row.rank_delta),
-    diff_delta: parseNullableNumber(row.diff_delta),
-    trend_rank: parseTrend(row.trend_rank),
-    trend_overall: parseTrend(row.trend_overall),
-    diff_sign_changed: parseBoolean(row.diff_sign_changed),
+    homie_id: toNumber(row.homie_id, 'homie_id'),
+    name: toStringValue(row.name),
+    card_count: toNumber(row.card_count, 'card_count'),
+    ranking: toNumber(row.ranking, 'ranking'),
+    ranking_at: toStringValue(row.ranking_at),
+    difference: toNumber(row.difference, 'difference'),
+    rank_delta: toNullableNumber(row.rank_delta),
+    diff_delta: toNullableNumber(row.diff_delta),
+    trend_rank: toTrend(row.trend_rank, 'trend_rank'),
+    trend_overall: toTrend(row.trend_overall, 'trend_overall'),
+    diff_sign_changed: toBoolean(row.diff_sign_changed),
   };
 }
 
 export async function GET(req: NextRequest) {
   try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL is not configured');
+    }
+
     const { searchParams } = new URL(req.url);
 
+    // Pagination
     const pageParam = Number.parseInt(searchParams.get('page') ?? '', 10);
     const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
 
     const pageSizeParam = Number.parseInt(searchParams.get('pageSize') ?? '', 10);
     const pageSize = clamp(Number.isFinite(pageSizeParam) ? pageSizeParam : 20, 1, 500);
 
+    const offset = (page - 1) * pageSize;
+
+    // Filters
     const qRaw = searchParams.get('q');
     const q = qRaw ? qRaw.trim() : '';
 
@@ -223,36 +123,24 @@ export async function GET(req: NextRequest) {
         ? (trendNormalized as Trend)
         : undefined;
 
-    const offset = (page - 1) * pageSize;
+    // Use NULLable parameters to avoid ad-hoc SQL building.
+    const qFilter: string | null = q ? `%${q}%` : null;
+    const trendParam: Trend | null = trendFilter ?? null;
 
-    const conditions: string[] = [];
-    const values: unknown[] = [];
+    // Count (⚠️ cast result instead of generics)
+    const countRows = (await sql`
+      SELECT COUNT(*)::int AS count
+      FROM homie_tcdb_ranking_rt
+      WHERE (${qFilter} IS NULL OR name ILIKE ${qFilter})
+        AND (${trendParam} IS NULL OR trend_overall = ${trendParam})
+    `) as Array<{ count: number }>;
 
-    if (q) {
-      values.push(`%${q}%`);
-      conditions.push(`name ILIKE $${values.length}`);
-    }
-
-    if (trendFilter) {
-      values.push(trendFilter);
-      conditions.push(`trend_overall = $${values.length}`);
-    }
-
-    const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-
-    const countRows = await runQuery<{ count: unknown }>(
-      `SELECT COUNT(*)::int AS count FROM homie_tcdb_ranking_rt ${whereClause}`,
-      values,
-    );
-    const total = countRows[0] ? parseNumber(countRows[0].count) : 0;
+    const total = countRows[0]?.count ?? 0;
     const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
 
-    const limitIndex = values.length + 1;
-    const offsetIndex = values.length + 2;
-    const dataParams = [...values, pageSize, offset];
-
-    const rows = await runQuery<RawRankingRow>(
-      `SELECT
+    // Data (⚠️ cast result instead of generics)
+    const rows = (await sql`
+      SELECT
         homie_id,
         name,
         card_count,
@@ -265,20 +153,22 @@ export async function GET(req: NextRequest) {
         trend_overall,
         diff_sign_changed
       FROM homie_tcdb_ranking_rt
-      ${whereClause}
+      WHERE (${qFilter} IS NULL OR name ILIKE ${qFilter})
+        AND (${trendParam} IS NULL OR trend_overall = ${trendParam})
       ORDER BY card_count DESC, ranking ASC, ranking_at DESC
-      LIMIT $${limitIndex} OFFSET $${offsetIndex}`,
-      dataParams,
-    );
+      LIMIT ${pageSize} OFFSET ${offset}
+    `) as any[];
 
-    const data = rows.map(mapRankingRow);
+    const data = rows.map(mapRow);
 
-    const meta: { page: number; pageSize: number; total: number; totalPages: number; q?: string; trend?: Trend } = {
-      page,
-      pageSize,
-      total,
-      totalPages,
-    };
+    const meta: {
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+      q?: string;
+      trend?: Trend;
+    } = { page, pageSize, total, totalPages };
     if (q) meta.q = q;
     if (trendFilter) meta.trend = trendFilter;
 
