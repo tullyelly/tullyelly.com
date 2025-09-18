@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import type { ReleaseListResponse, ReleaseRow } from '@/app/api/releases/route';
 
 const rows: ReleaseRow[] = [
