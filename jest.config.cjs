@@ -14,6 +14,7 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '<rootDir>/e2e/',
   ],
+  coverageReporters: ['json-summary', 'text', 'lcov'],
   // Do NOT set "transform"—next/jest configures it.
 }
 

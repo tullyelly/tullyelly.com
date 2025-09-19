@@ -15,6 +15,8 @@
     "postbuild": "npm run gen:build-info",
     "start": "next start",
     "start:prod:local": "npm run build && cross-env NODE_ENV=production PORT=4010 npm start",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx,json,yml,yaml,css}\"",
+    "format:check": "node scripts/check-formatting.mjs",
     "lint": "eslint . --cache --cache-location .cache/eslint/.eslintcache",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "images:optimize": "node scripts/optimize-images.mjs",
@@ -30,9 +32,11 @@
     "pretypecheck": "node scripts/gen-build-info.mjs",
     "deadcode": "ts-prune",
     "guard:self-fetch": "tsx scripts/assert-no-self-fetch.ts",
+    "security-headers:check": "node scripts/assert-security-headers.mjs",
+    "coverage:check": "node scripts/report-coverage.mjs",
     "test": "cross-env NODE_ENV=test jest --config jest.config.cjs",
     "pretest": "npm run gen:build-info",
-    "test:ci": "cross-env NODE_ENV=test jest --runInBand",
+    "test:ci": "cross-env NODE_ENV=test jest --runInBand --coverage --config jest.config.cjs",
     "preci": "npm rebuild lightningcss --foreground-scripts && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm rebuild sharp --foreground-scripts",
     "pretest:e2e": "npm run gen:build-info && node -e \"require('fs').mkdirSync('.pw-browsers',{recursive:true})\"",
     "test:e2e": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test",
@@ -119,7 +123,14 @@
     "undici": "^7.16.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,jsx,js}": "eslint --fix",
-    "*.{md,mdx}": "node scripts/fix-md-semicolons.mjs"
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{md,mdx}": [
+      "prettier --write",
+      "node scripts/fix-md-semicolons.mjs"
+    ],
+    "*.{json,yml,yaml,css}": "prettier --write"
   }
 }
