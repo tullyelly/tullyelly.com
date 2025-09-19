@@ -1,5 +1,7 @@
 # tullyelly.com
 
+[![Coverage ≥80%](https://img.shields.io/badge/coverage-%E2%89%A580%25-blue)](#-guardrails--coverage)
+
 A [Next.js](https://nextjs.org) project customized with **Tailwind v4 design tokens** and an **image optimization pipeline**.
 
 ---
@@ -18,14 +20,24 @@ Pages auto-update when you edit files in the `app/` folder.
 
 ---
 
+## ✅ Guardrails & Coverage
+
+- The `CI` workflow runs lint, format checks, typechecks, and Jest unit tests with coverage on every push; it also runs each Monday at 06:00 UTC to log coverage trends.
+- Coverage must stay at or above 80 percent; `npm run coverage:check` reads `coverage/coverage-summary.json`, posts the metrics to the job summary, and fails the workflow if the threshold is missed.
+- The pipeline uploads `coverage/coverage-summary.json` as an artifact so you can track the week to week history.
+- A smoke test boots the production build and verifies the Strict-Transport-Security, X-Frame-Options, and X-Content-Type-Options headers configured in `next.config.mjs`.
+- Husky with lint-staged runs Prettier and ESLint before every commit; keep branch protection on `main` so merges require a passing `CI` run.
+
+---
+
 ## 🎨 Design Tokens & Styles
 
-* Tokens are defined as CSS variables in `app/globals.css`.
-* Tailwind (`tailwind.config.mjs`) maps tokens to classes.
-* Cards use a white background with thin Bucks green borders; pass `accent="great-lakes-blue"` and `thickness="thick"` to `Card` for the special blue-bordered case.
-* Desktop tables use the shared `Table` component with `.zebra-desktop` striping.
-* For form fields; apply the `form-input` class to reuse border and padding.
-* Use them like this:
+- Tokens are defined as CSS variables in `app/globals.css`.
+- Tailwind (`tailwind.config.mjs`) maps tokens to classes.
+- Cards use a white background with thin Bucks green borders; pass `accent="great-lakes-blue"` and `thickness="thick"` to `Card` for the special blue-bordered case.
+- Desktop tables use the shared `Table` component with `.zebra-desktop` striping.
+- For form fields; apply the `form-input` class to reuse border and padding.
+- Use them like this:
 
 ```jsx
 <div className="bg-background text-foreground border-border">
@@ -144,14 +156,14 @@ See [docs/hydration.md](docs/hydration.md) and [docs/hydration-contract.md](docs
 
 Recommended Node version: **20**.
 
-* `npm run lint` – lint the codebase
-* `npm run typecheck` – run TypeScript checks
-* `npm run deadcode` – list unused exports
-* `npm run build` – build the production bundle
-* `npm run start` – start the production server
-* `npm run ci` – run lint, image checks, and build
-* `npm run db:ping` – verify DB connectivity (SELECT 1)
-* `npm run check:use-server` – flag invalid `"use server"` exports
+- `npm run lint` – lint the codebase
+- `npm run typecheck` – run TypeScript checks
+- `npm run deadcode` – list unused exports
+- `npm run build` – build the production bundle
+- `npm run start` – start the production server
+- `npm run ci` – run lint, image checks, and build
+- `npm run db:ping` – verify DB connectivity (SELECT 1)
+- `npm run check:use-server` – flag invalid `"use server"` exports
 
 ---
 
@@ -199,15 +211,14 @@ curl -I https://<app-url>/ | grep -i "^x-"
 
 If @sentry/nextjs is installed and SENTRY_DSN is set, releases inherit the same commit and environment metadata.
 
-
 ---
 
 ## 📚 Learn More
 
-* [Next.js Documentation](https://nextjs.org/docs)
-* [Tailwind CSS Docs](https://tailwindcss.com/docs)
-* [Sharp Image Processing](https://sharp.pixelplumbing.com/)
-* [Imagemin](https://github.com/imagemin/imagemin)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+- [Sharp Image Processing](https://sharp.pixelplumbing.com/)
+- [Imagemin](https://github.com/imagemin/imagemin)
 
 ---
 
@@ -224,12 +235,12 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 
 ## ✅ Quick Notes
 
-* Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`, `app/typography-demo`
-* `globals.css`: design tokens + Tailwind entry point
-* `tailwind.config.mjs`: maps tokens → Tailwind theme
-* Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
-* Always run `npm run images:optimize` before committing new images
-* `app/shaolin-scrolls`: responsive release list with Radix details dialog
-* `app/page.tsx`: homepage with Mother's Day 2025, Musical Guests, Chronicle of Chronicles, and Shaolin Scrolls sections
-* `app/credits`: sources & acknowledgments via Flowers
-* Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.
+- Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`, `app/typography-demo`
+- `globals.css`: design tokens + Tailwind entry point
+- `tailwind.config.mjs`: maps tokens → Tailwind theme
+- Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
+- Always run `npm run images:optimize` before committing new images
+- `app/shaolin-scrolls`: responsive release list with Radix details dialog
+- `app/page.tsx`: homepage with Mother's Day 2025, Musical Guests, Chronicle of Chronicles, and Shaolin Scrolls sections
+- `app/credits`: sources & acknowledgments via Flowers
+- Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.

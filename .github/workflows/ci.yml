@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches: ['**']          # fast feedback on all branches
+    branches: ["**"] # fast feedback on all branches
   pull_request:
-    branches: [main]          # full suite when proposing changes to main
+    branches: [main] # full suite when proposing changes to main
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: read
@@ -26,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1        # bump to 0 if a task needs full history
+          fetch-depth: 0 # required for format diffing against main
 
       # Composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
@@ -52,7 +54,7 @@ jobs:
       - name: Verify sharp binding
         if: github.ref_name == 'main' || steps.filter.outputs.native == 'true'
         env:
-          SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
+          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
         run: |
           node -p "process.platform + ' ' + process.arch"
           node -e "require('sharp'); console.log('sharp: OK')"
@@ -62,7 +64,7 @@ jobs:
         env:
           npm_config_platform: linux
           npm_config_arch: x64
-          SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
+          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
         run: |
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
@@ -73,6 +75,26 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit tests
+        run: npm run test:ci
+
+      - name: Coverage gate
+        env:
+          COVERAGE_MINIMUM: "80"
+        run: npm run coverage:check
+
+      - name: Upload coverage summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-summary
+          path: coverage/coverage-summary.json
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Optimize images (changed only)
         if: steps.filter.outputs.images == 'true'
@@ -97,6 +119,37 @@ jobs:
           GOOGLE_CLIENT_ID: ci-dummy
           GOOGLE_CLIENT_SECRET: ci-dummy
         run: npm run build
+
+      - name: Security headers smoke test
+        env:
+          PORT: 4010
+          DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
+          NEXTAUTH_URL: http://127.0.0.1:4010
+          AUTH_SECRET: ci-dummy
+          GOOGLE_CLIENT_ID: ci-dummy
+          GOOGLE_CLIENT_SECRET: ci-dummy
+        run: |
+          set -euo pipefail
+          npm run start > /tmp/next.log 2>&1 &
+          NEXT_PID=$!
+          cleanup() {
+            kill "$NEXT_PID" 2>/dev/null || true
+            wait "$NEXT_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          ready=0
+          for i in $(seq 1 30); do
+            if curl -sSf -o /dev/null "http://127.0.0.1:${PORT}/"; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo 'Next.js server failed to start in time' >&2
+            exit 1
+          fi
+          npm run security-headers:check -- "http://127.0.0.1:${PORT}/"
 
   e2e:
     name: E2E Tests
