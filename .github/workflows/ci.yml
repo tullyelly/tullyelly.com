@@ -33,6 +33,9 @@ jobs:
       # Composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
 
+      - name: Secrets scan (Secretlint)
+        run: npm run secrets:scan
+
       - name: Generate build info
         run: npm run gen:build-info
 
