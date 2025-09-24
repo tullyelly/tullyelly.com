@@ -1,22 +1,20 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { getPool } from '@/db/pool';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { getPool } from "@/db/pool";
+import { asDateString } from "@/lib/dates";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 // curl -s http://localhost:3000/api/scrolls/1
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(
-  _req: NextRequest,
-  { params }: RouteContext
-) {
+export async function GET(_req: NextRequest, { params }: RouteContext) {
   const { id: idParam } = await params;
   const id = Number.parseInt(idParam, 10);
   if (!Number.isInteger(id)) {
-    return NextResponse.json({ error: 'invalid id' }, { status: 400 });
+    return NextResponse.json({ error: "invalid id" }, { status: 400 });
   }
 
   const sql = `
@@ -25,7 +23,7 @@ export async function GET(
       ss.label,
       ss.major, ss.minor, ss.patch,
       ss.year, ss.month,
-      ss.release_date,
+      ss.release_date::text as release_date,
       rs.code as status_name,
       rt.code as type_name
     from shaolin_scrolls ss
@@ -37,7 +35,7 @@ export async function GET(
   const db = getPool();
   const { rows } = await db.query(sql, [id]);
   if (rows.length === 0) {
-    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
   const r = rows[0];
   const semver = `${r.major}.${r.minor}.${r.patch}`;
@@ -49,6 +47,6 @@ export async function GET(
     type: r.type_name,
     year: r.year,
     month: r.month,
-    release_date: r.release_date,
+    release_date: asDateString(r.release_date),
   });
 }
