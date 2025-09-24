@@ -109,11 +109,16 @@ For tests, create a `.env.test` file so `npm test` can load a dedicated database
 TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/tullyelly_test
 ```
 
-Using a Neon branch instead of local Postgres? Point `TEST_DATABASE_URL` at the branch URL:
+Using a Neon branch instead of local Postgres? Point `TEST_DATABASE_URL` at your **branch URL** (placeholder shown):
 
 ```bash
-TEST_DATABASE_URL=postgresql://…@ep-round-forest-aeuxacm9.c-2.us-east-2.aws.neon.tech/tullyelly_db?sslmode=require&channel_binding=require
+# .env.test (example)
+TEST_DATABASE_URL="postgresql://<user>:<password>@<your-neon-branch-host>/<db-name>?sslmode=require&channel_binding=require"
 ```
+
+🔐 Secrets hygiene: Never paste real connection strings into docs or code. In CI or Vercel use secrets (`DATABASE_URL`, `TEST_DATABASE_URL`). Locally, keep them only in untracked `.env*` files.
+
+We run Secretlint in CI to prevent accidental secret commits.
 
 Apply release helper functions:
 
