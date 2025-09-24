@@ -1,0 +1,24 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "github": {
+    "silent": true
+  },
+  "ignoreCommand": "echo 'Ignoring local heavy artifacts for Vercel upload'",
+  "build": {
+    "env": {}
+  },
+  "ignore": [
+    ".pw-browsers",
+    "playwright-report",
+    "test-results",
+    "coverage",
+    "public/images/source",
+    "*.zip",
+    "*.mp4",
+    "*.psd"
+  ]
+}
