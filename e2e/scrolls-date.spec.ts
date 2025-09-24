@@ -6,6 +6,15 @@ test("release dates render the correct Central calendar day", async ({
   page,
 }) => {
   await page.goto("/shaolin-scrolls");
-  const releaseDateCell = page.locator("tbody tr").first().locator("td").nth(4);
-  await expect(releaseDateCell).toHaveText("Sep 19, 2025");
+  const releaseDateCell = page.getByTestId("release-date").first();
+  const iso = await releaseDateCell.getAttribute("data-release-iso");
+  const expectedText = iso
+    ? new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago",
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      }).format(new Date(iso))
+    : "";
+  await expect(releaseDateCell).toHaveText(expectedText);
 });

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { Badge } from '@/app/ui/Badge';
-import { getBadgeClass } from '@/app/ui/badge-maps';
-import { formatReleaseDate } from '@/app/(scrolls)/components/formatReleaseDate';
-import ScrollDialog from '@/app/(components)/shaolin/ScrollDialog';
-import { useScrollDialog } from '@/app/(components)/shaolin/useScrollDialog';
-import { Table, THead, TBody } from '@/components/ui/Table';
+import { useRef } from "react";
+import { Badge } from "@/app/ui/Badge";
+import { getBadgeClass } from "@/app/ui/badge-maps";
+import { formatReleaseDate } from "@/app/(scrolls)/components/formatReleaseDate";
+import ScrollDialog from "@/app/(components)/shaolin/ScrollDialog";
+import { useScrollDialog } from "@/app/(components)/shaolin/useScrollDialog";
+import { Table, THead, TBody } from "@/components/ui/Table";
 
 export interface ReleaseRow {
   id: number;
@@ -25,8 +25,8 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
     if (!v) triggerRef.current?.focus();
   };
 
-  const onIdClick = (id: number) =>
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const onIdClick =
+    (id: number) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (e.metaKey || e.ctrlKey || e.button === 1) {
         return;
       }
@@ -81,12 +81,18 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
                 </span>
               </td>
               <td>
-                <Badge className={getBadgeClass(r.status as any)}>{r.status}</Badge>
+                <Badge className={getBadgeClass(r.status as any)}>
+                  {r.status}
+                </Badge>
               </td>
               <td>
                 <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
               </td>
-              <td className="whitespace-nowrap">
+              <td
+                className="whitespace-nowrap"
+                data-testid="release-date"
+                data-release-iso={r.releaseDate ?? undefined}
+              >
                 {formatReleaseDate(r.releaseDate)}
               </td>
             </tr>
