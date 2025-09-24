@@ -1,5 +1,4 @@
 /* db/schema/tables/shaolin_scrolls.sql */
-
 CREATE TABLE IF NOT EXISTS shaolin_scrolls
 (
     id                BIGINT GENERATED ALWAYS AS IDENTITY,
@@ -11,11 +10,11 @@ CREATE TABLE IF NOT EXISTS shaolin_scrolls
     label             VARCHAR(120)                                       NOT NULL,
     release_status_id SMALLINT                                           NOT NULL,
     release_type_id   SMALLINT                                           NOT NULL,
-    release_date      DATE,
     created_at        TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by        VARCHAR(100)             DEFAULT CURRENT_USER,
     updated_at        TIMESTAMP WITH TIME ZONE,
     updated_by        VARCHAR(100),
+    release_date      DATE,
     PRIMARY KEY (id),
     CONSTRAINT uq_semver
         UNIQUE (major, minor, patch),
@@ -30,8 +29,12 @@ CREATE TABLE IF NOT EXISTS shaolin_scrolls
     CONSTRAINT shaolin_scrolls_year_check
         CHECK ((year >= 1970) AND (year <= 9999)),
     CONSTRAINT shaolin_scrolls_month_check
-        CHECK ((month >= 1) AND (month <= 12))
+        CHECK ((month >= 1) AND (month <= 12)),
+    CONSTRAINT chk_scrolls_released_iff_has_date
+        CHECK ((release_status_id = 2) = (release_date IS NOT NULL))
 );
+
+COMMENT ON COLUMN shaolin_scrolls.release_date IS 'Date when the release is finalized (nullable until final step)';
 
 ALTER TABLE shaolin_scrolls
     OWNER TO tullyelly_admin;
