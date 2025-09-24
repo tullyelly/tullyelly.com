@@ -21,6 +21,8 @@ jobs:
     name: Build & Check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      run_e2e: ${{ steps.filter.outputs.e2e }}
     env:
       CI: true
       NEXT_TELEMETRY_DISABLED: 1
@@ -52,6 +54,52 @@ jobs:
               - 'package.json'
               - 'package-lock.json'
               - 'scripts/**'
+            content:
+              - 'content/**/*'
+              - 'docs/**/*'
+              - '**/*.md'
+              - '**/*.mdx'
+            seo:
+              - 'content/**/*'
+              - 'docs/**/*'
+              - 'app/**/*.{ts,tsx,js,jsx,md,mdx}'
+              - 'lib/seo/**'
+              - 'next.config.mjs'
+            security:
+              - 'middleware.ts'
+              - 'next.config.mjs'
+              - 'auth.ts'
+              - 'lib/security/**'
+              - 'app/**/middleware.{ts,tsx}'
+              - 'pages/**/middleware.{ts,tsx}'
+              - 'app/api/**'
+            build:
+              - 'app/**'
+              - 'components/**'
+              - 'lib/**'
+              - 'pages/**'
+              - 'public/**/*'
+              - 'next.config.mjs'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'tsconfig.json'
+              - 'tailwind.config.mjs'
+              - 'postcss.config.mjs'
+              - 'middleware.ts'
+              - 'auth.ts'
+            e2e:
+              - 'app/**'
+              - 'components/**'
+              - 'lib/**'
+              - 'pages/**'
+              - 'e2e/**'
+              - 'playwright.config.*'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'tsconfig.json'
+              - 'next.config.mjs'
+              - 'middleware.ts'
+              - 'auth.ts'
 
       # Native addon sanity only when it matters (native deps changed or on main)
       - name: Verify sharp binding
@@ -108,12 +156,15 @@ jobs:
         run: npm run images:check
 
       - name: Validate frontmatter
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.content == 'true'
         run: npm run validate-frontmatter
 
       - name: Validate SEO
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.seo == 'true'
         run: npm run validate-seo
 
       - name: Build
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.build == 'true' || steps.filter.outputs.security == 'true'
         # harmless env so Next/Auth won't crash during build
         env:
           DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
@@ -124,6 +175,7 @@ jobs:
         run: npm run build
 
       - name: Security headers smoke test
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true'
         env:
           PORT: 4010
           DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
@@ -159,7 +211,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: build-and-check
-    if: github.event_name == 'pull_request' || github.ref_name == 'main'
+    if: (github.event_name == 'pull_request' || github.ref_name == 'main') && (github.ref_name == 'main' || needs.build-and-check.outputs.run_e2e == 'true')
     env:
       NODE_ENV: test
       NEXT_TELEMETRY_DISABLED: 1

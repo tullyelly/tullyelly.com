@@ -163,10 +163,10 @@ Recommended Node version: **20**.
 
 - `npm run lint` – lint the codebase
 - `npm run typecheck` – run TypeScript checks
+- `npm run format:check` – verify formatting without writing changes
 - `npm run deadcode` – list unused exports
 - `npm run build` – build the production bundle
 - `npm run start` – start the production server
-- `npm run ci` – run lint, image checks, and build
 - `npm run db:ping` – verify DB connectivity (SELECT 1)
 - `npm run check:use-server` – flag invalid `"use server"` exports
 
