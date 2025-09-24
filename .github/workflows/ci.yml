@@ -98,6 +98,8 @@ jobs:
               - 'package-lock.json'
               - 'tsconfig.json'
               - 'next.config.mjs'
+              - 'middleware.ts'
+              - 'auth.ts'
 
       # Native addon sanity only when it matters (native deps changed or on main)
       - name: Verify sharp binding
