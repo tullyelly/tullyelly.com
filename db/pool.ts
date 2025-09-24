@@ -9,7 +9,7 @@ interface Queryable {
 
 let pool: Queryable | undefined;
 
-if (process.env.E2E_MODE === "1") {
+function createE2EPool(): Queryable {
   const scrolls = [
     {
       id: 1,
@@ -21,7 +21,7 @@ if (process.env.E2E_MODE === "1") {
     },
   ];
 
-  pool = {
+  return {
     async query<T = any>(sql: any, values?: any[]): Promise<any> {
       const text = typeof sql === "string" ? sql : (sql?.text ?? "");
       const params =
@@ -61,6 +61,12 @@ if (process.env.E2E_MODE === "1") {
 
 export function getPool(): Queryable {
   if (pool) return pool;
+
+  if (process.env.E2E_MODE === "1") {
+    pool = createE2EPool();
+    return pool;
+  }
+
   if (!DATABASE_URL)
     throw new Error("Missing DATABASE_URL. Set it in .env.local");
   assertValidDatabaseUrl(DATABASE_URL);
