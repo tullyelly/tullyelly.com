@@ -1,0 +1,6 @@
+{
+  "name": "secretlint-rule-custom-pg-url",
+  "version": "1.0.0",
+  "main": "./pg-url.js",
+  "type": "commonjs"
+}

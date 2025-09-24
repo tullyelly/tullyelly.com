@@ -1,8 +1,10 @@
 # Environment variables
 .env
+.env.*
 .env.*.local
 .env.local
 .env.test
+!.env.example
 
 # Build output
 .next/

@@ -16,7 +16,7 @@ if (process.env.E2E_MODE === "1") {
       release_name: "Test Scroll",
       release_type: "minor",
       status: "draft",
-      release_date: "2025-09-19",
+      release_date: "2024-01-01T00:00:00.000Z",
       label: "Test Scroll",
     },
   ];
@@ -65,7 +65,9 @@ export function getPool(): Queryable {
     throw new Error("Missing DATABASE_URL. Set it in .env.local");
   assertValidDatabaseUrl(DATABASE_URL);
   const user = new URL(DATABASE_URL).username;
-  console.log(`DB user: ${user}`);
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`DB user: ${user}`);
+  }
   pool = new Pool({
     connectionString: DATABASE_URL,
     ssl: { rejectUnauthorized: false },
