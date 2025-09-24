@@ -1,7 +1,9 @@
-import 'server-only';
-import { neon } from '@neondatabase/serverless';
+import "server-only";
+import { neon } from "@neondatabase/serverless";
 
-export type Trend = 'up' | 'down' | 'flat';
+import { asDateString } from "@/lib/dates";
+
+export type Trend = "up" | "down" | "flat";
 
 export type RankingRow = {
   homie_id: number;
@@ -29,20 +31,20 @@ export type RankingResponse = {
   };
 };
 
-const TCDB_TABLE = 'homie_tcdb_ranking_rt' as const;
+const TCDB_TABLE = "homie_tcdb_ranking_rt" as const;
 const sql = neon(process.env.DATABASE_URL!);
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   void (async () => {
     try {
       const [{ r } = { r: null }] = (await sql.query(
         "SELECT to_regclass('public.' || $1::text) AS r",
-        [TCDB_TABLE]
+        [TCDB_TABLE],
       )) as { r: string | null }[];
 
       if (!r) {
         console.warn(
-          `[tcdb] Missing relation for ${TCDB_TABLE}; update tcdb rankings queries or schema.`
+          `[tcdb] Missing relation for ${TCDB_TABLE}; update tcdb rankings queries or schema.`,
         );
       }
     } catch (error) {
@@ -52,6 +54,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // KISS query builder: safe params via sql.query(query, params)
+type DbRankingRow = Omit<RankingRow, "ranking_at"> & { ranking_at: unknown };
+
 export async function listTcdbRankings(opts: {
   page: number;
   pageSize: number;
@@ -60,7 +64,7 @@ export async function listTcdbRankings(opts: {
 }): Promise<RankingResponse> {
   const page = Math.max(1, Number(opts.page ?? 1));
   const pageSize = Math.max(1, Math.min(200, Number(opts.pageSize ?? 50)));
-  const q = (opts.q ?? '').trim();
+  const q = (opts.q ?? "").trim();
   const trend = opts.trend;
 
   const where: string[] = [];
@@ -75,30 +79,38 @@ export async function listTcdbRankings(opts: {
     where.push(`trend_overall = $${i++}`);
     params.push(trend);
   }
-  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const offset = (page - 1) * pageSize;
 
   const rows = (await sql.query(
     `
-    SELECT homie_id, name, card_count, ranking, ranking_at, difference,
+    SELECT homie_id, name, card_count, ranking, ranking_at::text AS ranking_at, difference,
            rank_delta, diff_delta, trend_rank, trend_overall, diff_sign_changed
     FROM ${TCDB_TABLE}
     ${whereSql}
     ORDER BY card_count DESC, ranking ASC, ranking_at DESC
     LIMIT $${i++} OFFSET $${i++}
     `,
-    [...params, pageSize, offset]
-  )) as RankingRow[];
+    [...params, pageSize, offset],
+  )) as DbRankingRow[];
 
-  const [{ c: totalStr } = { c: '0' }] = (await sql.query(
+  const data: RankingRow[] = rows.map((row) => {
+    const ranking_at = asDateString(row.ranking_at);
+    if (!ranking_at) {
+      throw new Error("Invalid ranking_at value from database");
+    }
+    return { ...row, ranking_at };
+  });
+
+  const [{ c: totalStr } = { c: "0" }] = (await sql.query(
     `SELECT COUNT(*)::text AS c FROM ${TCDB_TABLE} ${whereSql}`,
-    params
+    params,
   )) as { c: string }[];
   const total = Number(totalStr) || 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return {
-    data: rows,
+    data,
     meta: { page, pageSize, total, totalPages, q: q || undefined, trend },
   };
 }

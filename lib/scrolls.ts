@@ -1,14 +1,15 @@
-import 'server-only';
+import "server-only";
 
-import { getPool } from '@/db/pool';
-import { ORDER_BY, type Sort } from '@/lib/releases';
+import { getPool } from "@/db/pool";
+import { asDateString } from "@/lib/dates";
+import { ORDER_BY, type Sort } from "@/lib/releases";
 
 export type ScrollDbRow = {
   id: string | number;
   label: string;
   status: string;
   type: string;
-  release_date: Date | string | null;
+  release_date: string | null;
 };
 
 export type ScrollRow = {
@@ -28,13 +29,19 @@ export interface ScrollsPageParams {
 
 export interface ScrollsPageResponse {
   items: ScrollRow[];
-  page: { limit: number; offset: number; total: number; sort: Sort; q?: string };
+  page: {
+    limit: number;
+    offset: number;
+    total: number;
+    sort: Sort;
+    q?: string;
+  };
 }
 
 export async function getScrollsPage({
   limit = 20,
   offset = 0,
-  sort = 'semver:desc',
+  sort = "semver:desc",
   q,
 }: ScrollsPageParams): Promise<ScrollsPageResponse> {
   const db = getPool();
@@ -52,8 +59,10 @@ export async function getScrollsPage({
     countConditions.push(`release_name ILIKE $${countValues.length}`);
   }
 
-  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-  const countWhere = countConditions.length ? `WHERE ${countConditions.join(' AND ')}` : '';
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const countWhere = countConditions.length
+    ? `WHERE ${countConditions.join(" AND ")}`
+    : "";
 
   values.push(limit);
   const limitParam = values.length;
@@ -82,7 +91,7 @@ export async function getScrollsPage({
       ${countWhere};
     `;
 
-  await db.query('SELECT 1');
+  await db.query("SELECT 1");
 
   const [itemsRes, countRes] = await Promise.all([
     db.query<ScrollDbRow>(sqlItems, values),
@@ -94,21 +103,25 @@ export async function getScrollsPage({
     label: row.label,
     status: row.status,
     type: row.type,
-    release_date:
-      row.release_date instanceof Date
-        ? row.release_date.toISOString()
-        : row.release_date ?? null,
+    release_date: asDateString(row.release_date),
   }));
 
   const total = countRes.rows[0]?.total ?? 0;
-  const page = { limit, offset, total, sort } as ScrollsPageResponse['page'];
+  const page = { limit, offset, total, sort } as ScrollsPageResponse["page"];
   if (q) page.q = q;
 
   return { items, page };
 }
 
-export async function getScrolls(params: { limit?: number; q?: string } = {}): Promise<ScrollRow[]> {
-  const { items } = await getScrollsPage({ limit: params.limit, offset: 0, sort: 'semver:desc', q: params.q });
+export async function getScrolls(
+  params: { limit?: number; q?: string } = {},
+): Promise<ScrollRow[]> {
+  const { items } = await getScrollsPage({
+    limit: params.limit,
+    offset: 0,
+    sort: "semver:desc",
+    q: params.q,
+  });
   return items;
 }
 
@@ -121,9 +134,11 @@ export interface ScrollDetail {
   label: string | null;
 }
 
-export async function getScroll(id: string | number): Promise<ScrollDetail | null> {
+export async function getScroll(
+  id: string | number,
+): Promise<ScrollDetail | null> {
   const db = getPool();
-  await db.query('SELECT 1');
+  await db.query("SELECT 1");
   const sql = `
     SELECT id, release_name, release_type, status, release_date, label
     FROM dojo.v_shaolin_scrolls
@@ -134,7 +149,7 @@ export async function getScroll(id: string | number): Promise<ScrollDetail | nul
     release_name: string;
     release_type: string;
     status: string;
-    release_date: Date | string | null;
+    release_date: string | null;
     label: string | null;
   }>(sql, [id]);
   const row = res.rows[0];
@@ -144,11 +159,7 @@ export async function getScroll(id: string | number): Promise<ScrollDetail | nul
     release_name: row.release_name,
     release_type: row.release_type,
     status: row.status,
-    release_date:
-      row.release_date instanceof Date
-        ? row.release_date.toISOString()
-        : row.release_date ?? null,
+    release_date: asDateString(row.release_date),
     label: row.label,
   };
 }
-

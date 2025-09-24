@@ -16,7 +16,7 @@ function createE2EPool(): Queryable {
       release_name: "Test Scroll",
       release_type: "minor",
       status: "draft",
-      release_date: "2024-01-01T00:00:00.000Z",
+      release_date: "2024-01-01",
       label: "Test Scroll",
     },
   ];

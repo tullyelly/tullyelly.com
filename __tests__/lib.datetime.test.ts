@@ -2,7 +2,7 @@ import { fmtDate } from "@/lib/datetime";
 
 describe("fmtDate", () => {
   it("formats midnight UTC releases as the previous calendar day in Central Time", () => {
-    const isoMidnightUtc = "2024-01-01T00:00:00.000Z";
+    const isoMidnightUtc = "2024-01-01T00:00:00Z";
     expect(fmtDate(isoMidnightUtc)).toBe("Dec 31, 2023");
   });
 

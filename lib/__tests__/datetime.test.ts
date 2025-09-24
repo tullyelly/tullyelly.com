@@ -39,9 +39,12 @@ describe("datetime formatters", () => {
 });
 
 describe("parseDateish", () => {
-  it("serializes bare dates to noon UTC", () => {
-    expect(parseDateish("2025-09-19")?.toISOString()).toMatchInlineSnapshot(
-      '"2025-09-19T12:00:00.000Z"',
-    );
+  it("parses bare DATE strings to noon UTC for Central Time stability", () => {
+    const parsed = parseDateish("2025-09-19");
+    expect(parsed).not.toBeNull();
+    expect(parsed?.getUTCFullYear()).toBe(2025);
+    expect(parsed?.getUTCMonth()).toBe(8);
+    expect(parsed?.getUTCDate()).toBe(19);
+    expect(parsed?.getUTCHours()).toBe(12);
   });
 });
