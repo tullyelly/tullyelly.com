@@ -10,7 +10,9 @@ export const prisma = new PrismaClient();
 
 // Optional domain gate
 const OWNER_ONLY = process.env.OWNER_ONLY === "true";
-const OWNER_DOMAIN = (process.env.OWNER_DOMAIN ?? "tullyelly.com").toLowerCase();
+const OWNER_DOMAIN = (
+  process.env.OWNER_DOMAIN ?? "tullyelly.com"
+).toLowerCase();
 
 /**
  * Exported v4 options for reuse in the Route Handler:
@@ -58,6 +60,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Derive role from email domain
+      // Feature gating ignores this value; DB-backed capabilities (can()/must()) decide access.
       const email = (token.email ?? "").toLowerCase();
       const domain = email.split("@")[1] ?? "";
       (token as any).role = domain === OWNER_DOMAIN ? "owner" : "user";
@@ -67,9 +70,12 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       // Ensure session has email/name/picture reflected from the token
       if (session.user) {
-        session.user.email = (session.user.email ?? (token.email as string | null)) ?? undefined;
-        session.user.name = session.user.name ?? (token.name as string | undefined);
-        (session.user as any).image = (session as any).user?.image ?? (token as any).picture;
+        session.user.email =
+          session.user.email ?? (token.email as string | null) ?? undefined;
+        session.user.name =
+          session.user.name ?? (token.name as string | undefined);
+        (session.user as any).image =
+          (session as any).user?.image ?? (token as any).picture;
         // Expose derived role to the client session
         (session.user as any).role = (token as any).role ?? "user";
       }
