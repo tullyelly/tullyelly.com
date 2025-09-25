@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
-import ReleaseCards from '@/components/scrolls/ReleaseCards';
-import ReleasesTable, { type ReleaseRow } from '@/components/scrolls/ReleasesTable';
-import TablePager from '@/components/ui/TablePager';
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+import ReleaseCards from "@/components/scrolls/ReleaseCards";
+import ReleasesTable from "@/components/scrolls/ReleasesTable";
+import TablePager from "@/components/ui/TablePager";
+import type { ReleaseRow, Sort } from "@/lib/scrolls";
 
 type ScrollsPageClientProps = {
   rows: ReleaseRow[];
@@ -14,16 +15,19 @@ type ScrollsPageClientProps = {
     total: number;
     totalPages: number;
     q: string;
-    sort: string;
+    sort: Sort;
   };
 };
 
-export default function ScrollsPageClient({ rows, meta }: ScrollsPageClientProps) {
+export default function ScrollsPageClient({
+  rows,
+  meta,
+}: ScrollsPageClientProps) {
   const router = useRouter();
-  const pathname = usePathname() ?? '/shaolin-scrolls';
+  const pathname = usePathname() ?? "/shaolin-scrolls";
   const search = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const searchSnapshot = search?.toString() ?? '';
+  const searchSnapshot = search?.toString() ?? "";
 
   function updateQuery(
     next: Record<string, string | undefined>,
@@ -36,7 +40,7 @@ export default function ScrollsPageClient({ rows, meta }: ScrollsPageClientProps
       else current.set(key, value);
     });
     if (resetPage) {
-      current.delete('page');
+      current.delete("page");
     }
     const queryString = current.toString();
     startTransition(() => {
@@ -56,7 +60,9 @@ export default function ScrollsPageClient({ rows, meta }: ScrollsPageClientProps
         total={meta.total}
         isPending={isPending}
         onPageChange={(nextPage) => updateQuery({ page: String(nextPage) })}
-        onPageSizeChange={(nextSize) => updateQuery({ pageSize: String(nextSize) }, { resetPage: true })}
+        onPageSizeChange={(nextSize) =>
+          updateQuery({ pageSize: String(nextSize) }, { resetPage: true })
+        }
       />
     </div>
   );

@@ -135,18 +135,18 @@ curl -s http://localhost:3000/api/_health
 
 # Metadata + counts
 curl -s http://localhost:3000/api/db-meta
-curl -s http://localhost:3000/api/releases-count
+curl -s http://localhost:3000/api/shaolin-scrolls/count
 
-# Releases queries
-curl -s "http://localhost:3000/api/releases?limit=5&offset=0&sort=semver:desc"
-curl -s "http://localhost:3000/api/releases?q=scroll"
+# Shaolin Scrolls queries
+curl -s "http://localhost:3000/api/shaolin-scrolls?limit=5&offset=0&sort=semver:desc"
+curl -s "http://localhost:3000/api/shaolin-scrolls?q=scroll"
 
-# Mutations (creates new releases)
+# Mutations (creates new scrolls)
 curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch
+  -d '{"label":"Test patch"}' http://localhost:3000/api/shaolin-scrolls/patch
 
 curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test minor"}' http://localhost:3000/api/releases/minor
+  -d '{"label":"Test minor"}' http://localhost:3000/api/shaolin-scrolls/minor
 ```
 
 ---

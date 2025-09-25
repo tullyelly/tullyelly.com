@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { Badge } from '@/app/ui/Badge';
-import { getBadgeClass } from '@/app/ui/badge-maps';
-import { formatReleaseDate } from '@/app/(scrolls)/components/formatReleaseDate';
-import ScrollDialog from '@/app/(components)/shaolin/ScrollDialog';
-import { useScrollDialog } from '@/app/(components)/shaolin/useScrollDialog';
-import type { ReleaseRow } from './ReleasesTable';
-import { Card } from '@ui';
+import { useRef } from "react";
+import { Badge } from "@/app/ui/Badge";
+import { getBadgeClass } from "@/app/ui/badge-maps";
+import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
+import ScrollDialog from "@/app/(components)/shaolin/ScrollDialog";
+import { useScrollDialog } from "@/app/(components)/shaolin/useScrollDialog";
+import type { ReleaseRow } from "@/lib/scrolls";
+import { Card } from "@ui";
 
 export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
   const { open, setOpen, id, openWithId } = useScrollDialog();
@@ -18,8 +18,8 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
     if (!v) triggerRef.current?.focus();
   };
 
-  const onIdClick = (id: number) =>
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const onIdClick =
+    (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (e.metaKey || e.ctrlKey || e.button === 1) {
         return;
       }
@@ -30,14 +30,9 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
 
   return (
     <>
-      <ul className="space-y-3" data-testid="release-cards">
+      <ul className="space-y-3" data-testid="scrolls-cards">
         {rows.map((r) => (
-          <Card
-            as="li"
-            key={r.id}
-            data-testid="release-card"
-            className="p-3"
-          >
+          <Card as="li" key={r.id} data-testid="release-card" className="p-3">
             <div className="flex items-center justify-between">
               <a
                 href={`/shaolin-scrolls/${r.id}`}
@@ -50,12 +45,14 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
                 #{r.id}
               </a>
               <span className="text-xs opacity-80">
-                {formatReleaseDate(r.releaseDate)}
+                {formatReleaseDate(r.release_date)}
               </span>
             </div>
-            <div className="mt-1">{r.label}</div>
+            <div className="mt-1">{(r.label ?? r.name) || ""}</div>
             <div className="mt-2 flex gap-2 text-xs">
-              <Badge className={getBadgeClass(r.status as any)}>{r.status}</Badge>
+              <Badge className={getBadgeClass(r.status as any)}>
+                {r.status}
+              </Badge>
               <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
             </div>
           </Card>

@@ -20,10 +20,7 @@ export default function CreateRelease() {
   const [minorError, setMinorError] = useState<string | null>(null);
   const [minorCreated, setMinorCreated] = useState(false);
 
-  async function submit(
-    e: FormEvent<HTMLFormElement>,
-    type: ReleaseType
-  ) {
+  async function submit(e: FormEvent<HTMLFormElement>, type: ReleaseType) {
     e.preventDefault();
 
     const isPatch = type === "patch";
@@ -44,7 +41,7 @@ export default function CreateRelease() {
     }
 
     try {
-      const res = await fetch(`/api/releases/${type}`, {
+      const res = await fetch(`/api/shaolin-scrolls/${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ label }),
@@ -74,7 +71,10 @@ export default function CreateRelease() {
   return (
     <div className="flex flex-col gap-6">
       {/* Patch form */}
-      <form onSubmit={(e) => submit(e, "patch")} className="flex flex-col gap-2">
+      <form
+        onSubmit={(e) => submit(e, "patch")}
+        className="flex flex-col gap-2"
+      >
         <label htmlFor="patch-label" className="text-sm font-medium">
           Patch label
         </label>
@@ -88,11 +88,7 @@ export default function CreateRelease() {
           className="form-input"
           placeholder="e.g. hotfix: correct audit trail ordering"
         />
-        <button
-          type="submit"
-          disabled={patchLoading}
-          className="btn"
-        >
+        <button type="submit" disabled={patchLoading} className="btn">
           {patchLoading ? "Creating…" : "Create Patch"}
         </button>
         {patchError && <p className="text-sm text-red-600">{patchError}</p>}
@@ -100,7 +96,10 @@ export default function CreateRelease() {
       </form>
 
       {/* Minor form */}
-      <form onSubmit={(e) => submit(e, "minor")} className="flex flex-col gap-2">
+      <form
+        onSubmit={(e) => submit(e, "minor")}
+        className="flex flex-col gap-2"
+      >
         <label htmlFor="minor-label" className="text-sm font-medium">
           Minor label
         </label>
@@ -114,11 +113,7 @@ export default function CreateRelease() {
           className="form-input"
           placeholder="e.g. v0.6: add scrolls list filters"
         />
-        <button
-          type="submit"
-          disabled={minorLoading}
-          className="btn"
-        >
+        <button type="submit" disabled={minorLoading} className="btn">
           {minorLoading ? "Creating…" : "Create Minor"}
         </button>
         {minorError && <p className="text-sm text-red-600">{minorError}</p>}

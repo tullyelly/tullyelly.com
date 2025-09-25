@@ -1,10 +1,10 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { getScroll } from '@/lib/scrolls';
-import { formatReleaseDate } from '@/app/(scrolls)/components/formatReleaseDate';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getScroll } from "@/lib/scrolls";
+import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface PageProps {
@@ -33,7 +33,9 @@ export default async function Page({ params }: PageProps) {
         </div>
         <div className="flex justify-between">
           <dt className="font-medium">Release Date</dt>
-          <dd className="text-right">{formatReleaseDate(release.release_date)}</dd>
+          <dd className="text-right">
+            {formatReleaseDate(release.release_date)}
+          </dd>
         </div>
         {release.label && (
           <div className="flex justify-between">
@@ -42,10 +44,7 @@ export default async function Page({ params }: PageProps) {
           </div>
         )}
       </dl>
-      <Link
-        href="/shaolin-scrolls"
-        className="link-blue w-fit"
-      >
+      <Link href="/shaolin-scrolls" className="link-blue w-fit">
         Back to list
       </Link>
     </section>

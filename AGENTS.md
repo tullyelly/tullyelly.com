@@ -65,7 +65,7 @@ Humans: see `README.md` for introductions and contributor docs.
 ## DB & Migrations
 
 - SQL lives under `db/migrations/*`; use existing naming schemes.
-- For release helpers (e.g., `dojo.fn_next_hotfix`), keep PL/pgSQL style consistent and add tests.
+- For Shaolin Scrolls helpers (e.g., `dojo.fn_next_hotfix`), keep PL/pgSQL style consistent and add tests.
 
 ## Deployment Notes
 
