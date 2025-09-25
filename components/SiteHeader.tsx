@@ -6,7 +6,10 @@ export default function SiteHeader() {
   return (
     <header
       className="w-full"
-      style={{ backgroundColor: "var(--brand-chrome)", color: "var(--brand-chrome-fg)" }}
+      style={{
+        backgroundColor: "var(--brand-chrome)",
+        color: "var(--brand-chrome-fg)",
+      }}
     >
       <div className="mx-auto flex h-12 max-w-[var(--content-max)] items-center justify-between px-6">
         <BrandedLink href="/" aria-label="tullyelly; home">
@@ -14,8 +17,12 @@ export default function SiteHeader() {
         </BrandedLink>
         <nav className="flex items-center gap-6">
           <BrandedLink href="/ui-lab">UI Lab</BrandedLink>
-          <BrandedLink href="/typography-demo">Typography</BrandedLink>
-          <BrandedLink href="/credits" title="Sources, credits, and shout-outs.">Flowers</BrandedLink>
+          <BrandedLink
+            href="/credits"
+            title="Sources, credits, and shout-outs."
+          >
+            Flowers
+          </BrandedLink>
         </nav>
       </div>
     </header>

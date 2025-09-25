@@ -3,9 +3,15 @@ import SiteHeader from "@/components/SiteHeader";
 import "@testing-library/jest-dom";
 
 describe("SiteHeader navigation", () => {
-  it("includes Typography demo link", () => {
+  it("includes top-level navigation links", () => {
     render(<SiteHeader />);
-    const typographyLink = screen.getByRole("link", { name: "Typography" });
-    expect(typographyLink).toHaveAttribute("href", "/typography-demo");
+    expect(screen.getByRole("link", { name: "UI Lab" })).toHaveAttribute(
+      "href",
+      "/ui-lab",
+    );
+    expect(screen.getByRole("link", { name: "Flowers" })).toHaveAttribute(
+      "href",
+      "/credits",
+    );
   });
 });
