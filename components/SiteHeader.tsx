@@ -16,7 +16,6 @@ export default function SiteHeader() {
           tullyelly
         </BrandedLink>
         <nav className="flex items-center gap-6">
-          <BrandedLink href="/ui-lab">UI Lab</BrandedLink>
           <BrandedLink
             href="/credits"
             title="Sources, credits, and shout-outs."

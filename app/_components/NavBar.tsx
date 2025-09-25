@@ -14,11 +14,6 @@ export default function NavBar() {
         <nav aria-label="Main" className="ml-auto">
           <ul className="flex items-center gap-8">
             <li>
-              <Link href="/ui-lab" className="underline underline-offset-4">
-                UI Lab
-              </Link>
-            </li>
-            <li>
               <Link
                 href="/credits"
                 className="underline underline-offset-4"
