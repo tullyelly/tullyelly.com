@@ -78,6 +78,8 @@ export const authOptions: NextAuthOptions = {
           (session as any).user?.image ?? (token as any).picture;
         // Expose derived role to the client session
         (session.user as any).role = (token as any).role ?? "user";
+        (session.user as any).id =
+          (token.sub as string | undefined) ?? (token as any).id ?? null;
       }
       return session;
     },
