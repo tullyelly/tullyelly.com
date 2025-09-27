@@ -1,6 +1,6 @@
 import Forbidden from "@/components/auth/Forbidden";
 import { getCurrentUser } from "@/lib/auth/session";
-import { can } from "@/lib/authz";
+import { must } from "@/lib/authz";
 import { headers } from "next/headers";
 
 export default async function AuthzGate({
@@ -36,6 +36,10 @@ export default async function AuthzGate({
     return <Forbidden />;
   }
 
-  const ok = await can(user, feature);
-  return ok ? <>{children}</> : <Forbidden feature={feature} />;
+  try {
+    await must(user, feature, { strict: true });
+    return <>{children}</>;
+  } catch (err) {
+    return <Forbidden feature={feature} />;
+  }
 }

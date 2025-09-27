@@ -4,6 +4,11 @@ export type EffectivePolicy = {
   allow: Set<FeatureKey>;
   deny: Set<FeatureKey>;
   enabled: Set<FeatureKey>;
+  revision: number;
+};
+
+export type MustOptions = {
+  strict?: boolean;
 };
 
 export class AuthzUnauthenticatedError extends Error {

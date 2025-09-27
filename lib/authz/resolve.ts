@@ -15,11 +15,12 @@ type CachedPolicy = {
   allow: string[];
   deny: string[];
   enabled: string[];
+  revision: number;
 };
 
-async function fetchPolicyRows(userId: string): Promise<DbRow[]> {
+async function fetchPolicySnapshot(userId: string): Promise<CachedPolicy> {
   const db = getPool();
-  const res = await db.query<DbRow>(
+  const { rows } = await db.query<DbRow>(
     `
     WITH memberships AS (
       SELECT ur.role_id, NULL::BIGINT AS app_id
@@ -38,11 +39,12 @@ async function fetchPolicyRows(userId: string): Promise<DbRow[]> {
   `,
     [userId],
   );
-  console.log("fetchPolicyRows", userId, res.rows);
-  return res.rows;
-}
 
-function buildPolicy(rows: DbRow[]): CachedPolicy {
+  const revRes = await db.query<{ revision: number }>(
+    `SELECT dojo.authz_get_revision($1::uuid) AS revision`,
+    [userId],
+  );
+
   const allow = new Set<string>();
   const deny = new Set<string>();
   const enabled = new Set<string>();
@@ -51,10 +53,12 @@ function buildPolicy(rows: DbRow[]): CachedPolicy {
     if (r.effect === "allow") allow.add(r.key);
     else deny.add(r.key);
   }
+
   return {
     allow: Array.from(allow),
     deny: Array.from(deny),
     enabled: Array.from(enabled),
+    revision: revRes.rows?.[0]?.revision ?? 0,
   };
 }
 
@@ -66,7 +70,7 @@ export async function getEffectivePolicy(
   userId: string,
 ): Promise<EffectivePolicy> {
   const cached = await unstable_cache(
-    async () => buildPolicy(await fetchPolicyRows(userId)),
+    () => fetchPolicySnapshot(userId),
     ["authz-policy", userId],
     { tags: [`auth:user:${userId}`] },
   )();
@@ -75,7 +79,8 @@ export async function getEffectivePolicy(
     allow: new Set(cached.allow),
     deny: new Set(cached.deny),
     enabled: new Set(cached.enabled),
+    revision: cached.revision,
   };
 }
 
-export const __debugFetchPolicyRows = fetchPolicyRows;
+export const __debugFetchPolicyRows = fetchPolicySnapshot;

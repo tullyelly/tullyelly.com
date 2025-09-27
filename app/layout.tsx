@@ -5,13 +5,16 @@ import type { Metadata } from "next";
 import NavBar from "@/app/_components/NavBar";
 import Footer from "@/app/_components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
+import PersistentBannerHost from "@/components/PersistentBannerHost";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
 
 await initSentry();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  ),
   title: {
     default: "tullyelly",
     template: "%s; tullyelly",
@@ -24,7 +27,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
 
   return (
@@ -32,9 +39,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head></head>
       <body className="font-sans text-foreground">
         <Providers>
-          <div id="site-layout" className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0">
+          <div
+            id="site-layout"
+            className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0"
+          >
             <header id="nav-zone">
-              {announcement && <AnnouncementBanner message={announcement} dismissible />}
+              {announcement && (
+                <AnnouncementBanner message={announcement} dismissible />
+              )}
+              <PersistentBannerHost />
               <NavBar />
             </header>
 
