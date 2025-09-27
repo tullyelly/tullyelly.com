@@ -9,7 +9,22 @@ jest.mock("@/db/pool", () => ({
   }),
 }));
 
-const baseRows = [
+type ScrollRow = {
+  id: number;
+  release_name: string;
+  label: string;
+  status: string;
+  release_type: string;
+  semver: string;
+  sem_major: number;
+  sem_minor: number;
+  sem_patch: number;
+  sem_hotfix: number;
+  created_at: Date | string;
+  release_date: string;
+};
+
+const baseRows: ScrollRow[] = [
   {
     id: 1,
     release_name: "Alpha",
@@ -26,7 +41,7 @@ const baseRows = [
   },
 ];
 
-function setupListQueries(rows = baseRows, total = rows.length) {
+function setupListQueries(rows: ScrollRow[] = baseRows, total = rows.length) {
   mockQuery.mockImplementation((sql: string, _params?: unknown[]) => {
     if (sql === "SELECT 1") {
       return Promise.resolve({ rows: [] });
