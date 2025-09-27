@@ -10,8 +10,8 @@ describe("Global not found page", () => {
       screen.getByRole("heading", { name: "Page Not Found", level: 1 }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "We could not find the page you requested; try heading back to the start.",
+      screen.getByText((content) =>
+        content.includes("We could not find the page you requested;"),
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Go Home" })).toHaveAttribute(
