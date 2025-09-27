@@ -12,10 +12,13 @@ interface AnnouncementBannerProps {
   className?: string;
 }
 
-const variantStyles: Record<NonNullable<AnnouncementBannerProps["variant"]>, string> = {
+const variantStyles: Record<
+  NonNullable<AnnouncementBannerProps["variant"]>,
+  string
+> = {
   info: "bg-blue text-text-on-blue",
   success: "bg-green text-text-on-green",
-  warning: "bg-amber-200 text-black",
+  warning: "bg-[color:var(--bucks-green)] text-white",
   error: "bg-red-600 text-white",
 };
 
@@ -31,7 +34,8 @@ export default function AnnouncementBanner({
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
 
-  const role = variant === "error" || variant === "warning" ? "alert" : "status";
+  const role =
+    variant === "error" || variant === "warning" ? "alert" : "status";
   const classes = `${variantStyles[variant]} flex items-center justify-between px-4 py-2 text-sm ${className}`;
 
   const content = (

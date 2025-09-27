@@ -1,21 +1,30 @@
-import ActionBar from './_components/ActionBar';
-import ScrollsPageClient from './_components/ScrollsPageClient';
-import { getScrollsPage } from '@/lib/scrolls';
-import type { Sort } from '@/lib/releases';
-import { PAGE_SIZE_OPTIONS, coercePage, coercePageSize } from '@/lib/pagination';
+import ActionBar from "./_components/ActionBar";
+import ScrollsPageClient from "./_components/ScrollsPageClient";
+import { getScrollsPage, type Sort } from "@/lib/scrolls";
+import {
+  PAGE_SIZE_OPTIONS,
+  coercePage,
+  coercePageSize,
+} from "@/lib/pagination";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface PageProps {
-  searchParams: Promise<{ q?: string; sort?: string; page?: string; pageSize?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    sort?: string;
+    page?: string;
+    pageSize?: string;
+  }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = (await searchParams) ?? {};
-  const q = params.q?.trim() ?? '';
-  const sort: Sort = params.sort === 'semver:asc' ? 'semver:asc' : 'semver:desc';
+  const q = params.q?.trim() ?? "";
+  const sort: Sort =
+    params.sort === "semver:asc" ? "semver:asc" : "semver:desc";
   const pageSize = coercePageSize(params.pageSize, PAGE_SIZE_OPTIONS[0]);
   let page = coercePage(params.page, 1);
 
@@ -45,14 +54,6 @@ export default async function Page({ searchParams }: PageProps) {
 
   const { items } = response;
 
-  const rows = items.map((item) => ({
-    id: Number(item.id),
-    label: item.label,
-    status: item.status,
-    type: item.type,
-    releaseDate: item.release_date,
-  }));
-
   const meta = {
     page: total > 0 ? page : 0,
     pageSize,
@@ -66,7 +67,7 @@ export default async function Page({ searchParams }: PageProps) {
     <section id="scrolls-root" className="flex min-h-screen flex-col gap-4">
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
       <ActionBar q={q} />
-      <ScrollsPageClient rows={rows} meta={meta} />
+      <ScrollsPageClient rows={items} meta={meta} />
     </section>
   );
 }

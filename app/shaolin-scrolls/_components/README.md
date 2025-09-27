@@ -1,22 +1,16 @@
-# ScrollsTable
+# Shaolin Scrolls UI
 
-TanStack Table powered UI for Shaolin Scrolls releases with fixed column widths and a sticky header.
+Shared client components for the Shaolin Scrolls index. `lib/scrolls` exposes the canonical
+`ReleaseRow` shape used by both the desktop table (`components/scrolls/ReleasesTable`) and the
+mobile cards (`components/scrolls/ReleaseCards`).
 
 ## Columns
 
-1. **Release Name** – primary identifier, sortable, truncates long names.
-2. **Status** – colored badge showing release status.
-3. **Type** – colored pill for patch/minor/hotfix.
-4. **SemVer** – monospace semantic version, sortable.
+1. **ID** – numeric identifier linking to the detail dialog/page.
+2. **Release Name** – primary label with truncation for long text.
+3. **Status** – badge mapped via `getBadgeClass`.
+4. **Type** – badge for minor/patch/hotfix.
+5. **Release Date** – formatted with `components/scrolls/formatReleaseDate`.
 
-## Extending
-
-Columns are defined with explicit `size`/`minSize` values and optional
-`meta.headerClassName` and `meta.cellClassName` for Tailwind classes.
-To add a column:
-
-1. Extend the `Release` type in `ScrollsTable.tsx`.
-2. Append a `ColumnDef` to the `columns` array with width settings.
-3. Provide `meta` class names to align header and cells.
-
-The component also handles loading and empty states. Pass `isLoading` to render skeleton rows.
+Filters, pagination, and search are wired through `ScrollsPageClient`, which keeps the table and
+cards in sync with URL query params.

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 type Id = string | number;
 
@@ -19,7 +19,10 @@ interface Props {
   summaryText?: string;
 }
 
-export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props) {
+export default function ReleaseRowDetail({
+  id,
+  summaryText = "Details",
+}: Props) {
   const [data, setData] = useState<ReleaseData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,19 +35,21 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
     const abortIfClosed = () => {
       if (!target.open) controller.abort();
     };
-    target.addEventListener('toggle', abortIfClosed, { once: true });
+    target.addEventListener("toggle", abortIfClosed, { once: true });
 
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(`/api/releases/${id}`, { signal: controller.signal });
+      const res = await fetch(`/api/shaolin-scrolls/${id}`, {
+        signal: controller.signal,
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: ReleaseData = await res.json();
       setData(json);
     } catch (err: unknown) {
-      if ((err as { name?: string })?.name !== 'AbortError') {
-        setError('Failed to load details');
+      if ((err as { name?: string })?.name !== "AbortError") {
+        setError("Failed to load details");
       }
     } finally {
       setLoading(false);
@@ -66,7 +71,7 @@ export default function ReleaseRowDetail({ id, summaryText = 'Details' }: Props)
         </div>
         <div>
           <dt>Description</dt>
-          <dd>{data.description ?? data.label ?? ';'}</dd>
+          <dd>{data.description ?? data.label ?? ";"}</dd>
         </div>
         <div>
           <dt>Status</dt>

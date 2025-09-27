@@ -20,13 +20,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/roadwork-rappin`,
       lastModified: new Date(),
     },
-    {
-      url: `${baseUrl}/ui-lab`,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/typography-demo`,
-      lastModified: new Date(),
-    },
   ];
 }

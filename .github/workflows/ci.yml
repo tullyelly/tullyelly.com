@@ -66,12 +66,9 @@ jobs:
               - 'lib/seo/**'
               - 'next.config.mjs'
             security:
-              - 'middleware.ts'
               - 'next.config.mjs'
               - 'auth.ts'
               - 'lib/security/**'
-              - 'app/**/middleware.{ts,tsx}'
-              - 'pages/**/middleware.{ts,tsx}'
               - 'app/api/**'
             build:
               - 'app/**'
@@ -85,7 +82,6 @@ jobs:
               - 'tsconfig.json'
               - 'tailwind.config.mjs'
               - 'postcss.config.mjs'
-              - 'middleware.ts'
               - 'auth.ts'
             e2e:
               - 'app/**'
@@ -98,7 +94,6 @@ jobs:
               - 'package-lock.json'
               - 'tsconfig.json'
               - 'next.config.mjs'
-              - 'middleware.ts'
               - 'auth.ts'
 
       # Native addon sanity only when it matters (native deps changed or on main)
@@ -225,7 +220,6 @@ jobs:
       AUTH_SECRET: ci-dummy
       GOOGLE_CLIENT_ID: ci-dummy
       GOOGLE_CLIENT_SECRET: ci-dummy
-      AUTH_RULES_JSON: '{"ownerDomains":["tullyelly.com"],"publicPaths":["/","/login","/api/auth"],"protectedPaths":["/shaolin-scrolls","/admin"],"ownerOnlyPaths":["/shaolin-scrolls/admin"],"toggles":{"allowAnyEmailOnPreview":true}}'
     steps:
       - uses: actions/checkout@v4
         with:
