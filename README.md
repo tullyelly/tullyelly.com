@@ -20,6 +20,47 @@ Pages auto-update when you edit files in the `app/` folder.
 
 ---
 
+## ⚡ Add a Static Page in 60 Seconds
+
+Create `app/<slug>/page.tsx`, export page metadata, and follow the design tokens so the page feels native to the site.
+
+```tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Landing",
+  description: "A quick static landing page built in a minute.",
+};
+
+export default function LandingPage(): JSX.Element {
+  return (
+    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-12">
+      <header className="space-y-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Static page
+        </span>
+        <h1 className="text-3xl font-semibold text-foreground">Landing</h1>
+      </header>
+      <p className="text-base text-muted-foreground">
+        This skeleton uses the shared Tailwind tokens so typography, spacing,
+        and colors stay aligned across the app.
+      </p>
+      <div className="rounded-lg border border-border bg-background p-6">
+        <p className="text-sm text-foreground">
+          Replace the copy with your content or swap the wrapper for cards and
+          tables that already ship with token-aware styles.
+        </p>
+      </div>
+    </main>
+  );
+}
+```
+
+Run `npm run dev` and visit `http://localhost:3000/<slug>` to preview the page locally.
+When the pull request merges into `main`, GitHub pushes the change to Vercel and production updates automatically.
+
+---
+
 ## ✅ Guardrails & Coverage
 
 - The `CI` workflow runs lint, format checks, typechecks, and Jest unit tests with coverage on every push; it also runs each Monday at 06:00 UTC to log coverage trends.

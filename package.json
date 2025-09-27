@@ -12,6 +12,7 @@
     "postinstall": "prisma generate",
     "prebuild": "npm run gen:build-info",
     "build": "prisma generate && next build",
+    "deploy:prod": "vercel build && vercel deploy --prebuilt --prod",
     "postbuild": "npm run gen:build-info",
     "start": "next start",
     "start:prod:local": "npm run build && cross-env NODE_ENV=production PORT=4010 npm start",
