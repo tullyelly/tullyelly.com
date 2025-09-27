@@ -1,6 +1,10 @@
 /**
  * WU-374: Unit tests for admin authz server actions.
  */
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL ??
+  "postgres://tester:secret@localhost:5432/tullyelly_test";
+
 jest.mock("next/cache", () => ({
   revalidateTag: jest.fn(),
 }));
