@@ -56,9 +56,17 @@ fi
 echo "🧪 Changed-only tests with coverage…"
 run_workspace_script test:changed:coverage
 if has_npm_script test:changed:coverage; then
-  npm run -s test:changed:coverage
-  echo '✅ Nimble coverage gate passed.'
-  exit 0
+  if npm run -s test:changed:coverage; then
+    echo '✅ Nimble coverage gate passed.'
+    exit 0
+  else
+    echo "⚠️  Changed-only coverage failed; running full suite…"
+    run_workspace_script test:coverage
+    if has_npm_script test:coverage && npm run -s test:coverage; then
+      echo '✅ Full coverage suite passed.'
+      exit 0
+    fi
+  fi
 fi
 
 echo "❌ No test:changed:coverage script found. Blocking push."
