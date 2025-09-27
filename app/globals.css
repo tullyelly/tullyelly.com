@@ -7,22 +7,22 @@
  */
 
 :root {
-  --cream: #EEE1C6;            /* Cream City Cream */
-  --white: #FFFFFF;
-  --ink: #0C1B0C;              /* near-black text */
-  --bucks-green: #00471B;      /* Bucks Green (header badges etc.) */
-  --gold: #F0EBD2;
+  --cream: #eee1c6; /* Cream City Cream */
+  --white: #ffffff;
+  --ink: #0c1b0c; /* near-black text */
+  --bucks-green: #00471b; /* Bucks Green (header badges etc.) */
+  --gold: #f0ebd2;
   --font-inter: system-ui, sans-serif;
   --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Brand chrome */
-  --brand-chrome: #0077C0;      /* Great Lakes Blue */
-  --brand-chrome-fg: #ffffff;   /* text on chrome */
+  --brand-chrome: #0077c0; /* Great Lakes Blue */
+  --brand-chrome-fg: #ffffff; /* text on chrome */
 
   /* Brand bases */
-  --blue: #0077C0;             /* Great Lakes Blue */
-  --blue-contrast: #0069A9;    /* Darkened for AA on cream */
-  --green: #00471B;            /* Bucks Green */
+  --blue: #0077c0; /* Great Lakes Blue */
+  --blue-contrast: #0069a9; /* Darkened for AA on cream */
+  --green: #00471b; /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
 
   /* Neutrals for readability */
@@ -38,8 +38,8 @@
   --link-on-cream: var(--blue-contrast);
 
   /* Surfaces */
-  --surface-page: var(--cream);   /* page wrap/gutters */
-  --surface-card: var(--white);   /* reading surfaces */
+  --surface-page: var(--cream); /* page wrap/gutters */
+  --surface-card: var(--white); /* reading surfaces */
   --border-subtle: color-mix(in srgb, var(--blue) 12%, var(--white));
 
   /* Layout scale */
@@ -52,27 +52,27 @@
   --fg: var(--text-primary);
 
   /* Global badge tokens */
-  --badge-classic-bg: #F0EBD2; /* Championship Gold */
-  --badge-classic-fg: #00471B; /* Bucks Green */
+  --badge-classic-bg: #f0ebd2; /* Championship Gold */
+  --badge-classic-fg: #00471b; /* Bucks Green */
   --badge-classic-ring: rgba(0, 71, 27, 0.25);
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
-  background:
-    linear-gradient(
-      to right,
-      var(--cream) 0,
-      var(--cream) calc((100vw - var(--content-max)) / 2),
-      transparent calc((100vw - var(--content-max)) / 2),
-      transparent calc(100% - (100vw - var(--content-max)) / 2),
-      var(--cream) calc(100% - (100vw - var(--content-max)) / 2),
-      var(--cream) 100%
-    );
+  background: linear-gradient(
+    to right,
+    var(--cream) 0,
+    var(--cream) calc((100vw - var(--content-max)) / 2),
+    transparent calc((100vw - var(--content-max)) / 2),
+    transparent calc(100% - (100vw - var(--content-max)) / 2),
+    var(--cream) calc(100% - (100vw - var(--content-max)) / 2),
+    var(--cream) 100%
+  );
   background-attachment: fixed;
   background-color: var(--cream);
 }
@@ -222,7 +222,6 @@ p {
 
 /* (removed ShoutOut component styles) */
 
-
 /* YouTube embed wrapper */
 .yt-wrapper-bucks {
   /* Use a true border instead of padding so the green frame matches token thickness */
@@ -305,6 +304,7 @@ p {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
 .app-dialog-content {
@@ -320,7 +320,8 @@ p {
   border: 6px solid var(--cream); /* Cream City Cream */
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 1001;
 }
 
 @layer components {
@@ -361,6 +362,10 @@ p {
     }
   }
 
-  .crop-block-margins > :first-child { margin-top: 0 !important; }
-  .crop-block-margins > :last-child { margin-bottom: 0 !important; }
+  .crop-block-margins > :first-child {
+    margin-top: 0 !important;
+  }
+  .crop-block-margins > :last-child {
+    margin-bottom: 0 !important;
+  }
 }

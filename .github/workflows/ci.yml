@@ -69,8 +69,6 @@ jobs:
               - 'next.config.mjs'
               - 'auth.ts'
               - 'lib/security/**'
-              - 'app/**/middleware.{ts,tsx}'
-              - 'pages/**/middleware.{ts,tsx}'
               - 'app/api/**'
             build:
               - 'app/**'

@@ -51,6 +51,12 @@ export interface ReleaseRow {
   release_date: string | null;
 }
 
+function toIsoString(value: Date | string | null): string {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+}
+
 export interface PageMeta {
   limit: number;
   offset: number;
@@ -141,20 +147,22 @@ export async function getScrollsPage(
     db.query<{ total: number }>(sqlCount, [...countValues]),
   ]);
 
-  const items: ReleaseRow[] = itemsRes.rows.map((row: DbScrollRow) => ({
-    id: String(row.id),
-    name: row.release_name,
-    label: row.label ?? row.release_name,
-    status: row.status,
-    type: row.release_type,
-    semver: row.semver,
-    sem_major: row.sem_major,
-    sem_minor: row.sem_minor,
-    sem_patch: row.sem_patch,
-    sem_hotfix: row.sem_hotfix,
-    created_at: new Date(row.created_at).toISOString(),
-    release_date: asDateString(row.release_date),
-  }));
+  const items: ReleaseRow[] = itemsRes.rows.map((row: DbScrollRow) => {
+    return {
+      id: String(row.id),
+      name: row.release_name,
+      label: row.label ?? row.release_name,
+      status: row.status,
+      type: row.release_type,
+      semver: row.semver,
+      sem_major: row.sem_major,
+      sem_minor: row.sem_minor,
+      sem_patch: row.sem_patch,
+      sem_hotfix: row.sem_hotfix,
+      created_at: toIsoString(row.created_at),
+      release_date: asDateString(row.release_date),
+    };
+  });
 
   const total = countRes.rows[0]?.total ?? 0;
   const page: PageMeta = { limit, offset, total, sort };
