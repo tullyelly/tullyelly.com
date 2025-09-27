@@ -26,7 +26,7 @@ describe("env", () => {
 
   it("uses TEST_DATABASE_URL outside the test environment when present", () => {
     delete process.env.DATABASE_URL;
-    process.env.NODE_ENV = "development";
+    Object.assign(process.env, { NODE_ENV: "development" });
     process.env.TEST_DATABASE_URL = "postgres://user:pass@localhost:5432/test";
     jest.isolateModules(() => {
       const { DATABASE_URL } = require("@/lib/env");
@@ -37,7 +37,7 @@ describe("env", () => {
   it("uses baked-in fallback when nothing is configured", () => {
     delete process.env.DATABASE_URL;
     delete process.env.TEST_DATABASE_URL;
-    process.env.NODE_ENV = "test";
+    Object.assign(process.env, { NODE_ENV: "test" });
     jest.isolateModules(() => {
       const { DATABASE_URL } = require("@/lib/env");
       expect(DATABASE_URL).toBe(

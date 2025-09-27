@@ -6,9 +6,25 @@ fi
 
 set -euo pipefail
 
+has_workspaces() {
+  node -e "try{process.exit(require('./package.json').workspaces?0:1)}catch{process.exit(1)}"
+}
+
+run_workspace_script() {
+  local script="$1"
+  if has_workspaces; then
+    npm run "$script" --workspaces --if-present
+  fi
+}
+
+has_npm_script() {
+  local script="$1"
+  node -e "try{const pkg=require('./package.json');process.exit(pkg.scripts && pkg.scripts['$script'] ? 0 : 1)}catch{process.exit(1)}" >/dev/null 2>&1
+}
+
 # Allow bypass when necessary
 if [[ "${SKIP_COVERAGE_GUARD:-}" == "1" ]]; then
-  echo "⚠️  Coverage guard bypassed via SKIP_COVERAGE_GUARD=1"
+  echo "⚠️  Pre-push guard bypassed via SKIP_COVERAGE_GUARD=1"
   exit 0
 fi
 
@@ -17,13 +33,33 @@ if [[ "${CI:-}" == "true" ]]; then
   exit 0
 fi
 
-echo "🔎 Running coverage gate before push…"
-
-if npm run -s test:coverage >/dev/null 2>&1; then
-  npm run -s test:coverage
+echo "🧹 Linting…"
+run_workspace_script lint
+if has_npm_script lint; then
+  npm run -s lint
 else
-  echo "❌ Missing test:coverage script."
-  exit 1
+  echo "ℹ️  No lint script; skipping."
 fi
 
-echo "✅ Coverage gate passed."
+echo "🔎 Type checking…"
+run_workspace_script typecheck
+if has_npm_script typecheck; then
+  npm run -s typecheck
+else
+  if command -v npx >/dev/null 2>&1 && npx tsc -v >/dev/null 2>&1; then
+    npx tsc -p tsconfig.json --noEmit
+  else
+    echo "ℹ️  No TypeScript setup detected; skipping."
+  fi
+fi
+
+echo "🧪 Changed-only tests with coverage…"
+run_workspace_script test:changed:coverage
+if has_npm_script test:changed:coverage; then
+  npm run -s test:changed:coverage
+  echo '✅ Nimble coverage gate passed.'
+  exit 0
+fi
+
+echo "❌ No test:changed:coverage script found. Blocking push."
+exit 1

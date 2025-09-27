@@ -23,7 +23,7 @@ describe("ensureAuthzInvalidationListener", () => {
   });
 
   test("skips subscribing while running tests", () => {
-    process.env.NODE_ENV = "test";
+    Object.assign(process.env, { NODE_ENV: "test" });
 
     const {
       ensureAuthzInvalidationListener,
@@ -33,7 +33,7 @@ describe("ensureAuthzInvalidationListener", () => {
   });
 
   test("connects to Postgres and revalidates tags", async () => {
-    process.env.NODE_ENV = "development";
+    Object.assign(process.env, { NODE_ENV: "development" });
 
     const client = {
       on: jest.fn(),
@@ -81,7 +81,7 @@ describe("ensureAuthzInvalidationListener", () => {
   });
 
   test("ignores pools without connect method", () => {
-    process.env.NODE_ENV = "development";
+    Object.assign(process.env, { NODE_ENV: "development" });
     getPoolMock.mockReturnValue({});
 
     const {
