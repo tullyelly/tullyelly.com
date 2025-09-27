@@ -1,3 +1,24 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-npm test
+# Allow bypass when necessary
+if [[ "${SKIP_COVERAGE_GUARD:-}" == "1" ]]; then
+  echo "⚠️  Coverage guard bypassed via SKIP_COVERAGE_GUARD=1"
+  exit 0
+fi
+
+# Skip guard in CI runners
+if [[ "${CI:-}" == "true" ]]; then
+  exit 0
+fi
+
+echo "🔎 Running coverage gate before push…"
+
+if npm run -s test:coverage >/dev/null 2>&1; then
+  npm run -s test:coverage
+else
+  echo "❌ Missing test:coverage script."
+  exit 1
+fi
+
+echo "✅ Coverage gate passed."

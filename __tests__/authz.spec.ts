@@ -18,6 +18,7 @@ import {
   AuthzUnauthenticatedError,
 } from "@/lib/authz/types";
 import { sql } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth/session";
 
 describe("authz", () => {
   const user = { id: "user-1" };
@@ -26,6 +27,7 @@ describe("authz", () => {
     (getEffectivePolicy as jest.Mock).mockReset();
     (sql as jest.Mock).mockReset();
     (sql as jest.Mock).mockResolvedValue([{ revision: 0 }]);
+    (getCurrentUser as jest.Mock).mockReset();
   });
 
   test("denies when unauthenticated", async () => {
@@ -105,5 +107,20 @@ describe("authz", () => {
     await expect(
       must(user, "admin.membership.manage", { strict: true }),
     ).resolves.toBeUndefined();
+  });
+
+  test("must overload fetches current user when feature provided", async () => {
+    (getCurrentUser as jest.Mock).mockResolvedValue(user);
+    (getEffectivePolicy as jest.Mock).mockResolvedValue({
+      allow: new Set(["admin.membership.manage"]),
+      deny: new Set(),
+      enabled: new Set(["admin.membership.manage"]),
+      revision: 0,
+    });
+
+    await expect(
+      must("admin.membership.manage", { strict: true }),
+    ).resolves.toBeUndefined();
+    expect(getCurrentUser).toHaveBeenCalled();
   });
 });

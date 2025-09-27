@@ -14,7 +14,23 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '<rootDir>/e2e/',
   ],
+  coverageDirectory: '<rootDir>/coverage',
+  coveragePathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/.next/',
+    '<rootDir>/app/api/',
+    '<rootDir>/components/PersistentBannerHost.tsx',
+    '<rootDir>/lib/persistent-banner.ts',
+  ],
   coverageReporters: ['json-summary', 'text', 'lcov'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+  },
   // Do NOT set "transform"—next/jest configures it.
 }
 
