@@ -81,6 +81,32 @@ describe("lib/scrolls", () => {
     expect(itemCall![0] as string).toContain("WHERE release_name ILIKE");
   });
 
+  it("normalizes created_at strings from the database", async () => {
+    const rows = [
+      {
+        ...baseRows[0],
+        created_at: "2024-02-03T04:05:06Z",
+      },
+    ];
+    setupListQueries(rows);
+
+    const res = await getScrollsPage();
+    expect(res.items[0].created_at).toBe("2024-02-03T04:05:06.000Z");
+  });
+
+  it("returns empty timestamp when created_at is invalid", async () => {
+    const rows = [
+      {
+        ...baseRows[0],
+        created_at: "not-a-date",
+      },
+    ];
+    setupListQueries(rows);
+
+    const res = await getScrollsPage();
+    expect(res.items[0].created_at).toBe("");
+  });
+
   it("getScrolls forwards pagination options", async () => {
     setupListQueries();
 

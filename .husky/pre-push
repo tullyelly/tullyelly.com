@@ -53,21 +53,22 @@ else
   fi
 fi
 
-echo "🧪 Changed-only tests with coverage…"
-run_workspace_script test:changed:coverage
-if has_npm_script test:changed:coverage; then
-  if npm run -s test:changed:coverage; then
-    echo '✅ Nimble coverage gate passed.'
-    exit 0
-  else
-    echo "⚠️  Changed-only coverage failed; running full suite…"
-    run_workspace_script test:coverage
-    if has_npm_script test:coverage && npm run -s test:coverage; then
-      echo '✅ Full coverage suite passed.'
-      exit 0
-    fi
-  fi
+echo "🧪 Smoke tests (related only)…"
+run_workspace_script test:smoke
+if has_npm_script test:smoke; then
+  npm run -s test:smoke
+else
+  echo "❌ No test:smoke script found. Blocking push."
+  exit 1
 fi
 
-echo "❌ No test:changed:coverage script found. Blocking push."
-exit 1
+echo "🛡️ Full coverage suite…"
+run_workspace_script test:coverage
+if has_npm_script test:coverage; then
+  npm run -s test:coverage
+else
+  echo "❌ No test:coverage script found. Blocking push."
+  exit 1
+fi
+
+echo "✅ Test suites passed."
