@@ -48,7 +48,12 @@ export async function POST(req: Request) {
   }
 
   try {
-    await requirePermission("tcdb.snapshot.create");
+    const permissionGranted = (await requirePermission(
+      "tcdb.snapshot.create",
+    )) as boolean | void;
+    if (permissionGranted === false) {
+      return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+    }
   } catch (error) {
     if (error instanceof AuthzUnauthenticatedError) {
       return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
