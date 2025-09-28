@@ -128,6 +128,16 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 ---
 
+## 📣 Share Kit
+
+Keep stakeholder snippets in sync whenever you ship a new page.
+
+- Add the slug to your metadata so `canonicalUrl(slug)` can supply the canonical entry.
+- Add a one-liner in `/lib/share/oneLiners.ts`.
+- Run `npm run share:generate` to refresh Confluence-ready Markdown in `/docs/share/<slug>.md`.
+
+---
+
 ## 🌐 SEO & Crawl Directives
 
 Robots and sitemap metadata routes live in `app/robots.ts` and `app/sitemap.ts`, providing baseline crawl directives and a simple sitemap for top-level pages.
