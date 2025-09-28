@@ -17,16 +17,22 @@ export async function writeAudit({
   targetId,
   metadata,
 }: WriteAuditInput): Promise<void> {
-  const metaJson = metadata ? JSON.stringify(metadata) : null;
+  const metaPayload = {
+    ...(metadata ?? {}),
+    target_table: targetTable,
+    target_id: targetId,
+  };
+
+  const metaJson = JSON.stringify(metaPayload);
 
   await sql`
     INSERT INTO dojo.audit_log (
       action,
-      actor_id,
-      target_table,
-      target_id,
-      metadata
+      actor_user_id,
+      feature_key,
+      effect,
+      meta
     )
-    VALUES (${action}, ${actorId}, ${targetTable}, ${targetId}, ${metaJson})
+    VALUES (${action}, ${actorId}, ${action}, 'success', ${metaJson})
   `;
 }

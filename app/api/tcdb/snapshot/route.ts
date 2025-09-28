@@ -124,6 +124,16 @@ export async function POST(req: Request) {
     await client.query("ROLLBACK").catch((rollbackError: unknown) => {
       console.error("[tcdb] snapshot rollback failed", rollbackError);
     });
+
+    const pgError = error as { code?: string };
+    if (pgError?.code === "23505") {
+      console.error("[tcdb] duplicate snapshot", error);
+      return NextResponse.json(
+        { error: "SNAPSHOT_ALREADY_EXISTS" },
+        { status: 409 },
+      );
+    }
+
     console.error("[tcdb] snapshot transaction failed", error);
     return NextResponse.json(
       { error: "SNAPSHOT_CREATE_FAILED" },

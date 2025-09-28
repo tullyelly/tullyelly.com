@@ -20,6 +20,7 @@ export type CreateTcdbSnapshotError =
   | { error: "INVALID_INPUT"; fieldErrors: Record<string, string[]> }
   | { error: "UNAUTHENTICATED" }
   | { error: "FORBIDDEN" }
+  | { error: "SNAPSHOT_ALREADY_EXISTS" }
   | { error: "SNAPSHOT_CREATE_FAILED" }
   | { error: string; [key: string]: unknown };
 
