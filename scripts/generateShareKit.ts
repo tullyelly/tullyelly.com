@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { canonicalUrl } from "../lib/share/canonicalUrl.ts";
-import { oneLiners } from "../lib/share/oneLiners.ts";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import { oneLiners } from "@/lib/share/oneLiners";
 
 function slugFromUrl(url: string): string {
   const { pathname } = new URL(url);
