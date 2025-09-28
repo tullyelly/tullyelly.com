@@ -1,0 +1,87 @@
+### Create TCDB snapshot (happy path)
+POST https://tullyelly.com/api/tcdb/snapshot
+Content-Type: application/json
+
+{
+  "homie_id": 42,
+  "card_count": 27,
+  "ranking": 3,
+  "difference": -1,
+  "ranking_at": "2024-05-31"
+}
+
+### Response 201
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "id": "9c2e8e4b-8c6d-4e3a-b6c7-12955f2a97ed",
+  "status": "ok"
+}
+
+### Create TCDB snapshot (validation error)
+POST https://tullyelly.com/api/tcdb/snapshot
+Content-Type: application/json
+
+{
+  "homie_id": "not-a-uuid",
+  "card_count": -1,
+  "ranking": 0,
+  "difference": "oops",
+  "ranking_at": "2024-13-99"
+}
+
+### Response 400
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+  "error": "INVALID_INPUT",
+  "fieldErrors": {
+    "homie_id": ["invalid homie uuid"],
+    "card_count": ["Number must be greater than or equal to 0"],
+    "ranking": ["Number must be greater than or equal to 1"],
+    "difference": ["Expected number, received string"],
+    "ranking_at": ["Invalid date"]
+  }
+}
+
+### Create TCDB snapshot (missing permission)
+POST https://tullyelly.com/api/tcdb/snapshot
+Content-Type: application/json
+
+{
+  "homie_id": 42,
+  "card_count": 27,
+  "ranking": 3,
+  "difference": -1,
+  "ranking_at": "2024-05-31"
+}
+
+### Response 403
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{
+  "error": "FORBIDDEN"
+}
+
+### Create TCDB snapshot (server rejected payload)
+POST https://tullyelly.com/api/tcdb/snapshot
+Content-Type: application/json
+
+{
+  "homie_id": 42,
+  "card_count": 27,
+  "ranking": 3,
+  "difference": -1,
+  "ranking_at": "2024-05-31"
+}
+
+### Response 500
+HTTP/1.1 500 Internal Server Error
+Content-Type: application/json
+
+{
+  "error": "SNAPSHOT_CREATE_FAILED"
+}
