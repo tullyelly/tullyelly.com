@@ -69,6 +69,18 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
   );
 }
 
+type AnyLink = Extract<NavItem, { kind: "link" | "external" }>;
+
+function readDesc(node: AnyLink): string | undefined {
+  const anyNode = node as any;
+  return anyNode?.meta?.desc as string | undefined;
+}
+
+function readHotkey(node: AnyLink): string | undefined {
+  const anyNode = node as any;
+  return anyNode?.meta?.hotkey || node.hotkey;
+}
+
 function PersonaPanel({
   persona,
   pathname,
