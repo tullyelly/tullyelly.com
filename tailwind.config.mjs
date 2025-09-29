@@ -1,11 +1,14 @@
 // Tailwind v4 — ESM config
+import tailwindcssAnimate from "tailwindcss-animate"
+
 export default {
   content: [
-    "./app/**/*.{js,jsx,ts,tsx,mdx}",
-    "./components/**/*.{js,jsx,ts,tsx,mdx}",
-    "./pages/**/*.{js,jsx,ts,tsx,mdx}",
+    "./app/**/*.{ts,tsx,mdx}",
+    "./components/**/*.{ts,tsx,mdx}",
+    "./pages/**/*.{ts,tsx,mdx}",
+    "./src/**/*.{ts,tsx,mdx}",
   ],
-  darkMode: ["media"], // switch to "class" if you want .dark toggling
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -37,7 +40,7 @@ export default {
         container: "var(--container)",
       },
       fontFamily: {
-      sans: [
+        sans: [
           "var(--font-inter)",
           "system-ui",
           "-apple-system",
@@ -58,5 +61,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 };

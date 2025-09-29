@@ -1,4 +1,5 @@
 // next.config.mjs
+import bundleAnalyzer from '@next/bundle-analyzer';
 import createMDX from '@next/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
@@ -10,6 +11,10 @@ const withMDX = createMDX({
   options: {
     remarkPlugins,
   },
+});
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
 });
 
 /** @type {import('next').NextConfig} */
@@ -34,6 +39,9 @@ const nextConfig = {
       },
     ];
   },
+  experimental: {
+    optimizePackageImports: ['vaul', 'cmdk', 'lucide-react'],
+  },
 };
 
-export default withMDX(nextConfig);
+export default withBundleAnalyzer(withMDX(nextConfig));
