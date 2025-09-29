@@ -8,6 +8,7 @@ import AnnouncementBanner from "@/components/AnnouncementBanner";
 import PersistentBannerHost from "@/components/PersistentBannerHost";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
+import { getMenuForLayout } from "@/app/_menu/getMenu";
 
 await initSentry();
 
@@ -27,12 +28,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
+  const menu = await getMenuForLayout();
+  // TODO(WU-274): plumb `menu` into nav surfaces when ready.
+  void menu;
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
