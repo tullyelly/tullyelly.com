@@ -36,6 +36,17 @@ function Icon({
   return <IconComponent className={className} aria-hidden="true" />;
 }
 
+function isActiveHref(pathname: string, href?: string | null): boolean {
+  if (!href) return false;
+  try {
+    const a = pathname.replace(/\/$/, "");
+    const b = href.replace(/\/$/, "");
+    return a === b || a.startsWith(`${b}/`);
+  } catch {
+    return false;
+  }
+}
+
 export default function NavDesktop({ items }: Props): React.ReactNode {
   const pathname = usePathname();
   const personas = (items ?? []).filter(isPersona);
