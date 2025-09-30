@@ -2,13 +2,14 @@
 import "./globals.css";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
-import NavBar from "@/app/_components/NavBar";
 import Footer from "@/app/_components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import PersistentBannerHost from "@/components/PersistentBannerHost";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
 import { getMenuForLayout } from "@/app/_menu/getMenu";
+import NavDesktop from "@/components/nav/NavDesktop";
+import NavMobile from "@/components/nav/NavMobile";
 
 await initSentry();
 
@@ -35,8 +36,6 @@ export default async function RootLayout({
 }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const menu = await getMenuForLayout();
-  // TODO(WU-274): plumb `menu` into nav surfaces when ready.
-  void menu;
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
@@ -47,12 +46,13 @@ export default async function RootLayout({
             id="site-layout"
             className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0"
           >
-            <header id="nav-zone">
+            <header id="nav-zone" className="bg-[var(--blue)] text-white">
               {announcement && (
                 <AnnouncementBanner message={announcement} dismissible />
               )}
               <PersistentBannerHost />
-              <NavBar />
+              <NavDesktop items={menu} />
+              <NavMobile items={menu} />
             </header>
 
             <main id="content" tabIndex={-1} className="m-0 p-0 bg-transparent">

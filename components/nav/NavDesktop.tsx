@@ -94,25 +94,25 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
   if (!personas.length) return null;
 
   return (
-    <nav className="hidden border-b md:block">
-      <div className="mx-auto max-w-7xl px-4">
+    <nav className="hidden md:block bg-transparent text-white shadow-sm relative z-40">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-2">
         <NavigationMenu
           // Radix manages focus & roving tabindex for keyboard use
-          className="w-full"
+          className="w-full max-w-none"
         >
-          <NavigationMenuList className="gap-2">
+          <NavigationMenuList className="gap-3 justify-start">
             {personas.map((p, i) => (
               <NavigationMenuItem
                 key={p.id}
                 onMouseEnter={() => scheduleOpen(i)}
                 onMouseLeave={scheduleClose}
               >
-                <NavigationMenuTrigger className="gap-2">
+                <NavigationMenuTrigger className="gap-2 rounded-md bg-blue/0 text-white hover:bg-white/10 focus-visible:ring-white/60 data-[state=open]:bg-white/20">
                   <Icon name={p.icon} className="size-4" />
-                  <span className="capitalize">{p.label}</span>
+                  <span>{p.label}</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent
-                  className="p-3"
+                  className="z-[90] mt-2 rounded-xl border border-blue/20 bg-background p-3 shadow-xl"
                   onMouseEnter={() => scheduleOpen(i)}
                   onMouseLeave={scheduleClose}
                 >

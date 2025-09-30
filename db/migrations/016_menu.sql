@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS dojo.menu_node (
   persona      TEXT NOT NULL CHECK (persona IN ('mark2','tullyelly','cardattack','theabbott','unclejimmy')),
   kind         TEXT NOT NULL CHECK (kind IN ('persona','link','external','group')),
   label        TEXT NOT NULL,
+  CONSTRAINT chk_persona_label_lower CHECK (kind <> 'persona' OR label = lower(label)),
   href         TEXT NULL,
   target       TEXT NULL CHECK (target IN ('_self','_blank')),
   icon         TEXT NULL,
