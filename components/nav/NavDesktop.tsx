@@ -13,6 +13,7 @@ import {
 import type { NavItem, PersonaItem } from "@/types/nav";
 import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useHasReducedMotion } from "@/hooks/use-has-reduced-motion";
 
 type Props = {
   items?: NavItem[]; // Expect personas at top level
@@ -51,6 +52,44 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
   const pathname = usePathname();
   const personas = (items ?? []).filter(isPersona);
 
+  const HOVER_OPEN_DELAY = 120;
+  const HOVER_CLOSE_DELAY = 180;
+  const prefersReduced = useHasReducedMotion();
+  const [openIdx, setOpenIdx] = React.useState<number | null>(null);
+  const openTimer = React.useRef<number | null>(null);
+  const closeTimer = React.useRef<number | null>(null);
+
+  function scheduleOpen(i: number) {
+    if (prefersReduced) {
+      setOpenIdx(i);
+      return;
+    }
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    if (openTimer.current) window.clearTimeout(openTimer.current);
+    openTimer.current = window.setTimeout(
+      () => setOpenIdx(i),
+      HOVER_OPEN_DELAY,
+    );
+  }
+  function scheduleClose() {
+    if (prefersReduced) {
+      setOpenIdx(null);
+      return;
+    }
+    if (openTimer.current) {
+      window.clearTimeout(openTimer.current);
+      openTimer.current = null;
+    }
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(
+      () => setOpenIdx(null),
+      HOVER_CLOSE_DELAY,
+    );
+  }
+
   // Nothing to render if no data yet (layout will pass it later)
   if (!personas.length) return null;
 
@@ -62,13 +101,21 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
           className="w-full"
         >
           <NavigationMenuList className="gap-2">
-            {personas.map((p) => (
-              <NavigationMenuItem key={p.id}>
+            {personas.map((p, i) => (
+              <NavigationMenuItem
+                key={p.id}
+                onMouseEnter={() => scheduleOpen(i)}
+                onMouseLeave={scheduleClose}
+              >
                 <NavigationMenuTrigger className="gap-2">
                   <Icon name={p.icon} className="size-4" />
                   <span className="capitalize">{p.label}</span>
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="p-3">
+                <NavigationMenuContent
+                  className="p-3"
+                  onMouseEnter={() => scheduleOpen(i)}
+                  onMouseLeave={scheduleClose}
+                >
                   <PersonaPanel persona={p} pathname={pathname ?? ""} />
                 </NavigationMenuContent>
               </NavigationMenuItem>
