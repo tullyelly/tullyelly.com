@@ -10,6 +10,7 @@ import { inter, jbMono } from "./fonts";
 import { getMenuForLayout } from "@/app/_menu/getMenu";
 import NavDesktop from "@/components/nav/NavDesktop";
 import NavMobile from "@/components/nav/NavMobile";
+import CommandMenu, { CommandMenuProvider } from "@/components/nav/CommandMenu";
 
 await initSentry();
 
@@ -41,31 +42,38 @@ export default async function RootLayout({
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
       <head></head>
       <body className="font-sans text-foreground">
-        <Providers>
-          <div
-            id="site-layout"
-            className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0"
-          >
-            <header id="nav-zone" className="bg-[var(--blue)] text-white">
-              {announcement && (
-                <AnnouncementBanner message={announcement} dismissible />
-              )}
-              <PersistentBannerHost />
-              <NavDesktop items={menu} />
-              <NavMobile items={menu} />
-            </header>
+        <CommandMenuProvider items={menu}>
+          <Providers>
+            <div
+              id="site-layout"
+              className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0"
+            >
+              <header id="nav-zone" className="bg-[var(--blue)] text-white">
+                {announcement && (
+                  <AnnouncementBanner message={announcement} dismissible />
+                )}
+                <PersistentBannerHost />
+                <NavDesktop items={menu} />
+                <NavMobile items={menu} />
+              </header>
 
-            <main id="content" tabIndex={-1} className="m-0 p-0 bg-transparent">
-              <div
-                id="content-pane"
-                className="mx-auto max-w-[var(--content-max)] bg-white shadow-sm px-6 md:px-8 lg:px-10 py-6 md:py-8 crop-block-margins"
+              <main
+                id="content"
+                tabIndex={-1}
+                className="m-0 p-0 bg-transparent"
               >
-                {children}
-              </div>
-            </main>
-            <Footer />
-          </div>
-        </Providers>
+                <div
+                  id="content-pane"
+                  className="mx-auto max-w-[var(--content-max)] bg-white shadow-sm px-6 md:px-8 lg:px-10 py-6 md:py-8 crop-block-margins"
+                >
+                  {children}
+                </div>
+              </main>
+              <Footer />
+            </div>
+          </Providers>
+          <CommandMenu />
+        </CommandMenuProvider>
       </body>
     </html>
   );
