@@ -1,153 +1,371 @@
 "use client";
 
 import * as React from "react";
-import { type DialogProps } from "@radix-ui/react-dialog";
 import { Command as CommandPrimitive } from "cmdk";
-import { Search } from "lucide-react";
-
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useTopAnchor } from "@/components/hooks/useTopAnchor";
+import { useLeftAnchor } from "@/components/hooks/useLeftAnchor";
 
-const Command = React.forwardRef<
+export const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
 >(({ className, ...props }, ref) => (
   <CommandPrimitive
     ref={ref}
     className={cn(
-      "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
+      "flex h-full w-full flex-col overflow-visible rounded-2xl p-3",
       className,
     )}
     {...props}
   />
 ));
-Command.displayName = CommandPrimitive.displayName;
+Command.displayName = "Command";
 
-const CommandDialog = ({ children, ...props }: DialogProps) => {
-  return (
-    <Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0">
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
-          {children}
-        </Command>
-      </DialogContent>
-    </Dialog>
-  );
+type CommandDialogProps = {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+  children: React.ReactNode;
+  className?: string;
 };
 
-const CommandInput = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Input>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
->(({ className, ...props }, ref) => (
-  <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-    <CommandPrimitive.Input
-      ref={ref}
-      className={cn(
-        "flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    />
-  </div>
-));
+export function CommandDialog({
+  open,
+  onOpenChange,
+  children,
+  className,
+}: CommandDialogProps) {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const topPx = useTopAnchor();
+  const { left: leftPx, compute: recomputeLeft } = useLeftAnchor({
+    anchorSelector: "#page-main",
+    margin: 16,
+  });
 
-CommandInput.displayName = CommandPrimitive.Input.displayName;
+  React.useEffect(() => {
+    if (contentRef.current) {
+      recomputeLeft(contentRef.current);
+    }
+  }, [recomputeLeft, open]);
 
-const CommandList = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.List
-    ref={ref}
-    className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
-    {...props}
-  />
-));
+  React.useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
 
-CommandList.displayName = CommandPrimitive.List.displayName;
+    const targetStyles: Array<[string, string]> = [
+      ["position", "fixed"],
+      ["top", `${topPx}px`],
+      ["left", `${leftPx}px`],
+      ["right", "auto"],
+      ["bottom", "auto"],
+      ["transform", "none"],
+    ];
 
-const CommandEmpty = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Empty>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
->((props, ref) => (
-  <CommandPrimitive.Empty
-    ref={ref}
-    className="py-6 text-center text-sm"
-    {...props}
-  />
-));
+    const guardClasses = [
+      "left-1/2",
+      "-translate-x-1/2",
+      "top-1/2",
+      "-translate-y-1/2",
+      "bottom-0",
+      "items-end",
+      "justify-end",
+      "data-[state=open]:slide-in-from-bottom",
+      "sm:items-end",
+    ];
 
-CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
+    const enforce = () => {
+      let changed = false;
+      for (const [prop, value] of targetStyles) {
+        if (el.style.getPropertyValue(prop) !== value) {
+          el.style.setProperty(prop, value);
+          changed = true;
+        }
+      }
+      for (const cls of guardClasses) {
+        if (el.classList.contains(cls)) {
+          el.classList.remove(cls);
+          changed = true;
+        }
+      }
+      return changed;
+    };
 
-const CommandGroup = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Group>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Group
-    ref={ref}
-    className={cn(
-      "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
-      className,
-    )}
-    {...props}
-  />
-));
+    const apply = () => {
+      const changed = enforce();
+      if (changed) {
+        recomputeLeft(el);
+      }
+    };
 
-CommandGroup.displayName = CommandPrimitive.Group.displayName;
+    apply();
 
-const CommandSeparator = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 h-px bg-border", className)}
-    {...props}
-  />
-));
-CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
+    const mo = new MutationObserver(apply);
+    mo.observe(el, { attributes: true, attributeFilter: ["class", "style"] });
 
-const CommandItem = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-      className,
-    )}
-    {...props}
-  />
-));
+    const ro = new ResizeObserver(() => {
+      recomputeLeft(el);
+      enforce();
+    });
+    ro.observe(el);
 
-CommandItem.displayName = CommandPrimitive.Item.displayName;
+    return () => {
+      mo.disconnect();
+      ro.disconnect();
+    };
+  }, [leftPx, topPx, recomputeLeft]);
 
-const CommandShortcut = ({
+  React.useEffect(() => {
+    if (!open) return;
+
+    const allowInside = (target: EventTarget | null) =>
+      !!(
+        contentRef.current &&
+        target instanceof Node &&
+        contentRef.current.contains(target)
+      );
+
+    const stopWheel = (event: WheelEvent) => {
+      if (!allowInside(event.target)) event.preventDefault();
+    };
+    const stopTouch = (event: TouchEvent) => {
+      if (!allowInside(event.target)) event.preventDefault();
+    };
+    const stopKeys = (event: KeyboardEvent) => {
+      const focusInside = contentRef.current?.contains(
+        document.activeElement ?? null,
+      );
+      const scrollKeys = new Set([
+        " ",
+        "PageUp",
+        "PageDown",
+        "Home",
+        "End",
+        "ArrowUp",
+        "ArrowDown",
+      ]);
+      if (!focusInside && scrollKeys.has(event.key)) event.preventDefault();
+    };
+
+    window.addEventListener("wheel", stopWheel, {
+      passive: false,
+      capture: true,
+    });
+    window.addEventListener("touchmove", stopTouch, {
+      passive: false,
+      capture: true,
+    });
+    window.addEventListener("keydown", stopKeys, true);
+
+    return () => {
+      window.removeEventListener("wheel", stopWheel, {
+        capture: true,
+      } as any);
+      window.removeEventListener("touchmove", stopTouch, {
+        capture: true,
+      } as any);
+      window.removeEventListener("keydown", stopKeys, true);
+    };
+  }, [open]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const container = contentRef.current;
+    if (!container) return;
+
+    const selector =
+      'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !contentRef.current) return;
+      const focusable = Array.from(
+        contentRef.current.querySelectorAll<HTMLElement>(selector),
+      ).filter(
+        (node) =>
+          !node.hasAttribute("disabled") &&
+          node.getAttribute("aria-hidden") !== "true",
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (!active || active === first) {
+          last.focus();
+          event.preventDefault();
+        }
+      } else if (!active || active === last) {
+        first.focus();
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown, true);
+    queueMicrotask(() => {
+      const first = container.querySelector<HTMLElement>(selector);
+      first?.focus();
+    });
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [open]);
+
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} modal={false}>
+      <DialogPrimitive.Portal forceMount>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[98] bg-black/45 backdrop-blur-[2px] transition-opacity duration-120 data-[state=open]:opacity-100 data-[state=closed]:opacity-0" />
+        <DialogPrimitive.Content forceMount asChild>
+          <div
+            ref={contentRef}
+            role="dialog"
+            aria-modal="true"
+            className={cn(
+              "fixed z-[99] w-[min(96vw,56rem)] p-0 !bottom-auto",
+              "rounded-2xl shadow-2xl",
+              "bg-[var(--surface)] text-[var(--text)]",
+              "opacity-0 data-[state=open]:opacity-100 transition-opacity duration-120",
+              className,
+            )}
+            style={{
+              top: topPx,
+              left: leftPx,
+              right: "auto",
+              bottom: "auto",
+              transform: "none",
+            }}
+          >
+            <DialogPrimitive.Title asChild>
+              <VisuallyHidden>Search command menu</VisuallyHidden>
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Description asChild>
+              <VisuallyHidden>
+                Type to search. Use arrow keys to navigate. Press Enter to open.
+                Press Escape to close.
+              </VisuallyHidden>
+            </DialogPrimitive.Description>
+            {children}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
+
+export function CommandInput({
   className,
   ...props
-}: React.HTMLAttributes<HTMLSpanElement>) => {
+}: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
-    <span
+    <div
+      cmdk-input-wrapper=""
       className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground",
+        "relative z-10",
+        "flex h-12 items-center gap-2 px-3",
+        "rounded-md",
+        "bg-[var(--surface)]",
+        "ring-1 ring-[var(--brand)] focus-within:ring-2",
+        "mb-2",
+      )}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-70">
+        <path
+          fill="currentColor"
+          d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5l1.5-1.5l-5-5m-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14"
+        />
+      </svg>
+      <CommandPrimitive.Input
+        className={cn(
+          "h-12 flex-1 bg-transparent text-sm",
+          "border-0 outline-none focus:outline-none",
+          "ring-0 focus:ring-0 shadow-none focus:shadow-none",
+          "appearance-none",
+          "text-[var(--text)] placeholder:text-[var(--muted)]",
+          className,
+        )}
+        {...props}
+      />
+      <kbd className="rounded-md border border-black/10 dark:border-white/10 px-1.5 py-0.5 text-xs text-[var(--muted)]">
+        ⌘K
+      </kbd>
+    </div>
+  );
+}
+
+export function CommandList({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.List>) {
+  return (
+    <CommandPrimitive.List
+      className={cn(
+        "max-h-[60vh] overflow-auto bg-[var(--surface)] px-2 pb-2 pt-1",
         className,
       )}
       {...props}
     />
   );
-};
-CommandShortcut.displayName = "CommandShortcut";
+}
 
-export {
-  Command,
-  CommandDialog,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandShortcut,
-  CommandSeparator,
-};
+export const CommandEmpty = (
+  props: React.ComponentProps<typeof CommandPrimitive.Empty>,
+) => (
+  <CommandPrimitive.Empty
+    {...props}
+    className={cn("px-3 py-4 text-sm text-[var(--muted)]", props.className)}
+  />
+);
+
+export const CommandGroup = (
+  props: React.ComponentProps<typeof CommandPrimitive.Group>,
+) => (
+  <CommandPrimitive.Group
+    {...props}
+    className={cn(
+      "mb-1",
+      "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1",
+      "[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold",
+      "[&_[cmdk-group-heading]]:text-[var(--muted)]",
+      props.className,
+    )}
+  />
+);
+
+export const CommandItem = (
+  props: React.ComponentProps<typeof CommandPrimitive.Item>,
+) => (
+  <CommandPrimitive.Item
+    {...props}
+    className={cn(
+      "flex h-10 items-center rounded-lg px-2 text-[var(--text)]",
+      "relative transition-colors",
+      "hover:bg-[var(--surface-2)] data-[selected=true]:bg-[var(--surface-2)]",
+      "data-[selected=true]:ring-1 ring-[var(--brand)] ring-inset",
+      props.className,
+    )}
+  />
+);
+
+export const CommandSeparator = (
+  props: React.ComponentProps<typeof CommandPrimitive.Separator>,
+) => (
+  <CommandPrimitive.Separator
+    {...props}
+    className={cn("my-1 h-px bg-black/10 dark:bg-white/10", props.className)}
+  />
+);
+
+export const CommandShortcut = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => (
+  <span
+    className={cn(
+      "ml-auto text-xs tracking-widest text-[var(--muted)]",
+      className,
+    )}
+    {...props}
+  />
+);
+CommandShortcut.displayName = "CommandShortcut";

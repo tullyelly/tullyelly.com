@@ -14,6 +14,7 @@ import type { NavItem, PersonaItem } from "@/types/nav";
 import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useHasReducedMotion } from "@/hooks/use-has-reduced-motion";
+import { useCommandMenu } from "@/components/nav/CommandMenu";
 
 type Props = {
   items?: NavItem[]; // Expect personas at top level
@@ -51,6 +52,9 @@ function isActiveHref(pathname: string, href?: string | null): boolean {
 export default function NavDesktop({ items }: Props): React.ReactNode {
   const pathname = usePathname();
   const personas = (items ?? []).filter(isPersona);
+
+  const { setOpen } = useCommandMenu();
+  const openCommand = React.useCallback(() => setOpen(true), [setOpen]);
 
   const HOVER_OPEN_DELAY = 120;
   const HOVER_CLOSE_DELAY = 180;
@@ -122,6 +126,15 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
             ))}
           </NavigationMenuList>
         </NavigationMenu>
+        <button
+          type="button"
+          onClick={openCommand}
+          className="ml-4 inline-flex items-center gap-2 rounded-md border border-white/40 bg-white/10 px-3 py-2 text-sm font-medium text-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        >
+          <Lucide.Command className="size-4" aria-hidden="true" />
+          <span>Search</span>
+          <span className="hidden text-xs opacity-75 lg:inline">⌘K</span>
+        </button>
       </div>
     </nav>
   );

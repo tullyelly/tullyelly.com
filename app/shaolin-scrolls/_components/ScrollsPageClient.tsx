@@ -50,7 +50,7 @@ export default function ScrollsPageClient({
 
   return (
     <div className="space-y-4">
-      <div className="md:hidden">
+      <div className="md:hidden" suppressHydrationWarning>
         <ReleaseCards rows={rows} />
       </div>
       <ReleasesTable rows={rows} />

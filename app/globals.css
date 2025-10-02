@@ -14,6 +14,13 @@
   --gold: #f0ebd2;
   --font-inter: system-ui, sans-serif;
   --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --header-h: 64px;
+  --cmdk-gap: 8px;
+  --brand: #1d4ed8;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --text: #0f172a;
+  --muted: #475569;
 
   /* Brand chrome */
   --brand-chrome: #0077c0; /* Great Lakes Blue */
@@ -24,6 +31,8 @@
   --blue-contrast: #0069a9; /* Darkened for AA on cream */
   --green: #00471b; /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
+
+  --border-color: 0 0 0 / 0.08;
 
   /* Neutrals for readability */
   --black: var(--ink);
@@ -59,7 +68,17 @@
 
 html,
 body {
-  height: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+}
+
+.dark:root {
+  --surface: #0b1220;
+  --surface-2: #0f172a;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --border-color: 255 255 255 / 0.1;
 }
 
 html {
@@ -78,11 +97,47 @@ html {
 }
 
 body {
-  margin: 0;
   background: transparent !important;
   color: var(--fg);
   font-family: var(--font-inter);
   line-height: 1.6;
+}
+
+/* Prevent browser scroll anchoring from pushing the viewport around when layout shifts late */
+#page-main {
+  overflow-anchor: none;
+}
+
+/* Clamp first/last child margins so they cannot create phantom gaps */
+#page-main > :first-child {
+  margin-top: 0 !important;
+}
+
+#page-main > :last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Command palette: strip inner borders/rings applied by cmdk primitives */
+[cmdk-input] {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+[cmdk-input]:focus,
+[cmdk-input]:focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+[cmdk-input-wrapper] {
+  box-shadow: none !important;
+}
+
+input[cmdk-input]:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
 }
 
 code,
@@ -365,5 +420,17 @@ p {
   }
   .crop-block-margins > :last-child {
     margin-bottom: 0 !important;
+  }
+}
+
+/* Command palette animation */
+@keyframes cmdk-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

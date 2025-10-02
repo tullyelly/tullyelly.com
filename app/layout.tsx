@@ -2,6 +2,7 @@
 import "./globals.css";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
+import Script from "next/script";
 import Footer from "@/app/_components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import PersistentBannerHost from "@/components/PersistentBannerHost";
@@ -11,6 +12,8 @@ import { getMenuForLayout } from "@/app/_menu/getMenu";
 import NavDesktop from "@/components/nav/NavDesktop";
 import NavMobile from "@/components/nav/NavMobile";
 import CommandMenu, { CommandMenuProvider } from "@/components/nav/CommandMenu";
+import HeaderShell from "@/components/nav/HeaderShell";
+import InitialScrollGuard from "@/components/system/InitialScrollGuard";
 
 await initSentry();
 
@@ -42,37 +45,59 @@ export default async function RootLayout({
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
       <head></head>
       <body className="font-sans text-foreground">
+        <Script id="boot-scroll-guard" strategy="beforeInteractive">{`
+  (function () {
+    try { history.scrollRestoration = 'manual'; } catch (e) {}
+    var lock = !location.hash;
+    if (lock) {
+      var forceTop = function () {
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      };
+      forceTop();
+      var until = performance.now() + 800;
+      var onScroll = function () {
+        if (performance.now() < until) forceTop();
+      };
+      window.addEventListener('scroll', onScroll, { passive: false });
+      var release = function () {
+        window.removeEventListener('scroll', onScroll, { passive: false });
+      };
+      window.addEventListener('load', release, { once: true });
+      setTimeout(release, 900);
+    }
+  })();
+`}</Script>
+        <InitialScrollGuard />
         <CommandMenuProvider items={menu}>
           <Providers>
-            <div
-              id="site-layout"
-              className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0"
-            >
-              <header id="nav-zone" className="bg-[var(--blue)] text-white">
+            <div id="page-root" className="flex min-h-screen flex-col">
+              <HeaderShell className="bg-[var(--blue)] text-white">
                 {announcement && (
                   <AnnouncementBanner message={announcement} dismissible />
                 )}
                 <PersistentBannerHost />
                 <NavDesktop items={menu} />
                 <NavMobile items={menu} />
-              </header>
-
+                <CommandMenu />
+              </HeaderShell>
               <main
-                id="content"
+                id="page-main"
                 tabIndex={-1}
-                className="m-0 p-0 bg-transparent"
+                className="m-0 flex-1 bg-transparent p-0 overflow-anchor-none"
               >
                 <div
                   id="content-pane"
-                  className="mx-auto max-w-[var(--content-max)] bg-white shadow-sm px-6 md:px-8 lg:px-10 py-6 md:py-8 crop-block-margins"
+                  className="crop-block-margins mx-auto max-w-[var(--content-max)] bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10"
                 >
                   {children}
                 </div>
               </main>
-              <Footer />
+              <div className="mt-auto">
+                <Footer />
+              </div>
             </div>
           </Providers>
-          <CommandMenu />
         </CommandMenuProvider>
       </body>
     </html>

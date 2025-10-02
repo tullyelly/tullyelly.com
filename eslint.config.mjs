@@ -62,6 +62,11 @@ const baseRestrictedImports = [
     importNames: ['formatDateTimeChicago', 'formatDateOnly'],
     message: 'Use the fmt* helpers from lib/datetime directly instead of the legacy lib/dates shim.',
   },
+  {
+    name: '@radix-ui/react-dialog',
+    message:
+      'Import dialog primitives only via components/ui/dialog-safe (or components/ui/command.tsx). This guarantees an accessible Title.',
+  },
 ]
 
 const serverRestrictedImports = [
@@ -187,7 +192,22 @@ const config = [
     files: ['app/**/*.{ts}', 'lib/**/*.{ts}'],
     rules: {
       'no-restricted-syntax': ['error', ...serverRestrictedSyntax],
-      'no-restricted-imports': ['error', { paths: serverRestrictedImports }],
+      'no-restricted-imports': [
+        'error',
+        { paths: [...baseRestrictedImports, ...serverRestrictedImports] },
+      ],
+    },
+  },
+
+  {
+    files: [
+      'components/ui/dialog-safe.tsx',
+      'components/ui/command.tsx',
+      'components/ui/dialog.tsx',
+      'components/ui/sheet.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
 ]

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Drawer } from "vaul";
 import * as Lucide from "lucide-react";
+import { useCommandMenu } from "@/components/nav/CommandMenu";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
   Accordion,
@@ -50,6 +51,12 @@ export default function NavMobile({ items }: Props) {
   const searchKey = search?.toString();
   const personas = (items ?? []).filter(isPersona);
 
+  const { setOpen: setCommandMenuOpen } = useCommandMenu();
+  const openCommandMenu = React.useCallback(
+    () => setCommandMenuOpen(true),
+    [setCommandMenuOpen],
+  );
+
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [open, setOpen] = React.useState(false);
   const closeNow = React.useCallback(() => setOpen(false), []);
@@ -78,7 +85,15 @@ export default function NavMobile({ items }: Props) {
           <Lucide.Menu className="size-4" />
           Menu
         </button>
-        <div />
+        <button
+          type="button"
+          aria-label="Open command menu"
+          onClick={openCommandMenu}
+          className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20"
+        >
+          <Lucide.Command className="size-4" aria-hidden="true" />
+          <span className="text-sm">Search</span>
+        </button>
       </div>
 
       <Drawer.Root

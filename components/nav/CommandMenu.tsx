@@ -4,6 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { NavItem, PersonaItem } from "@/types/nav";
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -142,46 +143,48 @@ export default function CommandMenu() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Type a page or feature…" />
-      <CommandList>
-        <CommandEmpty>No results.</CommandEmpty>
-        {/* Featured / recent group (in next prompt we’ll rank; for now, basic order) */}
-        {/* Persona groups */}
-        {Array.from(new Set(flat.map((x) => x.persona))).map((persona) => {
-          const items = flat.filter((x) => x.persona === persona);
-          if (!items.length) return null;
-          return (
-            <CommandGroup key={persona} heading={persona}>
-              {items.map((it) => (
-                <CommandItem
-                  key={it.id}
-                  value={`${it.label} ${persona}`}
-                  onSelect={() => onSelect(it.href)}
-                  keywords={[persona, it.label]}
-                >
-                  <span className="mr-2 inline-flex size-5 items-center justify-center rounded-md border">
-                    {it.icon
-                      ? Icon({ name: it.icon, className: "size-3.5" })
-                      : null}
-                  </span>
-                  <span className="flex-1">
-                    <span className="font-medium">{it.label}</span>
-                    <span className="ml-1 opacity-60">› {persona}</span>
-                  </span>
-                  {it.badgeText ? (
-                    <span className="mr-2 text-[10px] opacity-70">
-                      {it.badgeText}
+      <Command className="bg-[var(--surface)] text-[var(--text)]">
+        <CommandInput placeholder="Type a page or feature…" />
+        <CommandList>
+          <CommandEmpty>No results.</CommandEmpty>
+          {/* Featured / recent group (in next prompt we’ll rank; for now, basic order) */}
+          {/* Persona groups */}
+          {Array.from(new Set(flat.map((x) => x.persona))).map((persona) => {
+            const items = flat.filter((x) => x.persona === persona);
+            if (!items.length) return null;
+            return (
+              <CommandGroup key={persona} heading={persona}>
+                {items.map((it) => (
+                  <CommandItem
+                    key={it.id}
+                    value={`${it.label} ${persona}`}
+                    onSelect={() => onSelect(it.href)}
+                    keywords={[persona, it.label]}
+                  >
+                    <span className="mr-2 inline-flex size-5 items-center justify-center rounded-md border">
+                      {it.icon
+                        ? Icon({ name: it.icon, className: "size-3.5" })
+                        : null}
                     </span>
-                  ) : null}
-                  {it.hotkey ? (
-                    <CommandShortcut>{it.hotkey}</CommandShortcut>
-                  ) : null}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          );
-        })}
-      </CommandList>
+                    <span className="flex-1">
+                      <span className="font-medium">{it.label}</span>
+                      <span className="ml-1 opacity-60">› {persona}</span>
+                    </span>
+                    {it.badgeText ? (
+                      <span className="mr-2 text-[10px] opacity-70">
+                        {it.badgeText}
+                      </span>
+                    ) : null}
+                    {it.hotkey ? (
+                      <CommandShortcut>{it.hotkey}</CommandShortcut>
+                    ) : null}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            );
+          })}
+        </CommandList>
+      </Command>
     </CommandDialog>
   );
 }
