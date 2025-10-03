@@ -22,6 +22,20 @@
   --text: #0f172a;
   --muted: #475569;
 
+  /* Layering */
+  --z-base: 0;
+  --z-header: 100;
+  --z-overlay: 900;
+  --z-popover: 2000;
+  --z-modal: 1100;
+  --z-toast: 1200;
+
+  /* Elevated surfaces */
+  --color-surface: #ffffff;
+  --color-ink-strong: #0b1220;
+  --color-outline-subtle: #d8dfea;
+  --color-surface-hover: #f3f6fb;
+
   /* Brand chrome */
   --brand-chrome: #0077c0; /* Great Lakes Blue */
   --brand-chrome-fg: #ffffff; /* text on chrome */
@@ -79,6 +93,11 @@ body {
   --text: #e5e7eb;
   --muted: #9ca3af;
   --border-color: 255 255 255 / 0.1;
+
+  --color-surface: #0b0f12;
+  --color-ink-strong: #e8eef8;
+  --color-outline-subtle: #223041;
+  --color-surface-hover: #131a23;
 }
 
 html {
