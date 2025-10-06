@@ -2,6 +2,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
 
+import type { Breadcrumb as Crumb } from "@/lib/menu.breadcrumbs";
 import { cn } from "@/lib/utils";
 
 const Breadcrumb = React.forwardRef<
@@ -9,7 +10,9 @@ const Breadcrumb = React.forwardRef<
   React.ComponentPropsWithoutRef<"nav"> & {
     separator?: React.ReactNode;
   }
->(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />);
+>(({ "aria-label": ariaLabel, ...props }, ref) => (
+  <nav ref={ref} aria-label={ariaLabel ?? "Breadcrumb"} {...props} />
+));
 Breadcrumb.displayName = "Breadcrumb";
 
 const BreadcrumbList = React.forwardRef<
@@ -103,6 +106,40 @@ const BreadcrumbEllipsis = ({
   </span>
 );
 BreadcrumbEllipsis.displayName = "BreadcrumbElipssis";
+
+export function BreadcrumbTrail({
+  crumbs,
+  separator,
+}: {
+  crumbs: Crumb[];
+  separator?: React.ReactNode;
+}): React.ReactNode {
+  if (!crumbs.length) return null;
+  const lastIndex = crumbs.length - 1;
+
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        {crumbs.map((crumb, index) => (
+          <React.Fragment key={`${crumb.href}-${crumb.label}`}>
+            <BreadcrumbItem>
+              {index === lastIndex ? (
+                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+            {index < lastIndex ? (
+              <BreadcrumbSeparator>{separator}</BreadcrumbSeparator>
+            ) : null}
+          </React.Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+BreadcrumbTrail.displayName = "BreadcrumbTrail";
 
 export {
   Breadcrumb,

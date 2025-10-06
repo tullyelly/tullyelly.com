@@ -1,6 +1,14 @@
+import { cache } from "react";
 import { getCapabilities } from "@/app/_auth/session";
 import { fetchMenuPublished, filterByRequires } from "@/lib/menu";
+import { buildMenuIndex } from "@/lib/menu.index";
+import type { MenuIndex } from "@/lib/menu.index";
 import type { NavItem } from "@/types/nav";
+
+export interface MenuPayload {
+  tree: NavItem[];
+  index: MenuIndex;
+}
 
 function shouldBypassFiltering(): boolean {
   const flag = process.env.NEXT_PUBLIC_MENU_SHOW_ALL;
@@ -9,13 +17,24 @@ function shouldBypassFiltering(): boolean {
   return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
-export async function getMenuForLayout(): Promise<NavItem[]> {
+const loadMenu = cache(async (): Promise<MenuPayload> => {
   const tree = await fetchMenuPublished();
-  if (shouldBypassFiltering()) {
-    return tree;
+  let filtered = tree;
+
+  if (!shouldBypassFiltering()) {
+    const capabilities = await getCapabilities();
+    filtered = filterByRequires(tree, capabilities.has);
   }
 
-  const capabilities = await getCapabilities();
-  const filtered = filterByRequires(tree, capabilities.has);
-  return filtered;
+  const index = buildMenuIndex(filtered);
+  return { tree: filtered, index };
+});
+
+export async function getMenu(): Promise<MenuPayload> {
+  return loadMenu();
+}
+
+export async function getMenuForLayout(): Promise<NavItem[]> {
+  const { tree } = await loadMenu();
+  return tree;
 }

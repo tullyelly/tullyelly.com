@@ -10,11 +10,13 @@ export type Persona =
   | "unclejimmy";
 
 export type BadgeTone = "info" | "success" | "warn" | "danger" | "new";
+export type BadgeType = "featured";
 export type FeatureKey = string;
 
 export interface Badge {
   text: string;
   tone?: BadgeTone;
+  type?: BadgeType;
 }
 
 interface BaseItem {
@@ -26,6 +28,9 @@ interface BaseItem {
   featureKey?: FeatureKey;
   requires?: CapabilityKey[];
   hidden?: boolean;
+  featured?: boolean;
+  segmentLabel?: string;
+  keywords?: string[];
 }
 
 export type NavItem = PersonaItem | LinkItem | ExternalItem | GroupItem;

@@ -32,12 +32,18 @@ type MetaPayload = {
   badge?: Badge;
   hotkey?: string;
   requires?: CapabilityKey[];
+  featured?: true;
+  segmentLabel?: string;
+  keywords?: string[];
 };
 
 type RawMeta = {
   badge?: unknown;
   hotkey?: unknown;
   requires?: unknown;
+  featured?: unknown;
+  segmentLabel?: unknown;
+  keywords?: unknown;
 };
 
 function normalizeCapabilityList(value: unknown): CapabilityKey[] | undefined {
@@ -72,6 +78,28 @@ function extractMeta(meta: MenuRow["meta"]): MetaPayload {
     parsed.requires = requires;
   }
 
+  if (payload.featured === true) {
+    parsed.featured = true;
+  }
+
+  const segmentLabel = payload.segmentLabel;
+  if (typeof segmentLabel === "string") {
+    const trimmed = segmentLabel.trim();
+    if (trimmed.length) {
+      parsed.segmentLabel = trimmed;
+    }
+  }
+
+  const keywordList = payload.keywords;
+  if (Array.isArray(keywordList)) {
+    const normalized = keywordList
+      .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+      .filter((entry) => entry.length);
+    if (normalized.length) {
+      parsed.keywords = normalized;
+    }
+  }
+
   return parsed;
 }
 
@@ -93,7 +121,10 @@ function createNode(row: MenuRow): NavItem {
     requires,
     ...(meta.badge ? { badge: meta.badge } : {}),
     ...(meta.hotkey ? { hotkey: meta.hotkey } : {}),
-  } as const;
+    ...(meta.featured ? { featured: true } : {}),
+    ...(meta.segmentLabel ? { segmentLabel: meta.segmentLabel } : {}),
+    ...(meta.keywords ? { keywords: meta.keywords } : {}),
+  };
 
   switch (row.kind) {
     case "persona":
@@ -101,13 +132,13 @@ function createNode(row: MenuRow): NavItem {
         ...base,
         kind: "persona",
         persona: row.persona,
-        children: [],
+        children: [] as NavItem[],
       } satisfies PersonaItem;
     case "group":
       return {
         ...base,
         kind: "group",
-        children: [],
+        children: [] as NavItem[],
       } satisfies GroupItem;
     case "external":
       if (!row.href) throw new Error("External menu node missing href");
