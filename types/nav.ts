@@ -1,3 +1,7 @@
+import type { CapabilityKey as CapabilityKeyType } from "@/app/_auth/capabilities";
+
+export type CapabilityKey = CapabilityKeyType;
+
 export type Persona =
   | "mark2"
   | "tullyelly"
@@ -7,7 +11,6 @@ export type Persona =
 
 export type BadgeTone = "info" | "success" | "warn" | "danger" | "new";
 export type FeatureKey = string;
-export type CapabilityKey = string;
 
 export interface Badge {
   text: string;
@@ -47,4 +50,11 @@ export interface ExternalItem extends BaseItem {
 export interface GroupItem extends BaseItem {
   kind: "group";
   children: NavItem[];
+}
+
+export function isCapabilityKeyArray(value: unknown): value is CapabilityKey[] {
+  if (!Array.isArray(value)) return false;
+  return value.every(
+    (item) => typeof item === "string" && item.trim().length > 0,
+  );
 }

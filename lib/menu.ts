@@ -1,12 +1,14 @@
 import "server-only";
 
 import { sql } from "@/lib/db";
-import type {
-  Badge,
-  NavItem,
-  Persona,
-  PersonaItem,
-  GroupItem,
+import {
+  isCapabilityKeyArray,
+  type Badge,
+  type CapabilityKey,
+  type NavItem,
+  type Persona,
+  type PersonaItem,
+  type GroupItem,
 } from "@/types/nav";
 
 type MenuKind = "persona" | "link" | "external" | "group";
@@ -29,19 +31,45 @@ type MenuRow = {
 type MetaPayload = {
   badge?: Badge;
   hotkey?: string;
+  requires?: CapabilityKey[];
 };
+
+type RawMeta = {
+  badge?: unknown;
+  hotkey?: unknown;
+  requires?: unknown;
+};
+
+function normalizeCapabilityList(value: unknown): CapabilityKey[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const result: CapabilityKey[] = [];
+  for (const entry of value) {
+    if (typeof entry !== "string") continue;
+    const normalized = entry.trim();
+    if (!normalized) continue;
+    result.push(normalized);
+  }
+  return result.length ? result : undefined;
+}
 
 function extractMeta(meta: MenuRow["meta"]): MetaPayload {
   if (!meta || typeof meta !== "object") return {};
-  const payload = meta as MetaPayload;
+  const payload = meta as RawMeta;
   const parsed: MetaPayload = {};
 
-  if (payload.badge && typeof payload.badge.text === "string") {
-    parsed.badge = payload.badge;
+  const badge = payload.badge as Badge | undefined;
+  if (badge && typeof badge.text === "string") {
+    parsed.badge = badge;
   }
 
-  if (payload.hotkey && typeof payload.hotkey === "string") {
-    parsed.hotkey = payload.hotkey;
+  const hotkey = payload.hotkey;
+  if (typeof hotkey === "string" && hotkey.trim().length > 0) {
+    parsed.hotkey = hotkey.trim();
+  }
+
+  const requires = normalizeCapabilityList(payload.requires);
+  if (isCapabilityKeyArray(requires)) {
+    parsed.requires = requires;
   }
 
   return parsed;
@@ -49,12 +77,20 @@ function extractMeta(meta: MenuRow["meta"]): MetaPayload {
 
 function createNode(row: MenuRow): NavItem {
   const meta = extractMeta(row.meta);
+  const requires =
+    meta.requires && meta.requires.length
+      ? meta.requires
+      : row.feature_key
+        ? [row.feature_key]
+        : undefined;
+
   const base = {
     id: String(row.id),
     label: row.label,
     icon: row.icon ?? undefined,
     featureKey: row.feature_key ?? undefined,
-    hidden: row.hidden || undefined,
+    hidden: row.hidden ? true : undefined,
+    requires,
     ...(meta.badge ? { badge: meta.badge } : {}),
     ...(meta.hotkey ? { hotkey: meta.hotkey } : {}),
   } as const;
@@ -140,21 +176,38 @@ export async function fetchMenuPublished(): Promise<NavItem[]> {
   return roots;
 }
 
-type LinkLike = Extract<NavItem, { kind: "link" | "external" }>;
+function resolveRequirements(item: NavItem): CapabilityKey[] {
+  if (isCapabilityKeyArray(item.requires)) {
+    return item.requires;
+  }
+  if (
+    typeof item.featureKey === "string" &&
+    item.featureKey.trim().length > 0
+  ) {
+    return [item.featureKey.trim()];
+  }
+  return [];
+}
+
+type CapabilityChecker = (key: CapabilityKey) => boolean;
 
 export function filterByRequires(
   items: NavItem[],
-  can: (featureKey?: string) => boolean,
+  hasCapability: CapabilityChecker,
 ): NavItem[] {
   const walk = (input: NavItem[]): NavItem[] => {
     const result: NavItem[] = [];
 
     for (const item of input) {
-      const hasAccess = !item.featureKey || can(item.featureKey);
-      if (!hasAccess) continue;
+      if (item.hidden) continue;
+
+      const requirements = resolveRequirements(item);
+      const accessible = requirements.every((key) => hasCapability(key));
+      if (!accessible) continue;
 
       if (hasChildren(item) && item.children) {
         const children = walk(item.children);
+        if (!children.length) continue;
         result.push({ ...item, children });
       } else {
         result.push(item);
@@ -187,3 +240,5 @@ export function flattenLinks(items: NavItem[]): LinkLike[] {
   walk(items);
   return collected;
 }
+
+type LinkLike = Extract<NavItem, { kind: "link" | "external" }>;

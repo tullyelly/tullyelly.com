@@ -1,9 +1,11 @@
 // auth.ts  (NextAuth v4 helper config)
 
 import type { NextAuthOptions } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
+import { getAuthzRevision, getEffectiveFeatures } from "@/app/_auth/policy";
 
 // Use one shared Prisma client (Node runtime only)
 export const prisma = new PrismaClient();
@@ -13,6 +15,36 @@ const OWNER_ONLY = process.env.OWNER_ONLY === "true";
 const OWNER_DOMAIN = (
   process.env.OWNER_DOMAIN ?? "tullyelly.com"
 ).toLowerCase();
+
+type TokenWithAuthz = JWT & {
+  features?: string[];
+  authzRevision?: number;
+};
+
+async function applyEffectiveFeatures(
+  token: TokenWithAuthz,
+  userId: string | undefined,
+  refresh: boolean,
+): Promise<void> {
+  if (!userId) return;
+
+  let needsRefresh = refresh;
+
+  if (!needsRefresh && Array.isArray(token.features)) {
+    const currentRevision = await getAuthzRevision(userId);
+    if ((token.authzRevision ?? 0) !== currentRevision) {
+      needsRefresh = true;
+    }
+  }
+
+  if (!needsRefresh) {
+    return;
+  }
+
+  const snapshot = await getEffectiveFeatures(userId);
+  token.features = snapshot.features;
+  token.authzRevision = snapshot.revision;
+}
 
 /**
  * Exported v4 options for reuse in the Route Handler:
@@ -51,7 +83,9 @@ export const authOptions: NextAuthOptions = {
     },
 
     // Persist useful fields on the JWT so middleware/session can read them
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      const mutableToken = token as TokenWithAuthz;
+
       // On initial sign-in, merge user details into the token
       if (user) {
         token.name = user.name ?? token.name;
@@ -59,15 +93,22 @@ export const authOptions: NextAuthOptions = {
         token.picture = (user as any).image ?? (token as any).picture;
       }
 
+      const inferredUserId =
+        (user as any)?.id ?? (token.sub as string | undefined) ?? undefined;
+      const shouldRefresh =
+        !!user || trigger === "signIn" || trigger === "update";
+      await applyEffectiveFeatures(mutableToken, inferredUserId, shouldRefresh);
+
       // Derive role from email domain
       // Feature gating ignores this value; DB-backed capabilities (can()/must()) decide access.
       const email = (token.email ?? "").toLowerCase();
       const domain = email.split("@")[1] ?? "";
-      (token as any).role = domain === OWNER_DOMAIN ? "owner" : "user";
-      return token;
+      (mutableToken as any).role = domain === OWNER_DOMAIN ? "owner" : "user";
+      return mutableToken;
     },
 
     async session({ session, token }) {
+      const mutableToken = token as TokenWithAuthz;
       // Ensure session has email/name/picture reflected from the token
       if (session.user) {
         session.user.email =
@@ -77,9 +118,13 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).image =
           (session as any).user?.image ?? (token as any).picture;
         // Expose derived role to the client session
-        (session.user as any).role = (token as any).role ?? "user";
+        (session.user as any).role = (mutableToken as any).role ?? "user";
         (session.user as any).id =
           (token.sub as string | undefined) ?? (token as any).id ?? null;
+        (session.user as any).features = Array.isArray(mutableToken.features)
+          ? mutableToken.features
+          : [];
+        (session.user as any).authzRevision = mutableToken.authzRevision ?? 0;
       }
       return session;
     },

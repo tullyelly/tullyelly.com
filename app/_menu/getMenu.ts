@@ -1,16 +1,21 @@
+import { getCapabilities } from "@/app/_auth/session";
 import { fetchMenuPublished, filterByRequires } from "@/lib/menu";
 import type { NavItem } from "@/types/nav";
 
-// TODO(WU-374): replace can() with real effective-features check
-function can(featureKey?: string): boolean {
-  // Single-require: if no feature is specified, allow; else check user's features.
-  // TEMP: allow all until WU-374 lands.
-  return true;
+function shouldBypassFiltering(): boolean {
+  const flag = process.env.NEXT_PUBLIC_MENU_SHOW_ALL;
+  if (!flag) return false;
+  const normalized = flag.toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
 export async function getMenuForLayout(): Promise<NavItem[]> {
   const tree = await fetchMenuPublished();
-  // Optional: sort children consistently (DB already orders via order_index; keep as-is)
-  const filtered = filterByRequires(tree, can);
+  if (shouldBypassFiltering()) {
+    return tree;
+  }
+
+  const capabilities = await getCapabilities();
+  const filtered = filterByRequires(tree, capabilities.has);
   return filtered;
 }
