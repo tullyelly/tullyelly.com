@@ -14,6 +14,11 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import type { NavItem, PersonaItem } from "@/types/nav";
+import { analytics } from "@/lib/analytics";
+import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+
+const TEST_MODE =
+  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
 
 type Props = {
   items?: NavItem[]; // personas-first tree from server
@@ -49,7 +54,14 @@ export default function NavMobile({ items }: Props) {
   const pathname = usePathname();
   const search = useSearchParams();
   const searchKey = search?.toString();
-  const personas = (items ?? []).filter(isPersona);
+  const personas = React.useMemo(() => {
+    const provided = (items ?? []).filter(isPersona);
+    if (provided.length) return provided;
+    if (TEST_MODE) {
+      return TEST_MENU_ITEMS.filter(isPersona);
+    }
+    return provided;
+  }, [items]);
 
   const { setOpen: setCommandMenuOpen } = useCommandMenu();
   const openCommandMenu = React.useCallback(
@@ -60,6 +72,7 @@ export default function NavMobile({ items }: Props) {
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [open, setOpen] = React.useState(false);
   const closeNow = React.useCallback(() => setOpen(false), []);
+  const prevOpenRef = React.useRef(open);
   React.useEffect(() => {
     if (open) {
       triggerRef.current?.blur();
@@ -70,10 +83,51 @@ export default function NavMobile({ items }: Props) {
     setOpen(false);
   }, [pathname, searchKey]);
 
+  React.useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      analytics.track("menu.mobile.open", { state: "open" });
+    } else if (!open && prevOpenRef.current) {
+      analytics.track("menu.mobile.open", { state: "closed" });
+    }
+    prevOpenRef.current = open;
+  }, [open]);
+
+  const handleLinkSelect = React.useCallback(
+    (persona: PersonaItem, link: AnyLink) => {
+      analytics.track("menu.mobile.click", {
+        path: link.href,
+        featureKey: link.featureKey ?? null,
+        persona: persona.persona,
+      });
+      closeNow();
+    },
+    [closeNow],
+  );
+
+  const handleAccordionChange = React.useCallback(
+    (value: string | undefined) => {
+      if (!value) {
+        analytics.track("menu.mobile.open", { state: "accordion-closed" });
+        return;
+      }
+
+      const persona = personas.find((item) => String(item.id) === value);
+      analytics.track("menu.mobile.open", {
+        state: "accordion-open",
+        persona: persona?.persona ?? null,
+      });
+    },
+    [personas],
+  );
+
   if (!personas.length) return null;
 
   return (
-    <div className="border-b bg-transparent text-white md:hidden">
+    <div
+      data-testid="nav-mobile"
+      data-state={open ? "open" : "closed"}
+      className="border-b bg-transparent text-white md:hidden"
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
         <button
           ref={triggerRef}
@@ -97,6 +151,7 @@ export default function NavMobile({ items }: Props) {
       </div>
 
       <Drawer.Root
+        data-state={open ? "open" : "closed"}
         open={open}
         onOpenChange={setOpen}
         shouldScaleBackground={false}
@@ -106,6 +161,8 @@ export default function NavMobile({ items }: Props) {
           <Drawer.Overlay className="fixed inset-0 z-40 bg-black/40" />
           <Drawer.Content
             data-vaul-lock="body"
+            data-testid="nav-mobile-drawer"
+            data-state={open ? "open" : "closed"}
             className="fixed inset-x-0 bottom-0 z-[90] rounded-t-2xl bg-background shadow-xl"
             aria-label="Site navigation"
           >
@@ -134,16 +191,27 @@ export default function NavMobile({ items }: Props) {
               </div>
 
               <div className="mt-4 space-y-4">
-                <QuickLinks items={personas} closeNow={closeNow} />
-                <Accordion type="single" collapsible className="w-full">
+                <QuickLinks items={personas} onSelect={handleLinkSelect} />
+                <Accordion
+                  type="single"
+                  collapsible
+                  className="w-full"
+                  onValueChange={handleAccordionChange}
+                >
                   {personas.map((p) => (
                     <AccordionItem key={p.id} value={String(p.id)}>
-                      <AccordionTrigger className="gap-2 py-3">
+                      <AccordionTrigger
+                        className="gap-2 py-3"
+                        data-testid={`mobile-accordion-${p.id}`}
+                      >
                         <Icon name={p.icon} className="size-4" />
                         <span>{p.label}</span>
                       </AccordionTrigger>
                       <AccordionContent>
-                        <PersonaSection persona={p} closeNow={closeNow} />
+                        <PersonaSection
+                          persona={p}
+                          onSelect={handleLinkSelect}
+                        />
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -176,32 +244,38 @@ export default function NavMobile({ items }: Props) {
 
 function QuickLinks({
   items,
-  closeNow,
+  onSelect,
 }: {
   items: PersonaItem[];
-  closeNow: () => void;
+  onSelect: (persona: PersonaItem, link: AnyLink) => void;
 }) {
-  const links: AnyLink[] = [];
+  const entries: Array<{ persona: PersonaItem; link: AnyLink }> = [];
   for (const persona of items) {
     for (const child of persona.children ?? []) {
       if (
         (child.kind === "link" || child.kind === "external") &&
         isQuick(child as AnyLink)
       ) {
-        links.push(child as AnyLink);
+        entries.push({ persona, link: child as AnyLink });
       }
     }
   }
-  if (!links.length) return null;
+  if (!entries.length) return null;
   return (
     <div className="not-prose -mx-1 flex flex-wrap gap-2">
-      {links.map((link) => (
+      {entries.map(({ persona, link }) => (
         <Link
           key={link.id}
           href={link.href}
           prefetch
-          className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm"
-          onClick={closeNow}
+          className="inline-flex items-center gap-2 rounded-full border border-border/50 px-3 py-1 text-sm hover:shadow-sm focus-visible:ring-2 focus-visible-ring"
+          data-mobile-link={link.id}
+          data-testid={
+            link.featureKey
+              ? `menu-item-${link.featureKey}`
+              : `menu-item-${link.id}`
+          }
+          onClick={() => onSelect(persona, link)}
         >
           <Icon name={link.icon} className="size-4" />
           <span>{link.label}</span>
@@ -213,10 +287,10 @@ function QuickLinks({
 
 function PersonaSection({
   persona,
-  closeNow,
+  onSelect,
 }: {
   persona: PersonaItem;
-  closeNow: () => void;
+  onSelect: (persona: PersonaItem, link: AnyLink) => void;
 }) {
   const children = (persona.children ?? []).filter(
     (child): child is AnyLink =>
@@ -235,7 +309,13 @@ function PersonaSection({
             href={child.href}
             prefetch
             className="block rounded-xl border p-3 hover:shadow-sm focus-visible:ring-2 focus-visible-ring"
-            onClick={closeNow}
+            data-mobile-link={child.id}
+            data-testid={
+              child.featureKey
+                ? `menu-item-${child.featureKey}`
+                : `menu-item-${child.id}`
+            }
+            onClick={() => onSelect(persona, child)}
           >
             <div className="flex items-center gap-2">
               <Icon name={child.icon} className="size-4" />

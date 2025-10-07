@@ -78,7 +78,9 @@ const serverRestrictedImports = [
 
 const config = [
   // Ignore build artifacts
-  { ignores: ['.next/**', 'node_modules/**', 'dist/**', 'coverage/**'] },
+  {
+    ignores: ['.next/**', 'node_modules/**', 'dist/**', 'coverage/**', 'playwright-report/**'],
+  },
 
   // Next's recommended rules (includes react + react-hooks)
   ...compat.extends('next/core-web-vitals'),

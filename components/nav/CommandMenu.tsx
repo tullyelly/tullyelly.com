@@ -18,6 +18,10 @@ import * as Lucide from "lucide-react";
 import { analytics } from "@/lib/analytics";
 import { flattenLinks, type FlatLink } from "@/lib/menu.flatten";
 import { readRecent, saveRecent, upsertRecent } from "@/lib/menu.recents";
+import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+
+const TEST_MODE =
+  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
 
 type Ctx = {
   open: boolean;
@@ -37,6 +41,11 @@ export function CommandMenuProvider({
   const [open, setOpen] = React.useState(false);
   const toggle = React.useCallback(() => setOpen((value) => !value), []);
   const pathname = usePathname();
+  const resolvedItems = React.useMemo(() => {
+    if (items.length) return items;
+    if (TEST_MODE) return TEST_MENU_ITEMS;
+    return items;
+  }, [items]);
 
   React.useEffect(() => {
     setOpen(false);
@@ -58,7 +67,7 @@ export function CommandMenuProvider({
     return () => window.removeEventListener("keydown", handleKey);
   }, [toggle]);
 
-  const ctx: Ctx = { open, setOpen, toggle, items };
+  const ctx: Ctx = { open, setOpen, toggle, items: resolvedItems };
 
   return (
     <CommandMenuContext.Provider value={ctx}>
@@ -143,10 +152,37 @@ export default function CommandMenu() {
   const [recentIds, setRecentIds] = React.useState<string[]>(() =>
     readRecent(),
   );
+  const prevOpenRef = React.useRef(open);
+  const lastSearchLen = React.useRef<number | null>(null);
+  const openViaTest = React.useCallback(() => setOpen(true), [setOpen]);
 
   React.useEffect(() => {
     setRecentIds(readRecent());
   }, []);
+
+  React.useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      analytics.track("menu.cmdk.open");
+    }
+    prevOpenRef.current = open;
+    if (!open) {
+      lastSearchLen.current = null;
+    }
+  }, [open]);
+
+  React.useEffect(() => {
+    if (!TEST_MODE) return;
+    if (typeof globalThis === "undefined") return;
+    const scope = globalThis as any;
+    const target = scope.__navTest ?? {};
+    target.openCmdk = openViaTest;
+    scope.__navTest = target;
+    return () => {
+      if (scope.__navTest?.openCmdk === openViaTest) {
+        delete scope.__navTest.openCmdk;
+      }
+    };
+  }, [openViaTest]);
 
   const featured = React.useMemo(
     () => flat.filter((link) => link.featured),
@@ -186,7 +222,7 @@ export default function CommandMenu() {
         return next;
       });
 
-      analytics.track("menu.command.select", {
+      analytics.track("menu.cmdk.select", {
         path: link.href,
         featureKey: link.featureKey ?? null,
         persona: link.persona?.id ?? null,
@@ -242,6 +278,9 @@ export default function CommandMenu() {
       const contextText = contextLabels.join(" / ");
 
       const personaLabel = link.persona?.label ?? GENERAL_PERSONA_LABEL;
+      const menuItemTestId = link.featureKey
+        ? `menu-item-${link.featureKey}`
+        : `menu-item-${link.id}`;
 
       return (
         <CommandItem
@@ -252,6 +291,7 @@ export default function CommandMenu() {
           keywords={link.keywords}
           onSelect={() => handleSelect(link)}
           data-featured={link.featured ? "true" : undefined}
+          data-testid={menuItemTestId}
         >
           <span className="mr-2 inline-flex size-5 items-center justify-center rounded-md border">
             {link.icon ? <Icon name={link.icon} className="size-3.5" /> : null}
@@ -331,8 +371,20 @@ export default function CommandMenu() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <Command className="bg-[var(--surface)] text-[var(--text)]">
-        <CommandInput placeholder="Type a page or feature…" />
+      <Command
+        data-testid="cmdk"
+        className="bg-[var(--surface)] text-[var(--text)]"
+      >
+        <CommandInput
+          placeholder="Type a page or feature…"
+          onValueChange={(value) => {
+            const trimmed = value.trim();
+            const length = trimmed.length;
+            if (lastSearchLen.current === length) return;
+            lastSearchLen.current = length;
+            analytics.track("menu.cmdk.search", { qLen: length });
+          }}
+        />
         <CommandList>
           <CommandEmpty>No results.</CommandEmpty>
           {sections.map((section, index) => (

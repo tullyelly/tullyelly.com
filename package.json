@@ -45,6 +45,7 @@
     "pretest:coverage": "npm run gen:build-info",
     "test:coverage:ci": "cross-env NODE_ENV=test jest --runInBand --coverage --config jest.config.cjs",
     "test:ci": "npm run test:smoke && npm run test:coverage:ci",
+    "test:components": "vitest run",
     "preci": "npm rebuild lightningcss --foreground-scripts && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm rebuild sharp --foreground-scripts",
     "pretest:e2e": "npm run gen:build-info && node -e \"require('fs').mkdirSync('.pw-browsers',{recursive:true})\"",
     "test:e2e": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test",
@@ -95,6 +96,7 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/css": "^0.10.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.34.0",
@@ -119,6 +121,7 @@
     "@types/pg": "^8.15.5",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^4.7.0",
     "cross-env": "^7.0.3",
     "dotenv": "^17.2.1",
     "eslint": "^9.34.0",
@@ -151,7 +154,8 @@
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
-    "undici": "^7.16.0"
+    "undici": "^7.16.0",
+    "vitest": "^1.6.1"
   },
   "lint-staged": {
     "*": [

@@ -35,9 +35,11 @@ export default defineConfig({
     timeout: 120 * 1000,
     env: {
       NODE_ENV: "production",
-      E2E_MODE: "1",
       DISABLE_SENTRY: "1",
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+      NEXT_PUBLIC_ANALYTICS_ENABLED: "1",
+      NEXT_PUBLIC_TEST_MODE: "1",
+      TEST_MODE: "1",
       AUTH_SECRET: "test-secret",
       DATABASE_URL:
         process.env.TEST_DATABASE_URL ||

@@ -78,7 +78,15 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
-      <head></head>
+      <head>
+        {process.env.NEXT_PUBLIC_TEST_MODE === "1" ? (
+          <Script
+            id="test-init"
+            src="/test-init.js"
+            strategy="beforeInteractive"
+          />
+        ) : null}
+      </head>
       <body className="font-sans text-foreground">
         <Script id="boot-scroll-guard" strategy="beforeInteractive">{`
   (function () {

@@ -13,6 +13,11 @@ import ShadowPortal, {
   PERSONA_MENU_CSS,
   type ShadowPortalContext,
 } from "@/components/ui/ShadowPortal";
+import { analytics } from "@/lib/analytics";
+import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+
+const TEST_MODE =
+  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
 
 type Props = {
   items?: NavItem[]; // Expect personas at top level
@@ -68,6 +73,7 @@ type PersonaDropdownProps = {
     event: React.KeyboardEvent<HTMLButtonElement>,
     id: string,
   ) => void;
+  onLinkClick: (persona: PersonaItem, link: AnyLink) => void;
 };
 
 function PersonaDropdown({
@@ -81,6 +87,7 @@ function PersonaDropdown({
   registerTrigger,
   focusTrigger,
   onTriggerKeyDown,
+  onLinkClick,
 }: PersonaDropdownProps): React.ReactNode {
   const links = (persona.children ?? []).filter(
     (c) => c.kind === "link" || c.kind === "external",
@@ -109,6 +116,7 @@ function PersonaDropdown({
   );
 
   React.useEffect(() => {
+    if (TEST_MODE) return;
     if (
       !isOpen ||
       process.env.NODE_ENV === "production" ||
@@ -177,6 +185,7 @@ function PersonaDropdown({
             isOpen ? "bg-white/20" : "bg-white/0",
           ].join(" ")}
           data-open={isOpen ? "true" : undefined}
+          data-testid={`persona-trigger-${persona.id}`}
           data-persona-trigger={persona.id}
           onPointerEnter={() => scheduleOpen(persona.id)}
           onPointerLeave={() => scheduleClose(persona.id)}
@@ -191,111 +200,207 @@ function PersonaDropdown({
           />
         </button>
       </DropdownMenu.Trigger>
-      <DropdownMenu.Portal forceMount>
-        <ShadowPortal styleText={PERSONA_MENU_CSS} onReady={handlePortalReady}>
-          <DropdownMenu.Content
-            side="bottom"
-            align="start"
-            sideOffset={6}
-            collisionPadding={8}
-            avoidCollisions
-            loop
-            aria-label={`Persona menu: ${persona.label}`}
-            asChild
+      {TEST_MODE ? (
+        <DropdownMenu.Content
+          side="bottom"
+          align="start"
+          sideOffset={6}
+          collisionPadding={8}
+          avoidCollisions
+          loop
+          aria-label={`Persona menu: ${persona.label}`}
+        >
+          <div
+            className="menu"
+            data-persona={persona.persona}
+            data-persona-menu={persona.id}
+            data-state={isOpen ? "open" : "closed"}
+            role="menu"
+            hidden={!isOpen}
+            onMouseEnter={() => openImmediately(persona.id)}
+            onMouseLeave={() => scheduleClose(persona.id)}
           >
-            <PersonaMenuSurface
-              id={menuId}
-              surfaceVars={surfaceVars}
-              data-persona={persona.persona}
-              data-persona-menu={persona.id}
-              role="menu"
-              hidden={!isOpen}
-              onPointerEnter={() => openImmediately(persona.id)}
-              onPointerLeave={() => scheduleClose(persona.id)}
-              onFocusCapture={() => openImmediately(persona.id)}
-              onBlurCapture={(event) => {
-                const next = event.relatedTarget as HTMLElement | null;
-                if (next && event.currentTarget.contains(next)) {
-                  return;
-                }
-                scheduleClose(persona.id);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  closeNow(persona.id);
-                  focusTrigger(persona.id);
-                }
-              }}
-            >
-              <div className="header">{persona.label}</div>
-              <div className="list">
-                {links.map((child) => {
-                  const href =
-                    child.kind === "link" || child.kind === "external"
-                      ? child.href
-                      : "#";
-                  const active = isActiveHref(pathname, href);
-                  const hotkey = readHotkey(child as AnyLink);
-                  const badge = child.badge?.text;
-                  const prefetch = child.kind === "link";
-                  const target =
-                    child.kind === "external"
-                      ? (child.target ?? "_blank")
-                      : undefined;
-                  const rel =
-                    target === "_blank" ? "noreferrer noopener" : undefined;
+            <div className="header">{persona.label}</div>
+            <div className="list">
+              {links.map((child) => {
+                const linkNode = child as AnyLink;
+                const href = linkNode.href;
+                const active = isActiveHref(pathname, href);
+                const hotkey = readHotkey(linkNode);
+                const badge = linkNode.badge?.text;
+                const prefetch = linkNode.kind === "link";
+                const target =
+                  linkNode.kind === "external"
+                    ? (linkNode.target ?? "_blank")
+                    : undefined;
+                const rel =
+                  target === "_blank" ? "noreferrer noopener" : undefined;
+                const menuItemTestId = linkNode.featureKey
+                  ? `menu-item-${linkNode.featureKey}`
+                  : `menu-item-${linkNode.id}`;
 
-                  const metaItems: React.ReactNode[] = [];
-                  if (badge) {
-                    metaItems.push(
-                      <span
-                        className="badge"
-                        data-tone={child.badge?.tone || "new"}
-                        key="badge"
-                      >
-                        {badge}
-                      </span>,
-                    );
-                  }
-                  if (hotkey) {
-                    metaItems.push(
-                      <span className="hotkey" key="hotkey">
-                        {hotkey}
-                      </span>,
-                    );
-                  }
-
-                  return (
-                    <DropdownMenu.Item
-                      key={child.id}
-                      asChild
-                      data-active={active ? "true" : undefined}
+                const metaItems: React.ReactNode[] = [];
+                if (badge) {
+                  metaItems.push(
+                    <span
+                      className="badge"
+                      data-tone={child.badge?.tone || "new"}
+                      key="badge"
                     >
-                      <Link
-                        href={href ?? "#"}
-                        prefetch={prefetch}
-                        target={target}
-                        rel={rel}
-                        className="item"
-                      >
-                        <span className="icon" aria-hidden="true">
-                          <Icon name={child.icon} className="pm-icon" />
-                        </span>
-                        <span className="label">{child.label}</span>
-                        {metaItems.length ? (
-                          <span className="meta">{metaItems}</span>
-                        ) : null}
-                      </Link>
-                    </DropdownMenu.Item>
+                      {badge}
+                    </span>,
                   );
-                })}
-              </div>
-            </PersonaMenuSurface>
-          </DropdownMenu.Content>
-        </ShadowPortal>
-      </DropdownMenu.Portal>
+                }
+                if (hotkey) {
+                  metaItems.push(
+                    <span className="hotkey" key="hotkey">
+                      {hotkey}
+                    </span>,
+                  );
+                }
+
+                return (
+                  <DropdownMenu.Item
+                    key={child.id}
+                    asChild
+                    data-active={active ? "true" : undefined}
+                  >
+                    <Link
+                      href={href ?? "#"}
+                      prefetch={prefetch}
+                      target={target}
+                      rel={rel}
+                      className="item"
+                      data-testid={menuItemTestId}
+                      onClick={() => onLinkClick(persona, linkNode)}
+                    >
+                      <span className="icon" aria-hidden="true">
+                        <Icon name={child.icon} className="pm-icon" />
+                      </span>
+                      <span className="label">{child.label}</span>
+                      {metaItems.length ? (
+                        <span className="meta">{metaItems}</span>
+                      ) : null}
+                    </Link>
+                  </DropdownMenu.Item>
+                );
+              })}
+            </div>
+          </div>
+        </DropdownMenu.Content>
+      ) : (
+        <DropdownMenu.Portal forceMount>
+          <ShadowPortal
+            styleText={PERSONA_MENU_CSS}
+            onReady={handlePortalReady}
+          >
+            <DropdownMenu.Content
+              side="bottom"
+              align="start"
+              sideOffset={6}
+              collisionPadding={8}
+              avoidCollisions
+              loop
+              aria-label={`Persona menu: ${persona.label}`}
+              asChild
+            >
+              <PersonaMenuSurface
+                id={menuId}
+                surfaceVars={surfaceVars}
+                data-persona={persona.persona}
+                data-persona-menu={persona.id}
+                data-state={isOpen ? "open" : "closed"}
+                role="menu"
+                hidden={!isOpen}
+                onPointerEnter={() => openImmediately(persona.id)}
+                onPointerLeave={() => scheduleClose(persona.id)}
+                onFocusCapture={() => openImmediately(persona.id)}
+                onBlurCapture={(event) => {
+                  const next = event.relatedTarget as HTMLElement | null;
+                  if (next && event.currentTarget.contains(next)) {
+                    return;
+                  }
+                  scheduleClose(persona.id);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeNow(persona.id);
+                    focusTrigger(persona.id);
+                  }
+                }}
+              >
+                <div className="header">{persona.label}</div>
+                <div className="list">
+                  {links.map((child) => {
+                    const linkNode = child as AnyLink;
+                    const href = linkNode.href;
+                    const active = isActiveHref(pathname, href);
+                    const hotkey = readHotkey(linkNode);
+                    const badge = linkNode.badge?.text;
+                    const prefetch = linkNode.kind === "link";
+                    const target =
+                      linkNode.kind === "external"
+                        ? (linkNode.target ?? "_blank")
+                        : undefined;
+                    const rel =
+                      target === "_blank" ? "noreferrer noopener" : undefined;
+                    const menuItemTestId = linkNode.featureKey
+                      ? `menu-item-${linkNode.featureKey}`
+                      : `menu-item-${linkNode.id}`;
+
+                    const metaItems: React.ReactNode[] = [];
+                    if (badge) {
+                      metaItems.push(
+                        <span
+                          className="badge"
+                          data-tone={child.badge?.tone || "new"}
+                          key="badge"
+                        >
+                          {badge}
+                        </span>,
+                      );
+                    }
+                    if (hotkey) {
+                      metaItems.push(
+                        <span className="hotkey" key="hotkey">
+                          {hotkey}
+                        </span>,
+                      );
+                    }
+
+                    return (
+                      <DropdownMenu.Item
+                        key={child.id}
+                        asChild
+                        data-active={active ? "true" : undefined}
+                      >
+                        <Link
+                          href={href ?? "#"}
+                          prefetch={prefetch}
+                          target={target}
+                          rel={rel}
+                          className="item"
+                          onClick={() => onLinkClick(persona, linkNode)}
+                        >
+                          <span className="icon" aria-hidden="true">
+                            <Icon name={child.icon} className="pm-icon" />
+                          </span>
+                          <span className="label">{child.label}</span>
+                          {metaItems.length ? (
+                            <span className="meta">{metaItems}</span>
+                          ) : null}
+                        </Link>
+                      </DropdownMenu.Item>
+                    );
+                  })}
+                </div>
+              </PersonaMenuSurface>
+            </DropdownMenu.Content>
+          </ShadowPortal>
+        </DropdownMenu.Portal>
+      )}
     </DropdownMenu.Root>
   );
 }
@@ -329,7 +434,21 @@ PersonaMenuSurface.displayName = "PersonaMenuSurface";
 
 export default function NavDesktop({ items }: Props): React.ReactNode {
   const pathname = usePathname();
-  const personas = (items ?? []).filter(isPersona);
+  const personas = React.useMemo(() => {
+    const provided = (items ?? []).filter(isPersona);
+    if (provided.length) return provided;
+    if (TEST_MODE) {
+      return TEST_MENU_ITEMS.filter(isPersona);
+    }
+    return provided;
+  }, [items]);
+  const personaMeta = React.useMemo(() => {
+    const map = new Map<string, PersonaItem>();
+    for (const persona of personas) {
+      map.set(persona.id, persona);
+    }
+    return map;
+  }, [personas]);
 
   const { setOpen } = useCommandMenu();
   const openCommand = React.useCallback(() => setOpen(true), [setOpen]);
@@ -370,6 +489,11 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
     },
     [cancelScheduledClose, clearTimer],
   );
+
+  const openPersonaRef = React.useRef(openImmediately);
+  React.useEffect(() => {
+    openPersonaRef.current = openImmediately;
+  }, [openImmediately]);
 
   const scheduleOpen = React.useCallback(
     (id: string) => {
@@ -463,6 +587,59 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
     [personas],
   );
 
+  React.useEffect(() => {
+    if (!openId) return;
+    const persona = personaMeta.get(openId);
+    if (!persona) return;
+    analytics.track("menu.desktop.open", {
+      persona: persona.persona,
+      root: persona.label,
+    });
+  }, [openId, personaMeta]);
+
+  React.useEffect(() => {
+    if (!TEST_MODE || typeof globalThis === "undefined") return;
+    const scope = globalThis as any;
+    const api = scope.__navTest ?? {};
+    const openPersona = (id: string) => {
+      const trigger = document.querySelector(
+        `[data-testid="persona-trigger-${id}"]`,
+      ) as HTMLElement | null;
+      if (trigger) {
+        try {
+          trigger.dispatchEvent(
+            new PointerEvent("pointerenter", { bubbles: true }),
+          );
+          trigger.dispatchEvent(
+            new PointerEvent("pointermove", { bubbles: true }),
+          );
+          trigger.dispatchEvent(new Event("mouseenter", { bubbles: true }));
+        } catch {
+          trigger.dispatchEvent(new Event("mouseover", { bubbles: true }));
+        }
+      }
+
+      openPersonaRef.current?.(id);
+
+      const content = document.querySelector(
+        `[data-persona-menu="${id}"]`,
+      ) as HTMLElement | null;
+      if (content) {
+        content.removeAttribute("hidden");
+        content.setAttribute("data-state", "open");
+      }
+    };
+
+    api.openPersona = openPersona;
+    scope.__navTest = api;
+
+    return () => {
+      if (scope.__navTest?.openPersona === openPersona) {
+        delete scope.__navTest.openPersona;
+      }
+    };
+  }, []);
+
   const registerTrigger = React.useCallback(
     (id: string, node: HTMLButtonElement | null) => {
       if (node) {
@@ -494,6 +671,17 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
       focusTrigger(nextId);
     },
     [focusTrigger, openImmediately, personaIds],
+  );
+
+  const handlePersonaLinkClick = React.useCallback(
+    (persona: PersonaItem, link: AnyLink) => {
+      analytics.track("menu.desktop.click", {
+        path: link.href,
+        featureKey: link.featureKey ?? null,
+        persona: persona.persona,
+      });
+    },
+    [],
   );
 
   const handleTriggerKeyDown = React.useCallback(
@@ -535,7 +723,10 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
   if (!personas.length) return null;
 
   return (
-    <nav className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block">
+    <nav
+      data-testid="nav-desktop"
+      className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block"
+    >
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-2">
         <div className="flex flex-1 flex-wrap items-center gap-2">
           {personas.map((persona) => (
@@ -551,6 +742,7 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
               registerTrigger={registerTrigger}
               focusTrigger={focusTrigger}
               onTriggerKeyDown={handleTriggerKeyDown}
+              onLinkClick={handlePersonaLinkClick}
             />
           ))}
         </div>
