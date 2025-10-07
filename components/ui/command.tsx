@@ -23,7 +23,7 @@ export const Command = React.forwardRef<
   <CommandPrimitive
     ref={ref}
     className={cn(
-      "flex h-full w-full flex-col overflow-visible rounded-2xl",
+      "flex h-full w-full flex-col overflow-visible rounded-b-2xl rounded-t-none",
       "px-4 py-4 sm:px-6 md:px-8 lg:px-10",
       className,
     )}
@@ -103,13 +103,18 @@ export function CommandDialog({
     const el = contentRef.current;
     if (!el) return;
 
-    const widthStyle =
-      Number.isFinite(dialogWidth) && dialogWidth > 0
-        ? (["width", `${dialogWidth}px`] as [string, string])
+    const stableWidth =
+      typeof dialogWidth === "number" &&
+      Number.isFinite(dialogWidth) &&
+      dialogWidth > 0
+        ? dialogWidth
         : null;
+    const widthStyle = stableWidth
+      ? (["width", `${stableWidth}px`] as [string, string])
+      : null;
     const targetStyles: Array<[string, string]> = [
       ["position", "fixed"],
-      ["top", `${topPx}px`],
+      ["top", `${Math.max(topPx - 8, 0)}px`],
       ["left", `${leftPx}px`],
       ["right", "auto"],
       ["bottom", "auto"],
@@ -284,7 +289,9 @@ export function CommandDialog({
             className={cn(
               "fixed z-[99] p-0 !bottom-auto",
               "max-w-[calc(100vw-2rem)]",
-              "rounded-2xl shadow-2xl",
+              "rounded-b-2xl rounded-t-none",
+              "border-[6px] border-[var(--cream)]",
+              "shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]",
               "bg-[var(--surface)] text-[var(--text)]",
               "opacity-0 data-[state=open]:opacity-100 transition-opacity duration-120",
               className,
