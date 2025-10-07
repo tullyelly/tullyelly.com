@@ -8,6 +8,14 @@ import { cn } from "@/lib/utils";
 import { useTopAnchor } from "@/components/hooks/useTopAnchor";
 import { useLeftAnchor } from "@/components/hooks/useLeftAnchor";
 
+const DIALOG_MARGIN = 16;
+const WIDTH_CAP = 720;
+const DESKTOP_MIN_WIDTH = 600;
+const TABLET_MIN_WIDTH = 440;
+const BREAKPOINT_TABLET = 640;
+const BREAKPOINT_DESKTOP = 1024;
+const TABLET_RATIO = 0.9;
+
 export const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
@@ -39,7 +47,6 @@ export function CommandDialog({
 }: CommandDialogProps) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const topPx = useTopAnchor();
-  const DIALOG_MARGIN = 16;
   const {
     left: leftPx,
     width: widthPx,
@@ -50,19 +57,55 @@ export function CommandDialog({
     fallbackWidth: 640,
   });
 
+  const [viewportWidth, setViewportWidth] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    const updateViewport = () => setViewportWidth(window.innerWidth || 0);
+    updateViewport();
+    window.addEventListener("resize", updateViewport, { passive: true });
+    window.addEventListener("orientationchange", updateViewport);
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("orientationchange", updateViewport);
+    };
+  }, []);
+
+  const dialogWidth = React.useMemo(() => {
+    if (!Number.isFinite(widthPx) || widthPx <= 0) return undefined;
+    if (viewportWidth <= 0) return Math.round(widthPx);
+
+    if (viewportWidth < BREAKPOINT_TABLET) {
+      return Math.round(widthPx);
+    }
+
+    if (viewportWidth < BREAKPOINT_DESKTOP) {
+      const ninety = Math.min(widthPx * TABLET_RATIO, WIDTH_CAP);
+      const lowerBound = Math.min(widthPx, TABLET_MIN_WIDTH);
+      const finalWidth = Math.min(widthPx, Math.max(ninety, lowerBound));
+      return Math.round(finalWidth);
+    }
+
+    const capped = Math.min(widthPx, WIDTH_CAP);
+    const comfortable =
+      widthPx >= DESKTOP_MIN_WIDTH
+        ? Math.min(widthPx, Math.max(capped, DESKTOP_MIN_WIDTH))
+        : capped;
+    return Math.round(comfortable);
+  }, [viewportWidth, widthPx]);
+
   React.useEffect(() => {
     if (contentRef.current) {
       recomputeLeft(contentRef.current);
     }
-  }, [recomputeLeft, open]);
+  }, [recomputeLeft, open, dialogWidth]);
 
   React.useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
 
     const widthStyle =
-      Number.isFinite(widthPx) && widthPx > 0
-        ? (["width", `${Math.round(widthPx)}px`] as [string, string])
+      Number.isFinite(dialogWidth) && dialogWidth > 0
+        ? (["width", `${dialogWidth}px`] as [string, string])
         : null;
     const targetStyles: Array<[string, string]> = [
       ["position", "fixed"],
@@ -95,6 +138,10 @@ export function CommandDialog({
           changed = true;
         }
       }
+      if (!widthStyle && el.style.getPropertyValue("width")) {
+        el.style.removeProperty("width");
+        changed = true;
+      }
       for (const cls of guardClasses) {
         if (el.classList.contains(cls)) {
           el.classList.remove(cls);
@@ -126,7 +173,7 @@ export function CommandDialog({
       mo.disconnect();
       ro.disconnect();
     };
-  }, [DIALOG_MARGIN, leftPx, topPx, widthPx, recomputeLeft]);
+  }, [dialogWidth, leftPx, topPx, recomputeLeft]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -248,10 +295,7 @@ export function CommandDialog({
               right: "auto",
               bottom: "auto",
               transform: "none",
-              width:
-                Number.isFinite(widthPx) && widthPx > 0
-                  ? Math.round(widthPx)
-                  : undefined,
+              width: dialogWidth,
               maxWidth: `calc(100vw - ${DIALOG_MARGIN * 2}px)`,
             }}
           >
