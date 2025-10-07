@@ -28,6 +28,7 @@ type Ctx = {
   setOpen(value: boolean): void;
   toggle(): void;
   items: NavItem[];
+  restoreFocus(): void;
 };
 const CommandMenuContext = React.createContext<Ctx | null>(null);
 
@@ -38,8 +39,44 @@ export function CommandMenuProvider({
   items: NavItem[];
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const toggle = React.useCallback(() => setOpen((value) => !value), []);
+  const [open, setOpenState] = React.useState(false);
+  const lastTriggerRef = React.useRef<HTMLElement | null>(null);
+
+  const captureActiveElement = React.useCallback(() => {
+    const active = document.activeElement;
+    if (
+      active instanceof HTMLElement &&
+      active !== document.body &&
+      active.tagName !== "BODY"
+    ) {
+      lastTriggerRef.current = active;
+    } else {
+      lastTriggerRef.current = null;
+    }
+  }, []);
+
+  const setOpen = React.useCallback(
+    (value: boolean) => {
+      if (value) {
+        captureActiveElement();
+      }
+      setOpenState(value);
+    },
+    [captureActiveElement],
+  );
+
+  const toggle = React.useCallback(() => {
+    setOpenState((value) => {
+      if (!value) captureActiveElement();
+      return !value;
+    });
+  }, [captureActiveElement]);
+
+  const restoreFocus = React.useCallback(() => {
+    const target = lastTriggerRef.current ?? document.body;
+    lastTriggerRef.current = null;
+    target?.focus?.();
+  }, []);
   const pathname = usePathname();
   const resolvedItems = React.useMemo(() => {
     if (items.length) return items;
@@ -49,7 +86,7 @@ export function CommandMenuProvider({
 
   React.useEffect(() => {
     setOpen(false);
-  }, [pathname]);
+  }, [pathname, setOpen]);
 
   React.useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
@@ -67,7 +104,13 @@ export function CommandMenuProvider({
     return () => window.removeEventListener("keydown", handleKey);
   }, [toggle]);
 
-  const ctx: Ctx = { open, setOpen, toggle, items: resolvedItems };
+  const ctx: Ctx = {
+    open,
+    setOpen,
+    toggle,
+    items: resolvedItems,
+    restoreFocus,
+  };
 
   return (
     <CommandMenuContext.Provider value={ctx}>
@@ -146,7 +189,7 @@ function buildHotkeyLookup(flat: FlatLink[]): Map<number, FlatLink> {
 }
 
 export default function CommandMenu() {
-  const { open, setOpen, items } = useCommandMenu();
+  const { open, setOpen, items, restoreFocus } = useCommandMenu();
   const router = useRouter();
   const flat = React.useMemo(() => flattenLinks(items), [items]);
   const [recentIds, setRecentIds] = React.useState<string[]>(() =>
@@ -269,6 +312,19 @@ export default function CommandMenu() {
     window.addEventListener("keydown", handleNumberHotkey);
     return () => window.removeEventListener("keydown", handleNumberHotkey);
   }, [handleSelect, hotkeyLookup, open]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(false);
+      queueMicrotask(restoreFocus);
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [open, restoreFocus, setOpen]);
 
   const renderItem = React.useCallback(
     (link: FlatLink) => {
