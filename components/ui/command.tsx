@@ -290,7 +290,7 @@ export function CommandDialog({
               "fixed z-[99] p-0 !bottom-auto",
               "max-w-[calc(100vw-2rem)]",
               "rounded-b-2xl rounded-t-none",
-              "border-[6px] border-[var(--cream)]",
+              "border-[6px] border-[var(--green)]",
               "shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]",
               "bg-[var(--surface)] text-[var(--text)]",
               "opacity-0 data-[state=open]:opacity-100 transition-opacity duration-120",
