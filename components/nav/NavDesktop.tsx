@@ -220,7 +220,6 @@ function PersonaDropdown({
             onMouseEnter={() => openImmediately(persona.id)}
             onMouseLeave={() => scheduleClose(persona.id)}
           >
-            <div className="header">{persona.label}</div>
             <div className="list">
               {links.map((child) => {
                 const linkNode = child as AnyLink;
@@ -331,7 +330,6 @@ function PersonaDropdown({
                   }
                 }}
               >
-                <div className="header">{persona.label}</div>
                 <div className="list">
                   {links.map((child) => {
                     const linkNode = child as AnyLink;
