@@ -15,7 +15,8 @@ export const Command = React.forwardRef<
   <CommandPrimitive
     ref={ref}
     className={cn(
-      "flex h-full w-full flex-col overflow-visible rounded-2xl p-3",
+      "flex h-full w-full flex-col overflow-visible rounded-2xl",
+      "px-4 py-4 sm:px-6 md:px-8 lg:px-10",
       className,
     )}
     {...props}
@@ -38,9 +39,15 @@ export function CommandDialog({
 }: CommandDialogProps) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const topPx = useTopAnchor();
-  const { left: leftPx, compute: recomputeLeft } = useLeftAnchor({
-    anchorSelector: "#page-main",
-    margin: 16,
+  const DIALOG_MARGIN = 16;
+  const {
+    left: leftPx,
+    width: widthPx,
+    compute: recomputeLeft,
+  } = useLeftAnchor({
+    anchorSelector: "#content-pane",
+    margin: DIALOG_MARGIN,
+    fallbackWidth: 640,
   });
 
   React.useEffect(() => {
@@ -53,6 +60,10 @@ export function CommandDialog({
     const el = contentRef.current;
     if (!el) return;
 
+    const widthStyle =
+      Number.isFinite(widthPx) && widthPx > 0
+        ? (["width", `${Math.round(widthPx)}px`] as [string, string])
+        : null;
     const targetStyles: Array<[string, string]> = [
       ["position", "fixed"],
       ["top", `${topPx}px`],
@@ -60,7 +71,9 @@ export function CommandDialog({
       ["right", "auto"],
       ["bottom", "auto"],
       ["transform", "none"],
+      ["max-width", `calc(100vw - ${DIALOG_MARGIN * 2}px)`],
     ];
+    if (widthStyle) targetStyles.push(widthStyle);
 
     const guardClasses = [
       "left-1/2",
@@ -113,7 +126,7 @@ export function CommandDialog({
       mo.disconnect();
       ro.disconnect();
     };
-  }, [leftPx, topPx, recomputeLeft]);
+  }, [DIALOG_MARGIN, leftPx, topPx, widthPx, recomputeLeft]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -222,7 +235,8 @@ export function CommandDialog({
             role="dialog"
             aria-modal="true"
             className={cn(
-              "fixed z-[99] w-[min(96vw,56rem)] p-0 !bottom-auto",
+              "fixed z-[99] p-0 !bottom-auto",
+              "max-w-[calc(100vw-2rem)]",
               "rounded-2xl shadow-2xl",
               "bg-[var(--surface)] text-[var(--text)]",
               "opacity-0 data-[state=open]:opacity-100 transition-opacity duration-120",
@@ -234,6 +248,11 @@ export function CommandDialog({
               right: "auto",
               bottom: "auto",
               transform: "none",
+              width:
+                Number.isFinite(widthPx) && widthPx > 0
+                  ? Math.round(widthPx)
+                  : undefined,
+              maxWidth: `calc(100vw - ${DIALOG_MARGIN * 2}px)`,
             }}
           >
             <DialogPrimitive.Title asChild>

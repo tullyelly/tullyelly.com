@@ -5,11 +5,26 @@ import * as React from "react";
 type Opts = {
   anchorSelector?: string;
   margin?: number;
+  widthPadding?: number;
+  fallbackWidth?: number;
+};
+
+type Metrics = {
+  left: number;
+  width: number;
 };
 
 export function useLeftAnchor(opts: Opts = {}) {
-  const { anchorSelector = "#page-main", margin = 16 } = opts;
-  const [left, setLeft] = React.useState<number>(margin);
+  const {
+    anchorSelector = "#page-main",
+    margin = 16,
+    widthPadding = 0,
+    fallbackWidth = 640,
+  } = opts;
+  const [{ left, width }, setMetrics] = React.useState<Metrics>({
+    left: margin,
+    width: Math.max(fallbackWidth, 0),
+  });
   const panelRef = React.useRef<HTMLElement | null>(null);
 
   const compute = React.useCallback(
@@ -22,22 +37,34 @@ export function useLeftAnchor(opts: Opts = {}) {
         anchorSelector,
       ) as HTMLElement | null;
 
-      let targetLeft = margin;
+      let resolvedLeft = margin;
+      let resolvedWidth = fallbackWidth;
+
       if (anchor) {
         const rect = anchor.getBoundingClientRect();
-        const padL =
-          parseFloat(getComputedStyle(anchor).paddingLeft || "0") || 0;
-        targetLeft = Math.round(rect.left + padL);
+        resolvedLeft = Math.round(rect.left);
+        resolvedWidth = Math.round(rect.width);
+      } else if (target) {
+        const rect = target.getBoundingClientRect();
+        resolvedWidth = Math.round(rect.width);
+      } else {
+        resolvedWidth = Math.max(fallbackWidth, vw - margin * 2);
       }
 
-      const width = target?.getBoundingClientRect().width ?? 0;
-      const clamped = Math.max(
-        margin,
-        Math.min(targetLeft, vw - width - margin),
-      );
-      setLeft(clamped);
+      if (!Number.isFinite(resolvedWidth) || resolvedWidth <= 0) {
+        resolvedWidth = Math.max(fallbackWidth, vw - margin * 2);
+      }
+
+      resolvedWidth += widthPadding;
+
+      const viewportAllowance = Math.max(vw - margin * 2, 0);
+      const clampedWidth = Math.min(resolvedWidth, viewportAllowance);
+      const maxLeft = Math.max(vw - clampedWidth - margin, margin);
+      const clampedLeft = Math.min(Math.max(resolvedLeft, margin), maxLeft);
+
+      setMetrics({ left: clampedLeft, width: clampedWidth });
     },
-    [anchorSelector, margin],
+    [anchorSelector, fallbackWidth, margin, widthPadding],
   );
 
   React.useLayoutEffect(() => {
@@ -51,5 +78,5 @@ export function useLeftAnchor(opts: Opts = {}) {
     };
   }, [compute]);
 
-  return { left, compute };
+  return { left, width, compute };
 }
