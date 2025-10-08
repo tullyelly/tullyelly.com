@@ -672,10 +672,27 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
     };
   }, [clearTimer]);
 
+  const isPersonaMenuNode = React.useCallback((node: EventTarget | null) => {
+    if (!(node instanceof Element)) {
+      return false;
+    }
+    return Boolean(
+      node.closest("[data-persona-trigger]") ??
+        node.closest("[data-persona-menu]"),
+    );
+  }, []);
+
   React.useEffect(() => {
     const handlePointerDown = (event: MouseEvent | PointerEvent) => {
-      const target = event.target as Element | null;
-      if (target?.closest?.("[data-persona-trigger], [data-persona-menu]")) {
+      const target = event.target;
+      if (isPersonaMenuNode(target)) {
+        return;
+      }
+      const path =
+        typeof event.composedPath === "function"
+          ? event.composedPath()
+          : undefined;
+      if (path?.some((node) => isPersonaMenuNode(node))) {
         return;
       }
       closeNow();
@@ -694,7 +711,7 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [closeNow]);
+  }, [closeNow, isPersonaMenuNode]);
 
   const personaIds = React.useMemo(
     () => personas.map((persona) => persona.id),
