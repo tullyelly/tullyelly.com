@@ -204,6 +204,27 @@ textarea:focus-visible {
   color: var(--text-on-blue);
 }
 
+.popup-weld {
+  position: relative;
+  --popup-weld-header-bg: var(--brand);
+  --popup-weld-border-width: 6px;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 var(--popup-weld-header-bg);
+}
+
+.popup-weld::before {
+  content: "";
+  position: absolute;
+  top: calc(-1px);
+  left: calc(-1 * var(--popup-weld-border-width));
+  right: calc(-1 * var(--popup-weld-border-width));
+  height: 1px;
+  background: var(--popup-weld-header-bg);
+  pointer-events: none;
+}
+
 .on-green {
   background: var(--green);
   color: var(--text-on-green);

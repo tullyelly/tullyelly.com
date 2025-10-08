@@ -8,19 +8,85 @@ import { cn } from "@/lib/utils";
 const NavigationMenu = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root>
->(({ className, children, ...props }, ref) => (
-  <NavigationMenuPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative z-10 flex max-w-max flex-1 items-center justify-center",
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <NavigationMenuViewport />
-  </NavigationMenuPrimitive.Root>
-));
+>(({ className, children, style, ...props }, ref) => {
+  const internalRef = React.useRef<React.ElementRef<
+    typeof NavigationMenuPrimitive.Root
+  > | null>(null);
+  const [headerGap, setHeaderGap] = React.useState(0);
+
+  const setRefs = React.useCallback(
+    (node: React.ElementRef<typeof NavigationMenuPrimitive.Root> | null) => {
+      internalRef.current = node;
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        (
+          ref as React.MutableRefObject<React.ElementRef<
+            typeof NavigationMenuPrimitive.Root
+          > | null>
+        ).current = node;
+      }
+    },
+    [ref],
+  );
+
+  React.useEffect(() => {
+    const menuNode = internalRef.current;
+    if (!menuNode) return;
+    const doc = menuNode.ownerDocument;
+    const header = doc?.getElementById("site-header");
+    if (!header) return;
+
+    const update = () => {
+      const headerRect = header.getBoundingClientRect();
+      const menuRect = menuNode.getBoundingClientRect();
+      const gap = Math.max(0, Math.round(headerRect.bottom - menuRect.bottom));
+      setHeaderGap(gap);
+    };
+
+    update();
+
+    const defaultView = doc?.defaultView;
+    const ResizeObserverCtor =
+      defaultView?.ResizeObserver ?? globalThis.ResizeObserver;
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserverCtor === "function") {
+      observer = new ResizeObserverCtor(update);
+      observer.observe(header);
+      observer.observe(menuNode);
+    }
+
+    const handleResize = () => update();
+    defaultView?.addEventListener("resize", handleResize);
+
+    return () => {
+      if (observer) observer.disconnect();
+      defaultView?.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const mergedStyle = React.useMemo<React.CSSProperties>(() => {
+    const base = style ? { ...(style as React.CSSProperties) } : {};
+    (base as Record<string, string | number>)["--navigation-menu-header-gap"] =
+      `${headerGap}px`;
+    return base;
+  }, [style, headerGap]);
+
+  return (
+    <NavigationMenuPrimitive.Root
+      ref={setRefs}
+      className={cn(
+        "relative z-10 flex max-w-max flex-1 items-center justify-center",
+        className,
+      )}
+      style={mergedStyle}
+      {...props}
+    >
+      {children}
+      <NavigationMenuViewport />
+    </NavigationMenuPrimitive.Root>
+  );
+});
 NavigationMenu.displayName = NavigationMenuPrimitive.Root.displayName;
 
 const NavigationMenuList = React.forwardRef<
@@ -83,10 +149,15 @@ const NavigationMenuViewport = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
 >(({ className, ...props }, ref) => (
-  <div className={cn("absolute left-0 top-full -mt-px flex justify-start")}>
+  <div
+    className={cn("absolute left-0 top-full -mt-px flex justify-start")}
+    style={{
+      marginTop: "calc(-1px - var(--navigation-menu-header-gap, 0px))",
+    }}
+  >
     <NavigationMenuPrimitive.Viewport
       className={cn(
-        "relative h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-t-none rounded-b-2xl border-[6px] border-[var(--green)] bg-[var(--surface-card)] text-[var(--text)] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]",
+        "popup-weld relative h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-t-none rounded-b-2xl border-[6px] border-[var(--green)] bg-[var(--surface-card)] text-[var(--text)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]",
         className,
       )}
       ref={ref}

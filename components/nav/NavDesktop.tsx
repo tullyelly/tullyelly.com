@@ -19,6 +19,8 @@ import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
 
+const POPPER_WRAPPER_SELECTOR = "[data-radix-popper-content-wrapper]";
+
 type Props = {
   items?: NavItem[]; // Expect personas at top level
 };
@@ -74,6 +76,7 @@ type PersonaDropdownProps = {
     id: string,
   ) => void;
   onLinkClick: (persona: PersonaItem, link: AnyLink) => void;
+  headerRef: React.RefObject<HTMLElement | null>;
 };
 
 function PersonaDropdown({
@@ -88,7 +91,11 @@ function PersonaDropdown({
   focusTrigger,
   onTriggerKeyDown,
   onLinkClick,
+  headerRef,
 }: PersonaDropdownProps): React.ReactNode {
+  const triggerNodeRef = React.useRef<HTMLButtonElement | null>(null);
+  const panelSurfaceRef = React.useRef<HTMLDivElement | null>(null);
+  const positionedPanelRef = React.useRef<HTMLElement | null>(null);
   const links = (persona.children ?? []).filter(
     (c) => c.kind === "link" || c.kind === "external",
   );
@@ -143,11 +150,56 @@ function PersonaDropdown({
     return () => window.cancelAnimationFrame(frame);
   }, [isOpen]);
 
+  const setPanelSurface = React.useCallback((node: HTMLDivElement | null) => {
+    panelSurfaceRef.current = node;
+    if (!node) {
+      positionedPanelRef.current = null;
+      return;
+    }
+    const wrapper = node.closest(POPPER_WRAPPER_SELECTOR) as HTMLElement | null;
+    positionedPanelRef.current = wrapper ?? node;
+  }, []);
+
+  const positionPanel = React.useCallback(() => {
+    const triggerNode = triggerNodeRef.current;
+    const panelNode = positionedPanelRef.current;
+    if (!triggerNode || !panelNode) return;
+
+    const header = headerRef.current ?? triggerNode.closest("header");
+    if (!header) return;
+
+    const headerRect = header.getBoundingClientRect();
+    const triggerRect = triggerNode.getBoundingClientRect();
+    const top = Math.round(headerRect.bottom) - 1;
+
+    panelNode.style.position = "fixed";
+    panelNode.style.top = `${top}px`;
+    panelNode.style.left = `${Math.round(triggerRect.left)}px`;
+    panelNode.style.right = "auto";
+    panelNode.style.bottom = "auto";
+    panelNode.style.transform = "none";
+    panelNode.style.setProperty("transform", "none");
+    panelNode.style.margin = "0";
+    panelNode.style.minWidth = "";
+  }, [headerRef]);
+
   const triggerRef = React.useCallback(
     (node: HTMLButtonElement | null) => {
+      triggerNodeRef.current = node;
       registerTrigger(persona.id, node);
+      if (node) {
+        const ownerWindow = node.ownerDocument?.defaultView;
+        const raf =
+          ownerWindow?.requestAnimationFrame ??
+          globalThis.requestAnimationFrame;
+        if (typeof raf === "function") {
+          raf(() => positionPanel());
+        } else {
+          positionPanel();
+        }
+      }
     },
-    [persona.id, registerTrigger],
+    [persona.id, registerTrigger, positionPanel],
   );
 
   const menuId = `${persona.id}-persona-menu`;
@@ -156,6 +208,54 @@ function PersonaDropdown({
     if (links.length) return;
     registerTrigger(persona.id, null);
   }, [links.length, persona.id, registerTrigger]);
+
+  React.useEffect(() => {
+    const panelNode = positionedPanelRef.current;
+    const triggerNode = triggerNodeRef.current;
+    if (!panelNode || !triggerNode) return;
+    const doc = triggerNode.ownerDocument;
+    const win = doc?.defaultView;
+    if (!win) return;
+
+    if (!isOpen) {
+      panelNode.style.removeProperty("position");
+      panelNode.style.removeProperty("top");
+      panelNode.style.removeProperty("left");
+      panelNode.style.removeProperty("right");
+      panelNode.style.removeProperty("bottom");
+      panelNode.style.removeProperty("transform");
+      panelNode.style.removeProperty("margin");
+      panelNode.style.removeProperty("min-width");
+      return;
+    }
+
+    positionPanel();
+
+    const handleUpdate = () => positionPanel();
+    const ResizeObserverCtor = win.ResizeObserver ?? globalThis.ResizeObserver;
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserverCtor === "function") {
+      ro = new ResizeObserverCtor(() => positionPanel());
+      ro.observe(triggerNode);
+      ro.observe(doc.body);
+    }
+    win.addEventListener("resize", handleUpdate);
+    win.addEventListener("scroll", handleUpdate, true);
+
+    return () => {
+      win.removeEventListener("resize", handleUpdate);
+      win.removeEventListener("scroll", handleUpdate, true);
+      if (ro) ro.disconnect();
+      panelNode.style.removeProperty("position");
+      panelNode.style.removeProperty("top");
+      panelNode.style.removeProperty("left");
+      panelNode.style.removeProperty("right");
+      panelNode.style.removeProperty("bottom");
+      panelNode.style.removeProperty("transform");
+      panelNode.style.removeProperty("margin");
+      panelNode.style.removeProperty("min-width");
+    };
+  }, [isOpen, positionPanel]);
 
   if (!links.length) {
     return null;
@@ -219,6 +319,7 @@ function PersonaDropdown({
             data-state={isOpen ? "open" : "closed"}
             role="menu"
             hidden={!isOpen}
+            ref={setPanelSurface}
             onMouseEnter={() => openImmediately(persona.id)}
             onMouseLeave={() => scheduleClose(persona.id)}
           >
@@ -314,6 +415,9 @@ function PersonaDropdown({
                 data-state={isOpen ? "open" : "closed"}
                 role="menu"
                 hidden={!isOpen}
+                ref={(node) => {
+                  setPanelSurface(node);
+                }}
                 onPointerEnter={() => openImmediately(persona.id)}
                 onPointerLeave={() => scheduleClose(persona.id)}
                 onFocusCapture={() => openImmediately(persona.id)}
@@ -463,6 +567,15 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
   const triggerRefs = React.useRef<Map<string, HTMLButtonElement | null>>(
     new Map(),
   );
+  const headerRef = React.useRef<HTMLElement | null>(null);
+  const navRef = React.useRef<HTMLElement | null>(null);
+
+  React.useLayoutEffect(() => {
+    if (!navRef.current) return;
+    headerRef.current =
+      navRef.current.closest("header") ??
+      document.getElementById("site-header");
+  }, []);
 
   React.useLayoutEffect(() => {
     setOpenId(null);
@@ -725,6 +838,7 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
 
   return (
     <nav
+      ref={navRef}
       data-testid="nav-desktop"
       className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block"
     >
@@ -744,6 +858,7 @@ export default function NavDesktop({ items }: Props): React.ReactNode {
               focusTrigger={focusTrigger}
               onTriggerKeyDown={handleTriggerKeyDown}
               onLinkClick={handlePersonaLinkClick}
+              headerRef={headerRef}
             />
           ))}
         </div>
