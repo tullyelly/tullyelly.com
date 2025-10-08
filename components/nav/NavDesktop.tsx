@@ -99,6 +99,10 @@ function PersonaDropdown({
   const links = (persona.children ?? []).filter(
     (c) => c.kind === "link" || c.kind === "external",
   );
+  const hasLinks = links.length > 0;
+  const [keyboardPressedId, setKeyboardPressedId] = React.useState<
+    string | null
+  >(null);
 
   const surfaceVars = React.useMemo(
     () =>
@@ -107,6 +111,7 @@ function PersonaDropdown({
         "--pm-ink": "var(--color-ink-strong)",
         "--pm-outline": "var(--color-outline-subtle)",
         "--pm-surface-hover": "var(--color-surface-hover)",
+        "--pm-surface-active": "var(--color-surface-pressed, #eef2fb)",
         "--pm-badge-bg": "var(--blue)",
         "--pm-badge-fg": "var(--text-on-blue)",
         "--pm-frame": "var(--green)",
@@ -257,7 +262,111 @@ function PersonaDropdown({
     };
   }, [isOpen, positionPanel]);
 
-  if (!links.length) {
+  React.useEffect(() => {
+    if (!isOpen && keyboardPressedId !== null) {
+      setKeyboardPressedId(null);
+    }
+  }, [isOpen, keyboardPressedId]);
+
+  const menuItems = React.useMemo(
+    () =>
+      links.map((child) => {
+        const linkNode = child as AnyLink;
+        const href = linkNode.href;
+        const active = isActiveHref(pathname, href);
+        const hotkey = readHotkey(linkNode);
+        const badge = linkNode.badge?.text;
+        const prefetch = linkNode.kind === "link";
+        const target =
+          linkNode.kind === "external"
+            ? (linkNode.target ?? "_blank")
+            : undefined;
+        const rel = target === "_blank" ? "noreferrer noopener" : undefined;
+        const menuItemTestId = linkNode.featureKey
+          ? `menu-item-${linkNode.featureKey}`
+          : `menu-item-${linkNode.id}`;
+        const isKeyboardPressed = keyboardPressedId === child.id;
+
+        const metaItems: React.ReactNode[] = [];
+        if (badge) {
+          metaItems.push(
+            <span
+              className="badge"
+              data-tone={child.badge?.tone || "new"}
+              key="badge"
+            >
+              {badge}
+            </span>,
+          );
+        }
+        if (hotkey) {
+          metaItems.push(
+            <span className="hotkey" key="hotkey">
+              {hotkey}
+            </span>,
+          );
+        }
+
+        return (
+          <DropdownMenu.Item
+            key={child.id}
+            asChild
+            data-active={active ? "true" : undefined}
+          >
+            <Link
+              href={href ?? "#"}
+              prefetch={prefetch}
+              target={target}
+              rel={rel}
+              className="item"
+              data-testid={menuItemTestId}
+              data-pressed={isKeyboardPressed ? "true" : undefined}
+              onClick={() => {
+                onLinkClick(persona, linkNode);
+              }}
+              onKeyDown={(event) => {
+                if (
+                  !event.defaultPrevented &&
+                  (event.key === " " || event.key === "Enter")
+                ) {
+                  setKeyboardPressedId(child.id);
+                }
+              }}
+              onKeyUp={(event) => {
+                if (event.key === " " || event.key === "Enter") {
+                  setKeyboardPressedId((current) =>
+                    current === child.id ? null : current,
+                  );
+                }
+              }}
+              onBlur={() => {
+                setKeyboardPressedId((current) =>
+                  current === child.id ? null : current,
+                );
+              }}
+            >
+              <span className="icon" aria-hidden="true">
+                <Icon name={child.icon} className="pm-icon" />
+              </span>
+              <span className="label">{child.label}</span>
+              {metaItems.length ? (
+                <span className="meta">{metaItems}</span>
+              ) : null}
+            </Link>
+          </DropdownMenu.Item>
+        );
+      }),
+    [
+      keyboardPressedId,
+      links,
+      onLinkClick,
+      pathname,
+      persona,
+      setKeyboardPressedId,
+    ],
+  );
+
+  if (!hasLinks) {
     return null;
   }
 
@@ -323,71 +432,7 @@ function PersonaDropdown({
             onMouseEnter={() => openImmediately(persona.id)}
             onMouseLeave={() => scheduleClose(persona.id)}
           >
-            <div className="list">
-              {links.map((child) => {
-                const linkNode = child as AnyLink;
-                const href = linkNode.href;
-                const active = isActiveHref(pathname, href);
-                const hotkey = readHotkey(linkNode);
-                const badge = linkNode.badge?.text;
-                const prefetch = linkNode.kind === "link";
-                const target =
-                  linkNode.kind === "external"
-                    ? (linkNode.target ?? "_blank")
-                    : undefined;
-                const rel =
-                  target === "_blank" ? "noreferrer noopener" : undefined;
-                const menuItemTestId = linkNode.featureKey
-                  ? `menu-item-${linkNode.featureKey}`
-                  : `menu-item-${linkNode.id}`;
-
-                const metaItems: React.ReactNode[] = [];
-                if (badge) {
-                  metaItems.push(
-                    <span
-                      className="badge"
-                      data-tone={child.badge?.tone || "new"}
-                      key="badge"
-                    >
-                      {badge}
-                    </span>,
-                  );
-                }
-                if (hotkey) {
-                  metaItems.push(
-                    <span className="hotkey" key="hotkey">
-                      {hotkey}
-                    </span>,
-                  );
-                }
-
-                return (
-                  <DropdownMenu.Item
-                    key={child.id}
-                    asChild
-                    data-active={active ? "true" : undefined}
-                  >
-                    <Link
-                      href={href ?? "#"}
-                      prefetch={prefetch}
-                      target={target}
-                      rel={rel}
-                      className="item"
-                      data-testid={menuItemTestId}
-                      onClick={() => onLinkClick(persona, linkNode)}
-                    >
-                      <span className="icon" aria-hidden="true">
-                        <Icon name={child.icon} className="pm-icon" />
-                      </span>
-                      <span className="label">{child.label}</span>
-                      {metaItems.length ? (
-                        <span className="meta">{metaItems}</span>
-                      ) : null}
-                    </Link>
-                  </DropdownMenu.Item>
-                );
-              })}
-            </div>
+            <div className="list">{menuItems}</div>
           </div>
         </DropdownMenu.Content>
       ) : (
@@ -437,70 +482,7 @@ function PersonaDropdown({
                   }
                 }}
               >
-                <div className="list">
-                  {links.map((child) => {
-                    const linkNode = child as AnyLink;
-                    const href = linkNode.href;
-                    const active = isActiveHref(pathname, href);
-                    const hotkey = readHotkey(linkNode);
-                    const badge = linkNode.badge?.text;
-                    const prefetch = linkNode.kind === "link";
-                    const target =
-                      linkNode.kind === "external"
-                        ? (linkNode.target ?? "_blank")
-                        : undefined;
-                    const rel =
-                      target === "_blank" ? "noreferrer noopener" : undefined;
-                    const menuItemTestId = linkNode.featureKey
-                      ? `menu-item-${linkNode.featureKey}`
-                      : `menu-item-${linkNode.id}`;
-
-                    const metaItems: React.ReactNode[] = [];
-                    if (badge) {
-                      metaItems.push(
-                        <span
-                          className="badge"
-                          data-tone={child.badge?.tone || "new"}
-                          key="badge"
-                        >
-                          {badge}
-                        </span>,
-                      );
-                    }
-                    if (hotkey) {
-                      metaItems.push(
-                        <span className="hotkey" key="hotkey">
-                          {hotkey}
-                        </span>,
-                      );
-                    }
-
-                    return (
-                      <DropdownMenu.Item
-                        key={child.id}
-                        asChild
-                        data-active={active ? "true" : undefined}
-                      >
-                        <Link
-                          href={href ?? "#"}
-                          prefetch={prefetch}
-                          target={target}
-                          rel={rel}
-                          className="item"
-                          onClick={() => onLinkClick(persona, linkNode)}
-                        >
-                          <span className="icon" aria-hidden="true">
-                            <Icon name={child.icon} className="pm-icon" />
-                          </span>
-                          <span className="label">{child.label}</span>
-                          {metaItems.length ? (
-                            <span className="meta">{metaItems}</span>
-                          ) : null}
-                        </Link>
-                      </DropdownMenu.Item>
-                    );
-                  })}
-                </div>
+                <div className="list">{menuItems}</div>
               </PersonaMenuSurface>
             </DropdownMenu.Content>
           </ShadowPortal>

@@ -132,6 +132,16 @@ export const PERSONA_MENU_CSS = `
   outline: none;
   color: inherit;
   text-decoration: none;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out,
+    transform 150ms ease-out;
+  transform-origin: center;
+  will-change: transform;
 }
 
 .item:hover,
@@ -141,9 +151,23 @@ export const PERSONA_MENU_CSS = `
   box-shadow: inset 0 0 0 1px var(--pm-outline, #d8dfea);
 }
 
+.item:active,
+.item[data-pressed="true"] {
+  background: var(
+    --pm-surface-active,
+    var(--pm-surface-hover, #f3f6fb)
+  );
+  box-shadow: inset 0 0 0 1px var(--pm-outline, #d8dfea);
+  transform: translateY(0.5px) scale(0.99);
+}
+
 .item[data-active="true"] {
   background: var(--pm-surface-hover, #f3f6fb);
   box-shadow: inset 0 0 0 1px var(--pm-outline, #d8dfea);
+}
+
+.item > * {
+  cursor: inherit;
 }
 
 .icon {
@@ -169,6 +193,7 @@ export const PERSONA_MENU_CSS = `
   overflow: hidden;
   text-overflow: ellipsis;
   font: 500 14px/1.25 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  user-select: none;
 }
 
 .meta {
@@ -176,6 +201,7 @@ export const PERSONA_MENU_CSS = `
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  user-select: none;
 }
 
 .badge {
@@ -186,6 +212,7 @@ export const PERSONA_MENU_CSS = `
   font: 600 11px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   background: var(--pm-badge-bg, #0b1220);
   color: var(--pm-badge-fg, #ffffff);
+  user-select: none;
 }
 
 .hotkey {
@@ -194,6 +221,7 @@ export const PERSONA_MENU_CSS = `
   padding: 2px 6px;
   font: 500 11px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   opacity: 0.75;
+  user-select: none;
 }
 
 .sep {
@@ -219,5 +247,17 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: background-color 100ms ease-out !important;
+    transform: none !important;
+  }
+
+  .item:active,
+  .item[data-pressed="true"] {
+    transform: none !important;
+  }
 }
 `;
