@@ -90,10 +90,10 @@ export const PERSONA_MENU_CSS = `
   z-index: 2000;
   background: var(--pm-surface, #ffffff);
   color: var(--pm-ink, #0b1220);
-  border: 1px solid var(--pm-outline, #d8dfea);
-  border-radius: 0 0 14px 14px;
+  border: 6px solid var(--pm-frame, #00471b);
+  border-radius: 0 0 16px 16px;
   margin-top: -1px;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22), 0 2px 10px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   min-width: 22rem;
   max-width: 92vw;
   max-height: min(70vh, 560px);

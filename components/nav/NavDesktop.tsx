@@ -102,6 +102,7 @@ function PersonaDropdown({
         "--pm-surface-hover": "var(--color-surface-hover)",
         "--pm-badge-bg": "var(--blue)",
         "--pm-badge-fg": "var(--text-on-blue)",
+        "--pm-frame": "var(--green)",
       }) as React.CSSProperties,
     [],
   );
@@ -209,6 +210,7 @@ function PersonaDropdown({
           avoidCollisions
           loop
           aria-label={`Persona menu: ${persona.label}`}
+          className="rounded-t-none rounded-b-2xl"
         >
           <div
             className="menu"
@@ -302,6 +304,7 @@ function PersonaDropdown({
               loop
               aria-label={`Persona menu: ${persona.label}`}
               asChild
+              className="rounded-t-none rounded-b-2xl"
             >
               <PersonaMenuSurface
                 id={menuId}
