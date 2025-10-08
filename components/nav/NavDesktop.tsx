@@ -112,6 +112,12 @@ function PersonaDropdown({
         "--pm-outline": "var(--color-outline-subtle)",
         "--pm-surface-hover": "var(--color-surface-hover)",
         "--pm-surface-active": "var(--color-surface-pressed, #eef2fb)",
+        "--pm-item-bg": "var(--surface-muted, rgba(226, 232, 240, 0.6))",
+        "--pm-item-hover": "var(--surface-hover, rgba(226, 232, 240, 0.85))",
+        "--pm-item-border": "var(--border-subtle, rgba(148, 163, 184, 0.8))",
+        "--pm-item-border-active":
+          "var(--border-strong, rgba(148, 163, 184, 1))",
+        "--pm-ring": "var(--ring, rgba(59, 130, 246, 0.45))",
         "--pm-badge-bg": "var(--blue)",
         "--pm-badge-fg": "var(--text-on-blue)",
         "--pm-frame": "var(--green)",

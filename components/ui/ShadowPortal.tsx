@@ -93,12 +93,13 @@ export const PERSONA_MENU_CSS = `
   border: 6px solid var(--pm-frame, #00471b);
   border-radius: 0 0 16px 16px;
   margin-top: -1px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  min-width: 22rem;
-  max-width: 92vw;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+  width: min(90vw, 16rem);
+  min-height: 56px;
   max-height: min(70vh, 560px);
   overflow: auto;
-  padding: 8px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
 }
@@ -119,36 +120,62 @@ export const PERSONA_MENU_CSS = `
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: stretch;
+  width: 100%;
 }
 
 .item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 40px;
+  justify-content: flex-start;
+  gap: 8px;
+  height: 36px;
+  min-height: 36px;
   padding: 0 12px;
-  border-radius: 10px;
+  margin: 0;
+  border-radius: 6px;
+  border: 1px solid
+    var(--pm-item-border, var(--pm-outline, #d8dfea));
+  background: var(--pm-item-bg, rgba(226, 232, 240, 0.6));
   cursor: pointer;
   outline: none;
   color: inherit;
   text-decoration: none;
-  width: 100%;
   user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  transition: background-color 150ms ease-out, box-shadow 150ms ease-out,
+  transition: background-color 150ms ease-out, border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
     transform 150ms ease-out;
   transform-origin: center;
   will-change: transform;
+  box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1;
+  width: 100%;
+  text-align: left;
 }
 
 .item:hover,
-.item[data-highlighted],
+.item[data-highlighted] {
+  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
+  border-color: var(
+    --pm-item-border-active,
+    var(--pm-outline, #d8dfea)
+  );
+}
+
 .item:focus-visible {
-  background: var(--pm-surface-hover, #f3f6fb);
-  box-shadow: inset 0 0 0 1px var(--pm-outline, #d8dfea);
+  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
+  border-color: var(
+    --pm-item-border-active,
+    var(--pm-outline, #d8dfea)
+  );
+  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
+    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.45));
 }
 
 .item:active,
@@ -157,13 +184,23 @@ export const PERSONA_MENU_CSS = `
     --pm-surface-active,
     var(--pm-surface-hover, #f3f6fb)
   );
-  box-shadow: inset 0 0 0 1px var(--pm-outline, #d8dfea);
+  border-color: var(
+    --pm-item-border-active,
+    var(--pm-outline, #d8dfea)
+  );
+  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
+    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.35));
   transform: translateY(0.5px) scale(0.99);
 }
 
 .item[data-active="true"] {
-  background: var(--pm-surface-hover, #f3f6fb);
-  box-shadow: inset 0 0 0 1px var(--pm-outline, #d8dfea);
+  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
+  border-color: var(
+    --pm-item-border-active,
+    var(--pm-outline, #d8dfea)
+  );
+  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
+    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.35));
 }
 
 .item > * {
@@ -192,8 +229,18 @@ export const PERSONA_MENU_CSS = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font: 500 14px/1.25 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font: 500 14px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   user-select: none;
+}
+
+@media (min-width: 768px) {
+  .menu {
+    padding: 12px;
+  }
+
+  .item {
+    padding: 0 14px;
+  }
 }
 
 .meta {
