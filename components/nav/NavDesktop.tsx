@@ -204,8 +204,8 @@ function PersonaDropdown({
         <DropdownMenu.Content
           side="bottom"
           align="start"
-          sideOffset={6}
-          collisionPadding={8}
+          sideOffset={0}
+          collisionPadding={0}
           avoidCollisions
           loop
           aria-label={`Persona menu: ${persona.label}`}
@@ -296,8 +296,8 @@ function PersonaDropdown({
             <DropdownMenu.Content
               side="bottom"
               align="start"
-              sideOffset={6}
-              collisionPadding={8}
+              sideOffset={0}
+              collisionPadding={0}
               avoidCollisions
               loop
               aria-label={`Persona menu: ${persona.label}`}
@@ -412,7 +412,7 @@ const PersonaMenuSurface = React.forwardRef<
   PersonaMenuSurfaceProps
 >(({ className, surfaceVars, style, children, ...rest }, ref) => {
   const mergedStyle = React.useMemo(
-    () => ({ ...(style ?? {}), ...surfaceVars }),
+    () => ({ ...(style ?? {}), ...surfaceVars, marginTop: "-1px" }),
     [style, surfaceVars],
   );
 

@@ -91,7 +91,8 @@ export const PERSONA_MENU_CSS = `
   background: var(--pm-surface, #ffffff);
   color: var(--pm-ink, #0b1220);
   border: 1px solid var(--pm-outline, #d8dfea);
-  border-radius: 14px;
+  border-radius: 0 0 14px 14px;
+  margin-top: -1px;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22), 0 2px 10px rgba(0, 0, 0, 0.12);
   min-width: 22rem;
   max-width: 92vw;

@@ -45,7 +45,6 @@
   --blue-contrast: #0069a9; /* Darkened for AA on cream */
   --green: #00471b; /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
-
   --border-color: 0 0 0 / 0.08;
 
   /* Neutrals for readability */
