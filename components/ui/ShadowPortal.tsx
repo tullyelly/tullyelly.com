@@ -234,10 +234,17 @@ export const PERSONA_MENU_CSS = `
 .list button,
 .list a {
   all: unset;
+  cursor: pointer;
+  user-select: none;
 }
 
 .list a {
   display: block;
+}
+
+.list button *,
+.list a * {
+  cursor: inherit;
 }
 
 a {
