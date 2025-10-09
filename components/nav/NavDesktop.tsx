@@ -167,7 +167,21 @@ function PersonaDropdown({
       positionedPanelRef.current = null;
       return;
     }
+    node.setAttribute("data-nav-dropdown", "true");
+    node.style.boxSizing = "border-box";
+    node.style.removeProperty("min-width");
+    node.style.removeProperty("max-width");
+    node.style.removeProperty("width");
     const wrapper = node.closest(POPPER_WRAPPER_SELECTOR) as HTMLElement | null;
+    if (wrapper) {
+      wrapper.setAttribute("data-nav-dropdown-wrapper", "true");
+      wrapper.style.boxSizing = "border-box";
+      wrapper.style.width = "auto";
+      wrapper.style.minWidth = "auto";
+      wrapper.style.maxWidth = "none";
+      wrapper.style.setProperty("padding", "0");
+      wrapper.style.setProperty("margin", "0");
+    }
     positionedPanelRef.current = wrapper ?? node;
   }, []);
 
@@ -425,10 +439,12 @@ function PersonaDropdown({
           avoidCollisions
           loop
           aria-label={`Persona menu: ${persona.label}`}
-          className="rounded-t-none rounded-b-2xl"
+          data-nav-dropdown="true"
+          asChild
         >
           <div
             className="menu"
+            data-nav-dropdown="true"
             data-persona={persona.persona}
             data-persona-menu={persona.id}
             data-state={isOpen ? "open" : "closed"}
@@ -455,8 +471,8 @@ function PersonaDropdown({
               avoidCollisions
               loop
               aria-label={`Persona menu: ${persona.label}`}
+              data-nav-dropdown="true"
               asChild
-              className="rounded-t-none rounded-b-2xl"
             >
               <PersonaMenuSurface
                 id={menuId}

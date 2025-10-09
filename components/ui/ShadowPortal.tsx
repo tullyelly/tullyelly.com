@@ -85,7 +85,7 @@ export const PERSONA_MENU_CSS = `
   display: none !important;
 }
 
-.menu {
+[data-nav-dropdown] {
   position: fixed;
   z-index: 2000;
   background: var(--pm-surface, #ffffff);
@@ -95,17 +95,28 @@ export const PERSONA_MENU_CSS = `
   margin-top: -1px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18),
     0 2px 6px rgba(0, 0, 0, 0.1);
-  width: min(90vw, 16rem);
+  width: clamp(12rem, calc(8ch + 4rem), 18rem);
+  max-width: 90vw;
   min-height: 56px;
   max-height: min(70vh, 560px);
+  box-sizing: border-box;
   overflow: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
+  padding: 0.625rem;
+  display: grid;
+  place-items: center;
 }
 
-.menu:focus {
+[data-nav-dropdown]:focus {
   outline: none;
+}
+
+[data-nav-dropdown-wrapper] {
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .header {
@@ -119,9 +130,28 @@ export const PERSONA_MENU_CSS = `
 .list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   align-items: stretch;
   width: 100%;
+}
+
+[data-nav-dropdown] a,
+[data-nav-dropdown] [role="menuitem"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: 2.25rem !important;
+  padding: 0 0.75rem !important;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-nav-dropdown] a *,
+[data-nav-dropdown] [role="menuitem"] * {
+  cursor: inherit;
 }
 
 .item {
@@ -234,12 +264,13 @@ export const PERSONA_MENU_CSS = `
 }
 
 @media (min-width: 768px) {
-  .menu {
-    padding: 12px;
+  [data-nav-dropdown] {
+    padding: 0.75rem;
   }
 
-  .item {
-    padding: 0 14px;
+  [data-nav-dropdown] a,
+  [data-nav-dropdown] [role="menuitem"] {
+    padding: 0 0.875rem !important;
   }
 }
 
