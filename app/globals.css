@@ -7,11 +7,18 @@
  */
 
 :root {
-  --cream: #eee1c6; /* Cream City Cream */
+  --surface-page: #eee1c6; /* Cream City Cream */
+  --surface-card: #f0ebd2;
+  --text-strong: #0e2240; /* deep navy for contrast */
+  --border-subtle: rgba(0, 0, 0, 0.12);
+  --brand-green: #00471b;
+  --brand-blue: #0077c0;
+  --brand-gold: #fec524;
+  --cream: var(--surface-page);
   --white: #ffffff;
-  --ink: #0c1b0c; /* near-black text */
-  --bucks-green: #00471b; /* Bucks Green (header badges etc.) */
-  --gold: #f0ebd2;
+  --ink: var(--text-strong);
+  --bucks-green: var(--brand-green); /* Bucks Green (header badges etc.) */
+  --gold: var(--surface-card);
   --font-inter: system-ui, sans-serif;
   --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --header-h: 64px;

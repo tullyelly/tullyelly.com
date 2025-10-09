@@ -6,7 +6,10 @@ import Script from "next/script";
 import { headers } from "next/headers";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
-import { getMenu } from "@/app/_menu/getMenu";
+import { getMenu as getLegacyMenu } from "@/app/_menu/getMenu";
+import { getMenuData } from "@/lib/menu/getMenu";
+import { resolvePersonaForPath } from "@/lib/menu/persona";
+import type { PersonaKey } from "@/lib/menu/types";
 import { CommandMenuProvider } from "@/components/nav/CommandMenu";
 import AppShell from "@/components/app-shell/AppShell";
 import InitialScrollGuard from "@/components/system/InitialScrollGuard";
@@ -47,7 +50,7 @@ function resolveRequestedPath(headersList: Headers): string {
 export async function generateMetadata(): Promise<Metadata> {
   const hdrs = await headers();
   const path = resolveRequestedPath(hdrs);
-  const { index } = await getMenu();
+  const { index } = await getLegacyMenu();
   const { title } = buildMenuMetadata(path, index);
 
   return {
@@ -66,9 +69,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
-  const [menu, hdrs] = await Promise.all([getMenu(), headers()]);
+  const [menu, hdrs] = await Promise.all([getLegacyMenu(), headers()]);
   const path = resolveRequestedPath(hdrs);
   const pageMetadata = buildMenuMetadata(path, menu.index);
+  const resolvedPersona = resolvePersonaForPath(menu.tree, path);
+  const personaKey = (resolvedPersona?.persona ?? "mark2") as PersonaKey;
+  const { menu: personaMenu, children: personaChildren } =
+    await getMenuData(personaKey);
 
   return (
     <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
@@ -111,6 +118,8 @@ export default async function RootLayout({
             <AppShell
               announcement={announcement}
               menuItems={menu.tree}
+              menu={personaMenu}
+              menuChildren={personaChildren}
               breadcrumbs={pageMetadata.breadcrumbs}
               siteTitle={SITE_TITLE}
             >

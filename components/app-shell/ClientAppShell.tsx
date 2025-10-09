@@ -6,10 +6,11 @@ import AnnouncementBanner from "@/components/AnnouncementBanner";
 import PersistentBannerHost from "@/components/PersistentBannerHost";
 import HeaderShell from "@/components/nav/HeaderShell";
 import NavDesktop from "@/components/nav/NavDesktop";
-import NavMobile from "@/components/nav/NavMobile";
-import CommandMenu from "@/components/nav/CommandMenu";
+import MobileDrawer from "@/components/nav/MobileDrawer";
+import CommandMenu, { useCommandMenu } from "@/components/nav/CommandMenu";
 import type { NavItem } from "@/types/nav";
-import { __normalizeMenuPath } from "@/lib/menu.index";
+import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
+import { resolvePersonaForPath } from "@/lib/menu/persona";
 import { AppShellProvider, type PersonaSummary } from "./context";
 import MobileMenuButton from "./MobileMenuButton";
 import PersonaSwitcherButton from "./PersonaSwitcherButton";
@@ -18,69 +19,18 @@ import SearchButton from "./SearchButton";
 type ClientAppShellProps = {
   announcement?: string | null;
   menuItems: NavItem[];
+  menu: MenuPayload;
+  menuChildren: PersonaChildren;
   siteTitle: string;
   children: React.ReactNode;
   footerSlot: React.ReactNode;
 };
 
-type PersonaContext = PersonaSummary;
-
-function resolvePersonaForPath(
-  tree: NavItem[],
-  pathname: string,
-): PersonaContext {
-  const normalizedPath = __normalizeMenuPath(pathname);
-  if (!normalizedPath) return null;
-
-  let match: PersonaContext = null;
-
-  const visit = (
-    nodes: NavItem[] | undefined,
-    activePersona: PersonaContext,
-  ) => {
-    if (!nodes || match) return;
-
-    for (const node of nodes) {
-      if (!node || node.hidden) continue;
-
-      if (node.kind === "persona") {
-        const persona: PersonaContext = {
-          id: node.id,
-          persona: node.persona,
-          label: node.label,
-          icon: node.icon ?? undefined,
-        };
-        visit(node.children, persona);
-        continue;
-      }
-
-      if (node.kind === "group") {
-        visit(node.children, activePersona);
-        continue;
-      }
-
-      if (node.kind === "link" || node.kind === "external") {
-        if (!activePersona) continue;
-        const href = __normalizeMenuPath(node.href);
-        if (href && href === normalizedPath) {
-          match = activePersona;
-          return;
-        }
-      }
-
-      if ("children" in node && Array.isArray(node.children)) {
-        visit(node.children, activePersona);
-      }
-    }
-  };
-
-  visit(tree, null);
-  return match;
-}
-
 export default function ClientAppShell({
   announcement,
   menuItems,
+  menu,
+  menuChildren,
   siteTitle,
   children,
   footerSlot,
@@ -96,6 +46,7 @@ export default function ClientAppShell({
     string | null
   >(null);
 
+  const { setOpen: setCommandMenuOpen } = useCommandMenu();
   const setMobileNavOpen = React.useCallback((next: boolean) => {
     setMobileNavOpenState(next);
   }, []);
@@ -137,6 +88,21 @@ export default function ClientAppShell({
     }
   }, [mobileNavOpen, setMobileNavPersonaIdState]);
 
+  React.useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname, setMobileNavOpen]);
+
+  React.useEffect(() => {
+    const handleMenuAction = (event: Event) => {
+      const detail = (event as CustomEvent<{ actionKey?: string }>).detail;
+      if (detail?.actionKey === "search") {
+        setCommandMenuOpen(true);
+      }
+    };
+    window.addEventListener("menu:action", handleMenuAction);
+    return () => window.removeEventListener("menu:action", handleMenuAction);
+  }, [setCommandMenuOpen]);
+
   return (
     <AppShellProvider value={contextValue}>
       <div id="page-root" className="flex min-h-screen flex-col">
@@ -157,8 +123,15 @@ export default function ClientAppShell({
               <SearchButton variant="compact" />
             </div>
           </div>
-          <NavDesktop items={menuItems} />
-          <NavMobile items={menuItems} />
+          <NavDesktop menu={menu} childrenMap={menuChildren} />
+          <div className="md:hidden">
+            <MobileDrawer
+              open={mobileNavOpen}
+              onOpenChange={setMobileNavOpen}
+              menu={menu}
+              childrenMap={menuChildren}
+            />
+          </div>
           <CommandMenu />
         </HeaderShell>
         <main

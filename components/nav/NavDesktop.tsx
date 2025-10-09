@@ -15,6 +15,13 @@ import ShadowPortal, {
 } from "@/components/ui/ShadowPortal";
 import { analytics } from "@/lib/analytics";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+import type {
+  MenuItem,
+  MenuPayload,
+  PersonaChildren,
+  PersonaKey,
+} from "@/lib/menu/types";
+import { isPersonaKey, PERSONA_KEYS } from "@/lib/menu/types";
 
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
@@ -22,7 +29,8 @@ const TEST_MODE =
 const POPPER_WRAPPER_SELECTOR = "[data-radix-popper-content-wrapper]";
 
 type Props = {
-  items?: NavItem[]; // Expect personas at top level
+  menu: MenuPayload;
+  childrenMap: PersonaChildren;
 };
 
 function isPersona(x: NavItem): x is PersonaItem {
@@ -59,6 +67,96 @@ type AnyLink = Extract<NavItem, { kind: "link" | "external" }>;
 function readHotkey(node: AnyLink): string | undefined {
   const anyNode = node as any;
   return anyNode?.meta?.hotkey || node.hotkey;
+}
+
+type PersonaOption = {
+  key: PersonaKey;
+  label: string;
+  iconKey?: string;
+};
+
+function parsePersonaFromHref(href: string | undefined): PersonaKey | null {
+  if (!href) return null;
+  try {
+    const url = new URL(href, "https://tullyelly.com");
+    const personaQuery = url.searchParams.get("persona");
+    if (isPersonaKey(personaQuery)) {
+      return personaQuery;
+    }
+    const pathname = url.pathname.replace(/^\/+/, "");
+    if (isPersonaKey(pathname)) {
+      return pathname;
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return null;
+}
+
+function derivePersonaKeyFromItem(item: MenuItem): PersonaKey | null {
+  const byId = item.id.startsWith("p-") ? item.id.slice(2) : null;
+  if (isPersonaKey(byId)) return byId;
+  if (isPersonaKey(item.label)) return item.label;
+  return parsePersonaFromHref(item.href);
+}
+
+function extractPersonaOptions(menu: MenuPayload): PersonaOption[] {
+  const section = menu.sections.find((entry) => entry.id === "personas");
+  if (!section) return [];
+  const options: PersonaOption[] = [];
+  for (const item of section.items) {
+    const key = derivePersonaKeyFromItem(item);
+    if (!key) continue;
+    options.push({
+      key,
+      label: item.label,
+      iconKey: item.iconKey,
+    });
+  }
+  return options;
+}
+
+function buildPersonaNode(
+  option: PersonaOption,
+  childrenMap: PersonaChildren,
+): PersonaItem | null {
+  const items = childrenMap[option.key] ?? [];
+  const children: NavItem[] = [];
+
+  for (const item of items) {
+    if (!item.href) continue;
+    const base = {
+      id: item.id,
+      label: item.label,
+      icon: item.iconKey ?? undefined,
+      featureKey: item.feature ?? undefined,
+      badge: item.badge,
+      hotkey: item.hotkey,
+    };
+    if (item.external) {
+      children.push({
+        ...base,
+        kind: "external",
+        href: item.href,
+        target: "_blank",
+      });
+    } else {
+      children.push({
+        ...base,
+        kind: "link",
+        href: item.href,
+      });
+    }
+  }
+
+  return {
+    id: `persona.${option.key}`,
+    persona: option.key,
+    kind: "persona",
+    label: option.label,
+    icon: option.iconKey,
+    children,
+  };
 }
 
 type PersonaDropdownProps = {
@@ -541,16 +639,59 @@ const PersonaMenuSurface = React.forwardRef<
 
 PersonaMenuSurface.displayName = "PersonaMenuSurface";
 
-export default function NavDesktop({ items }: Props): React.ReactNode {
+export default function NavDesktop({
+  menu,
+  childrenMap,
+}: Props): React.ReactNode {
   const pathname = usePathname();
+
+  const personaOptions = React.useMemo(() => {
+    const extracted = extractPersonaOptions(menu);
+    if (extracted.length) {
+      return extracted;
+    }
+
+    const fallback: PersonaOption[] = [];
+    for (const key of PERSONA_KEYS) {
+      if ((childrenMap[key] ?? []).length) {
+        fallback.push({ key, label: key });
+      }
+    }
+
+    if (fallback.length) {
+      return fallback;
+    }
+
+    if (TEST_MODE) {
+      return TEST_MENU_ITEMS.filter(isPersona).map((persona) => ({
+        key: persona.persona,
+        label: persona.label,
+        iconKey: persona.icon ?? undefined,
+      }));
+    }
+
+    return [];
+  }, [menu, childrenMap]);
+
   const personas = React.useMemo(() => {
-    const provided = (items ?? []).filter(isPersona);
-    if (provided.length) return provided;
+    const nodes: PersonaItem[] = [];
+    for (const option of personaOptions) {
+      const node = buildPersonaNode(option, childrenMap);
+      if (node) {
+        nodes.push(node);
+      }
+    }
+
+    if (nodes.length) {
+      return nodes;
+    }
+
     if (TEST_MODE) {
       return TEST_MENU_ITEMS.filter(isPersona);
     }
-    return provided;
-  }, [items]);
+
+    return nodes;
+  }, [personaOptions, childrenMap]);
   const personaMeta = React.useMemo(() => {
     const map = new Map<string, PersonaItem>();
     for (const persona of personas) {
