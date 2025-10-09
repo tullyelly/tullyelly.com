@@ -16,6 +16,7 @@ import {
 import type { NavItem, PersonaItem } from "@/types/nav";
 import { analytics } from "@/lib/analytics";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+import { useOptionalAppShell } from "@/components/app-shell/context";
 
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
@@ -54,6 +55,12 @@ export default function NavMobile({ items }: Props) {
   const pathname = usePathname();
   const search = useSearchParams();
   const searchKey = search?.toString();
+  const appShell = useOptionalAppShell();
+  const usingAppShell = Boolean(appShell);
+  const contextOpen = appShell?.mobileNavOpen ?? false;
+  const contextSetOpen = appShell?.setMobileNavOpen;
+  const contextPersonaId = appShell?.mobileNavPersonaId ?? null;
+  const contextSetPersonaId = appShell?.setMobileNavPersonaId;
   const personas = React.useMemo(() => {
     const provided = (items ?? []).filter(isPersona);
     if (provided.length) return provided;
@@ -70,8 +77,11 @@ export default function NavMobile({ items }: Props) {
   );
 
   const triggerRef = React.useRef<HTMLButtonElement>(null);
-  const [open, setOpen] = React.useState(false);
-  const closeNow = React.useCallback(() => setOpen(false), []);
+  const [openState, setOpenState] = React.useState(false);
+  const open = usingAppShell ? contextOpen : openState;
+  const setOpen =
+    usingAppShell && contextSetOpen ? contextSetOpen : setOpenState;
+  const closeNow = React.useCallback(() => setOpen(false), [setOpen]);
   const prevOpenRef = React.useRef(open);
   React.useEffect(() => {
     if (open) {
@@ -81,7 +91,7 @@ export default function NavMobile({ items }: Props) {
 
   React.useEffect(() => {
     setOpen(false);
-  }, [pathname, searchKey]);
+  }, [pathname, searchKey, setOpen]);
 
   React.useEffect(() => {
     if (open && !prevOpenRef.current) {
@@ -91,6 +101,22 @@ export default function NavMobile({ items }: Props) {
     }
     prevOpenRef.current = open;
   }, [open]);
+
+  const [accordionValue, setAccordionValue] = React.useState<
+    string | undefined
+  >(undefined);
+
+  React.useEffect(() => {
+    if (!usingAppShell) return;
+    setAccordionValue(contextPersonaId ?? undefined);
+  }, [usingAppShell, contextPersonaId]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setAccordionValue(undefined);
+      contextSetPersonaId?.(null);
+    }
+  }, [open, contextSetPersonaId]);
 
   const handleLinkSelect = React.useCallback(
     (persona: PersonaItem, link: AnyLink) => {
@@ -106,6 +132,8 @@ export default function NavMobile({ items }: Props) {
 
   const handleAccordionChange = React.useCallback(
     (value: string | undefined) => {
+      setAccordionValue(value);
+      contextSetPersonaId?.(value ?? null);
       if (!value) {
         analytics.track("menu.mobile.open", { state: "accordion-closed" });
         return;
@@ -117,7 +145,7 @@ export default function NavMobile({ items }: Props) {
         persona: persona?.persona ?? null,
       });
     },
-    [personas],
+    [contextSetPersonaId, personas],
   );
 
   if (!personas.length) return null;
@@ -128,27 +156,29 @@ export default function NavMobile({ items }: Props) {
       data-state={open ? "open" : "closed"}
       className="border-b bg-transparent text-white md:hidden"
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
-        <button
-          ref={triggerRef}
-          type="button"
-          aria-label="Open menu"
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-blue/10 px-3 py-2 text-sm text-white hover:bg-white/10"
-        >
-          <Lucide.Menu className="size-4" />
-          Menu
-        </button>
-        <button
-          type="button"
-          aria-label="Open command menu"
-          onClick={openCommandMenu}
-          className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20"
-        >
-          <Lucide.Command className="size-4" aria-hidden="true" />
-          <span className="text-sm">Search</span>
-        </button>
-      </div>
+      {!usingAppShell ? (
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
+          <button
+            ref={triggerRef}
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-blue/10 px-3 py-2 text-sm text-white hover:bg-white/10"
+          >
+            <Lucide.Menu className="size-4" />
+            Menu
+          </button>
+          <button
+            type="button"
+            aria-label="Open command menu"
+            onClick={openCommandMenu}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20"
+          >
+            <Lucide.Command className="size-4" aria-hidden="true" />
+            <span className="text-sm">Search</span>
+          </button>
+        </div>
+      ) : null}
 
       <Drawer.Root
         data-state={open ? "open" : "closed"}
@@ -163,6 +193,7 @@ export default function NavMobile({ items }: Props) {
             data-vaul-lock="body"
             data-testid="nav-mobile-drawer"
             data-state={open ? "open" : "closed"}
+            id="nav-mobile-drawer"
             className="fixed inset-x-0 bottom-0 z-[90] rounded-t-2xl bg-background shadow-xl"
             aria-label="Site navigation"
           >
@@ -196,6 +227,7 @@ export default function NavMobile({ items }: Props) {
                   type="single"
                   collapsible
                   className="w-full"
+                  value={accordionValue}
                   onValueChange={handleAccordionChange}
                 >
                   {personas.map((p) => (

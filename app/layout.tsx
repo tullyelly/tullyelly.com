@@ -4,19 +4,13 @@ import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { headers } from "next/headers";
-import Footer from "@/app/_components/Footer";
-import AnnouncementBanner from "@/components/AnnouncementBanner";
-import PersistentBannerHost from "@/components/PersistentBannerHost";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
 import { getMenu } from "@/app/_menu/getMenu";
-import NavDesktop from "@/components/nav/NavDesktop";
-import NavMobile from "@/components/nav/NavMobile";
-import CommandMenu, { CommandMenuProvider } from "@/components/nav/CommandMenu";
-import HeaderShell from "@/components/nav/HeaderShell";
+import { CommandMenuProvider } from "@/components/nav/CommandMenu";
+import AppShell from "@/components/app-shell/AppShell";
 import InitialScrollGuard from "@/components/system/InitialScrollGuard";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
-import { BreadcrumbTrail } from "@/components/ui/breadcrumb";
 
 await initSentry();
 
@@ -114,37 +108,14 @@ export default async function RootLayout({
         <InitialScrollGuard />
         <CommandMenuProvider items={menu.tree}>
           <Providers>
-            <div id="page-root" className="flex min-h-screen flex-col">
-              <HeaderShell className="bg-[var(--blue)] text-white">
-                {announcement && (
-                  <AnnouncementBanner message={announcement} dismissible />
-                )}
-                <PersistentBannerHost />
-                <NavDesktop items={menu.tree} />
-                <NavMobile items={menu.tree} />
-                <CommandMenu />
-              </HeaderShell>
-              <main
-                id="page-main"
-                tabIndex={-1}
-                className="m-0 flex-1 bg-transparent p-0 overflow-anchor-none"
-              >
-                <div
-                  id="content-pane"
-                  className="crop-block-margins mx-auto max-w-[var(--content-max)] bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10"
-                >
-                  {pageMetadata.breadcrumbs.length ? (
-                    <div className="mb-6">
-                      <BreadcrumbTrail crumbs={pageMetadata.breadcrumbs} />
-                    </div>
-                  ) : null}
-                  {children}
-                </div>
-              </main>
-              <div className="mt-auto">
-                <Footer />
-              </div>
-            </div>
+            <AppShell
+              announcement={announcement}
+              menuItems={menu.tree}
+              breadcrumbs={pageMetadata.breadcrumbs}
+              siteTitle={SITE_TITLE}
+            >
+              {children}
+            </AppShell>
           </Providers>
         </CommandMenuProvider>
       </body>
