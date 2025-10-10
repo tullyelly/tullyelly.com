@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Menu } from "lucide-react";
+import { Menu as MenuIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppShell } from "./context";
 
@@ -15,17 +15,17 @@ export default function MobileMenuButton({ className }: MobileMenuButtonProps) {
   return (
     <button
       type="button"
-      aria-label="Open menu"
+      aria-label="Menu"
       aria-controls="nav-mobile-drawer"
       aria-expanded={mobileNavOpen}
       onClick={() => openMobileNav()}
       className={cn(
-        "hit-target inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-3 text-sm font-medium text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+        "md:hidden inline-flex items-center justify-center h-11 min-w-11 px-3 text-base rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:h-auto md:min-w-0 md:px-0 md:text-inherit",
         className,
       )}
     >
-      <Menu className="size-4 shrink-0" aria-hidden="true" />
-      <span>Menu</span>
+      <MenuIcon className="size-5 shrink-0" aria-hidden="true" />
+      <span className="ml-2">Menu</span>
     </button>
   );
 }

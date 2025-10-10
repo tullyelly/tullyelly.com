@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Command } from "lucide-react";
+import { Command, Search as SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCommandMenu } from "@/components/nav/CommandMenu";
 
@@ -24,14 +24,15 @@ export default function SearchButton({
     return (
       <button
         type="button"
-        aria-label="Open search"
+        aria-label="Search"
         onClick={handleClick}
         className={cn(
-          "hit-target inline-flex items-center justify-center rounded-xl border border-white/40 bg-white/10 px-3 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+          "inline-flex items-center justify-center h-11 min-w-11 px-3 text-base rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:h-auto md:min-w-0 md:px-0 md:text-inherit",
           className,
         )}
       >
-        <Command className="size-4" aria-hidden="true" />
+        <SearchIcon className="size-5 md:size-[inherit]" aria-hidden="true" />
+        <span className="sr-only md:not-sr-only md:ml-2">Search</span>
       </button>
     );
   }

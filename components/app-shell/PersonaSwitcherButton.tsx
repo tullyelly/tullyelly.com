@@ -49,8 +49,8 @@ export default function PersonaSwitcherButton({
       aria-controls="nav-mobile-drawer"
       aria-expanded={mobileNavOpen}
       className={cn(
-        "hit-target flex flex-1 items-center justify-center gap-2 truncate rounded-xl border border-white/30 bg-white/10 px-3 text-sm font-medium text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
-        "min-w-0 text-center",
+        "inline-flex h-11 min-w-0 items-center justify-center gap-2 truncate rounded-full border border-white/30 bg-white/10 px-4 text-lg font-semibold leading-none text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:h-auto md:px-3 md:text-inherit",
+        "text-center",
         className,
       )}
     >
