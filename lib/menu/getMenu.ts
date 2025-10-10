@@ -4,7 +4,13 @@ import "server-only";
 
 import { sql } from "@/lib/db";
 import { can as canFeature } from "@/lib/authz/can";
-import { buildMenuPayload, buildPersonaChildren } from "@/lib/menu/buildMenu";
+import { getCapabilities } from "@/app/_auth/session";
+import {
+  buildMenuPayload,
+  buildPersonaChildren,
+  type FeatureGate,
+} from "@/lib/menu/buildMenu";
+import { createFeatureGate } from "@/lib/menu/featureGate";
 import type {
   MenuPayload,
   PersonaChildren,
@@ -22,15 +28,9 @@ type DbMenuRow = MenuNodeRow & {
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
 
-function memoizeGate() {
-  const cache = new Map<string, Promise<boolean>>();
-  return (feature: string): Promise<boolean> => {
-    if (!cache.has(feature)) {
-      const decision = Promise.resolve(canFeature(feature)).catch(() => false);
-      cache.set(feature, decision);
-    }
-    return cache.get(feature)!;
-  };
+async function buildGate(): Promise<FeatureGate> {
+  const capabilities = await getCapabilities();
+  return createFeatureGate(capabilities, canFeature);
 }
 
 function normalizeRow(row: DbMenuRow): MenuNodeRow | null {
@@ -140,7 +140,7 @@ export async function getMenuData(persona: PersonaKey): Promise<{
   children: PersonaChildren;
 }> {
   const rows = await fetchMenuRows();
-  const gate = memoizeGate();
+  const gate = await buildGate();
   const menu = await buildMenuPayload(rows, persona, gate);
   const children = await buildPersonaChildren(rows, gate);
   return { menu, children };

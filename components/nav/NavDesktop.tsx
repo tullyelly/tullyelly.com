@@ -51,12 +51,14 @@ function Icon({
   return <IconComponent className={className} aria-hidden="true" />;
 }
 
+function normalizePath(value: string): string {
+  return value.replace(/\/+$/, "") || "/";
+}
+
 function isActiveHref(pathname: string, href?: string | null): boolean {
   if (!href) return false;
   try {
-    const a = pathname.replace(/\/$/, "");
-    const b = href.replace(/\/$/, "");
-    return a === b || a.startsWith(`${b}/`);
+    return normalizePath(pathname) === normalizePath(href);
   } catch {
     return false;
   }

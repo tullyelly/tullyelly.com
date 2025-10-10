@@ -30,7 +30,7 @@ export type MenuPayload = {
 
 export type PersonaChildren = Record<PersonaKey, MenuItem[]>;
 
-type FeatureGate = (feature: string) => Promise<boolean> | boolean;
+export type FeatureGate = (feature: string) => Promise<boolean> | boolean;
 
 export const PERSONA_ORDER: PersonaKey[] = [...PERSONA_KEYS];
 
