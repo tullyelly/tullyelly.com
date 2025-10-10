@@ -29,10 +29,6 @@ type MobileDrawerProps = {
   onNavigate?(href: string): void;
 };
 
-type View =
-  | { kind: "root" }
-  | { kind: "persona"; key: PersonaKey; title: string };
-
 function Icon({
   name,
   className,
@@ -66,17 +62,6 @@ function parsePersonaFromItem(item: MenuItem): PersonaKey | null {
   return null;
 }
 
-function resolvePersonaLabel(
-  persona: PersonaKey,
-  personaItems: MenuItem[],
-): string {
-  const match = personaItems.find((item) => {
-    const key = parsePersonaFromItem(item);
-    return key === persona;
-  });
-  return match?.label ?? persona;
-}
-
 function trackDrawerState(open: boolean, persona: PersonaKey) {
   analytics.track("menu.mobile.open", {
     state: open ? "open" : "closed",
@@ -105,7 +90,8 @@ export default function MobileDrawer({
   onNavigate,
 }: MobileDrawerProps) {
   const router = useRouter();
-  const [view, setView] = React.useState<View>({ kind: "root" });
+  const [expandedPersona, setExpandedPersona] =
+    React.useState<PersonaKey | null>(null);
 
   const personaSection = React.useMemo(
     () => menu.sections.find((section) => section.id === "personas"),
@@ -126,22 +112,9 @@ export default function MobileDrawer({
     return entries;
   }, [personaSection]);
 
-  const focusTargetId = React.useMemo(() => {
-    if (!open) return null;
-    if (view.kind === "persona") {
-      const links = (childrenMap[view.key] ?? []).filter((item) =>
-        Boolean(item.href),
-      );
-      const first = links[0];
-      return first ? `mobile-drawer-persona-${view.key}-${first.id}` : null;
-    }
-    const firstPersona = personaEntries[0];
-    return firstPersona ? `mobile-drawer-root-${firstPersona.item.id}` : null;
-  }, [open, view, childrenMap, personaEntries]);
-
   React.useEffect(() => {
     if (!open) {
-      setView({ kind: "root" });
+      setExpandedPersona(null);
     }
   }, [open]);
 
@@ -155,15 +128,37 @@ export default function MobileDrawer({
   }, [open, menu.persona]);
 
   React.useEffect(() => {
-    if (!open || !focusTargetId) return;
+    if (!open || expandedPersona) return;
+    const firstPersona = personaEntries[0];
+    if (!firstPersona) return;
     const frame = window.requestAnimationFrame(() => {
-      const node = document.getElementById(focusTargetId);
+      const node = document.getElementById(
+        `mobile-drawer-root-${firstPersona.item.id}`,
+      );
       if (node instanceof HTMLElement) {
         node.focus();
       }
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [open, focusTargetId]);
+  }, [open, expandedPersona, personaEntries]);
+
+  React.useEffect(() => {
+    if (!open || !expandedPersona) return;
+    const links = (childrenMap[expandedPersona] ?? []).filter((item) =>
+      Boolean(item.href),
+    );
+    const first = links[0];
+    if (!first) return;
+    const frame = window.requestAnimationFrame(() => {
+      const node = document.getElementById(
+        `mobile-drawer-persona-${expandedPersona}-${first.id}`,
+      );
+      if (node instanceof HTMLElement) {
+        node.focus();
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, expandedPersona, childrenMap]);
 
   const handleClose = React.useCallback(
     (next: boolean) => {
@@ -199,12 +194,29 @@ export default function MobileDrawer({
     );
   }, [handleClose, menu]);
 
-  const currentPersonaLinks = React.useMemo(() => {
-    if (view.kind !== "persona") return [];
-    return (childrenMap[view.key] ?? []).filter((item) => Boolean(item.href));
-  }, [view, childrenMap]);
+  const handleTogglePersona = (key: PersonaKey) => {
+    setExpandedPersona((current) => {
+      if (current === key) {
+        return null;
+      }
+      analytics.track("menu_expand", {
+        persona: key,
+        method: "menu_toggle",
+      });
+      return key;
+    });
+  };
 
-  const headerTitle = view.kind === "persona" ? view.title : "Navigation";
+  const handleSheetKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Escape" && expandedPersona) {
+        event.preventDefault();
+        event.stopPropagation();
+        setExpandedPersona(null);
+      }
+    },
+    [expandedPersona],
+  );
 
   return (
     <Sheet open={open} onOpenChange={handleClose} modal>
@@ -212,25 +224,15 @@ export default function MobileDrawer({
         side="bottom"
         id="nav-mobile-drawer"
         showCloseButton={false}
+        onKeyDownCapture={handleSheetKeyDown}
         overlayClassName="bg-black/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out"
         className="z-[80] inset-x-0 bottom-0 h-[85vh] rounded-t-2xl border-t border-[color:var(--border-subtle)] bg-[color:var(--surface-page)] p-0 text-[color:var(--text-strong)] sm:h-[80vh]"
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-[color:var(--border-subtle)] px-5 py-4">
-            {view.kind === "persona" ? (
-              <button
-                type="button"
-                className="hit-target flex items-center justify-center rounded-full p-2 text-[color:var(--text-muted,#58708c)] transition hover:text-[color:var(--text-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue)]"
-                onClick={() => setView({ kind: "root" })}
-              >
-                <Lucide.ChevronLeft className="size-5" aria-hidden="true" />
-                <span className="sr-only">Back to personas</span>
-              </button>
-            ) : (
-              <span className="w-10" aria-hidden="true" />
-            )}
+            <span className="w-10" aria-hidden="true" />
             <SheetTitle className="text-lg font-semibold leading-none text-[color:var(--text-strong)]">
-              {headerTitle}
+              Navigation
             </SheetTitle>
             <SheetDescription className="sr-only">
               Choose a destination
@@ -246,93 +248,97 @@ export default function MobileDrawer({
             </SheetClose>
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-4 pb-[max(env(safe-area-inset-bottom),24px)]">
-            {view.kind === "root" ? (
-              <div className="space-y-3">
-                <p className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
-                  By Persona
-                </p>
-                <div className="space-y-2 px-1">
-                  {personaEntries.map(({ key, item, label }) => (
-                    <DrawerItem key={item.id}>
-                      <button
-                        type="button"
-                        id={`mobile-drawer-root-${item.id}`}
-                        className="flex flex-1 items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
-                        onClick={() => handleNavigate(item, "persona-overview")}
-                      >
-                        <Icon name={item.iconKey} className="size-5" />
-                        <span className="truncate">{label}</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="flex shrink-0 items-center justify-center rounded-full p-2 text-[color:var(--text-muted,#58708c)] transition hover:text-[color:var(--text-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue)]"
-                        aria-label={`View ${label} links`}
-                        onClick={() => {
-                          const title = resolvePersonaLabel(
-                            key,
-                            personaSection?.items ?? [],
-                          );
-                          setView({ kind: "persona", key, title });
-                        }}
-                      >
-                        <Lucide.ChevronRight
-                          className="size-4"
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </DrawerItem>
-                  ))}
-                </div>
-                <DrawerItem className="mx-1">
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
-                    onClick={handleSearch}
-                  >
-                    <Lucide.Search className="size-5" aria-hidden="true" />
-                    <span className="flex-1 truncate">Search</span>
-                    <span className="text-xs text-[color:var(--text-muted,#58708c)] opacity-70">
-                      Command
-                    </span>
-                  </button>
-                </DrawerItem>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {currentPersonaLinks.length ? (
-                  currentPersonaLinks.map((item) => (
-                    <DrawerItem key={item.id}>
-                      <button
-                        type="button"
-                        id={`mobile-drawer-persona-${view.key}-${item.id}`}
-                        className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
-                        onClick={() =>
-                          handleNavigate(item, `persona:${view.key}`)
-                        }
-                      >
-                        <Icon name={item.iconKey} className="size-5" />
-                        <span className="flex-1 truncate">{item.label}</span>
-                        {item.external ? (
-                          <Lucide.ExternalLink
-                            className="size-4 text-[color:var(--text-muted,#58708c)]"
-                            aria-hidden="true"
-                          />
-                        ) : (
+            <div className="space-y-3">
+              <p className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
+                By Persona
+              </p>
+              <div className="space-y-2 px-1">
+                {personaEntries.map(({ key, item, label }) => {
+                  const personaLinks = (childrenMap[key] ?? []).filter((link) =>
+                    Boolean(link.href),
+                  );
+                  const isExpanded = expandedPersona === key;
+                  const buttonId = `mobile-drawer-root-${item.id}`;
+                  const panelId = `mobile-drawer-persona-panel-${key}`;
+                  return (
+                    <div key={item.id} className="space-y-2">
+                      <DrawerItem>
+                        <button
+                          type="button"
+                          id={buttonId}
+                          className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                          aria-expanded={isExpanded}
+                          aria-controls={panelId}
+                          onClick={() => handleTogglePersona(key)}
+                        >
+                          <Icon name={item.iconKey} className="size-5" />
+                          <span className="flex-1 truncate">{label}</span>
                           <Lucide.ChevronRight
-                            className="size-4 text-[color:var(--text-muted,#58708c)]"
+                            className={`size-4 text-[color:var(--text-muted,#58708c)] transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
                             aria-hidden="true"
                           />
+                        </button>
+                      </DrawerItem>
+                      <div
+                        id={panelId}
+                        role="region"
+                        aria-labelledby={buttonId}
+                        hidden={!isExpanded}
+                        className="space-y-2 px-1 pt-1"
+                      >
+                        {personaLinks.length ? (
+                          personaLinks.map((link) => (
+                            <DrawerItem key={link.id}>
+                              <button
+                                type="button"
+                                id={`mobile-drawer-persona-${key}-${link.id}`}
+                                className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                                onClick={() =>
+                                  handleNavigate(link, `persona:${key}`)
+                                }
+                              >
+                                <Icon name={link.iconKey} className="size-5" />
+                                <span className="flex-1 truncate">
+                                  {link.label}
+                                </span>
+                                {link.external ? (
+                                  <Lucide.ExternalLink
+                                    className="size-4 text-[color:var(--text-muted,#58708c)]"
+                                    aria-hidden="true"
+                                  />
+                                ) : (
+                                  <Lucide.ChevronRight
+                                    className="size-4 text-[color:var(--text-muted,#58708c)]"
+                                    aria-hidden="true"
+                                  />
+                                )}
+                              </button>
+                            </DrawerItem>
+                          ))
+                        ) : (
+                          <p className="px-2 py-3 text-sm text-[color:var(--text-muted,#58708c)]">
+                            No links yet.
+                          </p>
                         )}
-                      </button>
-                    </DrawerItem>
-                  ))
-                ) : (
-                  <p className="px-2 py-3 text-sm text-[color:var(--text-muted,#58708c)]">
-                    No links yet.
-                  </p>
-                )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            )}
+              <DrawerItem className="mx-1">
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                  onClick={handleSearch}
+                >
+                  <Lucide.Search className="size-5" aria-hidden="true" />
+                  <span className="flex-1 truncate">Search</span>
+                  <span className="text-xs text-[color:var(--text-muted,#58708c)] opacity-70">
+                    Command
+                  </span>
+                </button>
+              </DrawerItem>
+            </div>
           </div>
         </div>
       </SheetContent>
