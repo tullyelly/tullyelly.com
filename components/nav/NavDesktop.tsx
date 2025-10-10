@@ -8,7 +8,6 @@ import type { NavItem, PersonaItem } from "@/types/nav";
 import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useHasReducedMotion } from "@/hooks/use-has-reduced-motion";
-import { useCommandMenu } from "@/components/nav/CommandMenu";
 import ShadowPortal, {
   PERSONA_MENU_CSS,
   type ShadowPortalContext,
@@ -702,9 +701,6 @@ export default function NavDesktop({
     return map;
   }, [personas]);
 
-  const { setOpen } = useCommandMenu();
-  const openCommand = React.useCallback(() => setOpen(true), [setOpen]);
-
   const HOVER_OPEN_DELAY = 80;
   const HOVER_CLOSE_DELAY = 180;
   const prefersReduced = useHasReducedMotion();
@@ -1006,7 +1002,7 @@ export default function NavDesktop({
       data-testid="nav-desktop"
       className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block"
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-2">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-start gap-2 px-4 py-2">
         <div className="flex flex-1 flex-wrap items-center gap-2">
           {personas.map((persona) => (
             <PersonaDropdown
@@ -1026,15 +1022,6 @@ export default function NavDesktop({
             />
           ))}
         </div>
-        <button
-          type="button"
-          onClick={openCommand}
-          className="ml-4 inline-flex items-center gap-2 rounded-md border border-white/40 bg-white/10 px-3 py-2 text-sm font-medium text-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-        >
-          <Lucide.Command className="size-4" aria-hidden="true" />
-          <span>Search</span>
-          <span className="hidden text-xs opacity-75 lg:inline">⌘K</span>
-        </button>
       </div>
     </nav>
   );
