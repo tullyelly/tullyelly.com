@@ -122,6 +122,7 @@ export default async function RootLayout({
               menuChildren={personaChildren}
               breadcrumbs={pageMetadata.breadcrumbs}
               siteTitle={SITE_TITLE}
+              currentPersona={resolvedPersona}
             >
               {children}
             </AppShell>

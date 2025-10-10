@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Sheet,
@@ -285,6 +286,17 @@ export default function MobileDrawer({
     [expandedPersona],
   );
 
+  const handleHome = React.useCallback(() => {
+    trackDrawerClick(
+      menu,
+      { id: "utility-home", label: "Home", href: "/" },
+      { section: "utility", kind: "link" },
+    );
+    onNavigate?.("/");
+    router.push("/");
+    handleClose(false);
+  }, [menu, onNavigate, router, handleClose]);
+
   return (
     <Sheet open={open} onOpenChange={handleClose} modal>
       <SheetContent
@@ -352,6 +364,20 @@ export default function MobileDrawer({
                   </button>
                 </DrawerItem>
               )}
+              <DrawerItem className="mx-1 mb-3">
+                <Link
+                  href="/"
+                  aria-label="Home"
+                  className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    handleHome();
+                  }}
+                >
+                  <Lucide.Home className="size-5" aria-hidden="true" />
+                  <span className="flex-1 truncate">Home</span>
+                </Link>
+              </DrawerItem>
               <div className="space-y-3">
                 <p className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
                   By Persona

@@ -11,10 +11,11 @@ import CommandMenu, { useCommandMenu } from "@/components/nav/CommandMenu";
 import type { NavItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import { resolvePersonaForPath } from "@/lib/menu/persona";
+import type { ResolvedPersona } from "@/lib/menu/persona";
 import { AppShellProvider, type PersonaSummary } from "./context";
 import MobileMenuButton from "./MobileMenuButton";
-import PersonaSwitcherButton from "./PersonaSwitcherButton";
 import SearchButton from "./SearchButton";
+import BrandHomeLink from "@/components/brand/BrandHomeLink";
 
 type ClientAppShellProps = {
   announcement?: string | null;
@@ -24,6 +25,7 @@ type ClientAppShellProps = {
   siteTitle: string;
   children: React.ReactNode;
   footerSlot: React.ReactNode;
+  initialPersona: ResolvedPersona;
 };
 
 export default function ClientAppShell({
@@ -34,12 +36,13 @@ export default function ClientAppShell({
   siteTitle,
   children,
   footerSlot,
+  initialPersona,
 }: ClientAppShellProps) {
   const pathname = usePathname();
-  const currentPersona = React.useMemo(
-    () => resolvePersonaForPath(menuItems, pathname ?? "/"),
-    [menuItems, pathname],
-  );
+  const currentPersona = React.useMemo<PersonaSummary>(() => {
+    const resolved = resolvePersonaForPath(menuItems, pathname ?? "/");
+    return (resolved ?? initialPersona) as PersonaSummary;
+  }, [menuItems, pathname, initialPersona]);
 
   const [mobileNavOpen, setMobileNavOpenState] = React.useState(false);
   const [mobileNavPersonaId, setMobileNavPersonaIdState] = React.useState<
@@ -114,7 +117,7 @@ export default function ClientAppShell({
           <div className="sticky top-0 z-50 bg-[var(--blue)]/95 text-white shadow-sm py-2 md:py-0 pt-[max(env(safe-area-inset-top),0px)] backdrop-blur md:hidden">
             <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
               <MobileMenuButton />
-              <PersonaSwitcherButton />
+              <BrandHomeLink />
               <SearchButton variant="compact" />
             </div>
           </div>
