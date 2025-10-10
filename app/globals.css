@@ -7,43 +7,13 @@
  */
 
 :root {
-  --surface-page: #eee1c6; /* Cream City Cream */
-  --surface-card: #f0ebd2;
-  --text-strong: #0e2240; /* deep navy for contrast */
-  --border-subtle: rgba(0, 0, 0, 0.12);
-  --brand-green: #00471b;
-  --brand-blue: #0077c0;
-  --brand-gold: #fec524;
-  --cream: var(--surface-page);
+  --cream: #eee1c6; /* Cream City Cream */
   --white: #ffffff;
-  --ink: var(--text-strong);
-  --bucks-green: var(--brand-green); /* Bucks Green (header badges etc.) */
-  --gold: var(--surface-card);
+  --ink: #0c1b0c; /* near-black text */
+  --bucks-green: #00471b; /* Bucks Green (header badges etc.) */
+  --gold: #f0ebd2;
   --font-inter: system-ui, sans-serif;
   --font-jbmono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --header-h: 64px;
-  --topbar-h: 56px;
-  --drawer-w: 20rem;
-  --cmdk-gap: 8px;
-  --brand: #1d4ed8;
-  --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --text: #0f172a;
-  --muted: #475569;
-
-  /* Layering */
-  --z-base: 0;
-  --z-header: 100;
-  --z-overlay: 900;
-  --z-popover: 2000;
-  --z-modal: 1100;
-  --z-toast: 1200;
-
-  /* Elevated surfaces */
-  --color-surface: #ffffff;
-  --color-ink-strong: #0b1220;
-  --color-outline-subtle: #d8dfea;
-  --color-surface-hover: #f3f6fb;
 
   /* Brand chrome */
   --brand-chrome: #0077c0; /* Great Lakes Blue */
@@ -54,7 +24,6 @@
   --blue-contrast: #0069a9; /* Darkened for AA on cream */
   --green: #00471b; /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
-  --border-color: 0 0 0 / 0.08;
 
   /* Neutrals for readability */
   --black: var(--ink);
@@ -88,30 +57,9 @@
   --badge-classic-ring: rgba(0, 71, 27, 0.25);
 }
 
-@media (min-width: 768px) {
-  :root {
-    --topbar-h: 64px;
-  }
-}
-
 html,
 body {
-  height: auto;
-  min-height: 0;
-  margin: 0;
-}
-
-.dark:root {
-  --surface: #0b1220;
-  --surface-2: #0f172a;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --border-color: 255 255 255 / 0.1;
-
-  --color-surface: #0b0f12;
-  --color-ink-strong: #e8eef8;
-  --color-outline-subtle: #223041;
-  --color-surface-hover: #131a23;
+  height: 100%;
 }
 
 html {
@@ -130,47 +78,11 @@ html {
 }
 
 body {
+  margin: 0;
   background: transparent !important;
   color: var(--fg);
   font-family: var(--font-inter);
   line-height: 1.6;
-}
-
-/* Prevent browser scroll anchoring from pushing the viewport around when layout shifts late */
-#page-main {
-  overflow-anchor: none;
-}
-
-/* Clamp first/last child margins so they cannot create phantom gaps */
-#page-main > :first-child {
-  margin-top: 0 !important;
-}
-
-#page-main > :last-child {
-  margin-bottom: 0 !important;
-}
-
-/* Command palette: strip inner borders/rings applied by cmdk primitives */
-[cmdk-input] {
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-
-[cmdk-input]:focus,
-[cmdk-input]:focus-visible {
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-
-[cmdk-input-wrapper] {
-  box-shadow: none !important;
-}
-
-input[cmdk-input]:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset !important;
-  -webkit-text-fill-color: var(--text) !important;
 }
 
 code,
@@ -200,10 +112,6 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-.hit-target {
-  min-height: 44px;
-}
-
 .on-white {
   background: var(--surface-card);
   color: var(--text-primary);
@@ -221,27 +129,6 @@ textarea:focus-visible {
 
 .on-blue a {
   color: var(--text-on-blue);
-}
-
-.popup-weld {
-  position: relative;
-  --popup-weld-header-bg: var(--brand);
-  --popup-weld-border-width: 6px;
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.18),
-    0 2px 6px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 var(--popup-weld-header-bg);
-}
-
-.popup-weld::before {
-  content: "";
-  position: absolute;
-  top: calc(-1px);
-  left: calc(-1 * var(--popup-weld-border-width));
-  right: calc(-1 * var(--popup-weld-border-width));
-  height: 1px;
-  background: var(--popup-weld-header-bg);
-  pointer-events: none;
 }
 
 .on-green {
@@ -478,17 +365,5 @@ p {
   }
   .crop-block-margins > :last-child {
     margin-bottom: 0 !important;
-  }
-}
-
-/* Command palette animation */
-@keyframes cmdk-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
