@@ -19,6 +19,11 @@ import type {
 } from "@/lib/menu/types";
 import { isPersonaKey } from "@/lib/menu/types";
 import { analytics } from "@/lib/analytics";
+import NavigationSearch from "@/components/navigation/NavigationSearch";
+import {
+  useLocalSuggestions,
+  type SuggestionSource,
+} from "@/components/navigation/useLocalSuggestions";
 import DrawerItem from "@/components/nav/DrawerItem";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +98,9 @@ export default function MobileDrawer({
   const router = useRouter();
   const [expandedPersona, setExpandedPersona] =
     React.useState<PersonaKey | null>(null);
+  const [searchActive, setSearchActive] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const searchButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   const personaSection = React.useMemo(
     () => menu.sections.find((section) => section.id === "personas"),
@@ -116,6 +124,8 @@ export default function MobileDrawer({
   React.useEffect(() => {
     if (!open) {
       setExpandedPersona(null);
+      setSearchActive(false);
+      setSearchQuery("");
     }
   }, [open]);
 
@@ -163,6 +173,10 @@ export default function MobileDrawer({
 
   const handleClose = React.useCallback(
     (next: boolean) => {
+      if (!next) {
+        setSearchActive(false);
+        setSearchQuery("");
+      }
       onOpenChange(next);
     },
     [onOpenChange],
@@ -189,11 +203,63 @@ export default function MobileDrawer({
       { id: "utility-search", label: "Search" },
       { section: "utilities", kind: "action" },
     );
+    setExpandedPersona(null);
+    setSearchActive(true);
+  }, [menu]);
+
+  const closeDrawer = React.useCallback(() => {
+    setSearchActive(false);
+    setSearchQuery("");
     handleClose(false);
-    window.dispatchEvent(
-      new CustomEvent("menu:action", { detail: { actionKey: "search" } }),
-    );
-  }, [handleClose, menu]);
+  }, [handleClose]);
+
+  const exitSearch = React.useCallback(() => {
+    setSearchActive(false);
+    setSearchQuery("");
+    const button = searchButtonRef.current;
+    if (button) {
+      window.requestAnimationFrame(() => {
+        button.focus();
+      });
+    }
+  }, []);
+
+  const suggestionSeeds = React.useMemo(() => {
+    const seeds: SuggestionSource[] = [];
+    const personaLabelLookup = new Map<PersonaKey, string>();
+    for (const entry of personaEntries) {
+      personaLabelLookup.set(entry.key, entry.label);
+      if (entry.item.href) {
+        seeds.push({
+          id: `persona:${entry.key}`,
+          title: entry.label,
+          href: entry.item.href,
+          subtitle: "Persona overview",
+          persona: entry.label,
+        });
+      }
+    }
+
+    for (const [personaKey, links] of Object.entries(childrenMap) as Array<
+      [PersonaKey, MenuItem[]]
+    >) {
+      const personaLabel = personaLabelLookup.get(personaKey) ?? personaKey;
+      for (const link of links) {
+        if (!link.href) continue;
+        seeds.push({
+          id: `link:${personaKey}:${link.id}`,
+          title: link.label,
+          href: link.href,
+          subtitle: personaLabel,
+          persona: personaLabel,
+        });
+      }
+    }
+
+    return seeds;
+  }, [childrenMap, personaEntries]);
+
+  const inlineSuggestions = useLocalSuggestions(suggestionSeeds, searchQuery);
 
   const handleTogglePersona = (key: PersonaKey) => {
     setExpandedPersona((current) => {
@@ -250,19 +316,42 @@ export default function MobileDrawer({
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-4 pb-[max(env(safe-area-inset-bottom),24px)]">
             <div>
-              <DrawerItem className="mx-1 mb-3">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
-                  onClick={handleSearch}
-                >
-                  <Lucide.Search className="size-5" aria-hidden="true" />
-                  <span className="flex-1 truncate">Search</span>
-                  <span className="text-xs text-[color:var(--text-muted,#58708c)] opacity-70">
-                    Command
-                  </span>
-                </button>
-              </DrawerItem>
+              {searchActive ? (
+                <div className="mx-1 mb-3 flex items-center gap-2">
+                  <NavigationSearch
+                    autoFocus
+                    focusDelayMs={260}
+                    escCloses
+                    persona={menu.persona}
+                    onSubmitted={closeDrawer}
+                    onCancel={exitSearch}
+                    placeholder="Search pages, personas, and posts..."
+                    className="flex-1"
+                    suggestions={inlineSuggestions}
+                    onSuggestionClick={() => setSearchQuery("")}
+                    onQueryChange={setSearchQuery}
+                  />
+                  <button
+                    type="button"
+                    className="hit-target rounded-full border border-[color:var(--border-subtle,#d1d5db)] bg-white px-3 py-2 text-sm font-medium text-[color:var(--text-strong,#0e2240)] transition hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)]"
+                    onClick={exitSearch}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <DrawerItem className="mx-1 mb-3">
+                  <button
+                    ref={searchButtonRef}
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                    onClick={handleSearch}
+                  >
+                    <Lucide.Search className="size-5" aria-hidden="true" />
+                    <span className="flex-1 truncate">Search</span>
+                  </button>
+                </DrawerItem>
+              )}
               <div className="space-y-3">
                 <p className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
                   By Persona

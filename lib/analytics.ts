@@ -5,7 +5,9 @@ export type EventName =
   | "menu.mobile.click"
   | "menu.cmdk.open"
   | "menu.cmdk.search"
-  | "menu.cmdk.select";
+  | "menu.cmdk.select"
+  | "nav.search.submit"
+  | "menu_expand";
 
 export interface Analytics {
   track: (name: EventName, props?: Record<string, unknown>) => void;
