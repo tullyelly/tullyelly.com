@@ -20,6 +20,7 @@ import type {
 import { isPersonaKey } from "@/lib/menu/types";
 import { analytics } from "@/lib/analytics";
 import DrawerItem from "@/components/nav/DrawerItem";
+import { cn } from "@/lib/utils";
 
 type MobileDrawerProps = {
   open: boolean;
@@ -261,12 +262,23 @@ export default function MobileDrawer({
                   const buttonId = `mobile-drawer-root-${item.id}`;
                   const panelId = `mobile-drawer-persona-panel-${key}`;
                   return (
-                    <div key={item.id} className="space-y-2">
-                      <DrawerItem>
+                    <div
+                      key={item.id}
+                      className={cn("space-y-2", isExpanded && "space-y-0")}
+                    >
+                      <DrawerItem
+                        className={cn(
+                          isExpanded &&
+                            "relative z-10 rounded-b-none border-b-transparent ring-1 ring-black/10",
+                        )}
+                      >
                         <button
                           type="button"
                           id={buttonId}
-                          className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                          className={cn(
+                            "flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] transition-colors focus-visible:outline-none",
+                            isExpanded && "rounded-b-none bg-black/5",
+                          )}
                           aria-expanded={isExpanded}
                           aria-controls={panelId}
                           onClick={() => handleTogglePersona(key)}
@@ -284,42 +296,53 @@ export default function MobileDrawer({
                         role="region"
                         aria-labelledby={buttonId}
                         hidden={!isExpanded}
-                        className="space-y-2 px-1 pt-1"
+                        className="relative z-0 mt-0 transition-[height,opacity] duration-150 ease-out"
                       >
-                        {personaLinks.length ? (
-                          personaLinks.map((link) => (
-                            <DrawerItem key={link.id}>
-                              <button
-                                type="button"
-                                id={`mobile-drawer-persona-${key}-${link.id}`}
-                                className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
-                                onClick={() =>
-                                  handleNavigate(link, `persona:${key}`)
-                                }
-                              >
-                                <Icon name={link.iconKey} className="size-5" />
-                                <span className="flex-1 truncate">
-                                  {link.label}
-                                </span>
-                                {link.external ? (
-                                  <Lucide.ExternalLink
-                                    className="size-4 text-[color:var(--text-muted,#58708c)]"
-                                    aria-hidden="true"
+                        <div className="mx-1 mt-1 overflow-visible rounded-2xl border border-black/10 bg-[rgba(0,0,0,0.02)]">
+                          <div
+                            className={cn(
+                              "flex flex-col overflow-visible rounded-2xl border-l-2 border-[color:var(--persona-accent,#00471B)] pl-4 pr-3 py-2",
+                              personaLinks.length && "divide-y divide-black/5",
+                            )}
+                          >
+                            {personaLinks.length ? (
+                              personaLinks.map((link) => (
+                                <button
+                                  type="button"
+                                  key={link.id}
+                                  id={`mobile-drawer-persona-${key}-${link.id}`}
+                                  className="flex w-full items-center gap-3 py-3 pr-1 text-left text-base text-[color:var(--text-strong)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-black/5"
+                                  onClick={() =>
+                                    handleNavigate(link, `persona:${key}`)
+                                  }
+                                >
+                                  <Icon
+                                    name={link.iconKey}
+                                    className="size-5"
                                   />
-                                ) : (
-                                  <Lucide.ChevronRight
-                                    className="size-4 text-[color:var(--text-muted,#58708c)]"
-                                    aria-hidden="true"
-                                  />
-                                )}
-                              </button>
-                            </DrawerItem>
-                          ))
-                        ) : (
-                          <p className="px-2 py-3 text-sm text-[color:var(--text-muted,#58708c)]">
-                            No links yet.
-                          </p>
-                        )}
+                                  <span className="flex-1 truncate">
+                                    {link.label}
+                                  </span>
+                                  {link.external ? (
+                                    <Lucide.ExternalLink
+                                      className="size-4 text-[color:var(--text-muted,#58708c)]"
+                                      aria-hidden="true"
+                                    />
+                                  ) : (
+                                    <Lucide.ChevronRight
+                                      className="size-4 text-[color:var(--text-muted,#58708c)]"
+                                      aria-hidden="true"
+                                    />
+                                  )}
+                                </button>
+                              ))
+                            ) : (
+                              <p className="px-0 py-3 text-sm text-[color:var(--text-muted,#58708c)]">
+                                No links yet.
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
