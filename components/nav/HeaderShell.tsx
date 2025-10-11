@@ -32,8 +32,10 @@ export default function HeaderShell({ children, className }: Props) {
     };
   }, []);
 
+  const headerClassName = ["site-header", className].filter(Boolean).join(" ");
+
   return (
-    <header ref={ref} className={className} id="site-header">
+    <header ref={ref} className={headerClassName} id="site-header">
       {children}
     </header>
   );

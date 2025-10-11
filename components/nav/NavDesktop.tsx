@@ -645,6 +645,7 @@ export default function NavDesktop({
   childrenMap,
 }: Props): React.ReactNode {
   const pathname = usePathname();
+  const homeActive = isActiveHref(pathname ?? "", "/");
 
   const personaOptions = React.useMemo(() => {
     const extracted = extractPersonaOptions(menu);
@@ -1003,7 +1004,26 @@ export default function NavDesktop({
       className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block"
     >
       <div className="mx-auto flex w-full max-w-7xl items-center justify-start gap-2 px-4 py-2">
-        <div className="flex flex-1 flex-wrap items-center gap-2">
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <Link
+            href="/"
+            data-nav-home
+            className="
+              inline-flex items-center
+              lowercase underline underline-offset-4 decoration-white
+              !text-white !opacity-100
+              px-2 py-1 rounded-lg
+              bg-transparent hover:bg-white/10
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40
+              transition-colors
+              relative z-10
+            "
+            aria-current={homeActive ? "page" : undefined}
+            aria-label="home"
+            data-testid="nav-home-link"
+          >
+            home
+          </Link>
           {personas.map((persona) => (
             <PersonaDropdown
               key={persona.id}
