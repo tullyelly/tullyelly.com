@@ -10,7 +10,7 @@ function normalizeLabel(label: string) {
 async function revalidateScrollPaths() {
   // Revalidate common pages that list scrolls
   revalidatePath("/");
-  revalidatePath("/shaolin-scrolls");
+  revalidatePath("/mark2/shaolin-scrolls");
   revalidateTag("scrolls");
 }
 

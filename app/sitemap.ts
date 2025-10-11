@@ -9,7 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: `${baseUrl}/shaolin-scrolls`,
+      url: `${baseUrl}/mark2/shaolin-scrolls`,
       lastModified: new Date(),
     },
     {

@@ -1,6 +1,6 @@
 import "server-only";
 
-import ScrollsPageClient from "@/app/shaolin-scrolls/_components/ScrollsPageClient";
+import ScrollsPageClient from "@/app/mark2/shaolin-scrolls/_components/ScrollsPageClient";
 import { getScrollsPage, type Sort } from "@/lib/scrolls";
 
 export default async function ScrollsTablePanel({

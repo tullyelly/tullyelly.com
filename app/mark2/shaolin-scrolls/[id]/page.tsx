@@ -44,7 +44,7 @@ export default async function Page({ params }: PageProps) {
           </div>
         )}
       </dl>
-      <Link href="/shaolin-scrolls" className="link-blue w-fit">
+      <Link href="/mark2/shaolin-scrolls" className="link-blue w-fit">
         Back to list
       </Link>
     </section>

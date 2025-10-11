@@ -33,7 +33,7 @@ export default function ActionBar({ q }: ActionBarProps) {
 
       <form
         role="search"
-        action="/shaolin-scrolls"
+        action="/mark2/shaolin-scrolls"
         method="get"
         className="inline-flex items-center gap-2"
       >

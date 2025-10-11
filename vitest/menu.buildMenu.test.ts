@@ -25,7 +25,7 @@ const linkRow = (overrides: Partial<MenuNodeRow>): MenuNodeRow => ({
   persona: "mark2",
   kind: "link",
   label: "Shaolin Scrolls",
-  href: "/shaolin-scrolls",
+  href: "/mark2/shaolin-scrolls",
   target: null,
   icon: "ScrollText",
   order_index: 0,

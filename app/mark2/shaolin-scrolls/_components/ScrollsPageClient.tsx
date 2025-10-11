@@ -24,7 +24,7 @@ export default function ScrollsPageClient({
   meta,
 }: ScrollsPageClientProps) {
   const router = useRouter();
-  const pathname = usePathname() ?? "/shaolin-scrolls";
+  const pathname = usePathname() ?? "/mark2/shaolin-scrolls";
   const search = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const searchSnapshot = search?.toString() ?? "";

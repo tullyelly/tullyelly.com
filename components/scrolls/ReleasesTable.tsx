@@ -64,7 +64,7 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
               <tr key={r.id} className="border-b border-black/5 last:border-0">
                 <td className="tabular-nums text-ink/80">
                   <a
-                    href={`/shaolin-scrolls/${r.id}`}
+                    href={`/mark2/shaolin-scrolls/${r.id}`}
                     onClick={onIdClick(r.id)}
                     aria-label={`Open release ${r.id} details`}
                     className="link-blue"

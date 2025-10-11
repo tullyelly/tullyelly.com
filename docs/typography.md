@@ -31,4 +31,4 @@ This site uses **Inter** for proportional sans (body/headings) and **JetBrains M
 
 - Build: `npm run build`
 - Test: `npm test`
-- Lighthouse (optional): run against `/shaolin-scrolls`; CLS should be ≤ 0.01
+- Lighthouse (optional): run against `/mark2/shaolin-scrolls`; CLS should be ≤ 0.01

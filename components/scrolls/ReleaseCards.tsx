@@ -35,7 +35,7 @@ export default function ReleaseCards({ rows }: { rows: ReleaseRow[] }) {
           <Card as="li" key={r.id} data-testid="release-card" className="p-3">
             <div className="flex items-center justify-between">
               <a
-                href={`/shaolin-scrolls/${r.id}`}
+                href={`/mark2/shaolin-scrolls/${r.id}`}
                 onClick={onIdClick(r.id)}
                 aria-label={`Open release ${r.id} details`}
                 className="font-semibold link-blue"

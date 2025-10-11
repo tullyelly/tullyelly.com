@@ -121,7 +121,7 @@ WHERE p.kind='persona' AND p.persona='mark2'
   AND NOT EXISTS (SELECT 1 FROM dojo.menu_node c WHERE c.parent_id=p.id AND c.label='System Health');
 
 INSERT INTO dojo.menu_node (parent_id, persona, kind, label, href, feature_key, order_index)
-SELECT p.id, 'mark2','link','Shaolin Scrolls','/shaolin-scrolls','menu.mark2.scrolls',30
+SELECT p.id, 'mark2','link','Shaolin Scrolls','/mark2/shaolin-scrolls','menu.mark2.scrolls',30
 FROM dojo.menu_node p
 WHERE p.kind='persona' AND p.persona='mark2'
   AND NOT EXISTS (SELECT 1 FROM dojo.menu_node c WHERE c.parent_id=p.id AND c.label='Shaolin Scrolls');

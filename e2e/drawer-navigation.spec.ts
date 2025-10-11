@@ -30,7 +30,7 @@ test.describe("mobile drawer hierarchy", () => {
     ).toBeVisible();
 
     await page.getByRole("button", { name: "Shaolin Scrolls" }).click();
-    await page.waitForURL("**/shaolin-scrolls");
+    await page.waitForURL("**/mark2/shaolin-scrolls");
 
     await menuButton.click();
     await expect(drawer).toBeVisible();

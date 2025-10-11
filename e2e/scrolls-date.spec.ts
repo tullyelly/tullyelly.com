@@ -5,7 +5,7 @@ test.use({ timezoneId: "America/Chicago" });
 test("release dates render the correct Central calendar day", async ({
   page,
 }) => {
-  await page.goto("/shaolin-scrolls");
+  await page.goto("/mark2/shaolin-scrolls");
   const releaseDateCell = page.getByTestId("release-date").first();
   const iso = await releaseDateCell.getAttribute("data-release-iso");
   if (iso) {

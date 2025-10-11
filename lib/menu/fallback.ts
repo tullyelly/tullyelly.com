@@ -53,7 +53,7 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
     {
       id: "scrolls",
       label: "Shaolin Scrolls",
-      href: "/shaolin-scrolls",
+      href: "/mark2/shaolin-scrolls",
       iconKey: "ScrollText",
       feature: "menu.mark2.scrolls",
     },
