@@ -9,7 +9,7 @@ test.describe("TCDB rankings snapshot dialog", () => {
   test("allowed user can create snapshot and see updated table", async ({
     page,
   }) => {
-    await page.goto("/tcdb-rankings");
+    await page.goto("/cardattack/tcdb-rankings");
 
     await page.getByRole("button", { name: "Add Snapshot" }).click();
 
@@ -28,7 +28,7 @@ test.describe("TCDB rankings snapshot dialog", () => {
   });
 
   test("forbidden user does not see add snapshot button", async ({ page }) => {
-    await page.goto("/tcdb-rankings");
+    await page.goto("/cardattack/tcdb-rankings");
     await expect(
       page.getByRole("button", { name: "Add Snapshot" }),
     ).toHaveCount(0);

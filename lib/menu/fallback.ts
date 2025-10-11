@@ -129,7 +129,7 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
     {
       id: "tcdb-rankings",
       label: "Rankings",
-      href: "/tcdb-rankings",
+      href: "/cardattack/tcdb-rankings",
       iconKey: "Trophy",
       feature: "menu.cardattack.tcdb.rankings",
     },
