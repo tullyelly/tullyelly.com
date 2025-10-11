@@ -175,7 +175,7 @@ export async function buildMenuPayload(
     sections: [
       {
         id: "personas",
-        title: "By Persona",
+        title: "By alter ego",
         items: personaItems,
       },
     ],

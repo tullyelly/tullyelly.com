@@ -16,7 +16,7 @@ test.describe("mobile drawer hierarchy", () => {
 
     const drawer = page.getByTestId("nav-mobile-drawer");
     await expect(drawer).toBeVisible();
-    await expect(page.getByText("By Persona")).toBeVisible();
+    await expect(page.getByText("By alter ego")).toBeVisible();
 
     const markChevron = page.getByLabel("View mark2 links");
     await markChevron.click();

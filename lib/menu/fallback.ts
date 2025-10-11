@@ -165,7 +165,7 @@ export function buildBaseSections(primaryItems: MenuItem[]): MenuSection[] {
     },
     {
       id: "personas",
-      title: "By Persona",
+      title: "By alter ego",
       items: cloneItems(PERSONA_SWITCHER_ITEMS),
     },
     {

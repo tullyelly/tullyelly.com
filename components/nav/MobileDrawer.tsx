@@ -380,7 +380,7 @@ export default function MobileDrawer({
               </DrawerItem>
               <div className="space-y-3">
                 <p className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
-                  By Persona
+                  By alter ego
                 </p>
                 <div className="space-y-2 px-1">
                   {personaEntries.map(({ key, item, label }) => {
