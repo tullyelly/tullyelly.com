@@ -26,7 +26,7 @@ import {
   grantRole,
   listMemberships,
   revokeRole,
-} from "@/app/admin/authz/actions";
+} from "@/app/mark2/admin/authz/actions";
 
 const revalidateTagMock = revalidateTag as jest.MockedFunction<
   typeof revalidateTag

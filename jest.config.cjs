@@ -21,7 +21,7 @@ const customJestConfig = {
     '!components/**',
     '!lib/**',
     '!db/**',
-    'app/admin/authz/actions.ts',
+    'app/mark2/admin/authz/actions.ts',
     'app/ui/badge-maps.ts',
     'components/AnnouncementBanner.tsx',
     'components/BrandedLink.tsx',

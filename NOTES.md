@@ -5,7 +5,7 @@
 - `lib/authz/index.ts` exports `can`, `must`, `canCurrentUser`, and `mustCurrentUser`; all backed by `getEffectivePolicy`.
 - `lib/authz/resolve.ts` builds effective policies via `unstable_cache` with tag `auth:user:{id}`; invalidation uses `revalidateTag`.
 - `components/auth/AuthzGate.tsx` calls `must(user, feature, { strict: true })` for server components.
-- `app/admin/authz/actions.ts` is the current server action surface; it calls `must(actor, 'admin.membership.manage', { strict: true })` and revalidates auth tags after mutations.
+- `app/mark2/admin/authz/actions.ts` is the current server action surface; it calls `must(actor, 'admin.membership.manage', { strict: true })` and revalidates auth tags after mutations.
 - `lib/auth/permissions.ts` (added) exports `requirePermission(feature)` and `requireTcdbSnapshotCreate()` which wraps `mustCurrentUser('tcdb.snapshot.create')` with strict enforcement.
 
 ## DB access primitives
@@ -39,7 +39,7 @@
 
 - `lib/authz/resolve.ts` registers cache tag `auth:user:{id}` and relies on `revalidateTag` for policy busting.
 - `lib/authz/invalidation.ts` subscribes to the `authz_changed` channel and calls `revalidateTag('auth:user:${id}')`.
-- `app/admin/authz/actions.ts` revalidates `auth:user:${userId}` after role grant or revoke.
+- `app/mark2/admin/authz/actions.ts` revalidates `auth:user:${userId}` after role grant or revoke.
 - `app/api/revalidate/tcdb-rankings/route.ts` confirms the rankings tag is `'tcdb-rankings'`.
 - All code imports `revalidateTag` from `next/cache`.
 

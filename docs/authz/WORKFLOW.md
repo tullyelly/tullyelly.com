@@ -49,7 +49,7 @@ ON CONFLICT (role_id, feature_id) DO NOTHING;
 
 ## Step 3 ; Assign the Role to a User
 
-1. Prefer the server action helpers (`dojo.authz_grant_role` via `app/admin/authz`) so revision bumps and cache invalidation happen automatically.
+1. Prefer the server action helpers (`dojo.authz_grant_role` via `app/mark2/admin/authz`) so revision bumps and cache invalidation happen automatically.
 2. For migrations or manual backfills, call the function directly; it enforces `admin.membership.manage` and notifies the Next.js cache:
 
 ```sql
@@ -66,8 +66,8 @@ SELECT dojo.authz_grant_role(
 ## Verification Checklist
 
 - View `dojo.v_authz_memberships` to confirm the role shows up with the expected app scope.
-- Run the unit suite around `app/admin/authz/actions.ts` and `__tests__/authz.spec.ts` to catch policy regressions.
-- Load `/admin/authz` locally to confirm the UI reflects the new feature and role pairing.
+- Run the unit suite around `app/mark2/admin/authz/actions.ts` and `__tests__/authz.spec.ts` to catch policy regressions.
+- Load `/mark2/admin/authz` locally to confirm the UI reflects the new feature and role pairing.
 
 ## Rollback Notes
 

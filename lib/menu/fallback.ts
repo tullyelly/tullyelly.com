@@ -46,7 +46,7 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
     {
       id: "admin",
       label: "Admin",
-      href: "/admin",
+      href: "/mark2/admin",
       iconKey: "Settings",
       feature: "menu.mark2.admin",
     },
