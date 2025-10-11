@@ -44,6 +44,13 @@ export const UTILITIES_ITEMS: MenuItem[] = [
 const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
   mark2: [
     {
+      id: "overview",
+      label: "Overview",
+      href: "/mark2",
+      iconKey: "Brain",
+      feature: "menu.mark2.overview",
+    },
+    {
       id: "admin",
       label: "Admin",
       href: "/mark2/admin",
