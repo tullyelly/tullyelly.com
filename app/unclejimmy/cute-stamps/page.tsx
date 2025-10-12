@@ -7,7 +7,7 @@ const frontmatter = {
   title: "Cute Stamps",
   description:
     "On the search for some cute stamps for lulu, an adventure unfolded.",
-  canonical: "https://tullyelly.com/cute-stamps",
+  canonical: "https://tullyelly.com/unclejimmy/cute-stamps",
   hero: {
     src: "/images/optimized/cute-stamps.png",
     alt: "Cute stamps - SpongeBob and baby wild animals",
