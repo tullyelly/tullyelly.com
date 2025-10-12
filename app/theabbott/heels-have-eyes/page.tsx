@@ -9,12 +9,12 @@ export const metadata = {
   title: "Heels Have Eyes by Westside Gunn | tullyelly",
   description:
     "Explore &apos;Heels Have Eyes&apos; by Westside Gunn &mdash; a gritty yet artful entry in modern underground hip-hop. This page features the video, context, and supporting content for fans of rap and experimental lyricism.",
-  alternates: { canonical: canonicalUrl("heels-have-eyes") },
+  alternates: { canonical: canonicalUrl("theabbott/heels-have-eyes") },
   openGraph: {
     title: "Westside Gunn &mdash; Heels Have Eyes",
     description:
       "Hip-hop and rap fans can dive into Westside Gunn&apos;s &apos;Heels Have Eyes&apos; with video and context on this page.",
-    url: "/heels-have-eyes",
+    url: "/theabbott/heels-have-eyes",
     type: "music.song",
     images: [
       {

@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import FlowersInline from '@/components/flowers/FlowersInline';
+import Link from "next/link";
+import FlowersInline from "@/components/flowers/FlowersInline";
 
 type Props = { date?: string };
 
@@ -7,17 +7,26 @@ export function MusicalGuestsSection({ date }: Props) {
   return (
     <section aria-label="Musical Guests" className="space-y-2">
       <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-        <span aria-hidden>🎤</span>Musical Guests{date ? `; ${date}` : ''}
+        <span aria-hidden>🎤</span>Musical Guests{date ? `; ${date}` : ""}
       </h2>
-      <p className="text-[16px] md:text-[18px] text-muted-foreground">If you are around me long enough, you will be subjected to music takes. Wu-Tang is for the children, so please Run The Jewels fast.</p>
+      <p className="text-[16px] md:text-[18px] text-muted-foreground">
+        If you are around me long enough, you will be subjected to music takes.
+        Wu-Tang is for the children, so please Run The Jewels fast.
+      </p>
       <ul className="list-disc list-inside text-[16px] md:text-[18px] space-y-1">
         <li>
-          <Link href="/heels-have-eyes" className="underline hover:no-underline">
+          <Link
+            href="/theabbott/heels-have-eyes"
+            className="underline hover:no-underline"
+          >
             HEELS HAVE EYES
           </Link>
         </li>
         <li>
-          <Link href="/roadwork-rappin" className="underline hover:no-underline">
+          <Link
+            href="/theabbott/roadwork-rappin"
+            className="underline hover:no-underline"
+          >
             Roadwork Rappin&lsquo;
           </Link>
         </li>

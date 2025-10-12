@@ -9,12 +9,12 @@ export const metadata = {
   title: "Roadwork Rappin’ by Aesop Rock | tullyelly",
   description:
     "Explore 'Roadwork Rappin’' by Aesop Rock;  a defining track in indie hip-hop and underground rap. This page features the music video, context, and supporting content for fans of hip-hop, rap, and experimental lyricism.",
-  alternates: { canonical: canonicalUrl("roadwork-rappin") },
+  alternates: { canonical: canonicalUrl("theabbott/roadwork-rappin") },
   openGraph: {
     title: "Aesop Rock; Roadwork Rappin’",
     description:
       "Hip-hop, rap, and indie music fans can dive into Aesop Rock’s 'Roadwork Rappin’' with video and context on this page.",
-    url: "/roadwork-rappin",
+    url: "/theabbott/roadwork-rappin",
     images: [
       {
         url: "/images/optimized/roadwork rappin.jpg",

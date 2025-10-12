@@ -291,7 +291,7 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 
 ## ✅ Quick Notes
 
-- Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`
+- Static pages: `app/theabbott/roadwork-rappin`, `app/theabbott/heels-have-eyes`
 - `globals.css`: design tokens + Tailwind entry point
 - `tailwind.config.mjs`: maps tokens → Tailwind theme
 - Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner

@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { oneLiners } from "@/lib/share/oneLiners";
@@ -36,7 +36,7 @@ function generateShareDocs(): void {
     const content = `### ${title}\nURL: ${canonical}\nOne-liner: ${oneLiner}\n`;
     const fileName = `${normalizedSlug || "index"}.md`;
     const filePath = join(outputDir, fileName);
-
+    mkdirSync(dirname(filePath), { recursive: true });
     writeFileSync(filePath, content, "utf8");
   });
 

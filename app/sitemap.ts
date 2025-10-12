@@ -13,11 +13,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: `${baseUrl}/heels-have-eyes`,
+      url: `${baseUrl}/theabbott/heels-have-eyes`,
       lastModified: new Date(),
     },
     {
-      url: `${baseUrl}/roadwork-rappin`,
+      url: `${baseUrl}/theabbott/roadwork-rappin`,
       lastModified: new Date(),
     },
   ];
