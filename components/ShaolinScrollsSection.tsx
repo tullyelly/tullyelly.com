@@ -1,6 +1,40 @@
 import { Suspense } from "react";
 import FlowersInline from "@/components/flowers/FlowersInline";
 import ScrollsTablePanel from "@/components/scrolls/ScrollsTablePanel";
+import { AppSkeleton } from "@/components/app-skeleton";
+
+const SCROLL_CARD_SKELETON_KEYS = [
+  "scroll-card-a",
+  "scroll-card-b",
+  "scroll-card-c",
+];
+const SCROLL_ROW_SKELETON_KEYS = Array.from(
+  { length: 5 },
+  (_, index) => `scroll-row-${index + 1}`,
+);
+
+function ScrollsListFallback() {
+  return (
+    <div
+      aria-live="polite"
+      aria-busy="true"
+      role="status"
+      className="space-y-4"
+    >
+      <span className="sr-only">Loading Shaolin Scrolls</span>
+      <div className="space-y-3 md:hidden">
+        {SCROLL_CARD_SKELETON_KEYS.map((key) => (
+          <AppSkeleton.Card key={key} lines={3} />
+        ))}
+      </div>
+      <div className="hidden space-y-3 md:block">
+        {SCROLL_ROW_SKELETON_KEYS.map((key) => (
+          <AppSkeleton.TableRow key={key} cells={5} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function ShaolinScrollsSection({ date }: { date?: string }) {
   return (
@@ -22,13 +56,11 @@ export function ShaolinScrollsSection({ date }: { date?: string }) {
         progress, and patch handled the small calibrations. From there, I
         released the steps that carried me from then to now:
       </p>
-      <Suspense
-        fallback={
-          <div className="rounded border bg-white p-4">Loading scrolls…</div>
-        }
-      >
+      <Suspense fallback={<ScrollsListFallback />}>
         {/* Example usage: show compact list on homepage */}
-        <ScrollsTablePanel limit={20} />
+        <div aria-live="polite">
+          <ScrollsTablePanel limit={20} />
+        </div>
       </Suspense>
 
       <p className="text-[16px] md:text-[18px] text-muted-foreground">

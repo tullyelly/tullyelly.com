@@ -49,7 +49,12 @@ export default function ScrollsPageClient({
   }
 
   return (
-    <div className="space-y-4">
+    <div
+      className="space-y-4"
+      aria-live="polite"
+      aria-busy={isPending ? "true" : undefined}
+      role="region"
+    >
       <div className="md:hidden" suppressHydrationWarning>
         <ReleaseCards rows={rows} />
       </div>

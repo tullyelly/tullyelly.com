@@ -10,6 +10,7 @@ import TrendPill, { TrendValue } from "./TrendPill";
 import { Table, TBody, THead } from "@/components/ui/Table";
 import TablePager from "@/components/ui/TablePager";
 import { Card } from "@ui";
+import { BusyButton } from "@/components/ui/busy-button";
 
 type Row = {
   homie_id: number;
@@ -207,7 +208,12 @@ export default function TCDBRankingTable({
   const hasRows = rows.length > 0;
 
   return (
-    <section className="space-y-4">
+    <section
+      className="space-y-4"
+      aria-live="polite"
+      aria-busy={isPending ? "true" : undefined}
+      role="region"
+    >
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <form
           onSubmit={onSubmit}
@@ -224,9 +230,14 @@ export default function TCDBRankingTable({
               aria-label="Search homies"
               type="search"
             />
-            <button type="submit" className="btn shrink-0" disabled={isPending}>
-              {isPending ? "Searching…" : "Search"}
-            </button>
+            <BusyButton
+              type="submit"
+              className="btn shrink-0"
+              isLoading={isPending}
+              loadingLabel="Searching…"
+            >
+              Search
+            </BusyButton>
           </div>
           <div aria-live="polite" className="sr-only">
             {isPending ? "Updating results" : "Results ready"}

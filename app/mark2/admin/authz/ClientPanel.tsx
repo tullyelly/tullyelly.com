@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { fmtDateTime } from "@/lib/datetime";
 import { setPersistentBanner } from "@/lib/persistent-banner";
+import { BusyButton } from "@/components/ui/busy-button";
 import { grantRole, revokeRole } from "./actions";
 
 export type MembershipRow = {
@@ -167,13 +168,16 @@ export default function AdminAuthzPanel({
               onChange={(event) => setAppSlug(event.target.value)}
               autoComplete="off"
             />
-            <button
+            <BusyButton
               type="submit"
-              className="rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70"
+              className="border border-gray-300 bg-gray-50 text-sm font-medium text-gray-900 hover:bg-gray-100"
+              isLoading={busy}
+              loadingLabel="Working..."
               disabled={busy}
+              variant="outline"
             >
-              {busy ? "Working..." : "Grant"}
-            </button>
+              Grant
+            </BusyButton>
           </div>
         </form>
         {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
@@ -224,15 +228,20 @@ export default function AdminAuthzPanel({
                       {fmtDateTime(row.granted_at)}
                     </td>
                     <td className="border border-gray-200 p-2 text-center">
-                      <button
-                        className="rounded border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70"
+                      <BusyButton
+                        type="button"
+                        className="border border-gray-300 px-2 py-1 text-xs font-medium text-gray-900 hover:bg-gray-100"
                         onClick={() => {
                           void handleRevoke(row);
                         }}
                         disabled={busy}
+                        isLoading={busy}
+                        loadingLabel="Working..."
+                        variant="outline"
+                        size="sm"
                       >
                         Revoke
-                      </button>
+                      </BusyButton>
                     </td>
                   </tr>
                 ))

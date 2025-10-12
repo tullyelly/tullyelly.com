@@ -6,7 +6,7 @@ import { useHasReducedMotion } from "@/hooks/use-has-reduced-motion";
 const TOP_LOADER_COLOR = "#00471B";
 const TOP_LOADER_SHADOW = "0 0 8px #F0EBD2, 0 0 2px #F0EBD2";
 
-export default function RouteTopLoader(): JSX.Element {
+export default function RouteTopLoader() {
   const prefersReducedMotion = useHasReducedMotion();
 
   return (
