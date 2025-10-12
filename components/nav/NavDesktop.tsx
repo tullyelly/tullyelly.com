@@ -509,7 +509,7 @@ function PersonaDropdown({
           aria-expanded={isOpen}
           aria-controls={menuId}
           className={[
-            "group inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors",
+            "group inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-white transition-colors",
             "bg-blue/0 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
             isOpen ? "bg-white/20" : "bg-white/0",
           ].join(" ")}
@@ -521,12 +521,14 @@ function PersonaDropdown({
           onFocus={() => openImmediately(persona.id)}
           onKeyDown={(event) => onTriggerKeyDown(event, persona.id)}
         >
-          <Icon name={persona.icon} className="size-4" />
-          <span>{persona.label}</span>
-          <Lucide.ChevronDown
-            className="size-3 transition-transform duration-200 group-data-[open=true]:rotate-180"
-            aria-hidden="true"
-          />
+          <Icon name={persona.icon} className="mr-2 size-4 shrink-0" />
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            <span>{persona.label}</span>
+            <Lucide.ChevronDown
+              className="size-3 shrink-0 transition-transform duration-200 group-data-[open=true]:rotate-180"
+              aria-hidden="true"
+            />
+          </span>
         </button>
       </DropdownMenu.Trigger>
       {TEST_MODE ? (
@@ -1003,16 +1005,15 @@ export default function NavDesktop({
       data-testid="nav-desktop"
       className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block"
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-start gap-2 px-4 py-2">
-        <div className="flex flex-1 flex-wrap items-center gap-3">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-start px-4 py-2">
+        <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-3">
           <Link
             href="/"
             data-nav-home
             className="
-              inline-flex items-center
+              inline-flex items-center rounded-md px-3 py-2 text-sm font-medium
               lowercase underline underline-offset-4 decoration-white
               !text-white !opacity-100
-              px-2 py-1 rounded-lg
               bg-transparent hover:bg-white/10
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40
               transition-colors
