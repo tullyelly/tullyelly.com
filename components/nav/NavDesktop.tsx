@@ -21,6 +21,8 @@ import type {
   PersonaKey,
 } from "@/lib/menu/types";
 import { isPersonaKey, PERSONA_KEYS } from "@/lib/menu/types";
+import { useNavController } from "@/components/nav/NavController";
+import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
 
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
@@ -647,6 +649,8 @@ export default function NavDesktop({
   childrenMap,
 }: Props): React.ReactNode {
   const pathname = usePathname();
+  const { registerCloseHandler } = useNavController();
+  useNavResetOnRouteChange();
   const homeActive = isActiveHref(pathname ?? "", "/");
 
   const personaOptions = React.useMemo(() => {
@@ -783,6 +787,18 @@ export default function NavDesktop({
       });
     },
     [clearTimer],
+  );
+
+  const forceCloseAll = React.useCallback(() => {
+    closeNow();
+    triggerRefs.current.forEach((node) => {
+      node?.blur?.();
+    });
+  }, [closeNow]);
+
+  React.useEffect(
+    () => registerCloseHandler(forceCloseAll),
+    [registerCloseHandler, forceCloseAll],
   );
 
   const scheduleClose = React.useCallback(

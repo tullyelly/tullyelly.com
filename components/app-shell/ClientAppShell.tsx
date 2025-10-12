@@ -7,6 +7,7 @@ import PersistentBannerHost from "@/components/PersistentBannerHost";
 import HeaderShell from "@/components/nav/HeaderShell";
 import NavDesktop from "@/components/nav/NavDesktop";
 import MobileDrawer from "@/components/nav/MobileDrawer";
+import { NavControllerProvider } from "@/components/nav/NavController";
 import CommandMenu, { useCommandMenu } from "@/components/nav/CommandMenu";
 import type { NavItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
@@ -107,46 +108,48 @@ export default function ClientAppShell({
 
   return (
     <AppShellProvider value={contextValue}>
-      <div id="page-root" className="flex min-h-screen flex-col">
-        <HeaderShell className="bg-[var(--blue)] text-white">
-          {announcement ? (
-            <AnnouncementBanner message={announcement} dismissible />
-          ) : null}
-          <PersistentBannerHost />
-          <div className="sticky top-0 z-50 bg-[var(--blue)]/95 text-white shadow-sm pt-[max(env(safe-area-inset-top),0px)] backdrop-blur md:hidden">
-            <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-start gap-2 px-3 sm:px-4 lg:px-6">
-              <MobileMenuButton />
-              <BrandHomeLink />
+      <NavControllerProvider>
+        <div id="page-root" className="flex min-h-screen flex-col">
+          <HeaderShell className="bg-[var(--blue)] text-white">
+            {announcement ? (
+              <AnnouncementBanner message={announcement} dismissible />
+            ) : null}
+            <PersistentBannerHost />
+            <div className="sticky top-0 z-50 bg-[var(--blue)]/95 text-white shadow-sm pt-[max(env(safe-area-inset-top),0px)] backdrop-blur md:hidden">
+              <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-start gap-2 px-3 sm:px-4 lg:px-6">
+                <MobileMenuButton />
+                <BrandHomeLink />
+              </div>
             </div>
-          </div>
-          <NavDesktop menu={menu} childrenMap={menuChildren} />
-          <div className="md:hidden">
-            <MobileDrawer
-              open={mobileNavOpen}
-              onOpenChange={setMobileNavOpen}
-              menu={menu}
-              childrenMap={menuChildren}
-            />
-          </div>
-          <CommandMenu />
-        </HeaderShell>
-        <main
-          id="page-main"
-          tabIndex={-1}
-          className="m-0 flex-1 bg-transparent p-0 overflow-anchor-none"
-          style={{
-            paddingBottom: "max(env(safe-area-inset-bottom), 0px)",
-          }}
-        >
-          <div
-            id="content-pane"
-            className="crop-block-margins mx-auto max-w-[var(--content-max)] bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10"
+            <NavDesktop menu={menu} childrenMap={menuChildren} />
+            <div className="md:hidden">
+              <MobileDrawer
+                open={mobileNavOpen}
+                onOpenChange={setMobileNavOpen}
+                menu={menu}
+                childrenMap={menuChildren}
+              />
+            </div>
+            <CommandMenu />
+          </HeaderShell>
+          <main
+            id="page-main"
+            tabIndex={-1}
+            className="m-0 flex-1 bg-transparent p-0 overflow-anchor-none"
+            style={{
+              paddingBottom: "max(env(safe-area-inset-bottom), 0px)",
+            }}
           >
-            {children}
-          </div>
-        </main>
-        <div className="mt-auto">{footerSlot}</div>
-      </div>
+            <div
+              id="content-pane"
+              className="crop-block-margins mx-auto max-w-[var(--content-max)] bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10"
+            >
+              {children}
+            </div>
+          </main>
+          <div className="mt-auto">{footerSlot}</div>
+        </div>
+      </NavControllerProvider>
     </AppShellProvider>
   );
 }

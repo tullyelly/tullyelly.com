@@ -91,19 +91,22 @@ export const PERSONA_MENU_CSS = `
   background: var(--pm-surface, #ffffff);
   color: var(--pm-ink, #0b1220);
   border: 6px solid var(--pm-frame, #00471b);
-  border-radius: 0 0 16px 16px;
+  border-radius: 20px;
   margin-top: -1px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18),
-    0 2px 6px rgba(0, 0, 0, 0.1);
-  width: clamp(12rem, calc(8ch + 4rem), 18rem);
-  max-width: 90vw;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+  width: auto;
+  min-width: 16rem;
+  max-width: min(22rem, 92vw);
   min-height: 56px;
-  max-height: min(70vh, 560px);
+  max-height: min(60vh, 520px);
   box-sizing: border-box;
-  overflow: auto;
-  padding: 0.625rem;
-  display: grid;
-  place-items: center;
+  overflow-y: auto;
+  padding: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
 }
 
 [data-nav-dropdown]:focus {
@@ -130,9 +133,10 @@ export const PERSONA_MENU_CSS = `
 .list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0.75rem;
   align-items: stretch;
   width: 100%;
+  padding: 0.25rem 0;
 }
 
 [data-nav-dropdown] a,
@@ -141,8 +145,7 @@ export const PERSONA_MENU_CSS = `
   align-items: center !important;
   justify-content: flex-start !important;
   width: 100% !important;
-  height: 2.25rem !important;
-  padding: 0 0.75rem !important;
+  padding: 0 !important;
   box-sizing: border-box;
   cursor: pointer;
   user-select: none;
@@ -158,12 +161,11 @@ export const PERSONA_MENU_CSS = `
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
-  height: 36px;
-  min-height: 36px;
-  padding: 0 12px;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px 16px;
   margin: 0;
-  border-radius: 6px;
+  border-radius: 14px;
   border: 1px solid
     var(--pm-item-border, var(--pm-outline, #d8dfea));
   background: var(--pm-item-bg, rgba(226, 232, 240, 0.6));
@@ -183,8 +185,8 @@ export const PERSONA_MENU_CSS = `
   will-change: transform;
   box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent;
   font-weight: 500;
-  font-size: 14px;
-  line-height: 1;
+  font-size: 15px;
+  line-height: 1.5;
   width: 100%;
   text-align: left;
 }
@@ -259,18 +261,13 @@ export const PERSONA_MENU_CSS = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font: 500 14px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font: 500 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   user-select: none;
 }
 
 @media (min-width: 768px) {
   [data-nav-dropdown] {
-    padding: 0.75rem;
-  }
-
-  [data-nav-dropdown] a,
-  [data-nav-dropdown] [role="menuitem"] {
-    padding: 0 0.875rem !important;
+    padding: 1rem;
   }
 }
 

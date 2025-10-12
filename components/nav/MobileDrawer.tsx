@@ -27,6 +27,8 @@ import {
 } from "@/components/navigation/useLocalSuggestions";
 import DrawerItem from "@/components/nav/DrawerItem";
 import { cn } from "@/lib/utils";
+import { useNavController } from "@/components/nav/NavController";
+import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
 
 type MobileDrawerProps = {
   open: boolean;
@@ -35,6 +37,12 @@ type MobileDrawerProps = {
   childrenMap: PersonaChildren;
   onNavigate?(href: string): void;
 };
+
+const drawerActionClasses =
+  "flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-[color:var(--text-strong,#0e2240)] leading-6 transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-0";
+
+const drawerPersonaLinkClasses =
+  "flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-base leading-6 text-[color:var(--text-strong,#0e2240)] transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
 
 function Icon({
   name,
@@ -97,6 +105,8 @@ export default function MobileDrawer({
   onNavigate,
 }: MobileDrawerProps) {
   const router = useRouter();
+  const { registerCloseHandler } = useNavController();
+  useNavResetOnRouteChange();
   const [expandedPersona, setExpandedPersona] =
     React.useState<PersonaKey | null>(null);
   const [searchActive, setSearchActive] = React.useState(false);
@@ -213,6 +223,11 @@ export default function MobileDrawer({
     setSearchQuery("");
     handleClose(false);
   }, [handleClose]);
+
+  React.useEffect(
+    () => registerCloseHandler(closeDrawer),
+    [registerCloseHandler, closeDrawer],
+  );
 
   const exitSearch = React.useCallback(() => {
     setSearchActive(false);
@@ -356,7 +371,7 @@ export default function MobileDrawer({
                   <button
                     ref={searchButtonRef}
                     type="button"
-                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                    className={cn(drawerActionClasses, "justify-start")}
                     onClick={handleSearch}
                   >
                     <Lucide.Search className="size-5" aria-hidden="true" />
@@ -368,7 +383,7 @@ export default function MobileDrawer({
                 <Link
                   href="/"
                   aria-label="Home"
-                  className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] focus-visible:outline-none"
+                  className={cn(drawerActionClasses, "justify-start")}
                   onClick={(event) => {
                     event.preventDefault();
                     handleHome();
@@ -405,7 +420,7 @@ export default function MobileDrawer({
                             type="button"
                             id={buttonId}
                             className={cn(
-                              "flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-[color:var(--text-strong)] transition-colors focus-visible:outline-none",
+                              drawerActionClasses,
                               isExpanded && "rounded-b-none bg-black/5",
                             )}
                             aria-expanded={isExpanded}
@@ -441,7 +456,10 @@ export default function MobileDrawer({
                                     type="button"
                                     key={link.id}
                                     id={`mobile-drawer-persona-${key}-${link.id}`}
-                                    className="flex w-full items-center gap-3 py-3 pr-1 text-left text-base text-[color:var(--text-strong)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-black/5"
+                                    className={cn(
+                                      drawerPersonaLinkClasses,
+                                      "pr-2",
+                                    )}
                                     onClick={() =>
                                       handleNavigate(link, `persona:${key}`)
                                     }
