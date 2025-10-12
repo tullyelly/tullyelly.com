@@ -343,6 +343,23 @@ p {
     color: var(--blue-contrast);
   }
 
+  .aria-busy {
+    transition:
+      opacity 300ms ease-in-out,
+      filter 300ms ease-in-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aria-busy {
+      transition: none;
+    }
+  }
+
+  .aria-busy[data-busy="true"] {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
   @media (min-width: 768px) {
     .zebra-desktop tbody tr:nth-child(even) td {
       background-color: var(--cream);
