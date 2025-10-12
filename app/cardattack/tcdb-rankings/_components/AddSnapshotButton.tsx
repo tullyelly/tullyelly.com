@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/form";
 import * as Dialog from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { useActivity } from "@/components/activity/activity-provider";
 import {
   createTcdbSnapshot,
   type CreateTcdbSnapshotError,
@@ -118,6 +119,12 @@ export default function AddSnapshotButton({
   });
 
   const { toast } = useToast();
+  const {
+    start: startActivity,
+    update: updateActivity,
+    done: completeActivity,
+    error: failActivity,
+  } = useActivity();
 
   const options = useMemo(
     () =>
@@ -265,12 +272,29 @@ export default function AddSnapshotButton({
       ranking_at: values.ranking_at,
     };
 
+    const selectedHomie = homieOptions.find(
+      (option) => String(option.value) === String(values.homie_id),
+    );
+    const activityLabel = selectedHomie
+      ? `Snapshot for ${selectedHomie.label}`
+      : "Saving snapshot";
+    const activityId = startActivity(activityLabel, {
+      status: "starting",
+      detail: "Preparing snapshot request",
+    });
+
+    updateActivity(activityId, {
+      status: "running",
+      detail: "Sending snapshot to the server",
+    });
+
     try {
       await createTcdbSnapshot(payload);
       toast({
         title: "Snapshot added",
         description: "Rankings are up to date.",
       });
+      completeActivity(activityId, { detail: "Snapshot created successfully" });
       onSnapshotCreated?.();
       router.refresh();
       setOpen(false);
@@ -302,6 +326,7 @@ export default function AddSnapshotButton({
         description = error.message;
       }
 
+      failActivity(activityId, description);
       toast({
         title: "Failed to add snapshot",
         description,
