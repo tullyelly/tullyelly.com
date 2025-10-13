@@ -13,7 +13,7 @@ import type { PersonaKey } from "@/lib/menu/types";
 import { CommandMenuProvider } from "@/components/nav/CommandMenu";
 import AppShell from "@/components/app-shell/AppShell";
 import InitialScrollGuard from "@/components/system/InitialScrollGuard";
-import RouteTopLoader from "@/components/system/RouteTopLoader";
+import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 
 await initSentry();
@@ -90,7 +90,8 @@ export default async function RootLayout({
         ) : null}
       </head>
       <body className="font-sans text-foreground">
-        <RouteTopLoader />
+        {/* Keep overlay provider first so it sits above all UI */}
+        <GlobalProgressProvider />
         <Script id="boot-scroll-guard" strategy="beforeInteractive">{`
   (function () {
     try { history.scrollRestoration = 'manual'; } catch (e) {}
