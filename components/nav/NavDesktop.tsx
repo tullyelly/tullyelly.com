@@ -193,6 +193,7 @@ export default function NavDesktop({
   const triggerRefs = React.useRef<Map<string, HTMLButtonElement | null>>(
     new Map(),
   );
+  const pointerShields = React.useRef<Map<string, () => boolean>>(new Map());
   const headerRef = React.useRef<HTMLElement | null>(null);
   const navRef = React.useRef<HTMLElement | null>(null);
 
@@ -261,6 +262,12 @@ export default function NavDesktop({
       if (path?.some((node) => isPersonaMenuNode(node))) {
         return;
       }
+      if (openId) {
+        const guard = pointerShields.current.get(openId);
+        if (guard?.()) {
+          return;
+        }
+      }
       forceCloseAll();
     };
 
@@ -277,7 +284,7 @@ export default function NavDesktop({
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [forceCloseAll, isPersonaMenuNode]);
+  }, [forceCloseAll, isPersonaMenuNode, openId]);
 
   const personaIds = React.useMemo(
     () => personas.map((persona) => persona.id),
@@ -343,6 +350,17 @@ export default function NavDesktop({
         triggerRefs.current.set(id, node);
       } else {
         triggerRefs.current.delete(id);
+      }
+    },
+    [],
+  );
+
+  const registerPointerShield = React.useCallback(
+    (id: string, guard: (() => boolean) | null) => {
+      if (guard) {
+        pointerShields.current.set(id, guard);
+      } else {
+        pointerShields.current.delete(id);
       }
     },
     [],
@@ -453,6 +471,7 @@ export default function NavDesktop({
               isOpen={openId === persona.id}
               onOpenChange={handlePersonaOpenChange}
               registerTrigger={registerTrigger}
+              registerPointerShield={registerPointerShield}
               focusTrigger={focusTrigger}
               onTriggerKeyDown={handleTriggerKeyDown}
               onLinkClick={handlePersonaLinkClick}

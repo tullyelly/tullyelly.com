@@ -10,6 +10,8 @@ import ShadowPortal, {
   type ShadowPortalContext,
 } from "@/components/ui/ShadowPortal";
 import { useMenuAim } from "@/app/(components)/menu/useMenuAim";
+import { useLastPointerType } from "@/hooks/useLastPointerType";
+import { useOpenShield } from "@/hooks/useOpenShield";
 import {
   AnyLink,
   Icon,
@@ -22,12 +24,23 @@ const TEST_MODE =
 
 const POPPER_WRAPPER_SELECTOR = "[data-radix-popper-content-wrapper]";
 
+function isHoverCapablePointer(
+  pointerType: string | null | undefined,
+): boolean {
+  return pointerType !== "touch" && pointerType !== "pen";
+}
+
+type OutsideEvent = Event & {
+  preventDefault(): void;
+};
+
 type NestableMenuProps = {
   persona: PersonaItem;
   pathname: string;
   isOpen: boolean;
   onOpenChange: (id: string, open: boolean) => void;
   registerTrigger: (id: string, node: HTMLButtonElement | null) => void;
+  registerPointerShield: (id: string, guard: (() => boolean) | null) => void;
   focusTrigger: (id: string) => void;
   onTriggerKeyDown: (
     event: React.KeyboardEvent<HTMLButtonElement>,
@@ -102,6 +115,7 @@ export default function NestableMenu({
   isOpen,
   onOpenChange,
   registerTrigger,
+  registerPointerShield,
   focusTrigger,
   onTriggerKeyDown,
   onLinkClick,
@@ -117,6 +131,20 @@ export default function NestableMenu({
   const positionedPanelRef = React.useRef<HTMLElement | null>(null);
   const shadowContextRef = React.useRef<ShadowPortalContext | null>(null);
   const isPointerCoarse = useIsPointerCoarse();
+  const [lockedByPointer, setLockedByPointer] = React.useState(false);
+  const {
+    setFromPointerEvent,
+    setKeyboard,
+    get: getLastPointerKind,
+  } = useLastPointerType();
+  const { arm: armOpenShield, shouldIgnore: shouldIgnoreOutside } =
+    useOpenShield();
+  const awaitingPointerUpRef = React.useRef(false);
+  const pointerToggleKindRef = React.useRef<"mouse" | "touch" | "pen" | null>(
+    null,
+  );
+  const skipNextClickRef = React.useRef(false);
+  const [hoverSuspended, setHoverSuspended] = React.useState(false);
 
   const links = React.useMemo(
     () =>
@@ -130,6 +158,7 @@ export default function NestableMenu({
   const [keyboardPressedId, setKeyboardPressedId] = React.useState<
     string | null
   >(null);
+  const previousIsOpenRef = React.useRef(isOpen);
 
   const surfaceVars = React.useMemo(
     () =>
@@ -151,6 +180,11 @@ export default function NestableMenu({
       }) as React.CSSProperties,
     [],
   );
+
+  React.useEffect(() => {
+    registerPointerShield(persona.id, shouldIgnoreOutside);
+    return () => registerPointerShield(persona.id, null);
+  }, [persona.id, registerPointerShield, shouldIgnoreOutside]);
 
   const handlePortalReady = React.useCallback(
     (context: ShadowPortalContext | null) => {
@@ -217,7 +251,11 @@ export default function NestableMenu({
     openDelay: prefersReducedMotion ? 0 : aimOpenDelay,
     closeDelay: prefersReducedMotion ? 0 : aimCloseDelay,
     buffer: aimBuffer,
-    enabled: !disablePointerAim && !isPointerCoarse,
+    enabled:
+      !disablePointerAim &&
+      !isPointerCoarse &&
+      !lockedByPointer &&
+      !hoverSuspended,
     placement: "bottom-start",
   });
 
@@ -282,6 +320,13 @@ export default function NestableMenu({
       setKeyboardPressedId(null);
     }
   }, [isOpen, keyboardPressedId]);
+
+  React.useEffect(() => {
+    if (previousIsOpenRef.current && !isOpen && lockedByPointer) {
+      setLockedByPointer(false);
+    }
+    previousIsOpenRef.current = isOpen;
+  }, [isOpen, lockedByPointer]);
 
   const menuItems = React.useMemo(
     () =>
@@ -378,9 +423,346 @@ export default function NestableMenu({
     [aim],
   );
 
+  const handlePointerDown = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      setFromPointerEvent(event);
+      const pointerType = event.pointerType;
+      const supportsHover = isHoverCapablePointer(pointerType);
+
+      if (!supportsHover) {
+        awaitingPointerUpRef.current = true;
+        pointerToggleKindRef.current = pointerType === "pen" ? "pen" : "touch";
+        skipNextClickRef.current = true;
+        event.preventDefault();
+        event.stopPropagation();
+        const nativeEvent = event.nativeEvent as PointerEvent | undefined;
+        nativeEvent?.stopImmediatePropagation?.();
+        return;
+      }
+
+      if (event.button === 0) {
+        awaitingPointerUpRef.current = true;
+        pointerToggleKindRef.current = "mouse";
+        skipNextClickRef.current = false;
+        event.preventDefault();
+        event.stopPropagation();
+        const nativeEvent = event.nativeEvent as PointerEvent | undefined;
+        nativeEvent?.stopImmediatePropagation?.();
+        return;
+      } else {
+        pointerToggleKindRef.current = null;
+      }
+
+      const handler = referenceProps.onPointerDown as
+        | ((ev: React.PointerEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+    },
+    [referenceProps, setFromPointerEvent],
+  );
+
+  const handlePointerUp = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      setFromPointerEvent(event);
+      const toggleKind = pointerToggleKindRef.current;
+
+      if (awaitingPointerUpRef.current && toggleKind) {
+        awaitingPointerUpRef.current = false;
+        pointerToggleKindRef.current = null;
+        const next = !isOpen;
+        setLockedByPointer(next);
+        aim.setOpen(next);
+
+        if (toggleKind === "mouse") {
+          skipNextClickRef.current = true;
+        }
+
+        if (next) {
+          setHoverSuspended(false);
+          armOpenShield();
+          if (event.currentTarget !== document.activeElement) {
+            event.currentTarget.focus({ preventScroll: true });
+          }
+        } else {
+          if (toggleKind === "mouse") {
+            setHoverSuspended(true);
+            setKeyboard();
+          } else {
+            setHoverSuspended(false);
+          }
+        }
+
+        if (toggleKind === "mouse") {
+          event.preventDefault();
+        }
+        return;
+      }
+
+      awaitingPointerUpRef.current = false;
+      pointerToggleKindRef.current = null;
+
+      const handler = referenceProps.onPointerUp as
+        | ((ev: React.PointerEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+    },
+    [
+      aim,
+      armOpenShield,
+      isOpen,
+      referenceProps,
+      setFromPointerEvent,
+      setHoverSuspended,
+      setKeyboard,
+      setLockedByPointer,
+    ],
+  );
+
+  const handlePointerEnter = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      setFromPointerEvent(event);
+      if (!isHoverCapablePointer(event.pointerType)) {
+        return;
+      }
+      if (lockedByPointer) {
+        return;
+      }
+      if (hoverSuspended) {
+        return;
+      }
+      const handler = referenceProps.onPointerEnter as
+        | ((ev: React.PointerEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+    },
+    [hoverSuspended, lockedByPointer, referenceProps, setFromPointerEvent],
+  );
+
+  const handlePointerMove = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      setFromPointerEvent(event);
+      if (!isHoverCapablePointer(event.pointerType)) {
+        return;
+      }
+      if (lockedByPointer) {
+        return;
+      }
+      if (hoverSuspended) {
+        return;
+      }
+      const handler = referenceProps.onPointerMove as
+        | ((ev: React.PointerEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+    },
+    [hoverSuspended, lockedByPointer, referenceProps, setFromPointerEvent],
+  );
+
+  const handlePointerLeave = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      setFromPointerEvent(event);
+      if (!isHoverCapablePointer(event.pointerType)) {
+        awaitingPointerUpRef.current = false;
+        return;
+      }
+      setHoverSuspended(false);
+      if (lockedByPointer) {
+        return;
+      }
+      const handler = referenceProps.onPointerLeave as
+        | ((ev: React.PointerEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+    },
+    [lockedByPointer, referenceProps, setFromPointerEvent, setHoverSuspended],
+  );
+
+  const handleMouseEnter = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setFromPointerEvent({ pointerType: "mouse" });
+      if (lockedByPointer) {
+        return;
+      }
+      if (hoverSuspended) {
+        return;
+      }
+      const handler = referenceProps.onMouseEnter as
+        | ((ev: React.MouseEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+    },
+    [hoverSuspended, lockedByPointer, referenceProps, setFromPointerEvent],
+  );
+
+  const handleMouseLeave = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setFromPointerEvent({ pointerType: "mouse" });
+      setHoverSuspended(false);
+      if (lockedByPointer) {
+        return;
+      }
+      const handler = referenceProps.onMouseLeave as
+        | ((ev: React.MouseEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+    },
+    [lockedByPointer, referenceProps, setFromPointerEvent, setHoverSuspended],
+  );
+
+  const handlePointerCancel = React.useCallback(() => {
+    awaitingPointerUpRef.current = false;
+    setHoverSuspended(false);
+  }, [setHoverSuspended]);
+
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (skipNextClickRef.current) {
+        skipNextClickRef.current = false;
+        return;
+      }
+      const kind = getLastPointerKind();
+      const isPointerClick =
+        kind === "mouse" || kind === "touch" || kind === "pen";
+
+      if (!isPointerClick) {
+        const handler = referenceProps.onClick as
+          | ((ev: React.MouseEvent<HTMLButtonElement>) => void)
+          | undefined;
+        handler?.(event);
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!isOpen) {
+        setHoverSuspended(false);
+        setLockedByPointer(true);
+        aim.setOpen(true);
+        armOpenShield();
+        if (event.currentTarget !== document.activeElement) {
+          event.currentTarget.focus({ preventScroll: true });
+        }
+        return;
+      }
+
+      if (lockedByPointer) {
+        setHoverSuspended(true);
+        setLockedByPointer(false);
+        aim.setOpen(false);
+        setKeyboard();
+        return;
+      }
+
+      setHoverSuspended(false);
+      setLockedByPointer(true);
+      aim.setOpen(true);
+      armOpenShield();
+      if (event.currentTarget !== document.activeElement) {
+        event.currentTarget.focus({ preventScroll: true });
+      }
+    },
+    [
+      aim,
+      armOpenShield,
+      getLastPointerKind,
+      isOpen,
+      lockedByPointer,
+      referenceProps,
+      setHoverSuspended,
+      setKeyboard,
+    ],
+  );
+
+  const handleFocus = React.useCallback(
+    (event: React.FocusEvent<HTMLButtonElement>) => {
+      const handler = referenceProps.onFocus as
+        | ((ev: React.FocusEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+      if (event.defaultPrevented) {
+        return;
+      }
+      const lastKind = getLastPointerKind();
+      if (!isHoverCapablePointer(lastKind)) {
+        return;
+      }
+      aim.setOpen(true);
+    },
+    [aim, getLastPointerKind, referenceProps],
+  );
+
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      setKeyboard();
+      const handler = referenceProps.onKeyDown as
+        | ((ev: React.KeyboardEvent<HTMLButtonElement>) => void)
+        | undefined;
+      handler?.(event);
+      if (!isOpen && (event.key === "Enter" || event.key === " ")) {
+        setHoverSuspended(false);
+        armOpenShield();
+      }
+      onTriggerKeyDown(event, persona.id);
+    },
+    [
+      armOpenShield,
+      isOpen,
+      onTriggerKeyDown,
+      persona.id,
+      referenceProps,
+      setHoverSuspended,
+      setKeyboard,
+    ],
+  );
+
   const floatingProps = React.useMemo(
     () => aim.getFloatingProps<Record<string, unknown>>({}),
     [aim],
+  );
+
+  const floatingHandlers = React.useMemo(() => {
+    const {
+      style: _style,
+      onPointerLeave,
+      onMouseLeave,
+      ...rest
+    } = floatingProps as Record<string, unknown> & {
+      onPointerLeave?: (event: React.PointerEvent<HTMLElement>) => void;
+      onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
+    };
+
+    return {
+      props: rest,
+      onPointerLeave: onPointerLeave as
+        | ((event: React.PointerEvent<HTMLElement>) => void)
+        | undefined,
+      onMouseLeave: onMouseLeave as
+        | ((event: React.MouseEvent<HTMLElement>) => void)
+        | undefined,
+    };
+  }, [floatingProps]);
+
+  const handlePointerDownOutside = React.useCallback(
+    (event: OutsideEvent) => {
+      if (shouldIgnoreOutside()) {
+        event.preventDefault();
+        return;
+      }
+      setHoverSuspended(false);
+    },
+    [setHoverSuspended, shouldIgnoreOutside],
+  );
+
+  const handleInteractOutside = React.useCallback(
+    (event: OutsideEvent) => {
+      if (shouldIgnoreOutside()) {
+        event.preventDefault();
+        return;
+      }
+      setHoverSuspended(false);
+    },
+    [setHoverSuspended, shouldIgnoreOutside],
   );
 
   const setTriggerRef = React.useCallback(
@@ -403,10 +785,7 @@ export default function NestableMenu({
     [aim, persona.id, positionPanel, registerTrigger],
   );
 
-  const floatingStylelessProps = React.useMemo(() => {
-    const { style: _style, ...rest } = floatingProps;
-    return rest;
-  }, [floatingProps]);
+  const floatingStylelessProps = floatingHandlers.props;
 
   React.useEffect(() => {
     if (TEST_MODE || process.env.NODE_ENV === "test") return;
@@ -459,22 +838,18 @@ export default function NestableMenu({
           data-open={isOpen ? "true" : undefined}
           data-testid={`persona-trigger-${persona.id}`}
           data-persona-trigger={persona.id}
-          onFocus={(event) => {
-            const handler = referenceProps.onFocus as
-              | ((ev: React.FocusEvent<HTMLButtonElement>) => void)
-              | undefined;
-            handler?.(event);
-            if (!event.defaultPrevented) {
-              aim.setOpen(true);
-            }
-          }}
-          onKeyDown={(event) => {
-            const handler = referenceProps.onKeyDown as
-              | ((ev: React.KeyboardEvent<HTMLButtonElement>) => void)
-              | undefined;
-            handler?.(event);
-            onTriggerKeyDown(event, persona.id);
-          }}
+          data-pointer-locked={lockedByPointer ? "true" : undefined}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerEnter={handlePointerEnter}
+          onPointerMove={handlePointerMove}
+          onPointerLeave={handlePointerLeave}
+          onPointerCancel={handlePointerCancel}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onClick={handleClick}
+          onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
         >
           <Icon name={persona.icon} className="mr-2 size-4 shrink-0" />
           <span className="flex items-center gap-1 whitespace-nowrap">
@@ -496,6 +871,8 @@ export default function NestableMenu({
           loop
           aria-label={`Persona menu: ${persona.label}`}
           data-nav-dropdown="true"
+          onPointerDownOutside={handlePointerDownOutside}
+          onInteractOutside={handleInteractOutside}
           asChild
         >
           <div
@@ -512,12 +889,26 @@ export default function NestableMenu({
               setPanelSurface(node);
             }}
             onFocusCapture={() => aim.setOpen(true)}
+            onPointerLeave={(event) => {
+              if (lockedByPointer) {
+                return;
+              }
+              floatingHandlers.onPointerLeave?.(event);
+            }}
+            onMouseLeave={(event) => {
+              if (lockedByPointer) {
+                return;
+              }
+              floatingHandlers.onMouseLeave?.(event);
+            }}
             onBlurCapture={(event) => {
               const next = event.relatedTarget as HTMLElement | null;
               if (next && event.currentTarget.contains(next)) {
                 return;
               }
-              aim.setOpen(false);
+              if (!lockedByPointer) {
+                aim.setOpen(false);
+              }
             }}
           >
             <div className="list">{menuItems}</div>
@@ -538,6 +929,8 @@ export default function NestableMenu({
               loop
               aria-label={`Persona menu: ${persona.label}`}
               data-nav-dropdown="true"
+              onPointerDownOutside={handlePointerDownOutside}
+              onInteractOutside={handleInteractOutside}
               asChild
             >
               <PersonaMenuSurface
@@ -554,17 +947,33 @@ export default function NestableMenu({
                   setPanelSurface(node);
                 }}
                 onFocusCapture={() => aim.setOpen(true)}
+                onPointerLeave={(event) => {
+                  if (lockedByPointer) {
+                    return;
+                  }
+                  floatingHandlers.onPointerLeave?.(event);
+                }}
+                onMouseLeave={(event) => {
+                  if (lockedByPointer) {
+                    return;
+                  }
+                  floatingHandlers.onMouseLeave?.(event);
+                }}
                 onBlurCapture={(event) => {
                   const next = event.relatedTarget as HTMLElement | null;
                   if (next && event.currentTarget.contains(next)) {
                     return;
                   }
-                  aim.setOpen(false);
+                  if (!lockedByPointer) {
+                    aim.setOpen(false);
+                  }
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
                     event.preventDefault();
                     event.stopPropagation();
+                    setHoverSuspended(false);
+                    setLockedByPointer(false);
                     aim.setOpen(false);
                     focusTrigger(persona.id);
                   }
