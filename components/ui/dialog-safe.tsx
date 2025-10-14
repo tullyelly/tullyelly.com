@@ -23,7 +23,12 @@ export function Content({
 }) {
   return (
     <Dialog.Content {...rest} asChild>
-      <div role="dialog" aria-modal="true" className={className}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={className}
+        data-overlay-root
+      >
         <Dialog.Title asChild={hideLabel}>
           {hideLabel ? (
             <VisuallyHidden>{label}</VisuallyHidden>

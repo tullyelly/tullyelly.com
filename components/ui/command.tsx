@@ -280,12 +280,18 @@ export function CommandDialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogPrimitive.Portal forceMount>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[98] bg-black/45 backdrop-blur-[2px] transition-opacity duration-120 data-[state=open]:opacity-100 data-[state=closed]:opacity-0" />
+        <DialogPrimitive.Overlay
+          data-overlay-layer
+          className="fixed inset-0 z-[98] bg-black/45 backdrop-blur-[2px] transition-opacity duration-120 data-[state=open]:opacity-100 data-[state=closed]:opacity-0"
+          style={{ pointerEvents: open ? "auto" : "none" }}
+        />
         <DialogPrimitive.Content forceMount asChild>
           <div
             ref={contentRef}
             role="dialog"
             aria-modal="true"
+            data-overlay-root
+            aria-hidden={open ? undefined : "true"}
             className={cn(
               "fixed z-[99] p-0 !bottom-auto",
               "max-w-[calc(100vw-2rem)]",
@@ -304,6 +310,7 @@ export function CommandDialog({
               transform: "none",
               width: dialogWidth,
               maxWidth: `calc(100vw - ${DIALOG_MARGIN * 2}px)`,
+              pointerEvents: open ? "auto" : "none",
             }}
           >
             <DialogPrimitive.Title asChild>

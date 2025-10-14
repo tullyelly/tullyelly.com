@@ -205,7 +205,12 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
 
     return (
       <RadixDialog.Content asChild {...props}>
-        <div ref={mergedRef} style={initialStyle} onPointerDown={onPointerDown}>
+        <div
+          ref={mergedRef}
+          data-overlay-root
+          style={initialStyle}
+          onPointerDown={onPointerDown}
+        >
           {children}
         </div>
       </RadixDialog.Content>
@@ -218,7 +223,13 @@ Content.displayName = "DialogContent";
 export const Root = RadixDialog.Root;
 export const Trigger = RadixDialog.Trigger;
 export const Portal = RadixDialog.Portal;
-export const Overlay = RadixDialog.Overlay;
+export const Overlay = React.forwardRef<
+  React.ElementRef<typeof RadixDialog.Overlay>,
+  React.ComponentPropsWithoutRef<typeof RadixDialog.Overlay>
+>((props, ref) => (
+  <RadixDialog.Overlay data-overlay-layer ref={ref} {...props} />
+));
+Overlay.displayName = RadixDialog.Overlay.displayName;
 export const Title = RadixDialog.Title;
 export const Description = RadixDialog.Description;
 export const Close = RadixDialog.Close;

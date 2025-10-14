@@ -402,3 +402,13 @@ p {
   color: #ffffff !important;
   text-decoration: underline !important;
 }
+
+/* Prevent closed overlays from catching pointer or scroll events */
+[data-overlay-root][data-state="closed"],
+[data-overlay-root][aria-hidden="true"],
+[data-overlay-root][hidden],
+[data-overlay-layer][data-state="closed"],
+[data-overlay-layer][aria-hidden="true"],
+[data-overlay-layer][hidden] {
+  pointer-events: none !important;
+}
