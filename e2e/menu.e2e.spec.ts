@@ -79,7 +79,7 @@ test.describe.skip("menu navigation analytics (quarantine)", () => {
   }) => {
     await preparePage(page, desktopViewport);
 
-    const trigger = page.getByTestId("persona-trigger-persona.mark2");
+    const trigger = page.getByTestId("nav-top-mark2");
     await expect(trigger).toBeVisible();
     await trigger.dispatchEvent("pointerenter");
     await trigger.dispatchEvent("mouseenter");

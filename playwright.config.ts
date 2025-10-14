@@ -6,6 +6,8 @@ export default defineConfig({
   retries: 1,
   use: {
     baseURL: "http://localhost:3000",
+    actionTimeout: 10_000,
+    navigationTimeout: 15_000,
     trace: "on-first-retry",
     // Prefer desktop viewport to avoid responsive header collapse in tables
     viewport: { width: 1366, height: 900 },
@@ -29,16 +31,17 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run build && npm run start",
+    command: "NEXT_PUBLIC_E2E_MODE=1 npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     env: {
-      NODE_ENV: "production",
+      NODE_ENV: "development",
       DISABLE_SENTRY: "1",
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
       NEXT_PUBLIC_ANALYTICS_ENABLED: "1",
       NEXT_PUBLIC_TEST_MODE: "1",
+      NEXT_PUBLIC_E2E_MODE: "1",
       TEST_MODE: "1",
       AUTH_SECRET: "test-secret",
       DATABASE_URL:

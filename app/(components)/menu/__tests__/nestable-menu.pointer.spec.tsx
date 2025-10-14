@@ -116,7 +116,7 @@ describe("NestableMenu pointer modality", () => {
       />,
     );
     const trigger = (await screen.findByTestId(
-      `persona-trigger-${persona.id}`,
+      `nav-top-${persona.persona}`,
     )) as HTMLButtonElement;
 
     // pointer hover from touch should not open the menu
@@ -206,7 +206,7 @@ describe("NestableMenu pointer modality", () => {
     const stateChanges: boolean[] = [];
     render(<Harness onStateChange={(next) => stateChanges.push(next)} />);
     const trigger = (await screen.findByTestId(
-      `persona-trigger-${persona.id}`,
+      `nav-top-${persona.persona}`,
     )) as HTMLButtonElement;
 
     await act(async () => {
@@ -279,7 +279,7 @@ describe("NestableMenu pointer modality", () => {
     const stateChanges: boolean[] = [];
     render(<Harness onStateChange={(next) => stateChanges.push(next)} />);
     const trigger = (await screen.findByTestId(
-      `persona-trigger-${persona.id}`,
+      `nav-top-${persona.persona}`,
     )) as HTMLButtonElement;
     const clickTrigger = async (
       pointerId: number,

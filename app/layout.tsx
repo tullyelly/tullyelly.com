@@ -72,7 +72,6 @@ export default async function RootLayout({
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const [menu, hdrs] = await Promise.all([getLegacyMenu(), headers()]);
   const path = resolveRequestedPath(hdrs);
-  const pageMetadata = buildMenuMetadata(path, menu.index);
   const resolvedPersona = resolvePersonaForPath(menu.tree, path);
   const personaKey = (resolvedPersona?.persona ?? "mark2") as PersonaKey;
   const { menu: personaMenu, children: personaChildren } =
@@ -123,7 +122,6 @@ export default async function RootLayout({
               menuItems={menu.tree}
               menu={personaMenu}
               menuChildren={personaChildren}
-              breadcrumbs={pageMetadata.breadcrumbs}
               siteTitle={SITE_TITLE}
               currentPersona={resolvedPersona}
             >

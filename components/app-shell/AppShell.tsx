@@ -1,18 +1,17 @@
 import ClientAppShell from "./ClientAppShell";
 import PersonaChip from "./PersonaChip";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
+import E2EOnlyNav from "@/components/e2e/E2EOnlyNav";
 import type { NavItem } from "@/types/nav";
-import type { Crumb } from "@/app/_menu/metadata";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import type { ResolvedPersona } from "@/lib/menu/persona";
 import Footer from "@/app/_components/Footer";
-import { BreadcrumbTrail } from "@/components/ui/breadcrumb";
 
 type AppShellProps = {
   announcement?: string | null;
   menuItems: NavItem[];
   menu: MenuPayload;
   menuChildren: PersonaChildren;
-  breadcrumbs: Crumb[];
   siteTitle: string;
   currentPersona: ResolvedPersona;
   children: React.ReactNode;
@@ -23,7 +22,6 @@ export default function AppShell({
   menuItems,
   menu,
   menuChildren,
-  breadcrumbs,
   siteTitle,
   currentPersona,
   children,
@@ -39,18 +37,17 @@ export default function AppShell({
       footerSlot={<Footer />}
     >
       <>
-        {breadcrumbs.length ? (
-          <div className="mb-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="max-w-full">
-                <BreadcrumbTrail crumbs={breadcrumbs} />
-              </div>
-              {currentPersona ? (
-                <PersonaChip persona={currentPersona} className="shrink-0" />
-              ) : null}
+        {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="max-w-full">
+              <Breadcrumbs />
             </div>
+            {currentPersona ? (
+              <PersonaChip persona={currentPersona} className="shrink-0" />
+            ) : null}
           </div>
-        ) : null}
+        </div>
         {children}
       </>
     </ClientAppShell>

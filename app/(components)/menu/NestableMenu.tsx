@@ -341,9 +341,15 @@ export default function NestableMenu({
             ? (linkNode.target ?? "_blank")
             : undefined;
         const rel = target === "_blank" ? "noreferrer noopener" : undefined;
-        const menuItemTestId = linkNode.featureKey
-          ? `menu-item-${linkNode.featureKey}`
-          : `menu-item-${linkNode.id}`;
+        const overviewMatch =
+          linkNode.id === "overview" ||
+          linkNode.label?.toLowerCase() === "overview" ||
+          (linkNode.featureKey?.endsWith(".overview") ?? false);
+        const menuItemTestId = overviewMatch
+          ? `nav-menu-${persona.persona}-overview`
+          : linkNode.featureKey
+            ? `menu-item-${linkNode.featureKey}`
+            : `menu-item-${linkNode.id}`;
         const isKeyboardPressed = keyboardPressedId === linkNode.id;
 
         const metaItems: React.ReactNode[] = [];
@@ -836,7 +842,7 @@ export default function NestableMenu({
             isOpen ? "bg-white/20" : "bg-white/0",
           ].join(" ")}
           data-open={isOpen ? "true" : undefined}
-          data-testid={`persona-trigger-${persona.id}`}
+          data-testid={`nav-top-${persona.persona}`}
           data-persona-trigger={persona.id}
           data-pointer-locked={lockedByPointer ? "true" : undefined}
           onPointerDown={handlePointerDown}

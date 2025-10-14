@@ -306,9 +306,12 @@ export default function NavDesktop({
     const scope = globalThis as any;
     const api = scope.__navTest ?? {};
     const openPersona = (id: string) => {
-      const trigger = document.querySelector(
-        `[data-testid="persona-trigger-${id}"]`,
-      ) as HTMLElement | null;
+      const slug = id.split(".").pop();
+      const trigger = slug
+        ? (document.querySelector(
+            `[data-testid="nav-top-${slug}"]`,
+          ) as HTMLElement | null)
+        : null;
       if (trigger) {
         try {
           trigger.dispatchEvent(
@@ -459,7 +462,7 @@ export default function NavDesktop({
             "
             aria-current={homeActive ? "page" : undefined}
             aria-label="home"
-            data-testid="nav-home-link"
+            data-testid="nav-top-home"
           >
             home
           </Link>

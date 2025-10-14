@@ -209,7 +209,7 @@ describe("navigation analytics instrumentation", () => {
       </Wrapper>,
     );
 
-    const trigger = await screen.findByTestId("persona-trigger-persona.mark2");
+    const trigger = await screen.findByTestId("nav-top-mark2");
     fireEvent.pointerEnter(trigger);
 
     await waitFor(() => {
