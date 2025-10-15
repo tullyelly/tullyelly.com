@@ -26,6 +26,17 @@ export default function AppShell({
   currentPersona,
   children,
 }: AppShellProps) {
+  const breadcrumbSlot = (
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="max-w-full">
+        <Breadcrumbs sticky />
+      </div>
+      {currentPersona ? (
+        <PersonaChip persona={currentPersona} className="shrink-0" />
+      ) : null}
+    </div>
+  );
+
   return (
     <ClientAppShell
       announcement={announcement}
@@ -35,19 +46,10 @@ export default function AppShell({
       siteTitle={siteTitle}
       initialPersona={currentPersona}
       footerSlot={<Footer />}
+      breadcrumbSlot={breadcrumbSlot}
     >
       <>
         {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
-        <div className="mb-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="max-w-full">
-              <Breadcrumbs />
-            </div>
-            {currentPersona ? (
-              <PersonaChip persona={currentPersona} className="shrink-0" />
-            ) : null}
-          </div>
-        </div>
         {children}
       </>
     </ClientAppShell>

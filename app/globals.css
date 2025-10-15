@@ -55,6 +55,7 @@
   --badge-classic-bg: #f0ebd2; /* Championship Gold */
   --badge-classic-fg: #00471b; /* Bucks Green */
   --badge-classic-ring: rgba(0, 71, 27, 0.25);
+  --header-h: 52px;
 }
 
 html,
@@ -386,7 +387,9 @@ p {
 }
 
 .site-header {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .site-header a[data-nav-home] {

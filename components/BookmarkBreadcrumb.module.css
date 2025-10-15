@@ -1,0 +1,116 @@
+.root {
+  --bbg-bg: #e6dfc7;
+  --bbg-fg: #264c2a;
+  --bbg-sep: #5a785d99;
+  --bbg-link: #2b6cb0;
+  --bbg-border: #00000010;
+  --bbg-radius: 18px;
+  --bbg-pad-y: 10px;
+  --bbg-pad-x: 16px;
+  --bbg-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.08), 0 8px 14px -10px rgba(0, 0, 0, 0.6);
+  --bbg-nudge-y: 0px;
+
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  align-self: flex-start;
+}
+
+.sticky {
+  position: sticky;
+  top: calc(var(--header-h, 52px) + var(--bbg-nudge-y, 0px));
+  z-index: 40;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: var(--bbg-pad-y) var(--bbg-pad-x);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  border-radius: var(--bbg-radius);
+  background: var(--bbg-bg);
+  color: var(--bbg-fg);
+  border: 1px solid var(--bbg-border);
+  box-shadow: var(--bbg-shadow);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+  position: relative;
+  mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.98) 0%,
+    rgba(0, 0, 0, 1) 20px,
+    rgba(0, 0, 0, 1) calc(100% - 32px),
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.98) 0%,
+    rgba(0, 0, 0, 1) 20px,
+    rgba(0, 0, 0, 1) calc(100% - 32px),
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: inherit;
+}
+
+.link,
+.current {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link {
+  color: var(--bbg-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.current {
+  font-weight: 600;
+}
+
+.separator {
+  color: var(--bbg-sep);
+  user-select: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .root {
+    --bbg-bg: #2a2a28;
+    --bbg-fg: #e7e7e3;
+    --bbg-sep: #e7e7e399;
+    --bbg-border: #ffffff14;
+  }
+}

@@ -1,16 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { usePathname, useSelectedLayoutSegments } from "next/navigation";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import BookmarkBreadcrumb, {
+  type Crumb,
+  toTitle,
+} from "@/components/BookmarkBreadcrumb";
 
 type LabelMap = Record<string, string>;
 
@@ -25,69 +20,64 @@ function segmentLabel(segment: string): string {
   const normalized = segment || "";
   const lookup = LABELS[normalized];
   if (lookup) return lookup;
-  try {
-    return decodeURIComponent(normalized);
-  } catch {
-    return normalized;
-  }
+  return toTitle(normalized);
 }
-
-type BreadcrumbItemData = {
-  href: string;
-  label: string;
-};
 
 function buildBreadcrumbItems(
   pathname: string | null,
   segments: readonly string[] | null,
-): BreadcrumbItemData[] {
-  const items: BreadcrumbItemData[] = [{ href: "/", label: "home" }];
-
-  if (!pathname || pathname === "/") {
-    return items;
+  finalLabelOverride?: string,
+): Crumb[] {
+  if (!pathname || pathname === "/" || pathname === "/mark2/shaolin-scrolls") {
+    return [];
   }
 
   const pathSegments = pathname.split("/").filter(Boolean);
+  const items: Crumb[] = [{ href: "/", label: "home" }];
   let href = "";
 
   for (let index = 0; index < pathSegments.length; index += 1) {
     const seg = pathSegments[index] ?? "";
     href += `/${seg}`;
-
     const segmentValue = segments?.[index] ?? seg;
     items.push({ href, label: segmentLabel(String(segmentValue)) });
+  }
+
+  const lastIndex = items.length - 1;
+  if (lastIndex >= 0) {
+    items[lastIndex] = {
+      label: finalLabelOverride ?? items[lastIndex]?.label ?? "",
+    };
   }
 
   return items;
 }
 
-export default function Breadcrumbs() {
+type BreadcrumbsProps = {
+  currentLabelOverride?: string;
+  sticky?: boolean;
+  className?: string;
+};
+
+export default function Breadcrumbs({
+  currentLabelOverride,
+  sticky = false,
+  className,
+}: BreadcrumbsProps) {
   const pathname = usePathname();
   const selectedSegments = useSelectedLayoutSegments();
 
-  const items = buildBreadcrumbItems(pathname, selectedSegments);
-  const lastIndex = items.length - 1;
+  const items = React.useMemo(
+    () =>
+      buildBreadcrumbItems(pathname, selectedSegments, currentLabelOverride),
+    [pathname, selectedSegments, currentLabelOverride],
+  );
+
+  if (items.length <= 1) {
+    return null;
+  }
 
   return (
-    <Breadcrumb aria-label="Breadcrumb">
-      <BreadcrumbList>
-        {items.map((item, index) => (
-          <React.Fragment key={item.href}>
-            <BreadcrumbItem>
-              {index === lastIndex ? (
-                <BreadcrumbPage>{item.label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <Link href={item.href}>{item.label}</Link>
-                </BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
-            {index < lastIndex ? (
-              <BreadcrumbSeparator>{` / `}</BreadcrumbSeparator>
-            ) : null}
-          </React.Fragment>
-        ))}
-      </BreadcrumbList>
-    </Breadcrumb>
+    <BookmarkBreadcrumb items={items} sticky={sticky} className={className} />
   );
 }

@@ -16,6 +16,7 @@ import type { ResolvedPersona } from "@/lib/menu/persona";
 import { AppShellProvider, type PersonaSummary } from "./context";
 import MobileMenuButton from "./MobileMenuButton";
 import BrandHomeLink from "@/components/brand/BrandHomeLink";
+import { BreadcrumbSlotProvider } from "./BreadcrumbSlotContext";
 
 type ClientAppShellProps = {
   announcement?: string | null;
@@ -26,6 +27,7 @@ type ClientAppShellProps = {
   children: React.ReactNode;
   footerSlot: React.ReactNode;
   initialPersona: ResolvedPersona;
+  breadcrumbSlot?: React.ReactNode;
 };
 
 export default function ClientAppShell({
@@ -37,6 +39,7 @@ export default function ClientAppShell({
   children,
   footerSlot,
   initialPersona,
+  breadcrumbSlot,
 }: ClientAppShellProps) {
   const pathname = usePathname();
   const currentPersona = React.useMemo<PersonaSummary>(() => {
@@ -106,49 +109,71 @@ export default function ClientAppShell({
     return () => window.removeEventListener("menu:action", handleMenuAction);
   }, [setCommandMenuOpen]);
 
+  const [breadcrumbOverride, setBreadcrumbOverride] =
+    React.useState<React.ReactNode | null>(null);
+  const breadcrumbSlotValue = React.useMemo(
+    () => ({
+      override: breadcrumbOverride,
+      setOverride: setBreadcrumbOverride,
+    }),
+    [breadcrumbOverride],
+  );
+  const slotToRender = breadcrumbOverride ?? breadcrumbSlot ?? null;
+
   return (
     <AppShellProvider value={contextValue}>
       <NavControllerProvider>
-        <div id="page-root" className="flex min-h-screen flex-col">
-          <HeaderShell className="bg-[var(--blue)] text-white">
-            {announcement ? (
-              <AnnouncementBanner message={announcement} dismissible />
-            ) : null}
-            <PersistentBannerHost />
-            <div className="sticky top-0 z-50 bg-[var(--blue)]/95 text-white shadow-sm pt-[max(env(safe-area-inset-top),0px)] backdrop-blur md:hidden">
-              <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-start gap-2 px-3 sm:px-4 lg:px-6">
-                <MobileMenuButton />
-                <BrandHomeLink />
-              </div>
+        <BreadcrumbSlotProvider value={breadcrumbSlotValue}>
+          <div id="page-root" className="flex min-h-screen flex-col">
+            <div className="flex flex-col">
+              <HeaderShell className="bg-[var(--blue)] text-white">
+                {announcement ? (
+                  <AnnouncementBanner message={announcement} dismissible />
+                ) : null}
+                <PersistentBannerHost />
+                <div className="sticky top-0 z-50 bg-[var(--blue)]/95 text-white shadow-sm pt-[max(env(safe-area-inset-top),0px)] backdrop-blur md:hidden">
+                  <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-start gap-2 px-3 sm:px-4 lg:px-6">
+                    <MobileMenuButton />
+                    <BrandHomeLink />
+                  </div>
+                </div>
+                <NavDesktop menu={menu} childrenMap={menuChildren} />
+                <div className="md:hidden">
+                  <MobileDrawer
+                    open={mobileNavOpen}
+                    onOpenChange={setMobileNavOpen}
+                    menu={menu}
+                    childrenMap={menuChildren}
+                  />
+                </div>
+                <CommandMenu />
+              </HeaderShell>
+              {slotToRender ? (
+                <div className="bg-[var(--surface-page)]">
+                  <div className="mx-auto w-full max-w-[var(--content-max)] px-6 md:px-8 lg:px-10">
+                    {slotToRender}
+                  </div>
+                </div>
+              ) : null}
             </div>
-            <NavDesktop menu={menu} childrenMap={menuChildren} />
-            <div className="md:hidden">
-              <MobileDrawer
-                open={mobileNavOpen}
-                onOpenChange={setMobileNavOpen}
-                menu={menu}
-                childrenMap={menuChildren}
-              />
-            </div>
-            <CommandMenu />
-          </HeaderShell>
-          <main
-            id="page-main"
-            tabIndex={-1}
-            className="m-0 flex-1 bg-transparent p-0 overflow-anchor-none"
-            style={{
-              paddingBottom: "max(env(safe-area-inset-bottom), 0px)",
-            }}
-          >
-            <div
-              id="content-pane"
-              className="crop-block-margins mx-auto max-w-[var(--content-max)] bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10"
+            <main
+              id="page-main"
+              tabIndex={-1}
+              className="m-0 flex-1 bg-transparent p-0 overflow-anchor-none mt-6"
+              style={{
+                paddingBottom: "max(env(safe-area-inset-bottom), 0px)",
+              }}
             >
-              {children}
-            </div>
-          </main>
-          <div className="mt-auto">{footerSlot}</div>
-        </div>
+              <div
+                id="content-pane"
+                className="crop-block-margins mx-auto max-w-[var(--content-max)] bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10"
+              >
+                {children}
+              </div>
+            </main>
+            <div className="mt-auto">{footerSlot}</div>
+          </div>
+        </BreadcrumbSlotProvider>
       </NavControllerProvider>
     </AppShellProvider>
   );

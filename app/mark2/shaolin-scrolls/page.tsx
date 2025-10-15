@@ -1,4 +1,5 @@
 import ActionBar from "./_components/ActionBar";
+import ScrollsBreadcrumb from "./_components/ScrollsBreadcrumb";
 import ScrollsPageClient from "./_components/ScrollsPageClient";
 import { getScrollsPage, type Sort } from "@/lib/scrolls";
 import {
@@ -65,6 +66,7 @@ export default async function Page({ searchParams }: PageProps) {
 
   return (
     <section id="scrolls-root" className="flex min-h-screen flex-col gap-4">
+      <ScrollsBreadcrumb />
       <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
       <ActionBar q={q} />
       <ScrollsPageClient rows={items} meta={meta} />

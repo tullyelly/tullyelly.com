@@ -23,9 +23,12 @@ export async function recoverFromErrorBoundary(page: Page) {
 export async function ensureReady(page: Page) {
   await dismissAnyDialogIfOpen(page);
   await recoverFromErrorBoundary(page);
-  await expect(
-    page.getByRole("navigation", { name: "Breadcrumb" }),
-  ).toBeVisible();
+  const nav = page.getByRole("navigation", { name: "Breadcrumb" });
+  if ((await nav.count()) > 0) {
+    await expect(nav).toBeVisible();
+  } else {
+    await expect(page.locator("#content-pane")).toBeVisible();
+  }
 }
 
 export async function navigateToSlug(page: Page, slug: string) {
