@@ -1,30 +1,32 @@
-# BookmarkBreadcrumb
+# Breadcrumb
 
-BookmarkBreadcrumb renders a parchment-style nav that sticks just below the site header.
+`Breadcrumb` renders a parchment-style nav that sticks just below the site header.
 
 ```tsx
-import BookmarkBreadcrumb from "@/components/BookmarkBreadcrumb";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
-<BookmarkBreadcrumb
+<Breadcrumb
   items={[
     { label: "home", href: "/" },
     { label: "mark2", href: "/mark2" },
     { label: "Shaolin Scrolls" },
   ]}
+  sticky
 />;
 ```
 
 If a layout needs extra clearance (for example, to float over cards), tune the sticky offset with `nudgeY`.
 
 ```tsx
-import BookmarkBreadcrumb from "@/components/BookmarkBreadcrumb";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
-<BookmarkBreadcrumb
+<Breadcrumb
   items={[
     { label: "home", href: "/" },
     { label: "mark2", href: "/mark2" },
     { label: "Shaolin Scrolls" },
   ]}
+  sticky
   nudgeY="-12px"
 />;
 ```

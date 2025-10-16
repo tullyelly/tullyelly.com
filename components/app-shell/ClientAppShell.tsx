@@ -13,10 +13,12 @@ import type { NavItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import { resolvePersonaForPath } from "@/lib/menu/persona";
 import type { ResolvedPersona } from "@/lib/menu/persona";
+import { cn } from "@/lib/utils";
 import { AppShellProvider, type PersonaSummary } from "./context";
 import MobileMenuButton from "./MobileMenuButton";
 import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import { BreadcrumbSlotProvider } from "./BreadcrumbSlotContext";
+import { CONTENT_GUTTER_CLASS } from "./constants";
 
 type ClientAppShellProps = {
   announcement?: string | null;
@@ -149,11 +151,7 @@ export default function ClientAppShell({
                 <CommandMenu />
               </HeaderShell>
               {slotToRender ? (
-                <div className="bg-[var(--surface-page)]">
-                  <div className="mx-auto w-full max-w-[var(--content-max)] px-6 md:px-8 lg:px-10">
-                    {slotToRender}
-                  </div>
-                </div>
+                <div className="bg-[var(--surface-page)]">{slotToRender}</div>
               ) : null}
             </div>
             <main
@@ -166,7 +164,10 @@ export default function ClientAppShell({
             >
               <div
                 id="content-pane"
-                className="crop-block-margins mx-auto max-w-[var(--content-max)] bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10"
+                className={cn(
+                  "crop-block-margins bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10",
+                  CONTENT_GUTTER_CLASS,
+                )}
               >
                 {children}
               </div>

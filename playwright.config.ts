@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "e2e",
+  testDir: ".",
+  testMatch: ["e2e/**/*.spec.ts", "tests/**/*.spec.ts"],
   reporter: [["html", { outputFolder: "playwright-report" }]],
   retries: 1,
   use: {
@@ -42,6 +43,7 @@ export default defineConfig({
       NEXT_PUBLIC_ANALYTICS_ENABLED: "1",
       NEXT_PUBLIC_TEST_MODE: "1",
       NEXT_PUBLIC_E2E_MODE: "1",
+      NEXT_PUBLIC_FEATURE_BREADCRUMBS_V1: "true",
       TEST_MODE: "1",
       AUTH_SECRET: "test-secret",
       DATABASE_URL:

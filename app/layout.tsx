@@ -124,6 +124,7 @@ export default async function RootLayout({
               menuChildren={personaChildren}
               siteTitle={SITE_TITLE}
               currentPersona={resolvedPersona}
+              pathname={path}
             >
               {children}
             </AppShell>
