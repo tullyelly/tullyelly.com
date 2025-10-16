@@ -1,12 +1,15 @@
 import ClientAppShell from "./ClientAppShell";
 import PersonaChip from "./PersonaChip";
 import BreadcrumbServer from "@/components/breadcrumb/BreadcrumbServer";
+import BreadcrumbSlot from "@/components/breadcrumb/BreadcrumbSlot";
 import E2EOnlyNav from "@/components/e2e/E2EOnlyNav";
 import { shouldDisableGlobalBreadcrumb } from "@/lib/breadcrumb-disable.server";
 import { flags } from "@/lib/flags";
 import { breadcrumbDebug } from "@/lib/breadcrumb-debug";
 import { getMenuSnapshot } from "@/lib/menu-snapshot.server";
+import { cn } from "@/lib/utils";
 import { headers } from "next/headers";
+import type { CSSProperties } from "react";
 import type { NavItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import type { ResolvedPersona } from "@/lib/menu/persona";
@@ -96,6 +99,25 @@ export default async function AppShell({
     </div>
   ) : null;
 
+  const contentPane = (
+    <div
+      id="content-pane"
+      className={cn(
+        "relative crop-block-margins bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 md:pl-[--bookmark-offset] lg:px-10",
+        CONTENT_GUTTER_CLASS,
+      )}
+      style={
+        {
+          "--bookmark-offset": "4.5rem",
+        } as CSSProperties
+      }
+    >
+      {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
+      <BreadcrumbSlot />
+      {children}
+    </div>
+  );
+
   return (
     <ClientAppShell
       announcement={announcement}
@@ -107,10 +129,7 @@ export default async function AppShell({
       footerSlot={<Footer />}
       breadcrumbSlot={breadcrumbSlot}
     >
-      <>
-        {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
-        {children}
-      </>
+      {contentPane}
     </ClientAppShell>
   );
 }

@@ -20,5 +20,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/theabbott/roadwork-rappin`,
       lastModified: new Date(),
     },
+    {
+      url: `${baseUrl}/tullyelly/ruins`,
+      lastModified: new Date(),
+    },
   ];
 }

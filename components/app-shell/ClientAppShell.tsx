@@ -13,12 +13,10 @@ import type { NavItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import { resolvePersonaForPath } from "@/lib/menu/persona";
 import type { ResolvedPersona } from "@/lib/menu/persona";
-import { cn } from "@/lib/utils";
 import { AppShellProvider, type PersonaSummary } from "./context";
 import MobileMenuButton from "./MobileMenuButton";
 import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import { BreadcrumbSlotProvider } from "./BreadcrumbSlotContext";
-import { CONTENT_GUTTER_CLASS } from "./constants";
 
 type ClientAppShellProps = {
   announcement?: string | null;
@@ -162,15 +160,7 @@ export default function ClientAppShell({
                 paddingBottom: "max(env(safe-area-inset-bottom), 0px)",
               }}
             >
-              <div
-                id="content-pane"
-                className={cn(
-                  "crop-block-margins bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 lg:px-10",
-                  CONTENT_GUTTER_CLASS,
-                )}
-              >
-                {children}
-              </div>
+              {children}
             </main>
             <div className="mt-auto">{footerSlot}</div>
           </div>

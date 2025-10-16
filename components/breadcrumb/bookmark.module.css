@@ -1,0 +1,25 @@
+.root {
+  pointer-events: none;
+}
+
+.badge {
+  position: relative;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.75rem;
+  height: 1.5rem;
+  transform: translate(-100%, -50%);
+  background: var(--cream);
+  clip-path: polygon(100% 50%, 0 0, 0 100%);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-right: none;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+}
