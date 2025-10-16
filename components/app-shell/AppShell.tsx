@@ -103,18 +103,26 @@ export default async function AppShell({
     <div
       id="content-pane"
       className={cn(
-        "relative crop-block-margins bg-white px-6 py-6 shadow-sm md:px-8 md:py-8 md:pl-[--bookmark-offset] lg:px-10",
+        "relative crop-block-margins bg-white shadow-sm overflow-visible",
         CONTENT_GUTTER_CLASS,
       )}
       style={
         {
           "--bookmark-offset": "4.5rem",
+          "--pane-pt": "1.5rem",
         } as CSSProperties
       }
     >
-      {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
       <BreadcrumbSlot />
-      {children}
+      <div
+        id="pane-body"
+        className={cn(
+          "px-6 pt-[var(--pane-pt)] pb-6 md:px-8 md:pl-[--bookmark-offset] md:pb-8 lg:px-10",
+        )}
+      >
+        {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
+        {children}
+      </div>
     </div>
   );
 

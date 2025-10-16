@@ -5,10 +5,16 @@ export type Crumb = {
 
 let currentBreadcrumb: Crumb[] | null = null;
 
-export function setBreadcrumb(items: readonly Crumb[]): void {
-  currentBreadcrumb = Array.isArray(items) ? [...items] : null;
+export function setBreadcrumb(
+  items: readonly Crumb[] | null | undefined,
+): void {
+  currentBreadcrumb = Array.isArray(items)
+    ? items.map((item) => ({ ...item }))
+    : null;
 }
 
 export function getBreadcrumb(): Crumb[] | null {
-  return currentBreadcrumb;
+  return currentBreadcrumb
+    ? currentBreadcrumb.map((item) => ({ ...item }))
+    : null;
 }

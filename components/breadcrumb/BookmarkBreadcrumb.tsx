@@ -18,7 +18,7 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
     <nav
       aria-label="Breadcrumb"
       className={cn(
-        "absolute left-0 top-0 z-[2] mt-6 -translate-x-[0.75rem]",
+        "absolute left-0 top-0 z-[2] -translate-x-[0.75rem]",
         styles.root,
       )}
     >
@@ -38,7 +38,7 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
               !isLast && item.href ? (
                 <Link
                   href={item.href}
-                  className="text-brand-greatLakesBlue hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-greatLakesBlue"
+                  className="text-brand-greatLakesBlue visited:text-brand-greatLakesBlue hover:underline focus-visible:ring-2 focus-visible:ring-brand-greatLakesBlue focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)] focus-visible:outline-none transition-colors"
                   title={content}
                 >
                   {content}

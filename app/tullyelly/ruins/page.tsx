@@ -10,13 +10,14 @@ import { MusicalGuestsSection } from "@/components/MusicalGuestsSection";
 import { SectionDivider } from "@/components/SectionDivider";
 import { FirstOffTheLineSection } from "@/components/FirstOffTheLineSection";
 import type { Metadata } from "next";
-import { setBreadcrumb, type Crumb } from "@/lib/breadcrumb-registry";
+import BreadcrumbRegister from "@/components/breadcrumb/BreadcrumbRegister";
+import type { Crumb } from "@/lib/breadcrumb-registry";
 
-const BREADCRUMB = [
+export const breadcrumb: readonly Crumb[] = [
   { label: "home", href: "/" },
   { label: "tullyelly", href: "/tullyelly" },
   { label: "ruins" },
-] satisfies ReadonlyArray<Crumb>;
+] as const;
 
 export const metadata: Metadata = {
   alternates: {
@@ -25,8 +26,15 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  setBreadcrumb(BREADCRUMB);
+  return (
+    <>
+      <BreadcrumbRegister items={breadcrumb} />
+      <RuinsContent />
+    </>
+  );
+}
 
+function RuinsContent() {
   const chroniclesDate = "2025-09-03";
   const scrollsDate = "2025-09-01";
   const mothersDate = "2025-09-04";
