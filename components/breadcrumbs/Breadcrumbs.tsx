@@ -56,7 +56,7 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
           : node.label;
       return {
         label,
-        href: isLast ? undefined : node.href,
+        href: node.href ?? undefined,
       };
     });
 

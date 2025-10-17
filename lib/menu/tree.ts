@@ -4,12 +4,25 @@ import { getMenuForLayout } from "@/app/_menu/getMenu";
 import type { NavItem } from "@/types/nav";
 
 export type MenuNode = {
-  id: string;
+  id: number;
   label: string;
-  href?: string;
+  href: string | null;
+  kind: "persona" | "link";
   children?: MenuNode[];
   resolveLabel?: (pathname: string) => string;
 };
+
+function toNumericId(raw: string): number {
+  const parsed = Number.parseInt(raw, 10);
+  if (Number.isFinite(parsed)) {
+    return parsed;
+  }
+  let hash = 0;
+  for (let index = 0; index < raw.length; index += 1) {
+    hash = (hash * 31 + raw.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
 
 function normalizeHref(href: string | null | undefined): string | null {
   if (!href) return null;
@@ -34,38 +47,7 @@ function extractChildren(node: NavItem): NavItem[] | undefined {
   return undefined;
 }
 
-function mergeByHref(nodes: MenuNode[]): MenuNode[] {
-  const seen = new Map<string, MenuNode>();
-  const merged: MenuNode[] = [];
-
-  const add = (node: MenuNode) => {
-    const key = normalizeHref(node.href) ?? node.id;
-    const existing = seen.get(key);
-    if (existing) {
-      const incomingChildren = node.children ?? [];
-      const existingChildren = existing.children ?? [];
-      if (incomingChildren.length || existingChildren.length) {
-        const combined = mergeByHref([
-          ...existingChildren,
-          ...incomingChildren,
-        ]);
-        existing.children = combined.length ? combined : undefined;
-      }
-      return;
-    }
-    const cloned: MenuNode = {
-      ...node,
-      children: node.children ? mergeByHref(node.children) : undefined,
-    };
-    seen.set(key, cloned);
-    merged.push(cloned);
-  };
-
-  nodes.forEach(add);
-  return merged;
-}
-
-function createMenuNodes(items: NavItem[] | undefined): MenuNode[] {
+function createLinkNodes(items: NavItem[] | undefined): MenuNode[] {
   if (!items) return [];
   const nodes: MenuNode[] = [];
 
@@ -74,25 +56,65 @@ function createMenuNodes(items: NavItem[] | undefined): MenuNode[] {
 
     switch (item.kind) {
       case "link": {
-        const children = createMenuNodes(extractChildren(item));
+        const children = createLinkNodes(extractChildren(item));
         nodes.push({
-          id: item.id,
+          id: toNumericId(item.id),
           label: getNodeLabel(item),
-          href: item.href,
+          href: normalizeHref(item.href),
+          kind: "link",
           children: children.length ? children : undefined,
         });
         break;
       }
-      case "persona":
       case "group": {
-        const children = createMenuNodes(extractChildren(item));
-        if (children.length) {
-          nodes.push(...children);
-        }
+        nodes.push(...createLinkNodes(extractChildren(item)));
         break;
       }
       default:
-        // External links are not part of the breadcrumb trail.
+        break;
+    }
+  }
+
+  return nodes;
+}
+
+function createMenuNodes(items: NavItem[]): MenuNode[] {
+  const nodes: MenuNode[] = [];
+
+  for (const item of items) {
+    if (!item || item.hidden) continue;
+
+    switch (item.kind) {
+      case "persona": {
+        const children = createLinkNodes(extractChildren(item));
+        const personaHref = normalizeHref(
+          (item as { href?: string | null }).href ?? null,
+        );
+        nodes.push({
+          id: toNumericId(item.id),
+          label: getNodeLabel(item),
+          href: personaHref,
+          kind: "persona",
+          children: children.length ? children : undefined,
+        });
+        break;
+      }
+      case "link": {
+        const children = createLinkNodes(extractChildren(item));
+        nodes.push({
+          id: toNumericId(item.id),
+          label: getNodeLabel(item),
+          href: normalizeHref(item.href),
+          kind: "link",
+          children: children.length ? children : undefined,
+        });
+        break;
+      }
+      case "group": {
+        nodes.push(...createMenuNodes(extractChildren(item) ?? []));
+        break;
+      }
+      default:
         break;
     }
   }
@@ -101,32 +123,7 @@ function createMenuNodes(items: NavItem[] | undefined): MenuNode[] {
 }
 
 export function buildMenuTree(navItems: NavItem[]): MenuNode[] {
-  const nodes = createMenuNodes(navItems);
-  if (!nodes.length) {
-    return [
-      {
-        id: "__root__",
-        label: "Home",
-        href: "/",
-      },
-    ];
-  }
-
-  const rootCandidate = nodes.find((node) => normalizeHref(node.href) === "/");
-  const rootLabel = rootCandidate?.label ?? "Home";
-  const rootChildren = mergeByHref([
-    ...(rootCandidate?.children ?? []),
-    ...nodes.filter((node) => normalizeHref(node.href) !== "/"),
-  ]);
-
-  return [
-    {
-      id: rootCandidate?.id ?? "__root__",
-      label: rootLabel,
-      href: "/",
-      children: rootChildren.length ? rootChildren : undefined,
-    },
-  ];
+  return createMenuNodes(navItems);
 }
 
 export async function getMenuTree(): Promise<MenuNode[]> {

@@ -76,8 +76,7 @@ export function applyCrumbKinds(crumbs: readonly Crumb[]): Crumb[] {
     } else if (index === array.length - 1) {
       kind = "leaf";
     }
-    const href =
-      index === array.length - 1 ? undefined : (crumb.href ?? undefined);
+    const href = crumb.href ?? undefined;
     return { ...crumb, kind, href };
   });
 }

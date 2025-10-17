@@ -42,9 +42,31 @@ function findTrail(tree: MenuNode[], pathname: string): MenuNode[] {
   return best;
 }
 
+function collapsePersonaLanding(
+  trail: MenuNode[],
+  pathname: string,
+): MenuNode[] {
+  if (trail.length >= 2) {
+    const [first, second, ...rest] = trail;
+    if (
+      first.kind === "persona" &&
+      second?.kind === "link" &&
+      second.href &&
+      normalizePathForCrumbs(second.href) === normalizePathForCrumbs(pathname)
+    ) {
+      return [{ ...first, href: second.href }, ...rest];
+    }
+  }
+  return trail;
+}
+
 export function useBreadcrumbs(pathOverride?: string): MenuNode[] {
   const pathname = usePathname();
   const activePath = pathOverride ?? pathname ?? "/";
+  const normalizedPath = normalizePathForCrumbs(activePath);
   const tree = useMenuTree();
-  return useMemo(() => findTrail(tree, activePath), [tree, activePath]);
+  return useMemo(() => {
+    const raw = findTrail(tree, normalizedPath);
+    return collapsePersonaLanding(raw, normalizedPath);
+  }, [tree, normalizedPath]);
 }
