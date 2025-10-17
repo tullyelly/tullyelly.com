@@ -1,4 +1,4 @@
-import type { Crumb } from "@/components/ui/breadcrumb";
+import type { Crumb } from "@/lib/breadcrumb-registry";
 import {
   deriveCrumbsFromPath,
   findPathByHref,

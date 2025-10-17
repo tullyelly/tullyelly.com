@@ -1,19 +1,18 @@
 import ClientAppShell from "./ClientAppShell";
 import PersonaChip from "./PersonaChip";
-import BreadcrumbServer from "@/components/breadcrumb/BreadcrumbServer";
 import BreadcrumbSlot from "@/components/breadcrumb/BreadcrumbSlot";
 import E2EOnlyNav from "@/components/e2e/E2EOnlyNav";
 import { shouldDisableGlobalBreadcrumb } from "@/lib/breadcrumb-disable.server";
-import { flags } from "@/lib/flags";
 import { breadcrumbDebug } from "@/lib/breadcrumb-debug";
 import { getMenuSnapshot } from "@/lib/menu-snapshot.server";
+import { clearBreadcrumb, type Crumb } from "@/lib/breadcrumb-registry";
+import { deriveCrumbsFromPath } from "@/lib/crumbs";
 import { cn } from "@/lib/utils";
 import { headers } from "next/headers";
 import type { CSSProperties } from "react";
 import type { NavItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import type { ResolvedPersona } from "@/lib/menu/persona";
-import type { Crumb } from "@/components/ui/breadcrumb";
 import Footer from "@/app/_components/Footer";
 import { CONTENT_GUTTER_CLASS } from "./constants";
 
@@ -39,6 +38,7 @@ export default async function AppShell({
   children,
 }: AppShellProps) {
   const DEV = process.env.NODE_ENV !== "production";
+  clearBreadcrumb();
   const personaChipNode = currentPersona ? (
     <PersonaChip persona={currentPersona} className="shrink-0" />
   ) : null;
@@ -61,43 +61,20 @@ export default async function AppShell({
 
   const forceBreadcrumb = breadcrumbDebug.force || headerForce;
 
-  const disableGlobalBreadcrumb = await shouldDisableGlobalBreadcrumb(pathname);
-  const shouldRenderBreadcrumb =
-    (flags.breadcrumbsV1 || forceBreadcrumb) && !disableGlobalBreadcrumb;
-
   const menuSnapshot = getMenuSnapshot(menuItems);
+  const disableGlobalBreadcrumb = await shouldDisableGlobalBreadcrumb(pathname);
+  const defaultBreadcrumbs = disableGlobalBreadcrumb
+    ? []
+    : deriveCrumbsFromPath(menuSnapshot, pathname);
 
-  const forcedItems: Crumb[] | undefined = forceBreadcrumb
+  const forcedItems: Crumb[] | null = forceBreadcrumb
     ? [
         { label: "home", href: "/" },
         { label: "debug", href: "/debug" },
         { label: "here" },
       ]
-    : undefined;
-
-  const showBreadcrumb = shouldRenderBreadcrumb || Boolean(forcedItems);
+    : null;
   const showPersonaChip = Boolean(personaChipNode);
-  const hasRow = showBreadcrumb || showPersonaChip;
-
-  const breadcrumbSlot = hasRow ? (
-    <div className={CONTENT_GUTTER_CLASS}>
-      {DEV ? (
-        <span data-testid="appshell-sentinel" className="sr-only">
-          appshell-mounted
-        </span>
-      ) : null}
-      <div className="flex flex-wrap items-center gap-3 py-4">
-        {showBreadcrumb ? (
-          <BreadcrumbServer
-            pathname={pathname}
-            menuSnapshot={menuSnapshot}
-            forcedItems={forcedItems ?? null}
-          />
-        ) : null}
-        {personaChipNode}
-      </div>
-    </div>
-  ) : null;
 
   const contentPane = (
     <div
@@ -113,7 +90,11 @@ export default async function AppShell({
         } as CSSProperties
       }
     >
-      <BreadcrumbSlot />
+      {DEV ? (
+        <span data-testid="appshell-sentinel" className="sr-only">
+          appshell-mounted
+        </span>
+      ) : null}
       <div
         id="pane-body"
         className={cn(
@@ -121,8 +102,15 @@ export default async function AppShell({
         )}
       >
         {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
+        {showPersonaChip ? (
+          <div className="mb-4 flex">{personaChipNode}</div>
+        ) : null}
         {children}
       </div>
+      <BreadcrumbSlot
+        defaultItems={defaultBreadcrumbs}
+        forcedItems={forcedItems}
+      />
     </div>
   );
 
@@ -135,7 +123,6 @@ export default async function AppShell({
       siteTitle={siteTitle}
       initialPersona={currentPersona}
       footerSlot={<Footer />}
-      breadcrumbSlot={breadcrumbSlot}
     >
       {contentPane}
     </ClientAppShell>

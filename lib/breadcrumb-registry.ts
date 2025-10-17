@@ -18,3 +18,7 @@ export function getBreadcrumb(): Crumb[] | null {
     ? currentBreadcrumb.map((item) => ({ ...item }))
     : null;
 }
+
+export function clearBreadcrumb(): void {
+  currentBreadcrumb = null;
+}
