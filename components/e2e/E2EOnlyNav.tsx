@@ -4,10 +4,20 @@ import Link from "next/link";
 
 const LINKS = [
   { href: "/mark2", label: "mark2", tid: "e2e-nav-mark2" },
+  {
+    href: "/mark2/blueprint",
+    label: "mark2 blueprint",
+    tid: "e2e-nav-mark2-blueprint",
+  },
   { href: "/cardattack", label: "cardattack", tid: "e2e-nav-cardattack" },
   { href: "/theabbott", label: "theabbott", tid: "e2e-nav-theabbott" },
   { href: "/unclejimmy", label: "unclejimmy", tid: "e2e-nav-unclejimmy" },
   { href: "/tullyelly", label: "tullyelly", tid: "e2e-nav-tullyelly" },
+  {
+    href: "/tullyelly/ruins",
+    label: "tullyelly ruins",
+    tid: "e2e-nav-tullyelly-ruins",
+  },
 ];
 
 export default function E2EOnlyNav() {

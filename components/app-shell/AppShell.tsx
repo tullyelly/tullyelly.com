@@ -1,12 +1,10 @@
 import ClientAppShell from "./ClientAppShell";
 import PersonaChip from "./PersonaChip";
-import BreadcrumbSlot from "@/components/breadcrumb/BreadcrumbSlot";
+import BreadcrumbsServer from "@/app/components/BreadcrumbsServer";
 import E2EOnlyNav from "@/components/e2e/E2EOnlyNav";
 import { shouldDisableGlobalBreadcrumb } from "@/lib/breadcrumb-disable.server";
 import { breadcrumbDebug } from "@/lib/breadcrumb-debug";
-import { getMenuSnapshot } from "@/lib/menu-snapshot.server";
-import { clearBreadcrumb, type Crumb } from "@/lib/breadcrumb-registry";
-import { deriveCrumbsFromPath } from "@/lib/crumbs";
+import type { Crumb } from "@/lib/breadcrumbs/types";
 import { cn } from "@/lib/utils";
 import { headers } from "next/headers";
 import type { CSSProperties } from "react";
@@ -38,7 +36,6 @@ export default async function AppShell({
   children,
 }: AppShellProps) {
   const DEV = process.env.NODE_ENV !== "production";
-  clearBreadcrumb();
   const personaChipNode = currentPersona ? (
     <PersonaChip persona={currentPersona} className="shrink-0" />
   ) : null;
@@ -61,20 +58,16 @@ export default async function AppShell({
 
   const forceBreadcrumb = breadcrumbDebug.force || headerForce;
 
-  const menuSnapshot = getMenuSnapshot(menuItems);
   const disableGlobalBreadcrumb = await shouldDisableGlobalBreadcrumb(pathname);
-  const defaultBreadcrumbs = disableGlobalBreadcrumb
-    ? []
-    : deriveCrumbsFromPath(menuSnapshot, pathname);
-
   const forcedItems: Crumb[] | null = forceBreadcrumb
     ? [
-        { label: "home", href: "/" },
-        { label: "debug", href: "/debug" },
-        { label: "here" },
+        { label: "Home", href: "/", kind: "forced" },
+        { label: "debug", href: "/debug", kind: "forced" },
+        { label: "here", kind: "forced" },
       ]
     : null;
   const showPersonaChip = Boolean(personaChipNode);
+  const showBreadcrumbs = forcedItems?.length || !disableGlobalBreadcrumb;
 
   const contentPane = (
     <div
@@ -107,10 +100,12 @@ export default async function AppShell({
         ) : null}
         {children}
       </div>
-      <BreadcrumbSlot
-        defaultItems={defaultBreadcrumbs}
-        forcedItems={forcedItems}
-      />
+      {showBreadcrumbs ? (
+        <BreadcrumbsServer
+          pathname={disableGlobalBreadcrumb ? pathname : undefined}
+          forced={forcedItems}
+        />
+      ) : null}
     </div>
   );
 

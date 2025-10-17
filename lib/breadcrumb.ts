@@ -1,4 +1,4 @@
-import type { Crumb } from "@/lib/breadcrumb-registry";
+import type { Crumb } from "@/lib/breadcrumbs/types";
 
 export function breadcrumbJsonLd(crumbs: Crumb[]) {
   const itemListElement = crumbs

@@ -1,7 +1,14 @@
 import "server-only";
 
-import type { MenuNode } from "@/lib/crumbs";
 import type { NavItem } from "@/types/nav";
+
+export type MenuNode = {
+  id: string;
+  label: string;
+  href?: string;
+  gated?: boolean;
+  children?: MenuNode[];
+};
 
 function createNode(item: NavItem): MenuNode | null {
   switch (item.kind) {

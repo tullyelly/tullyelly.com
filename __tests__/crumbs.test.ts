@@ -1,78 +1,42 @@
-import type { Crumb } from "@/lib/breadcrumb-registry";
+import type { Crumb } from "@/lib/breadcrumbs/types";
 import {
-  deriveCrumbsFromPath,
-  findPathByHref,
-  type MenuNode,
-} from "@/lib/crumbs";
+  ensureSingleHome,
+  normalizePathForCrumbs,
+} from "@/lib/breadcrumbs/utils";
 
-const menuRoot: MenuNode = {
-  id: "__root__",
-  label: "home",
-  href: "/",
-  children: [
-    {
-      id: "mark2",
-      label: "mark2",
-      href: "/mark2",
-      children: [
-        {
-          id: "shaolin",
-          label: "Shaolin Scrolls",
-          href: "/mark2/shaolin-scrolls",
-        },
-        {
-          id: "blueprint",
-          label: "blueprint",
-          href: "/mark2/blueprint",
-        },
-        {
-          id: "secret",
-          label: "Secret Ops",
-          href: "/mark2/secret",
-          gated: true,
-        },
-      ],
-    },
-  ],
-};
-
-describe("findPathByHref", () => {
-  it("returns the node path for a matching href", () => {
-    const path = findPathByHref(menuRoot, "/mark2/blueprint");
-    expect(path?.map((node) => node.id)).toEqual([
-      "__root__",
-      "mark2",
-      "blueprint",
-    ]);
+describe("normalizePathForCrumbs", () => {
+  it("returns root for empty input", () => {
+    expect(normalizePathForCrumbs("")).toBe("/");
   });
 
-  it("returns null when href is not present", () => {
-    const path = findPathByHref(menuRoot, "/unknown/path");
-    expect(path).toBeNull();
+  it("trims trailing slashes and query parameters", () => {
+    expect(normalizePathForCrumbs("/mark2///?foo=bar")).toBe("/mark2");
+  });
+
+  it("maps landing pages to their section root", () => {
+    expect(normalizePathForCrumbs("/mark2/blueprint")).toBe("/mark2");
+    expect(normalizePathForCrumbs("/mark2/blueprint/?utm=test")).toBe("/mark2");
   });
 });
 
-describe("deriveCrumbsFromPath", () => {
-  it("returns ancestor crumbs with last item unlinked", () => {
-    const crumbs = deriveCrumbsFromPath(menuRoot, "/mark2/shaolin-scrolls");
-    expect(crumbs).toEqual([
+describe("ensureSingleHome", () => {
+  it("adds a Home crumb when missing", () => {
+    const crumbs: Crumb[] = [{ label: "mark2", href: "/mark2" }];
+    expect(ensureSingleHome(crumbs)).toEqual([
+      { label: "Home", href: "/", kind: "root" },
+      { label: "mark2", href: "/mark2" },
+    ]);
+  });
+
+  it("deduplicates multiple Home crumbs and preserves other entries", () => {
+    const crumbs: Crumb[] = [
+      { label: "Home", href: "/" },
       { label: "home", href: "/" },
       { label: "mark2", href: "/mark2" },
-      { label: "Shaolin Scrolls" },
+    ];
+    expect(ensureSingleHome(crumbs)).toEqual([
+      { label: "Home", href: "/", kind: "root" },
+      { label: "mark2", href: "/mark2" },
     ]);
-  });
-
-  it("falls back to pathname segments when menu entry is missing", () => {
-    const crumbs = deriveCrumbsFromPath(menuRoot, "/mark2/unlisted-area");
-    expect(crumbs).toEqual([
-      { label: "home", href: "/" },
-      { label: "Mark2", href: "/mark2" },
-      { label: "Unlisted Area" },
-    ]);
-  });
-
-  it("omits gated nodes from the crumb trail", () => {
-    const crumbs = deriveCrumbsFromPath(menuRoot, "/mark2/secret");
-    expect(crumbs).toEqual([{ label: "home", href: "/" }, { label: "mark2" }]);
   });
 });

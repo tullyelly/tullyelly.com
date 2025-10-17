@@ -10,15 +10,6 @@ import { MusicalGuestsSection } from "@/components/MusicalGuestsSection";
 import { SectionDivider } from "@/components/SectionDivider";
 import { FirstOffTheLineSection } from "@/components/FirstOffTheLineSection";
 import type { Metadata } from "next";
-import BreadcrumbRegister from "@/components/breadcrumb/BreadcrumbRegister";
-import type { Crumb } from "@/lib/breadcrumb-registry";
-
-export const breadcrumb: readonly Crumb[] = [
-  { label: "home", href: "/" },
-  { label: "tullyelly", href: "/tullyelly" },
-  { label: "ruins" },
-] as const;
-
 export const metadata: Metadata = {
   alternates: {
     canonical: "/tullyelly/ruins",
@@ -26,12 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return (
-    <>
-      <BreadcrumbRegister items={breadcrumb} />
-      <RuinsContent />
-    </>
-  );
+  return <RuinsContent />;
 }
 
 function RuinsContent() {

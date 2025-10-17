@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import type { Crumb } from "@/lib/breadcrumb-registry";
+import type { Crumb } from "@/lib/breadcrumbs/types";
 import styles from "./bookmark.module.css";
 
 type BookmarkBreadcrumbProps = {
@@ -31,7 +31,7 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
         <ol className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide">
           {items.map((item, index) => {
             const isLast = index === lastIndex;
-            const key = item.href ?? `${item.label}-${index}`;
+            const key = `${item.href ?? item.label ?? "crumb"}-${index}`;
             const content = item.label;
 
             const node =
