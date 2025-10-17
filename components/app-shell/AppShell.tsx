@@ -1,6 +1,5 @@
 import ClientAppShell from "./ClientAppShell";
 import PersonaChip from "./PersonaChip";
-import BreadcrumbsServer from "@/app/components/BreadcrumbsServer";
 import E2EOnlyNav from "@/components/e2e/E2EOnlyNav";
 import { shouldDisableGlobalBreadcrumb } from "@/lib/breadcrumb-disable.server";
 import { breadcrumbDebug } from "@/lib/breadcrumb-debug";
@@ -13,6 +12,7 @@ import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import type { ResolvedPersona } from "@/lib/menu/persona";
 import Footer from "@/app/_components/Footer";
 import { CONTENT_GUTTER_CLASS } from "./constants";
+import Breadcrumbs from "@/components/breadcrumbs/Breadcrumbs";
 
 type AppShellProps = {
   announcement?: string | null;
@@ -101,7 +101,7 @@ export default async function AppShell({
         {children}
       </div>
       {showBreadcrumbs ? (
-        <BreadcrumbsServer
+        <Breadcrumbs
           pathname={disableGlobalBreadcrumb ? pathname : undefined}
           forced={forcedItems}
         />

@@ -15,6 +15,8 @@ import AppShell from "@/components/app-shell/AppShell";
 import InitialScrollGuard from "@/components/system/InitialScrollGuard";
 import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
+import { MenuProvider } from "@/components/menu/MenuProvider";
+import { getMenuTree } from "@/lib/menu/tree";
 
 await initSentry();
 
@@ -70,7 +72,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
-  const [menu, hdrs] = await Promise.all([getLegacyMenu(), headers()]);
+  const [menu, hdrs, menuTree] = await Promise.all([
+    getLegacyMenu(),
+    headers(),
+    getMenuTree(),
+  ]);
   const path = resolveRequestedPath(hdrs);
   const resolvedPersona = resolvePersonaForPath(menu.tree, path);
   const personaKey = (resolvedPersona?.persona ?? "mark2") as PersonaKey;
@@ -115,21 +121,23 @@ export default async function RootLayout({
   })();
 `}</Script>
         <InitialScrollGuard />
-        <CommandMenuProvider items={menu.tree}>
-          <Providers>
-            <AppShell
-              announcement={announcement}
-              menuItems={menu.tree}
-              menu={personaMenu}
-              menuChildren={personaChildren}
-              siteTitle={SITE_TITLE}
-              currentPersona={resolvedPersona}
-              pathname={path}
-            >
-              {children}
-            </AppShell>
-          </Providers>
-        </CommandMenuProvider>
+        <MenuProvider value={menuTree}>
+          <CommandMenuProvider items={menu.tree}>
+            <Providers>
+              <AppShell
+                announcement={announcement}
+                menuItems={menu.tree}
+                menu={personaMenu}
+                menuChildren={personaChildren}
+                siteTitle={SITE_TITLE}
+                currentPersona={resolvedPersona}
+                pathname={path}
+              >
+                {children}
+              </AppShell>
+            </Providers>
+          </CommandMenuProvider>
+        </MenuProvider>
       </body>
     </html>
   );
