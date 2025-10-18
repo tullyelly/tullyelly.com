@@ -18,6 +18,9 @@ function createPool(): Pool {
       "Database access is disabled during Next.js production build.",
     );
   }
+  if (process.env.SKIP_DB === "true") {
+    throw new Error("Database access disabled when SKIP_DB=true.");
+  }
   return new Pool({ connectionString: getDatabaseUrl() });
 }
 

@@ -169,37 +169,34 @@ jobs:
           GOOGLE_CLIENT_SECRET: ci-dummy
         run: npm run build
 
-      - name: Security headers smoke test
+      - name: Start Next and wait
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true'
+        env:
+          NODE_ENV: production
+          PORT: 4010
+          NEXTAUTH_URL: http://127.0.0.1:4010
+          NEXTAUTH_SECRET: ci-secret
+          SKIP_DB: "true"
+        run: |
+          npx kill-port 4010 || true
+          npm run start:ci > .next/ci-server.log 2>&1 &
+          npx wait-on --httpTimeout 10000 --timeout 120000 http://127.0.0.1:4010/api/health
+
+      - name: Security headers check
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true'
         env:
           PORT: 4010
-          DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
-          NEXTAUTH_URL: http://127.0.0.1:4010
-          AUTH_SECRET: ci-dummy
-          GOOGLE_CLIENT_ID: ci-dummy
-          GOOGLE_CLIENT_SECRET: ci-dummy
+        run: npm run security-headers:check -- "http://127.0.0.1:${PORT}/"
+
+      - name: Stop Next
+        if: always() && (github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true')
+        run: npx kill-port 4010 || true
+
+      - name: Print logs on failure
+        if: failure()
         run: |
-          set -euo pipefail
-          npm run start > /tmp/next.log 2>&1 &
-          NEXT_PID=$!
-          cleanup() {
-            kill "$NEXT_PID" 2>/dev/null || true
-            wait "$NEXT_PID" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          ready=0
-          for i in $(seq 1 30); do
-            if curl -sSf -o /dev/null "http://127.0.0.1:${PORT}/"; then
-              ready=1
-              break
-            fi
-            sleep 1
-          done
-          if [ "$ready" -ne 1 ]; then
-            echo 'Next.js server failed to start in time' >&2
-            exit 1
-          fi
-          npm run security-headers:check -- "http://127.0.0.1:${PORT}/"
+          echo "---- .next/ci-server.log ----"
+          tail -n +1 .next/ci-server.log || true
 
   e2e:
     name: E2E Tests

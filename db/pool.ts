@@ -62,6 +62,10 @@ function createE2EPool(): Queryable {
 export function getPool(): Queryable {
   if (pool) return pool;
 
+  if (process.env.SKIP_DB === "true") {
+    throw new Error("Database access disabled when SKIP_DB=true.");
+  }
+
   if (process.env.E2E_MODE === "1") {
     pool = createE2EPool();
     return pool;
@@ -73,11 +77,12 @@ export function getPool(): Queryable {
     );
   }
 
-  if (!DATABASE_URL)
+  const connectionString = DATABASE_URL ?? null;
+  if (!connectionString)
     throw new Error("Missing DATABASE_URL. Set it in .env.local");
-  assertValidDatabaseUrl(DATABASE_URL);
+  assertValidDatabaseUrl(connectionString);
   pool = new Pool({
-    connectionString: DATABASE_URL,
+    connectionString,
     ssl: { rejectUnauthorized: false },
   });
   return pool;

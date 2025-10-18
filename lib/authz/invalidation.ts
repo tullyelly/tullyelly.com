@@ -8,6 +8,7 @@ function shouldSkipListener(): boolean {
   if (process.env.NODE_ENV === "test") return true;
   if (process.env.E2E_MODE === "1") return true;
   if (isNextBuild()) return true;
+  if (process.env.SKIP_DB === "true") return true;
   return false;
 }
 

@@ -7,8 +7,25 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import { getAuthzRevision, getEffectiveFeatures } from "@/app/_auth/policy";
 
-// Use one shared Prisma client (Node runtime only)
-export const prisma = new PrismaClient();
+declare global {
+   
+  var __PRISMA_CLIENT__: PrismaClient | undefined;
+}
+
+let prisma: PrismaClient | undefined = global.__PRISMA_CLIENT__;
+
+export function getPrisma(): PrismaClient {
+  if (process.env.SKIP_DB === "true") {
+    throw new Error("Prisma access disabled when SKIP_DB=true.");
+  }
+  if (!prisma) {
+    prisma = new PrismaClient();
+    if (process.env.NODE_ENV !== "production") {
+      global.__PRISMA_CLIENT__ = prisma;
+    }
+  }
+  return prisma;
+}
 
 // Optional domain gate
 const OWNER_ONLY = process.env.OWNER_ONLY === "true";
@@ -26,6 +43,9 @@ async function applyEffectiveFeatures(
   userId: string | undefined,
   refresh: boolean,
 ): Promise<void> {
+  if (process.env.SKIP_DB === "true") {
+    return;
+  }
   if (!userId) return;
 
   let needsRefresh = refresh;
@@ -60,7 +80,9 @@ export const authOptions: NextAuthOptions = {
 
   // Use JWT sessions so NextAuth middleware can authorize requests.
   // We still keep the Prisma adapter for users/accounts persistence.
-  adapter: PrismaAdapter(prisma),
+  ...(process.env.SKIP_DB === "true"
+    ? {}
+    : { adapter: PrismaAdapter(getPrisma()) }),
   session: { strategy: "jwt" },
 
   providers: [

@@ -17,7 +17,11 @@ const rawDatabaseUrl =
   testFallbackUrl ??
   undefined;
 
-export const { DATABASE_URL } = Env.parse({ DATABASE_URL: rawDatabaseUrl });
+const parsed = rawDatabaseUrl
+  ? Env.parse({ DATABASE_URL: rawDatabaseUrl })
+  : null;
+
+export const DATABASE_URL = parsed?.DATABASE_URL;
 
 export function isNextBuild(): boolean {
   return process.env.NEXT_PHASE === "phase-production-build";
