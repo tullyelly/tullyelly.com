@@ -29,6 +29,8 @@ import DrawerItem from "@/components/nav/DrawerItem";
 import { cn } from "@/lib/utils";
 import { useNavController } from "@/components/nav/NavController";
 import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
+import { HOME_EMOJI, PERSONA_EMOJI } from "@/components/nav/menuUtils";
+import twemoji from "twemoji";
 
 type MobileDrawerProps = {
   open: boolean;
@@ -107,6 +109,8 @@ export default function MobileDrawer({
   const router = useRouter();
   const { registerCloseHandler } = useNavController();
   useNavResetOnRouteChange();
+  const sheetContentRef = React.useRef<HTMLDivElement | null>(null);
+  const twemojiFrameRef = React.useRef<number | null>(null);
   const [expandedPersona, setExpandedPersona] =
     React.useState<PersonaKey | null>(null);
   const [searchActive, setSearchActive] = React.useState(false);
@@ -131,6 +135,10 @@ export default function MobileDrawer({
     }
     return entries;
   }, [personaSection]);
+  const personaEmojiKeys = React.useMemo(
+    () => personaEntries.map(({ key }) => key).join("|"),
+    [personaEntries],
+  );
 
   React.useEffect(() => {
     if (!open) {
@@ -148,6 +156,25 @@ export default function MobileDrawer({
     }
     previousOpenRef.current = open;
   }, [open, menu.persona]);
+
+  React.useEffect(() => {
+    const node = sheetContentRef.current;
+    if (!node) return;
+    if (twemojiFrameRef.current !== null) {
+      window.cancelAnimationFrame(twemojiFrameRef.current);
+      twemojiFrameRef.current = null;
+    }
+    twemojiFrameRef.current = window.requestAnimationFrame(() => {
+      twemoji.parse(node, { folder: "svg", ext: ".svg" });
+      twemojiFrameRef.current = null;
+    });
+    return () => {
+      if (twemojiFrameRef.current !== null) {
+        window.cancelAnimationFrame(twemojiFrameRef.current);
+        twemojiFrameRef.current = null;
+      }
+    };
+  }, [open, personaEmojiKeys]);
 
   React.useEffect(() => {
     if (!open || expandedPersona) return;
@@ -315,12 +342,14 @@ export default function MobileDrawer({
   return (
     <Sheet open={open} onOpenChange={handleClose} modal>
       <SheetContent
+        ref={sheetContentRef}
         side="bottom"
         id="nav-mobile-drawer"
         showCloseButton={false}
         onKeyDownCapture={handleSheetKeyDown}
         overlayClassName="bg-black/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out"
         className="z-[80] inset-x-0 bottom-0 h-[85vh] rounded-t-2xl border-t border-[color:var(--border-subtle)] bg-[color:var(--surface-page)] p-0 text-[color:var(--text-strong)] sm:h-[80vh]"
+        data-emoji-scope="mobile-drawer"
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-[color:var(--border-subtle)] px-5 py-4">
@@ -389,7 +418,12 @@ export default function MobileDrawer({
                     handleHome();
                   }}
                 >
-                  <Lucide.Home className="size-5" aria-hidden="true" />
+                  <span
+                    className="emoji text-xl leading-none"
+                    aria-hidden="true"
+                  >
+                    {HOME_EMOJI}
+                  </span>
                   <span className="flex-1 truncate">Home</span>
                 </Link>
               </DrawerItem>
@@ -405,6 +439,7 @@ export default function MobileDrawer({
                     const isExpanded = expandedPersona === key;
                     const buttonId = `mobile-drawer-root-${item.id}`;
                     const panelId = `mobile-drawer-persona-panel-${key}`;
+                    const personaEmoji = PERSONA_EMOJI[key];
                     return (
                       <div
                         key={item.id}
@@ -427,7 +462,16 @@ export default function MobileDrawer({
                             aria-controls={panelId}
                             onClick={() => handleTogglePersona(key)}
                           >
-                            <Icon name={item.iconKey} className="size-5" />
+                            {personaEmoji ? (
+                              <span
+                                className="emoji text-xl leading-none"
+                                aria-hidden="true"
+                              >
+                                {personaEmoji}
+                              </span>
+                            ) : (
+                              <Icon name={item.iconKey} className="size-5" />
+                            )}
                             <span className="flex-1 truncate">{label}</span>
                             <Lucide.ChevronRight
                               className={`size-4 text-[color:var(--text-muted,#58708c)] transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}

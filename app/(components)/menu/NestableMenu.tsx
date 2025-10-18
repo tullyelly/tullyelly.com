@@ -15,6 +15,7 @@ import { useOpenShield } from "@/hooks/useOpenShield";
 import {
   AnyLink,
   Icon,
+  PERSONA_EMOJI,
   isActiveHref,
   readHotkey,
 } from "@/components/nav/menuUtils";
@@ -126,6 +127,7 @@ export default function NestableMenu({
   aimCloseDelay = 160,
   aimBuffer = 6,
 }: NestableMenuProps): React.ReactNode {
+  const personaEmoji = PERSONA_EMOJI[persona.persona];
   const triggerNodeRef = React.useRef<HTMLButtonElement | null>(null);
   const panelSurfaceRef = React.useRef<HTMLDivElement | null>(null);
   const positionedPanelRef = React.useRef<HTMLElement | null>(null);
@@ -857,7 +859,14 @@ export default function NestableMenu({
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
         >
-          <Icon name={persona.icon} className="mr-2 size-4 shrink-0" />
+          {personaEmoji ? (
+            <span
+              className="emoji mr-2 shrink-0 text-lg leading-none"
+              aria-hidden="true"
+            >
+              {personaEmoji}
+            </span>
+          ) : null}
           <span className="flex items-center gap-1 whitespace-nowrap">
             <span>{persona.label}</span>
             <Lucide.ChevronDown
