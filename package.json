@@ -17,7 +17,7 @@
     "deploy:prod": "vercel build && vercel deploy --prebuilt --prod",
     "postbuild": "npm run gen:build-info",
     "start": "next start",
-    "start:ci": "cross-env NODE_ENV=production PORT=4010 next start -p 4010",
+    "start:ci": "cross-env NODE_ENV=production PORT=4010 next start -p 4010 -H 127.0.0.1",
     "wait:ci": "wait-on --httpTimeout 10000 --timeout 120000 http://127.0.0.1:4010/api/health",
     "serve-and-test": "start-server-and-test start:ci http://127.0.0.1:4010/api/health test:ci",
     "start:prod:local": "npm run build && cross-env NODE_ENV=production PORT=4010 npm start",
