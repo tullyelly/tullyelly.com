@@ -28,11 +28,12 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
           styles.badge,
         )}
       >
-        <ol className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide">
+        <ol className="flex items-center gap-2 text-xs font-medium tracking-wide">
           {items.map((item, index) => {
             const isLast = index === lastIndex;
             const key = `${item.href ?? item.label ?? "crumb"}-${index}`;
-            const content = item.label;
+            const content =
+              typeof item.label === "string" ? item.label.trim() : "";
 
             const node =
               !isLast && item.href ? (

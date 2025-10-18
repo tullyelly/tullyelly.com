@@ -1,5 +1,4 @@
 import ClientAppShell from "./ClientAppShell";
-import PersonaChip from "./PersonaChip";
 import E2EOnlyNav from "@/components/e2e/E2EOnlyNav";
 import { shouldDisableGlobalBreadcrumb } from "@/lib/breadcrumb-disable.server";
 import { breadcrumbDebug } from "@/lib/breadcrumb-debug";
@@ -36,9 +35,6 @@ export default async function AppShell({
   children,
 }: AppShellProps) {
   const DEV = process.env.NODE_ENV !== "production";
-  const personaChipNode = currentPersona ? (
-    <PersonaChip persona={currentPersona} className="shrink-0" />
-  ) : null;
 
   const hdrs = await headers();
 
@@ -66,7 +62,6 @@ export default async function AppShell({
         { label: "here", kind: "forced" },
       ]
     : null;
-  const showPersonaChip = Boolean(personaChipNode);
   const showBreadcrumbs = forcedItems?.length || !disableGlobalBreadcrumb;
 
   const contentPane = (
@@ -95,9 +90,6 @@ export default async function AppShell({
         )}
       >
         {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
-        {showPersonaChip ? (
-          <div className="mb-4 flex">{personaChipNode}</div>
-        ) : null}
         {children}
       </div>
       {showBreadcrumbs ? (

@@ -38,7 +38,7 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
   const forcedCrumbs = useMemo(() => normalizeForcedCrumbs(forced), [forced]);
   const trail = useBreadcrumbs(pathname);
 
-  const items = useMemo<Crumb[]>(() => {
+  const rawItems = useMemo<Crumb[]>(() => {
     if (forcedCrumbs?.length) {
       return forcedCrumbs;
     }
@@ -66,6 +66,40 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
     ]);
     return applyCrumbKinds(withHome);
   }, [forcedCrumbs, trail, normalizedPath]);
+
+  const items = useMemo<Crumb[]>(() => {
+    if (!rawItems.length) {
+      return [];
+    }
+
+    const [first, ...rest] = rawItems;
+    const firstLabel =
+      typeof first.label === "string" ? first.label.trim().toLowerCase() : "";
+    const hrefIsHome = first.href === "/";
+    const labelIsHome = firstLabel === "home";
+    const isHomeCrumb = hrefIsHome || labelIsHome;
+    const homeKind =
+      first.kind === "forced" && isHomeCrumb ? first.kind : "root";
+    const baseHome: Crumb = {
+      ...first,
+      label: "home",
+      href: "/",
+      kind: homeKind,
+    };
+
+    if (isHomeCrumb) {
+      return [baseHome, ...rest];
+    }
+
+    const normalizedTail = rawItems.map((crumb, index) => {
+      if (index === 0 && crumb.kind !== "forced") {
+        return { ...crumb, kind: undefined };
+      }
+      return crumb;
+    });
+
+    return applyCrumbKinds([baseHome, ...normalizedTail]);
+  }, [rawItems]);
 
   const jsonLd = useMemo(() => {
     if (forcedCrumbs?.length || !items.length) {
