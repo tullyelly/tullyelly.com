@@ -16,7 +16,10 @@ export default defineConfig({
     trace: "on-first-retry",
     deviceScaleFactor: 1,
     // Prefer desktop viewport to avoid responsive header collapse in tables
-    viewport: { width: 1366, height: 900 },
+    viewport: { width: 1280, height: 900 },
+    colorScheme: "light",
+    locale: "en-US",
+    timezoneId: "America/Chicago",
     // Treat data-testid as first-class for stable hooks
     testIdAttribute: "data-testid",
   },
@@ -25,6 +28,10 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
+        viewport: { width: 1280, height: 900 },
+        colorScheme: "light",
+        locale: "en-US",
+        timezoneId: "America/Chicago",
         ...(process.env.PLAYWRIGHT_USE_SYSTEM_CHROME === "1"
           ? {
               channel: undefined,
