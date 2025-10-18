@@ -17,18 +17,15 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn(
-        "absolute left-0 top-0 z-[2] -translate-x-[0.75rem]",
-        styles.root,
-      )}
+      className={cn("absolute left-0 top-0 z-[2]", styles.root)}
     >
       <div
         className={cn(
-          "rounded-r-2xl border border-black/5 bg-[var(--cream)] px-3 py-1.5 shadow-sm",
+          "rounded-r-lg border-2 border-brand-bucksGreen bg-[var(--cream)] px-3 py-1.5 shadow-sm",
           styles.badge,
         )}
       >
-        <ol className="flex items-center gap-2 text-base font-medium tracking-wide">
+        <ol className="flex list-none items-center gap-1.5 text-sm leading-tight font-medium text-ink">
           {items.map((item, index) => {
             const isLast = index === lastIndex;
             const key = `${item.href ?? item.label ?? "crumb"}-${index}`;
@@ -39,7 +36,7 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
               !isLast && item.href ? (
                 <Link
                   href={item.href}
-                  className="text-brand-greatLakesBlue visited:text-brand-greatLakesBlue hover:underline focus-visible:ring-2 focus-visible:ring-brand-greatLakesBlue focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)] focus-visible:outline-none transition-colors"
+                  className="inline-flex items-center px-2 py-1 text-ink visited:text-ink transition-colors no-underline underline-offset-4 hover:text-brand-bucksGreen hover:underline hover:decoration-brand-bucksGreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-bucksGreen focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)]"
                   title={content}
                 >
                   {content}
@@ -48,8 +45,10 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
                 <span
                   aria-current={isLast ? "page" : undefined}
                   className={cn(
-                    "text-ink",
-                    isLast ? "opacity-70" : "opacity-90",
+                    "inline-flex items-center",
+                    isLast
+                      ? "px-0 py-0 font-semibold text-brand-bucksGreen cursor-default"
+                      : "px-2 py-1 text-ink/80",
                   )}
                   title={content}
                 >
@@ -58,10 +57,10 @@ export default function BookmarkBreadcrumb({ items }: BookmarkBreadcrumbProps) {
               );
 
             return (
-              <li key={key} className="flex items-center gap-2">
+              <li key={key} className="flex items-center">
                 {node}
                 {index < lastIndex ? (
-                  <span aria-hidden="true" className="text-ink/40">
+                  <span aria-hidden="true" className="mx-1.5 text-ink/50">
                     /
                   </span>
                 ) : null}
