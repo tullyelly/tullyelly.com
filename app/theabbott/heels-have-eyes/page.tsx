@@ -96,105 +96,105 @@ const isFav = (item: CardItem) => item.title === "HEELS HAVE EYES";
 
 export default function Page() {
   return (
-    <main className="px-4 sm:px-6 lg:px-8">
-      <article className="mx-auto max-w-3xl py-10 space-y-10">
-        <header>
-          <h1 className="text-3xl font-bold tracking-tight">Heels Have Eyes</h1>
-          <p className="mt-2 text-sm text-fg/60">
-            Welcome to my newest experiment. Please excuse any bugs or lack of
-            polish. Early days.
+    <article className="space-y-12">
+      <header className="space-y-3">
+        <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
+          Heels Have Eyes
+        </h1>
+        <p className="text-[16px] text-muted-foreground md:text-[18px]">
+          Welcome to my newest experiment. Please excuse any bugs or lack of
+          polish. Early days.
+        </p>
+      </header>
+
+      <section className="space-y-4">
+        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
+          Parental Discretion Advised
+        </h2>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          There&apos;s been a ton of new albums to explore this summer (tyler,
+          clipse, jid, freddie gibbs, ghostface, raekwon, etc..) and the one EP
+          I keep returning to more than any other album is HEELS HAVE EYES by
+          Westside Gunn. He&apos;s shown up here and there in the almighty
+          algorithm, but I&apos;ve never done a deep dive until now.
+        </p>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          Well, I&apos;m hooked and DAVEY BOY SMITH is the beat of the year for
+          me so far. A simple piano loop will get me every time. Shouts to Denny
+          LaFlare.
+        </p>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          Anywho, FLYGOD told me to put this up on my kid&apos;s wall. Consider
+          it done, king.
+        </p>
+      </section>
+
+      <section aria-labelledby="video-title" className="space-y-3">
+        <h2
+          id="video-title"
+          className="text-xl md:text-2xl font-semibold leading-snug"
+        >
+          DAVEY BOY SMITH Video
+        </h2>
+        <figure className="space-y-2">
+          <div className="yt-wrapper-bucks">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/-mnJEnjyaY4?si=LMJt5-8BmEL4cFlQ&loop=1&playlist=-mnJEnjyaY4"
+              title="Westside Gunn &mdash; DAVEY BOY SMITH music video"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+        </figure>
+      </section>
+
+      <section className="space-y-6">
+        <header className="space-y-1">
+          <h2 className="text-xl md:text-2xl font-semibold leading-snug">
+            Westside Gunn Bio
+          </h2>
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
+            Westside Gunn (Alvin Worthy) is a Buffalo-born rapper, curator, and
+            co-founder of the influential Griselda collective. His music fuses
+            gritty street narratives with a flair for high fashion, fine art,
+            and wrestling references, turning raw street rap into something
+            operatic and luxurious. What makes him stand out is his ear for
+            aesthetics: ad-libs delivered like brushstrokes, beats that sound
+            like gallery pieces, and an instinct for curation that has reshaped
+            modern underground hip-hop. Gunn isn&apos;t just rapping; he&apos;s
+            directing an entire scene.
           </p>
         </header>
 
-        <section className="space-y-4">
-          <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-            Parental Discretion Advised
-          </h2>
-          <p className="text-[16px] md:text-[18px] text-muted-foreground">
-            There&apos;s been a ton of new albums to explore this summer (tyler,
-            clipse, jid, freddie gibbs, ghostface, raekwon, etc..) and the one
-            EP I keep returning to more than any other album is HEELS HAVE EYES
-            by Westside Gunn. He&apos;s shown up here and there in the almighty
-            algorithm, but I&apos;ve never done a deep dive until now.
-          </p>
-          <p className="text-[16px] md:text-[18px] text-muted-foreground">
-            Well, I&apos;m hooked and DAVEY BOY SMITH is the beat of the year
-            for me so far. A simple piano loop will get me every time. Shouts to
-            Denny LaFlare.
-          </p>
-          <p className="text-[16px] md:text-[18px] text-muted-foreground">
-            Anywho, FLYGOD told me to put this up on my kid&apos;s wall.
-            Consider it done, king.
-          </p>
-        </section>
-
-        <section aria-labelledby="video-title" className="space-y-3">
-          <h2
-            id="video-title"
-            className="text-xl md:text-2xl font-semibold leading-snug"
-          >
-            DAVEY BOY SMITH Video
-          </h2>
-          <figure className="space-y-2">
-            <div className="yt-wrapper-bucks">
-              <iframe
-                src="https://www.youtube-nocookie.com/embed/-mnJEnjyaY4?si=LMJt5-8BmEL4cFlQ&loop=1&playlist=-mnJEnjyaY4"
-                title="Westside Gunn &mdash; DAVEY BOY SMITH music video"
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            </div>
-          </figure>
-        </section>
-
-        <section className="space-y-6">
-          <header className="space-y-1">
-            <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-              Westside Gunn Bio
-            </h2>
-            <p className="text-[16px] md:text-[18px] text-muted-foreground">
-              Westside Gunn (Alvin Worthy) is a Buffalo-born rapper, curator,
-              and co-founder of the influential Griselda collective. His music
-              fuses gritty street narratives with a flair for high fashion, fine
-              art, and wrestling references, turning raw street rap into
-              something operatic and luxurious. What makes him stand out is his
-              ear for aesthetics: ad-libs delivered like brushstrokes, beats
-              that sound like gallery pieces, and an instinct for curation that
-              has reshaped modern underground hip-hop. Gunn isn&apos;t just
-              rapping; he&apos;s directing an entire scene.
-            </p>
-          </header>
-
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Albums to Explore</h3>
-            <CardGrid>
-              {items.map((item) => (
-                <Card
-                  key={item.id}
-                  className={`relative ${isFav(item) ? "border-[4px] border-[var(--blue)]" : ""}`}
-                >
-                  {item.meta && <YearBadge year={item.meta} />}
-                  <h4 className="font-semibold italic pr-16">{item.title}</h4>
-                  {item.description && (
-                    <p className="mt-2 text-sm text-fg/80 leading-relaxed">
-                      {item.description}
-                    </p>
-                  )}
-                  {isFav(item) && (
-                    <Badge
-                      className={`${getBadgeClass("classic")} absolute bottom-2 right-2`}
-                    >
-                      unclejimmy classic
-                    </Badge>
-                  )}
-                </Card>
-              ))}
-            </CardGrid>
-          </div>
-        </section>
-      </article>
-    </main>
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">Albums to Explore</h3>
+          <CardGrid>
+            {items.map((item) => (
+              <Card
+                key={item.id}
+                className={`relative ${isFav(item) ? "border-[4px] border-[var(--blue)]" : ""}`}
+              >
+                {item.meta && <YearBadge year={item.meta} />}
+                <h4 className="pr-16 font-semibold italic">{item.title}</h4>
+                {item.description && (
+                  <p className="mt-2 text-sm text-fg/80 leading-relaxed">
+                    {item.description}
+                  </p>
+                )}
+                {isFav(item) && (
+                  <Badge
+                    className={`${getBadgeClass("classic")} absolute bottom-2 right-2`}
+                  >
+                    unclejimmy classic
+                  </Badge>
+                )}
+              </Card>
+            ))}
+          </CardGrid>
+        </div>
+      </section>
+    </article>
   );
 }

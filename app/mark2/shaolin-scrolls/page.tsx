@@ -64,10 +64,16 @@ export default async function Page({ searchParams }: PageProps) {
   };
 
   return (
-    <section id="scrolls-root" className="flex min-h-screen flex-col gap-4">
-      <h1 className="text-xl font-semibold">Shaolin Scrolls</h1>
-      <ActionBar q={q} />
-      <ScrollsPageClient rows={items} meta={meta} />
-    </section>
+    <div id="scrolls-root" className="space-y-8">
+      <header className="space-y-2">
+        <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
+          Shaolin Scrolls
+        </h1>
+      </header>
+      <section className="space-y-6">
+        <ActionBar q={q} />
+        <ScrollsPageClient rows={items} meta={meta} />
+      </section>
+    </div>
   );
 }

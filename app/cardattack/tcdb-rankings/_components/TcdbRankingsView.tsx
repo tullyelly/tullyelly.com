@@ -43,10 +43,12 @@ export default function TcdbRankingsView({
   }, []);
 
   return (
-    <>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-8">
+      <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">TCDB Rankings</h1>
+          <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
+            TCDB Rankings
+          </h1>
           {showRefreshing ? (
             <span className="inline-flex items-center rounded-full bg-[var(--cream)] px-3 py-1 text-xs font-semibold uppercase text-ink/80">
               Refreshing…
@@ -60,7 +62,7 @@ export default function TcdbRankingsView({
             onSnapshotCreated={handleSnapshotCreated}
           />
         ) : null}
-      </div>
+      </header>
 
       <section className="space-y-4">
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
@@ -86,6 +88,6 @@ export default function TcdbRankingsView({
       </section>
 
       <TCDBRankingTable serverData={data} />
-    </>
+    </div>
   );
 }

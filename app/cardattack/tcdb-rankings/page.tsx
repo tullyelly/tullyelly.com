@@ -63,13 +63,13 @@ export default async function Page({ searchParams }: PageProps) {
     (await getCurrentDateIso()) || data.data[0]?.ranking_at || "";
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
+    <div className="space-y-10">
       <TcdbRankingsView
         canCreate={canCreate}
         homieOptions={homieOptions}
         data={data}
         defaultRankingDate={defaultRankingDate}
       />
-    </main>
+    </div>
   );
 }
