@@ -430,3 +430,31 @@ p {
 [data-overlay-layer][hidden] {
   pointer-events: none !important;
 }
+
+html[data-e2e-stable="true"] {
+  caret-color: transparent !important;
+}
+
+html[data-e2e-stable="true"] *,
+html[data-e2e-stable="true"] *::before,
+html[data-e2e-stable="true"] *::after {
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-property: none !important;
+}
+
+html[data-e2e-stable="true"] [class*="animate-"],
+html[data-e2e-stable="true"] [data-animated] {
+  animation: none !important;
+  transition: none !important;
+}
+
+html[data-e2e-stable="true"] #nprogress,
+html[data-e2e-stable="true"] .nprogress-busy,
+html[data-e2e-stable="true"] [data-progress] {
+  display: none !important;
+  visibility: hidden !important;
+}
