@@ -72,6 +72,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
+  const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
   const [menu, hdrs, menuTree] = await Promise.all([
     getLegacyMenu(),
     headers(),
@@ -84,7 +85,11 @@ export default async function RootLayout({
     await getMenuData(personaKey);
 
   return (
-    <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jbMono.variable}`}
+      data-e2e-stable={isE2EStable ? "true" : undefined}
+    >
       <head>
         {process.env.NEXT_PUBLIC_TEST_MODE === "1" ? (
           <Script
