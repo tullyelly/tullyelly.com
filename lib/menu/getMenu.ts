@@ -29,9 +29,10 @@ type DbMenuRow = MenuNodeRow & {
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
 const BUILD_MODE = isNextBuild();
+const DB_DISABLED = process.env.SKIP_DB === "true";
 
 async function buildGate(): Promise<FeatureGate> {
-  if (BUILD_MODE) {
+  if (BUILD_MODE || DB_DISABLED) {
     const emptyCapabilities = { has: () => false };
     return createFeatureGate(emptyCapabilities, () => false);
   }
@@ -114,7 +115,7 @@ function flattenTestTree(items: NavItem[]): MenuNodeRow[] {
 }
 
 async function fetchMenuRows(): Promise<MenuNodeRow[]> {
-  if (TEST_MODE || BUILD_MODE) {
+  if (TEST_MODE || BUILD_MODE || DB_DISABLED) {
     return flattenTestTree(TEST_MENU_ITEMS);
   }
 

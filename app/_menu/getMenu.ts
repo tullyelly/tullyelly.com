@@ -22,8 +22,9 @@ function shouldBypassFiltering(): boolean {
 const loadMenu = cache(async (): Promise<MenuPayload> => {
   const testMode =
     process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+  const dbDisabled = process.env.SKIP_DB === "true";
 
-  if (isNextBuild()) {
+  if (isNextBuild() || dbDisabled) {
     const stub = TEST_MENU_ITEMS;
     const index = buildMenuIndex(stub);
     return { tree: stub, index };
