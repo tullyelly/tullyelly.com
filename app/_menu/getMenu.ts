@@ -5,6 +5,7 @@ import { buildMenuIndex } from "@/lib/menu.index";
 import type { MenuIndex } from "@/lib/menu.index";
 import type { NavItem } from "@/types/nav";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+import { isNextBuild } from "@/lib/env";
 
 export interface MenuPayload {
   tree: NavItem[];
@@ -21,6 +22,12 @@ function shouldBypassFiltering(): boolean {
 const loadMenu = cache(async (): Promise<MenuPayload> => {
   const testMode =
     process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+
+  if (isNextBuild()) {
+    const stub = TEST_MENU_ITEMS;
+    const index = buildMenuIndex(stub);
+    return { tree: stub, index };
+  }
 
   if (testMode) {
     const stub = TEST_MENU_ITEMS;

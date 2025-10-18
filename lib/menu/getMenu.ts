@@ -19,6 +19,7 @@ import type {
 import type { MenuNodeRow } from "@/lib/menu/dbTypes";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
 import type { NavItem } from "@/types/nav";
+import { isNextBuild } from "@/lib/env";
 
 type DbMenuRow = MenuNodeRow & {
   kind: MenuNodeRow["kind"] | "external" | "group";
@@ -27,8 +28,13 @@ type DbMenuRow = MenuNodeRow & {
 
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+const BUILD_MODE = isNextBuild();
 
 async function buildGate(): Promise<FeatureGate> {
+  if (BUILD_MODE) {
+    const emptyCapabilities = { has: () => false };
+    return createFeatureGate(emptyCapabilities, () => false);
+  }
   const capabilities = await getCapabilities();
   return createFeatureGate(capabilities, canFeature);
 }
@@ -108,7 +114,7 @@ function flattenTestTree(items: NavItem[]): MenuNodeRow[] {
 }
 
 async function fetchMenuRows(): Promise<MenuNodeRow[]> {
-  if (TEST_MODE) {
+  if (TEST_MODE || BUILD_MODE) {
     return flattenTestTree(TEST_MENU_ITEMS);
   }
 

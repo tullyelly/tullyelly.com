@@ -1,11 +1,13 @@
 import { revalidateTag } from "next/cache";
 import { getPool } from "@/db/pool";
+import { isNextBuild } from "@/lib/env";
 
 let listenerPromise: Promise<void> | null = null;
 
 function shouldSkipListener(): boolean {
   if (process.env.NODE_ENV === "test") return true;
   if (process.env.E2E_MODE === "1") return true;
+  if (isNextBuild()) return true;
   return false;
 }
 

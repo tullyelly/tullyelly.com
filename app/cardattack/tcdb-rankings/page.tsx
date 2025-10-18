@@ -14,8 +14,8 @@ import { getHomieOptions } from "./_lib/getHomieOptions";
 import { getCurrentDateIso } from "./_lib/getCurrentDate";
 import TcdbRankingsView from "./_components/TcdbRankingsView";
 
-// Keep ISR if you like; we're not self-fetching anymore.
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type SearchParams = {
   page?: string;

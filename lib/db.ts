@@ -1,4 +1,5 @@
 import { getPool } from "@/db/pool";
+import { isNextBuild } from "@/lib/env";
 
 type SqlRow = Record<string, unknown>;
 
@@ -12,6 +13,11 @@ export async function sql<T extends SqlRow = SqlRow>(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): Promise<SqlResult<T>[]> {
+  if (isNextBuild()) {
+    throw new Error(
+      "Database access is disabled during Next.js production build.",
+    );
+  }
   const text = strings.reduce((acc, part, index) => {
     const placeholder = index < values.length ? `$${index + 1}` : "";
     return acc + part + placeholder;

@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { DATABASE_URL } from "@/lib/env";
+import { DATABASE_URL, isNextBuild } from "@/lib/env";
 import { assertValidDatabaseUrl } from "@/db/assert-database-url";
 
 interface Queryable {
@@ -65,6 +65,12 @@ export function getPool(): Queryable {
   if (process.env.E2E_MODE === "1") {
     pool = createE2EPool();
     return pool;
+  }
+
+  if (isNextBuild()) {
+    throw new Error(
+      "Database access is disabled during Next.js production build.",
+    );
   }
 
   if (!DATABASE_URL)

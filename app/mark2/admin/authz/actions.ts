@@ -5,8 +5,11 @@ import { must } from "@/lib/authz";
 import { ensureAuthzInvalidationListener } from "@/lib/authz/invalidation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { sql } from "@/lib/db";
+import { isNextBuild } from "@/lib/env";
 
-ensureAuthzInvalidationListener();
+if (!isNextBuild()) {
+  ensureAuthzInvalidationListener();
+}
 
 type MembershipRow = {
   user_id: string;
