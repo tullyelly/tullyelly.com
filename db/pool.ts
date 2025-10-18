@@ -70,10 +70,6 @@ export function getPool(): Queryable {
   if (!DATABASE_URL)
     throw new Error("Missing DATABASE_URL. Set it in .env.local");
   assertValidDatabaseUrl(DATABASE_URL);
-  const user = new URL(DATABASE_URL).username;
-  if (process.env.NODE_ENV !== "production") {
-    console.log(`DB user: ${user}`);
-  }
   pool = new Pool({
     connectionString: DATABASE_URL,
     ssl: { rejectUnauthorized: false },

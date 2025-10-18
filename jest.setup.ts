@@ -67,7 +67,17 @@ jest.mock("next/link", () => ({
   default: ({ children, href, ...props }: any) => {
     const React = require("react");
     const to = typeof href === "string" ? href : href?.pathname || "#";
-    return React.createElement("a", { href: to, ...props }, children);
+    const {
+      prefetch: _prefetch,
+      replace: _replace,
+      scroll: _scroll,
+      shallow: _shallow,
+      locale: _locale,
+      legacyBehavior: _legacyBehavior,
+      passHref: _passHref,
+      ...anchorProps
+    } = props ?? {};
+    return React.createElement("a", { href: to, ...anchorProps }, children);
   },
 }));
 
