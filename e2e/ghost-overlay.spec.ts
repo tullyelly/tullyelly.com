@@ -3,6 +3,12 @@ import { test, expect } from "@playwright/test";
 test.describe("ghost overlay safeguards", () => {
   test("closed overlays release pointer events", async ({ page }) => {
     await page.goto("/");
+    await page.waitForFunction(() => {
+      const scope = window as typeof window & {
+        __navTest?: { openCmdk?: () => void };
+      };
+      return typeof scope.__navTest?.openCmdk === "function";
+    });
     await page.evaluate(() => {
       const scope = window as typeof window & {
         __navTest?: { openCmdk?: () => void };
@@ -11,7 +17,9 @@ test.describe("ghost overlay safeguards", () => {
     });
     const palette = page.getByTestId("cmdk");
     await expect(palette).toBeVisible();
+    await expect(palette).toHaveAttribute("data-state", "open");
     await page.keyboard.press("Escape");
+    await expect(palette).toHaveAttribute("data-state", "closed");
     await expect(palette).toBeHidden();
 
     const pointerEvents = await page.evaluate(() => {

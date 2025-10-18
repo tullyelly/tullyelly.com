@@ -429,6 +429,9 @@ export default function CommandMenu() {
     <CommandDialog open={open} onOpenChange={setOpen}>
       <Command
         data-testid="cmdk"
+        data-state={open ? "open" : "closed"}
+        aria-hidden={open ? undefined : "true"}
+        hidden={!open}
         className="bg-[var(--surface)] text-[var(--text)]"
       >
         <CommandInput
