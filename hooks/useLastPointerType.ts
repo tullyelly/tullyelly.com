@@ -7,7 +7,8 @@ export type PointerKind = "mouse" | "touch" | "pen" | "keyboard" | "unknown";
 type PointerEventLike =
   | React.PointerEvent<Element>
   | PointerEvent
-  | (Event & { pointerType?: string | null | undefined });
+  | (Event & { pointerType?: string | null | undefined })
+  | { pointerType?: string | null | undefined; type?: string };
 
 const supportsPointerEvents =
   typeof globalThis !== "undefined" && "PointerEvent" in globalThis;
