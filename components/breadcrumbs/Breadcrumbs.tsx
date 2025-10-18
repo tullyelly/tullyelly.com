@@ -48,7 +48,7 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
       return applyCrumbKinds(ensureSingleHome(fallback));
     }
 
-    const crumbs = trail.map((node, index) => {
+    const menuCrumbs = trail.map((node, index) => {
       const isLast = index === trail.length - 1;
       const label =
         isLast && typeof node.resolveLabel === "function"
@@ -60,7 +60,10 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
       };
     });
 
-    const withHome = ensureSingleHome(crumbs);
+    const withHome = ensureSingleHome([
+      { label: "Home", href: "/" },
+      ...menuCrumbs,
+    ]);
     return applyCrumbKinds(withHome);
   }, [forcedCrumbs, trail, normalizedPath]);
 

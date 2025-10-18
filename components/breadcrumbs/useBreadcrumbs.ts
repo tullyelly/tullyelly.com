@@ -42,31 +42,42 @@ function findTrail(tree: MenuNode[], pathname: string): MenuNode[] {
   return best;
 }
 
-function collapsePersonaLanding(
-  trail: MenuNode[],
-  pathname: string,
-): MenuNode[] {
-  if (trail.length >= 2) {
-    const [first, second, ...rest] = trail;
-    if (
-      first.kind === "persona" &&
-      second?.kind === "link" &&
-      second.href &&
-      normalizePathForCrumbs(second.href) === normalizePathForCrumbs(pathname)
-    ) {
-      return [{ ...first, href: second.href }, ...rest];
-    }
-  }
-  return trail;
-}
-
 export function useBreadcrumbs(pathOverride?: string): MenuNode[] {
   const pathname = usePathname();
   const activePath = pathOverride ?? pathname ?? "/";
   const normalizedPath = normalizePathForCrumbs(activePath);
   const tree = useMenuTree();
   return useMemo(() => {
-    const raw = findTrail(tree, normalizedPath);
-    return collapsePersonaLanding(raw, normalizedPath);
+    const trail = findTrail(tree, normalizedPath);
+    if (!trail.length) {
+      return [];
+    }
+
+    const [first, ...rest] = trail;
+    if (first.kind !== "persona") {
+      return trail;
+    }
+
+    const landingCandidate =
+      first.children?.find((child) => !!child?.href)?.href ?? first.href;
+    const landingHref = normalizeHref(landingCandidate);
+    const normalizedLanding = landingHref
+      ? normalizePathForCrumbs(landingHref)
+      : null;
+    const personaCrumb: MenuNode =
+      landingHref && normalizedLanding
+        ? { ...first, href: normalizedLanding }
+        : first;
+
+    if (normalizedLanding && normalizedLanding === normalizedPath) {
+      return [personaCrumb];
+    }
+
+    const deepest = rest.length ? rest[rest.length - 1] : null;
+    if (deepest) {
+      return [personaCrumb, deepest];
+    }
+
+    return [personaCrumb];
   }, [tree, normalizedPath]);
 }
