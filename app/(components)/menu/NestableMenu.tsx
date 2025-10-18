@@ -9,7 +9,7 @@ import ShadowPortal, {
   PERSONA_MENU_CSS,
   type ShadowPortalContext,
 } from "@/components/ui/ShadowPortal";
-import { useMenuAim } from "@/app/(components)/menu/useMenuAim";
+import { useMenuAim, CLOSE_DELAY_MS } from "@/app/(components)/menu/useMenuAim";
 import { useLastPointerType } from "@/hooks/useLastPointerType";
 import { useOpenShield } from "@/hooks/useOpenShield";
 import {
@@ -246,6 +246,9 @@ export default function NestableMenu({
     open: isOpen,
     onOpenChange: React.useCallback(
       (next: boolean) => {
+        if (next && suppressReopenRef.current) {
+          return;
+        }
         onOpenChange(persona.id, next);
       },
       [onOpenChange, persona.id],
@@ -280,31 +283,98 @@ export default function NestableMenu({
     [],
   );
 
-  const closeIfMouseExit = React.useCallback(
+  const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const skipFocusOpenRef = React.useRef(false);
+  const suppressReopenRef = React.useRef(false);
+
+  const cancelPendingClose = React.useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleCloseForMouse = React.useCallback(
     (nextTarget: EventTarget | null) => {
+      if (isTargetWithinInteractiveArea(nextTarget)) {
+        cancelPendingClose();
+        return;
+      }
       if (!isOpen) {
+        cancelPendingClose();
         return;
       }
       if (lockedByPointer) {
+        cancelPendingClose();
         return;
       }
       const lastKind = getLastPointerKind();
       if (lastKind === "touch") {
+        cancelPendingClose();
         return;
       }
-      if (isTargetWithinInteractiveArea(nextTarget)) {
-        return;
-      }
-      aim.setOpen(false);
+      cancelPendingClose();
+      suppressReopenRef.current = true;
+      closeTimerRef.current = setTimeout(() => {
+        suppressReopenRef.current = true;
+        aim.setOpen(false);
+        setHoverSuspended(true);
+        skipFocusOpenRef.current = true;
+        closeTimerRef.current = null;
+      }, CLOSE_DELAY_MS);
     },
     [
       aim,
+      cancelPendingClose,
       getLastPointerKind,
       isOpen,
       isTargetWithinInteractiveArea,
+      setHoverSuspended,
       lockedByPointer,
     ],
   );
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      cancelPendingClose();
+    }
+  }, [cancelPendingClose, isOpen]);
+
+  React.useEffect(() => {
+    if (lockedByPointer) {
+      cancelPendingClose();
+    }
+  }, [cancelPendingClose, lockedByPointer]);
+
+  React.useEffect(
+    () => () => {
+      cancelPendingClose();
+    },
+    [cancelPendingClose],
+  );
+
+  React.useEffect(() => {
+    const trigger = triggerNodeRef.current;
+    const doc = trigger?.ownerDocument;
+    if (!doc) {
+      return;
+    }
+    const handleGlobalPointer = (event: Event) => {
+      setFromPointerEvent(event as any);
+      if (!isOpen) {
+        return;
+      }
+      scheduleCloseForMouse(event.target);
+    };
+    doc.addEventListener("pointermove", handleGlobalPointer, true);
+    doc.addEventListener("mousemove", handleGlobalPointer, true);
+    return () => {
+      doc.removeEventListener("pointermove", handleGlobalPointer, true);
+      doc.removeEventListener("mousemove", handleGlobalPointer, true);
+    };
+  }, [isOpen, scheduleCloseForMouse, setFromPointerEvent]);
 
   React.useEffect(() => {
     const node = triggerNodeRef.current;
@@ -479,6 +549,9 @@ export default function NestableMenu({
   const handlePointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       setFromPointerEvent(event);
+      cancelPendingClose();
+      skipFocusOpenRef.current = false;
+      suppressReopenRef.current = false;
       const pointerType = event.pointerType;
       const supportsHover = isHoverCapablePointer(pointerType);
 
@@ -511,12 +584,15 @@ export default function NestableMenu({
         | undefined;
       handler?.(event);
     },
-    [referenceProps, setFromPointerEvent],
+    [cancelPendingClose, referenceProps, setFromPointerEvent],
   );
 
   const handlePointerUp = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       setFromPointerEvent(event);
+      cancelPendingClose();
+      skipFocusOpenRef.current = false;
+      suppressReopenRef.current = false;
       const toggleKind = pointerToggleKindRef.current;
 
       if (awaitingPointerUpRef.current && toggleKind) {
@@ -562,6 +638,7 @@ export default function NestableMenu({
     [
       aim,
       armOpenShield,
+      cancelPendingClose,
       isOpen,
       referenceProps,
       setFromPointerEvent,
@@ -574,9 +651,13 @@ export default function NestableMenu({
   const handlePointerEnter = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       setFromPointerEvent(event);
+      cancelPendingClose();
       if (!isHoverCapablePointer(event.pointerType)) {
         return;
       }
+      setHoverSuspended(false);
+      skipFocusOpenRef.current = false;
+      suppressReopenRef.current = false;
       if (lockedByPointer) {
         return;
       }
@@ -588,12 +669,20 @@ export default function NestableMenu({
         | undefined;
       handler?.(event);
     },
-    [hoverSuspended, lockedByPointer, referenceProps, setFromPointerEvent],
+    [
+      cancelPendingClose,
+      hoverSuspended,
+      lockedByPointer,
+      referenceProps,
+      setFromPointerEvent,
+      setHoverSuspended,
+    ],
   );
 
   const handlePointerMove = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       setFromPointerEvent(event);
+      cancelPendingClose();
       if (!isHoverCapablePointer(event.pointerType)) {
         return;
       }
@@ -608,32 +697,40 @@ export default function NestableMenu({
         | undefined;
       handler?.(event);
     },
-    [hoverSuspended, lockedByPointer, referenceProps, setFromPointerEvent],
+    [
+      cancelPendingClose,
+      hoverSuspended,
+      lockedByPointer,
+      referenceProps,
+      setFromPointerEvent,
+    ],
   );
 
   const handlePointerLeave = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       setFromPointerEvent(event);
+      cancelPendingClose();
       if (!isHoverCapablePointer(event.pointerType)) {
         awaitingPointerUpRef.current = false;
-        closeIfMouseExit(event.relatedTarget);
+        scheduleCloseForMouse(event.relatedTarget);
         return;
       }
       setHoverSuspended(false);
       if (lockedByPointer) {
-        closeIfMouseExit(event.relatedTarget);
+        scheduleCloseForMouse(event.relatedTarget);
         return;
       }
       const handler = referenceProps.onPointerLeave as
         | ((ev: React.PointerEvent<HTMLButtonElement>) => void)
         | undefined;
       handler?.(event);
-      closeIfMouseExit(event.relatedTarget);
+      scheduleCloseForMouse(event.relatedTarget);
     },
     [
-      closeIfMouseExit,
+      cancelPendingClose,
       lockedByPointer,
       referenceProps,
+      scheduleCloseForMouse,
       setFromPointerEvent,
       setHoverSuspended,
     ],
@@ -642,6 +739,10 @@ export default function NestableMenu({
   const handleMouseEnter = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       setFromPointerEvent({ pointerType: "mouse" });
+      cancelPendingClose();
+      setHoverSuspended(false);
+      skipFocusOpenRef.current = false;
+      suppressReopenRef.current = false;
       if (lockedByPointer) {
         return;
       }
@@ -653,27 +754,36 @@ export default function NestableMenu({
         | undefined;
       handler?.(event);
     },
-    [hoverSuspended, lockedByPointer, referenceProps, setFromPointerEvent],
+    [
+      cancelPendingClose,
+      hoverSuspended,
+      lockedByPointer,
+      referenceProps,
+      setFromPointerEvent,
+      setHoverSuspended,
+    ],
   );
 
   const handleMouseLeave = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       setFromPointerEvent({ pointerType: "mouse" });
+      cancelPendingClose();
       setHoverSuspended(false);
       if (lockedByPointer) {
-        closeIfMouseExit(event.relatedTarget);
+        scheduleCloseForMouse(event.relatedTarget);
         return;
       }
       const handler = referenceProps.onMouseLeave as
         | ((ev: React.MouseEvent<HTMLButtonElement>) => void)
         | undefined;
       handler?.(event);
-      closeIfMouseExit(event.relatedTarget);
+      scheduleCloseForMouse(event.relatedTarget);
     },
     [
-      closeIfMouseExit,
+      cancelPendingClose,
       lockedByPointer,
       referenceProps,
+      scheduleCloseForMouse,
       setFromPointerEvent,
       setHoverSuspended,
     ],
@@ -682,10 +792,14 @@ export default function NestableMenu({
   const handlePointerCancel = React.useCallback(() => {
     awaitingPointerUpRef.current = false;
     setHoverSuspended(false);
-  }, [setHoverSuspended]);
+    cancelPendingClose();
+  }, [cancelPendingClose, setHoverSuspended]);
 
   const handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
+      cancelPendingClose();
+      skipFocusOpenRef.current = false;
+      suppressReopenRef.current = false;
       if (skipNextClickRef.current) {
         skipNextClickRef.current = false;
         return;
@@ -735,6 +849,7 @@ export default function NestableMenu({
     [
       aim,
       armOpenShield,
+      cancelPendingClose,
       getLastPointerKind,
       isOpen,
       lockedByPointer,
@@ -754,9 +869,13 @@ export default function NestableMenu({
         return;
       }
       const lastKind = getLastPointerKind();
+      if (skipFocusOpenRef.current && lastKind !== "keyboard") {
+        return;
+      }
       if (!isHoverCapablePointer(lastKind)) {
         return;
       }
+      skipFocusOpenRef.current = false;
       aim.setOpen(true);
     },
     [aim, getLastPointerKind, referenceProps],
@@ -765,6 +884,8 @@ export default function NestableMenu({
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       setKeyboard();
+      skipFocusOpenRef.current = false;
+      suppressReopenRef.current = false;
       const handler = referenceProps.onKeyDown as
         | ((ev: React.KeyboardEvent<HTMLButtonElement>) => void)
         | undefined;
@@ -796,10 +917,18 @@ export default function NestableMenu({
       style: _style,
       onPointerLeave,
       onMouseLeave,
+      onPointerEnter,
+      onMouseEnter,
+      onPointerMove,
+      onMouseMove,
       ...rest
     } = floatingProps as Record<string, unknown> & {
       onPointerLeave?: (event: React.PointerEvent<HTMLElement>) => void;
       onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
+      onPointerEnter?: (event: React.PointerEvent<HTMLElement>) => void;
+      onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
+      onPointerMove?: (event: React.PointerEvent<HTMLElement>) => void;
+      onMouseMove?: (event: React.MouseEvent<HTMLElement>) => void;
     };
 
     return {
@@ -808,6 +937,18 @@ export default function NestableMenu({
         | ((event: React.PointerEvent<HTMLElement>) => void)
         | undefined,
       onMouseLeave: onMouseLeave as
+        | ((event: React.MouseEvent<HTMLElement>) => void)
+        | undefined,
+      onPointerEnter: onPointerEnter as
+        | ((event: React.PointerEvent<HTMLElement>) => void)
+        | undefined,
+      onMouseEnter: onMouseEnter as
+        | ((event: React.MouseEvent<HTMLElement>) => void)
+        | undefined,
+      onPointerMove: onPointerMove as
+        | ((event: React.PointerEvent<HTMLElement>) => void)
+        | undefined,
+      onMouseMove: onMouseMove as
         | ((event: React.MouseEvent<HTMLElement>) => void)
         | undefined,
     };
@@ -819,9 +960,10 @@ export default function NestableMenu({
         event.preventDefault();
         return;
       }
+      cancelPendingClose();
       setHoverSuspended(false);
     },
-    [setHoverSuspended, shouldIgnoreOutside],
+    [cancelPendingClose, setHoverSuspended, shouldIgnoreOutside],
   );
 
   const handleInteractOutside = React.useCallback(
@@ -830,9 +972,10 @@ export default function NestableMenu({
         event.preventDefault();
         return;
       }
+      cancelPendingClose();
       setHoverSuspended(false);
     },
-    [setHoverSuspended, shouldIgnoreOutside],
+    [cancelPendingClose, setHoverSuspended, shouldIgnoreOutside],
   );
 
   const setTriggerRef = React.useCallback(
@@ -966,19 +1109,35 @@ export default function NestableMenu({
               setPanelSurface(node);
             }}
             onFocusCapture={() => aim.setOpen(true)}
+            onPointerEnter={(event) => {
+              cancelPendingClose();
+              floatingHandlers.onPointerEnter?.(event);
+            }}
+            onMouseEnter={(event) => {
+              cancelPendingClose();
+              floatingHandlers.onMouseEnter?.(event);
+            }}
+            onPointerMove={(event) => {
+              cancelPendingClose();
+              floatingHandlers.onPointerMove?.(event);
+            }}
+            onMouseMove={(event) => {
+              cancelPendingClose();
+              floatingHandlers.onMouseMove?.(event);
+            }}
             onPointerLeave={(event) => {
               if (lockedByPointer) {
                 return;
               }
               floatingHandlers.onPointerLeave?.(event);
-              closeIfMouseExit(event.relatedTarget);
+              scheduleCloseForMouse(event.relatedTarget);
             }}
             onMouseLeave={(event) => {
               if (lockedByPointer) {
                 return;
               }
               floatingHandlers.onMouseLeave?.(event);
-              closeIfMouseExit(event.relatedTarget);
+              scheduleCloseForMouse(event.relatedTarget);
             }}
             onBlurCapture={(event) => {
               const next = event.relatedTarget as HTMLElement | null;
@@ -1026,19 +1185,35 @@ export default function NestableMenu({
                   setPanelSurface(node);
                 }}
                 onFocusCapture={() => aim.setOpen(true)}
+                onPointerEnter={(event) => {
+                  cancelPendingClose();
+                  floatingHandlers.onPointerEnter?.(event);
+                }}
+                onMouseEnter={(event) => {
+                  cancelPendingClose();
+                  floatingHandlers.onMouseEnter?.(event);
+                }}
+                onPointerMove={(event) => {
+                  cancelPendingClose();
+                  floatingHandlers.onPointerMove?.(event);
+                }}
+                onMouseMove={(event) => {
+                  cancelPendingClose();
+                  floatingHandlers.onMouseMove?.(event);
+                }}
                 onPointerLeave={(event) => {
                   if (lockedByPointer) {
                     return;
                   }
                   floatingHandlers.onPointerLeave?.(event);
-                  closeIfMouseExit(event.relatedTarget);
+                  scheduleCloseForMouse(event.relatedTarget);
                 }}
                 onMouseLeave={(event) => {
                   if (lockedByPointer) {
                     return;
                   }
                   floatingHandlers.onMouseLeave?.(event);
-                  closeIfMouseExit(event.relatedTarget);
+                  scheduleCloseForMouse(event.relatedTarget);
                 }}
                 onBlurCapture={(event) => {
                   const next = event.relatedTarget as HTMLElement | null;

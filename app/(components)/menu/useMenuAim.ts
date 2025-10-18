@@ -16,6 +16,8 @@ import {
 
 type DelayValue = number | { open?: number; close?: number };
 
+export const CLOSE_DELAY_MS = 150;
+
 function resolveDelay(
   preferred: DelayValue | undefined,
   fallbackOpen: number,
@@ -99,7 +101,7 @@ export function useMenuAim(options: UseMenuAimOptions = {}): UseMenuAimResult {
     defaultOpen = false,
     onOpenChange,
     openDelay = 110,
-    closeDelay = 160,
+    closeDelay = CLOSE_DELAY_MS,
     buffer = 6,
     enabled = true,
     placement = "right-start",

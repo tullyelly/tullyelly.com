@@ -24,6 +24,52 @@ process.env.NEXT_PUBLIC_TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE ?? "1";
 (globalThis as any).TextDecoder =
   TextDecoder as unknown as typeof globalThis.TextDecoder;
 
+if (typeof (globalThis as any).PointerEvent === "undefined") {
+  const MouseEventCtor =
+    typeof (globalThis as any).MouseEvent === "function"
+      ? (globalThis as any).MouseEvent
+      : class extends Event {
+          constructor(type: string, init: EventInit = {}) {
+            super(type, init);
+          }
+        };
+
+  class JSDOMPointerEvent extends MouseEventCtor {
+    pointerType: string;
+    pointerId: number;
+
+    constructor(
+      type: string,
+      init: MouseEventInit & { pointerType?: string; pointerId?: number } = {},
+    ) {
+      super(type, init);
+      this.pointerType = init.pointerType ?? "mouse";
+      this.pointerId = init.pointerId ?? 1;
+    }
+  }
+  (globalThis as any).PointerEvent =
+    JSDOMPointerEvent as unknown as typeof globalThis.PointerEvent;
+}
+
+const win = (globalThis as any).window as
+  | (Window & { matchMedia?: typeof window.matchMedia })
+  | undefined;
+if (win && typeof win.matchMedia !== "function") {
+  win.matchMedia = ((query: string) => {
+    const mql = {
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    };
+    return mql;
+  }) as typeof window.matchMedia;
+}
+
 // Web API polyfills for Node-based tests and Next internals.
 const require = createRequire(import.meta.url);
 

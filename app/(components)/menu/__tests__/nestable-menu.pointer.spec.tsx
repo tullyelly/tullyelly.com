@@ -11,37 +11,8 @@ import {
 } from "@testing-library/react";
 import * as React from "react";
 import NestableMenu from "../NestableMenu";
+import { CLOSE_DELAY_MS } from "../useMenuAim";
 import type { PersonaItem } from "@/types/nav";
-
-const globalObject = globalThis as typeof globalThis & {
-  PointerEvent?: typeof PointerEvent;
-};
-
-if (globalObject.PointerEvent === undefined) {
-  class TestPointerEvent extends MouseEvent {
-    pointerType: string;
-    pointerId: number;
-
-    constructor(
-      type: string,
-      init: MouseEventInit & { pointerType?: string; pointerId?: number } = {},
-    ) {
-      super(type, init);
-      this.pointerType = init.pointerType ?? "mouse";
-      this.pointerId = init.pointerId ?? 1;
-    }
-  }
-
-  try {
-    Object.defineProperty(globalObject, "PointerEvent", {
-      value: TestPointerEvent,
-      configurable: true,
-      writable: true,
-    });
-  } catch {
-    (globalObject as any).PointerEvent = TestPointerEvent;
-  }
-}
 
 const persona: PersonaItem = {
   id: "persona.mark2",
@@ -203,76 +174,122 @@ describe("NestableMenu pointer modality", () => {
   });
 
   it("keeps hover-to-open behaviour for mouse pointers", async () => {
+    jest.useFakeTimers();
     const stateChanges: boolean[] = [];
-    render(<Harness onStateChange={(next) => stateChanges.push(next)} />);
-    const trigger = (await screen.findByTestId(
-      `nav-top-${persona.persona}`,
-    )) as HTMLButtonElement;
+    try {
+      render(<Harness onStateChange={(next) => stateChanges.push(next)} />);
+      const trigger = (await screen.findByTestId(
+        `nav-top-${persona.persona}`,
+      )) as HTMLButtonElement;
 
-    await act(async () => {
-      fireEvent.pointerOver(trigger, {
-        pointerType: "mouse",
-        pointerId: 2,
-        clientX: 120,
-        clientY: 80,
-        bubbles: true,
+      await act(async () => {
+        fireEvent.pointerOver(trigger, {
+          pointerType: "mouse",
+          pointerId: 2,
+          clientX: 120,
+          clientY: 80,
+          bubbles: true,
+        });
+        fireEvent.mouseOver(trigger, {
+          clientX: 120,
+          clientY: 80,
+          bubbles: true,
+        });
+        fireEvent.pointerEnter(trigger, {
+          pointerType: "mouse",
+          pointerId: 2,
+          clientX: 120,
+          clientY: 80,
+          bubbles: true,
+        });
+        fireEvent.mouseEnter(trigger, {
+          clientX: 120,
+          clientY: 80,
+          bubbles: true,
+        });
       });
-      fireEvent.mouseOver(trigger, {
-        clientX: 120,
-        clientY: 80,
-        bubbles: true,
-      });
-      fireEvent.pointerEnter(trigger, {
-        pointerType: "mouse",
-        pointerId: 2,
-        clientX: 120,
-        clientY: 80,
-        bubbles: true,
-      });
-      fireEvent.mouseEnter(trigger, {
-        clientX: 120,
-        clientY: 80,
-        bubbles: true,
-      });
-    });
 
-    await waitFor(() => {
-      expect(stateChanges.at(-1)).toBe(true);
-      expect(trigger.getAttribute("aria-expanded")).toBe("true");
-    });
+      await waitFor(() => {
+        expect(stateChanges.at(-1)).toBe(true);
+        expect(trigger.getAttribute("aria-expanded")).toBe("true");
+      });
 
-    await waitFor(() => {
+      await waitFor(() => {
+        const menu = getMenuElement();
+        expect(menu).toBeTruthy();
+        expect(menu?.getAttribute("data-state")).toBe("open");
+      });
+
       const menu = getMenuElement();
       expect(menu).toBeTruthy();
-      expect(menu?.getAttribute("data-state")).toBe("open");
-    });
 
-    await act(async () => {
-      fireEvent.pointerLeave(trigger, {
-        pointerType: "mouse",
-        pointerId: 2,
-        clientX: 20,
-        clientY: 20,
-        bubbles: true,
+      await act(async () => {
+        fireEvent.pointerLeave(trigger, {
+          pointerType: "mouse",
+          pointerId: 2,
+          clientX: 20,
+          clientY: 20,
+          bubbles: true,
+        });
+        fireEvent.mouseLeave(trigger, {
+          clientX: 20,
+          clientY: 20,
+          bubbles: true,
+        });
       });
-      fireEvent.mouseLeave(trigger, {
-        clientX: 20,
-        clientY: 20,
-        bubbles: true,
-      });
-    });
 
-    await waitFor(() => {
+      if (menu) {
+        await act(async () => {
+          fireEvent.pointerLeave(menu, {
+            pointerType: "mouse",
+            pointerId: 2,
+            clientX: 14,
+            clientY: 12,
+            bubbles: true,
+          });
+          fireEvent.mouseLeave(menu, {
+            clientX: 14,
+            clientY: 12,
+            bubbles: true,
+          });
+        });
+      }
+
+      await act(async () => {
+        fireEvent.pointerLeave(document.body, {
+          pointerType: "mouse",
+          pointerId: 2,
+          clientX: 4,
+          clientY: 4,
+          bubbles: true,
+        });
+        fireEvent.mouseLeave(document.body, {
+          clientX: 4,
+          clientY: 4,
+          bubbles: true,
+        });
+      });
+
+      expect(jest.getTimerCount()).toBeGreaterThan(0);
+
+      await act(async () => {
+        jest.advanceTimersByTime(CLOSE_DELAY_MS + 5);
+        jest.runOnlyPendingTimers();
+      });
+
       expect(stateChanges.at(-1)).toBe(false);
       expect(trigger.getAttribute("aria-expanded")).toBe("false");
-      const menu = getMenuElement();
-      if (menu) {
-        expect(menu.getAttribute("data-state")).toBe("closed");
-        expect(menu.hasAttribute("hidden")).toBe(true);
+      const maybeMenu = getMenuElement();
+      if (maybeMenu) {
+        expect(maybeMenu.getAttribute("data-state")).toBe("closed");
+        expect(maybeMenu.hasAttribute("hidden")).toBe(true);
       } else {
-        expect(menu).toBeNull();
+        expect(maybeMenu).toBeNull();
       }
-    });
+    } finally {
+      jest.runOnlyPendingTimers();
+      jest.useRealTimers();
+    }
   });
 
   it("locks open on mouse click until explicit dismissal", async () => {
