@@ -336,6 +336,21 @@ export default function NestableMenu({
     ],
   );
 
+  const closeByExplicitDismissal = React.useCallback(() => {
+    if (!isOpen) {
+      return;
+    }
+    cancelPendingClose();
+    awaitingPointerUpRef.current = false;
+    pointerToggleKindRef.current = null;
+    skipNextClickRef.current = false;
+    setHoverSuspended(false);
+    setLockedByPointer(false);
+    suppressReopenRef.current = false;
+    skipFocusOpenRef.current = true;
+    aim.setOpen(false);
+  }, [aim, cancelPendingClose, isOpen, setHoverSuspended, setLockedByPointer]);
+
   React.useEffect(() => {
     if (!isOpen) {
       cancelPendingClose();
@@ -375,6 +390,66 @@ export default function NestableMenu({
       doc.removeEventListener("mousemove", handleGlobalPointer, true);
     };
   }, [isOpen, scheduleCloseForMouse, setFromPointerEvent]);
+
+  React.useEffect(() => {
+    if (!isOpen || !lockedByPointer) {
+      return;
+    }
+    const trigger = triggerNodeRef.current;
+    const doc = trigger?.ownerDocument;
+    if (!doc) {
+      return;
+    }
+    const withinInteractive = (target: EventTarget | null) => {
+      if (!target || !(target instanceof Node)) {
+        return false;
+      }
+      if (trigger && trigger.contains(target)) {
+        return true;
+      }
+      const panel = positionedPanelRef.current;
+      if (panel && panel.contains(target)) {
+        return true;
+      }
+      return false;
+    };
+
+    const handlePointerDownCapture = (event: Event) => {
+      if (withinInteractive(event.target)) {
+        return;
+      }
+      closeByExplicitDismissal();
+    };
+
+    const handleKeyDownCapture = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      event.preventDefault();
+      closeByExplicitDismissal();
+    };
+
+    const handleFocusInCapture = (event: FocusEvent) => {
+      if (withinInteractive(event.target)) {
+        return;
+      }
+      closeByExplicitDismissal();
+    };
+
+    doc.addEventListener("pointerdown", handlePointerDownCapture, true);
+    doc.addEventListener("mousedown", handlePointerDownCapture, true);
+    doc.addEventListener("click", handlePointerDownCapture, true);
+    doc.addEventListener("keydown", handleKeyDownCapture, true);
+    doc.addEventListener("focusin", handleFocusInCapture, true);
+
+    return () => {
+      doc.removeEventListener("pointerdown", handlePointerDownCapture, true);
+      doc.removeEventListener("mousedown", handlePointerDownCapture, true);
+      doc.removeEventListener("click", handlePointerDownCapture, true);
+      doc.removeEventListener("keydown", handleKeyDownCapture, true);
+      doc.removeEventListener("focusin", handleFocusInCapture, true);
+    };
+  }, [closeByExplicitDismissal, isOpen, lockedByPointer]);
 
   React.useEffect(() => {
     const node = triggerNodeRef.current;
@@ -960,10 +1035,20 @@ export default function NestableMenu({
         event.preventDefault();
         return;
       }
+      if (lockedByPointer) {
+        closeByExplicitDismissal();
+        return;
+      }
       cancelPendingClose();
       setHoverSuspended(false);
     },
-    [cancelPendingClose, setHoverSuspended, shouldIgnoreOutside],
+    [
+      cancelPendingClose,
+      closeByExplicitDismissal,
+      lockedByPointer,
+      setHoverSuspended,
+      shouldIgnoreOutside,
+    ],
   );
 
   const handleInteractOutside = React.useCallback(
@@ -972,10 +1057,20 @@ export default function NestableMenu({
         event.preventDefault();
         return;
       }
+      if (lockedByPointer) {
+        closeByExplicitDismissal();
+        return;
+      }
       cancelPendingClose();
       setHoverSuspended(false);
     },
-    [cancelPendingClose, setHoverSuspended, shouldIgnoreOutside],
+    [
+      cancelPendingClose,
+      closeByExplicitDismissal,
+      lockedByPointer,
+      setHoverSuspended,
+      shouldIgnoreOutside,
+    ],
   );
 
   const setTriggerRef = React.useCallback(
@@ -1228,9 +1323,7 @@ export default function NestableMenu({
                   if (event.key === "Escape") {
                     event.preventDefault();
                     event.stopPropagation();
-                    setHoverSuspended(false);
-                    setLockedByPointer(false);
-                    aim.setOpen(false);
+                    closeByExplicitDismissal();
                     focusTrigger(persona.id);
                   }
                 }}

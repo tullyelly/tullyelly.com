@@ -390,7 +390,28 @@ describe("NestableMenu pointer modality", () => {
       expect(trigger.getAttribute("aria-expanded")).toBe("true");
     });
 
-    await clickTrigger(5, { x: 100, y: 64 });
+    await act(async () => {
+      fireEvent.pointerDown(document.body, {
+        pointerType: "mouse",
+        pointerId: 5,
+        clientX: 8,
+        clientY: 8,
+        bubbles: true,
+      });
+      fireEvent.pointerUp(document.body, {
+        pointerType: "mouse",
+        pointerId: 5,
+        clientX: 8,
+        clientY: 8,
+        bubbles: true,
+      });
+      fireEvent.click(document.body, {
+        button: 0,
+        clientX: 8,
+        clientY: 8,
+        bubbles: true,
+      });
+    });
 
     await waitFor(() => {
       expect(stateChanges.at(-1)).toBe(false);
