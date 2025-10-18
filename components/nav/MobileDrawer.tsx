@@ -351,7 +351,7 @@ export default function MobileDrawer({
         className="z-[80] inset-x-0 bottom-0 h-[85vh] rounded-t-2xl border-t border-[color:var(--border-subtle)] bg-[color:var(--surface-page)] p-0 text-[color:var(--text-strong)] sm:h-[80vh]"
         data-emoji-scope="mobile-drawer"
       >
-        <div className="flex h-full flex-col">
+        <div data-testid="nav-mobile-drawer" className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-[color:var(--border-subtle)] px-5 py-4">
             <span className="w-10" aria-hidden="true" />
             <SheetTitle className="text-lg font-semibold leading-none text-[color:var(--text-strong)]">

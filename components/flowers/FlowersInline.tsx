@@ -11,6 +11,7 @@ export function FlowersInline({
     <span
       className="inline-flex items-baseline gap-2 text-sm text-muted-foreground"
       aria-label="Acknowledgments"
+      data-testid="flowers-ack"
     >
       {withEmoji && <span aria-hidden="true">💐</span>}
       <span>Flowers: {children}</span>

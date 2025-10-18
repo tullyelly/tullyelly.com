@@ -14,9 +14,10 @@ test("credits page renders Flowers heading and aria-labeled element", async ({
 
 test("home page shows Flowers inline notes for sections", async ({ page }) => {
   await page.goto("/");
+  await page.getByRole("link", { name: "tullyelly ruins" }).click();
   await expect(
-    page.getByLabel("Acknowledgments").filter({ hasText: "Chronicles wiki" }),
-  ).toBeVisible();
+    page.getByTestId("flowers-ack").filter({ hasText: /chronicles/i }),
+  ).toContainText(/chronicles/i);
   await expect(
     page.getByLabel("Acknowledgments").filter({
       hasText: "PostgreSQL, Neon & DataGrip; rekindled my database crush.",

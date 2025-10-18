@@ -8,7 +8,11 @@ export function FlowersBlock({
   items?: React.ReactNode[];
 }) {
   return (
-    <section className="space-y-3" aria-label="Acknowledgments">
+    <section
+      className="space-y-3"
+      aria-label="Acknowledgments"
+      data-testid="flowers-ack"
+    >
       <h2 className="text-lg font-semibold">{title}</h2>
       {items.length > 0 && (
         <ul className="list-disc pl-6 space-y-1">
