@@ -13,6 +13,7 @@
     "prebuild": "npm run gen:build-info",
     "build": "prisma generate && next build",
     "build:e2e": "NEXT_E2E=1 NODE_ENV=test next build",
+    "prebuild:e2e": "npm run gen:build-info",
     "build:clean": "rimraf .next && next build || (rm -rf .next && next build)",
     "build:ci": "next build",
     "deploy:prod": "vercel build && vercel deploy --prebuilt --prod",
