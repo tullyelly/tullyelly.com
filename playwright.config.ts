@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// at top of playwright.config.ts
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.test" });
+
 export default defineConfig({
   testDir: ".",
   testMatch: ["e2e/**/*.spec.ts", "tests/**/*.spec.ts"],
@@ -40,6 +44,9 @@ export default defineConfig({
     env: {
       NODE_ENV: "test",
       NEXT_E2E: "1",
+      E2E: "true",
+      SHOW_FLOWERS: "true",
+      BREADCRUMBS: "true",
       NEXT_PUBLIC_E2E_MODE: "1",
       NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:4317",
       NEXT_PUBLIC_ANALYTICS_ENABLED: "1",
