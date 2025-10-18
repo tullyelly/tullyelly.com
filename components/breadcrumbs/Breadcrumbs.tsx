@@ -16,6 +16,7 @@ import { breadcrumbJsonLd } from "@/lib/breadcrumb";
 type BreadcrumbsProps = {
   forced?: Crumb[] | null;
   pathname?: string;
+  suppressed?: boolean;
 };
 
 function normalizeForcedCrumbs(
@@ -31,7 +32,11 @@ function normalizeForcedCrumbs(
   }));
 }
 
-export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
+export default function Breadcrumbs({
+  forced,
+  pathname,
+  suppressed = false,
+}: BreadcrumbsProps) {
   const routerPathname = usePathname() ?? "/";
   const activePath = pathname ?? routerPathname;
   const normalizedPath = normalizePathForCrumbs(activePath);
@@ -39,6 +44,10 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
   const trail = useBreadcrumbs(pathname);
 
   const rawItems = useMemo<Crumb[]>(() => {
+    if (suppressed) {
+      return [];
+    }
+
     if (forcedCrumbs?.length) {
       return forcedCrumbs;
     }
@@ -65,9 +74,13 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
       ...menuCrumbs,
     ]);
     return applyCrumbKinds(withHome);
-  }, [forcedCrumbs, trail, normalizedPath]);
+  }, [forcedCrumbs, trail, normalizedPath, suppressed]);
 
   const items = useMemo<Crumb[]>(() => {
+    if (suppressed) {
+      return [];
+    }
+
     if (!rawItems.length) {
       return [];
     }
@@ -99,23 +112,22 @@ export default function Breadcrumbs({ forced, pathname }: BreadcrumbsProps) {
     });
 
     return applyCrumbKinds([baseHome, ...normalizedTail]);
-  }, [rawItems]);
+  }, [rawItems, suppressed]);
 
   const jsonLd = useMemo(() => {
-    if (forcedCrumbs?.length || !items.length) {
+    if (suppressed || forcedCrumbs?.length || !items.length) {
       return null;
     }
     const linked = breadcrumbJsonLd(items);
     return linked.itemListElement.length ? linked : null;
-  }, [forcedCrumbs, items]);
-
-  if (!items.length) {
-    return null;
-  }
+  }, [suppressed, forcedCrumbs, items]);
 
   return (
     <>
-      <BookmarkBreadcrumb items={items} />
+      <BookmarkBreadcrumb
+        items={items}
+        skeleton={suppressed || !items.length}
+      />
       {jsonLd ? (
         <script
           type="application/ld+json"

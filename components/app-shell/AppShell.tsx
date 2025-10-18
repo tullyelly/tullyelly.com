@@ -92,12 +92,11 @@ export default async function AppShell({
         {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
         {children}
       </div>
-      {showBreadcrumbs ? (
-        <Breadcrumbs
-          pathname={disableGlobalBreadcrumb ? pathname : undefined}
-          forced={forcedItems}
-        />
-      ) : null}
+      <Breadcrumbs
+        pathname={disableGlobalBreadcrumb ? pathname : undefined}
+        forced={forcedItems}
+        suppressed={!showBreadcrumbs}
+      />
     </div>
   );
 
