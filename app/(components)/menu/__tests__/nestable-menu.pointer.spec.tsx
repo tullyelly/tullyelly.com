@@ -7,6 +7,7 @@ import {
   fireEvent,
   render,
   waitFor,
+  waitForElementToBeRemoved,
   screen,
 } from "@testing-library/react";
 import * as React from "react";
@@ -389,29 +390,29 @@ describe("NestableMenu pointer modality", () => {
     await waitFor(() => {
       expect(trigger.getAttribute("aria-expanded")).toBe("true");
     });
+    await waitFor(() => {
+      const currentMenu = getMenuElement();
+      expect(currentMenu).not.toBeNull();
+      expect(currentMenu?.getAttribute("data-state")).toBe("open");
+    });
+    const waitForMenuClose = waitForElementToBeRemoved(() =>
+      document.querySelector(
+        `[data-persona-menu="${persona.id}"][data-state="open"]`,
+      ),
+    );
 
     await act(async () => {
       fireEvent.pointerDown(document.body, {
         pointerType: "mouse",
         pointerId: 5,
-        clientX: 8,
-        clientY: 8,
-        bubbles: true,
-      });
-      fireEvent.pointerUp(document.body, {
-        pointerType: "mouse",
-        pointerId: 5,
-        clientX: 8,
-        clientY: 8,
-        bubbles: true,
-      });
-      fireEvent.click(document.body, {
         button: 0,
         clientX: 8,
         clientY: 8,
         bubbles: true,
       });
     });
+
+    await waitForMenuClose;
 
     await waitFor(() => {
       expect(stateChanges.at(-1)).toBe(false);
