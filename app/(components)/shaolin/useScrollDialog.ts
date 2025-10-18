@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 export function useScrollDialog() {
   const [open, setOpen] = useState(false);
@@ -12,4 +12,3 @@ export function useScrollDialog() {
   const close = () => setOpen(false);
   return { open, setOpen, id, openWithId, close };
 }
-

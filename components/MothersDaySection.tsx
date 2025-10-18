@@ -1,15 +1,18 @@
-import FlowersInline from '@/components/flowers/FlowersInline';
+import FlowersInline from "@/components/flowers/FlowersInline";
 
 type Props = { date?: string };
 
 export function MothersDaySection({ date }: Props) {
   return (
-    <section aria-label="Mother&apos;s Day 2025" className="space-y-2">
+    <section aria-label="Mother's Day 2025" className="space-y-2">
       <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-        <span aria-hidden>🌷</span>Mother&apos;s Day 2025{date ? `; ${date}` : ''}
+        <span aria-hidden>🌷</span>Mother&apos;s Day 2025
+        {date ? `; ${date}` : ""}
       </h2>
       <p className="text-[16px] md:text-[18px] text-muted-foreground">
-        Before we dive too deep into the nerd, here&apos;s some additional wholesome Mother&apos;s Day content for you to enjoy! I found them to be just as impactful as the first time around.
+        Before we dive too deep into the nerd, here&apos;s some additional
+        wholesome Mother&apos;s Day content for you to enjoy! I found them to be
+        just as impactful as the first time around.
       </p>
       <div className="space-y-4">
         <figure className="space-y-2">
@@ -22,7 +25,7 @@ export function MothersDaySection({ date }: Props) {
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             />
-          </div>          
+          </div>
         </figure>
         <figure className="space-y-2">
           <div className="yt-wrapper-bucks yt-wrapper-bucks--compact">

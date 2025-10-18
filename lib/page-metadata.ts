@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
-import type { PageFrontmatter } from '@/types/frontmatter';
+import type { Metadata } from "next";
+import type { PageFrontmatter } from "@/types/frontmatter";
 
 export function buildPageMetadata(frontmatter: PageFrontmatter): Metadata {
   const { title, description, canonical, hero } = frontmatter;

@@ -22,7 +22,7 @@ export async function GET() {
       ok: true,
       buildIso: buildInfo.buildTime ?? "",
       commitSha: buildInfo.commit ?? "",
-      shortCommit: (buildInfo.commit ?? '').slice(0, 7),
+      shortCommit: (buildInfo.commit ?? "").slice(0, 7),
       branch: buildInfo.branch ?? "",
       version: buildInfo.version ?? "",
     });

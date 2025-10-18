@@ -23,15 +23,15 @@ if (process.env.NODE_ENV !== "production") {
  * T must extend QueryResultRow.
  */
 export function query<T extends QueryResultRow = QueryResultRow>(
-  config: QueryConfig<any[]>
+  config: QueryConfig<any[]>,
 ): Promise<QueryResult<T>>;
 export function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params?: any[] | undefined
+  params?: any[] | undefined,
 ): Promise<QueryResult<T>>;
 export function query<T extends QueryResultRow = QueryResultRow>(
   textOrConfig: string | QueryConfig<any[]>,
-  params?: any[] | undefined
+  params?: any[] | undefined,
 ): Promise<QueryResult<T>> {
   return typeof textOrConfig === "string"
     ? pool.query<T>(textOrConfig, params)

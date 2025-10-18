@@ -25,27 +25,28 @@ SET row_security = off;
 
 CREATE SCHEMA core;
 
-
 --
 -- Name: audit_stamp_generic(); Type: FUNCTION; Schema: core; Owner: -
 --
 
 CREATE FUNCTION core.audit_stamp_generic() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
+LANGUAGE plpgsql
+AS $$
 BEGIN
-  IF TG_OP = 'INSERT' THEN
-    IF NEW.created_at IS NULL THEN NEW.created_at := CURRENT_TIMESTAMP; END IF;
-    IF NEW.created_by IS NULL THEN NEW.created_by := CURRENT_USER; END IF;
-    NEW.updated_at := NULL;
-    NEW.updated_by := NULL;
-  ELSIF TG_OP = 'UPDATE' THEN
-    NEW.updated_at := CURRENT_TIMESTAMP;
-    NEW.updated_by := CURRENT_USER;
-  END IF;
-  RETURN NEW;
+IF TG_OP = 'INSERT' THEN
+IF NEW.created_at IS NULL THEN NEW.created_at := CURRENT_TIMESTAMP; END IF;
+IF NEW.created_by IS NULL THEN NEW.created_by := CURRENT_USER; END IF;
+NEW.updated_at := NULL;
+NEW.updated_by := NULL;
+ELSIF TG_OP = 'UPDATE' THEN
+NEW.updated_at := CURRENT_TIMESTAMP;
+NEW.updated_by := CURRENT_USER;
+END IF;
+RETURN NEW;
 END;
-$$;
+
+$$
+;
 
 
 SET default_tablespace = '';
@@ -324,3 +325,5 @@ ALTER TABLE ONLY core.shaolin_scrolls
 
 \unrestrict 6eAUekykUhDo26KMfrNYX6n0hdFqaEg74rxgRJi1lfGXoG7eOu20WxGhMfR40ay
 
+
+$$

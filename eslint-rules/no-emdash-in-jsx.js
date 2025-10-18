@@ -1,25 +1,26 @@
 const rule = {
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'disallow em dashes in JSXText; use a semicolon instead',
+      description: "disallow em dashes in JSXText; use a semicolon instead",
     },
-    fixable: 'code',
+    fixable: "code",
     schema: [],
   },
   create(context) {
     const source = context.getSourceCode().text;
-    if (source.includes('punctuation-allowed')) {
+    if (source.includes("punctuation-allowed")) {
       return {};
     }
     return {
       JSXText(node) {
-        if (node.value.includes('—')) {
+        if (node.value.includes("—")) {
           context.report({
             node,
-            message: 'Em dashes are not allowed in JSXText; use a semicolon instead.',
+            message:
+              "Em dashes are not allowed in JSXText; use a semicolon instead.",
             fix(fixer) {
-              const fixed = node.value.replace(/—+/g, ';');
+              const fixed = node.value.replace(/—+/g, ";");
               return fixer.replaceText(node, fixed);
             },
           });

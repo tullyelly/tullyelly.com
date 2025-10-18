@@ -54,7 +54,11 @@ function LoginInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="mx-auto max-w-sm p-8 text-center">Loading…</main>}>
+    <Suspense
+      fallback={
+        <main className="mx-auto max-w-sm p-8 text-center">Loading…</main>
+      }
+    >
       <LoginInner />
     </Suspense>
   );

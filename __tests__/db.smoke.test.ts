@@ -1,8 +1,8 @@
-jest.mock('@/db/pool', () => ({
+jest.mock("@/db/pool", () => ({
   getPool: () => ({
     query: (sql: string) => {
-      if (sql.includes('current_database')) {
-        return Promise.resolve({ rows: [{ current_database: 'test' }] });
+      if (sql.includes("current_database")) {
+        return Promise.resolve({ rows: [{ current_database: "test" }] });
       }
       return Promise.resolve({ rows: [{ result: 1 }] });
     },
@@ -10,27 +10,27 @@ jest.mock('@/db/pool', () => ({
   }),
 }));
 
-import type { QueryResult } from 'pg';
-import { getPool } from '@/db/pool';
+import type { QueryResult } from "pg";
+import { getPool } from "@/db/pool";
 
-describe('database smoke test', () => {
-  it('SELECT 1 returns 1', async () => {
-    const res: QueryResult<{ result: number }> = await getPool().query('SELECT 1 as result');
+describe("database smoke test", () => {
+  it("SELECT 1 returns 1", async () => {
+    const res: QueryResult<{ result: number }> =
+      await getPool().query("SELECT 1 as result");
     expect(res.rows[0].result).toBe(1);
   });
 
-  it('reports current database name', async () => {
-    const res: QueryResult<{ current_database: string }> = await getPool().query(
-      'SELECT current_database()'
-    );
-    expect(res.rows[0].current_database).toBe('test');
+  it("reports current database name", async () => {
+    const res: QueryResult<{ current_database: string }> =
+      await getPool().query("SELECT current_database()");
+    expect(res.rows[0].current_database).toBe("test");
   });
 });
 
 afterAll(async () => {
   try {
     const pool = getPool();
-    if (typeof pool.end === 'function') {
+    if (typeof pool.end === "function") {
       await pool.end();
     }
   } catch {}

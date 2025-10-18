@@ -1,4 +1,4 @@
-import { cn } from '@/app/lib/cn';
+import { cn } from "@/app/lib/cn";
 
 type Props = {
   className?: string;
@@ -12,7 +12,7 @@ export function SectionDivider({ className }: Props) {
       aria-hidden
       className={cn(
         // Force Great Lakes Blue via CSS var; avoid Tailwind color mapping pitfalls
-        'my-10 h-[4px] w-full rounded bg-[var(--blue)]',
+        "my-10 h-[4px] w-full rounded bg-[var(--blue)]",
         className,
       )}
     />

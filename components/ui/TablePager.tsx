@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useId, useMemo } from 'react';
-import { cn } from '@/lib/cn';
-import { PAGE_SIZE_OPTIONS } from '@/lib/pagination';
+import { useId, useMemo } from "react";
+import { cn } from "@/lib/cn";
+import { PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 
 type TablePagerProps = {
   page: number;
@@ -37,7 +37,10 @@ export default function TablePager({
   }, [page, pageSize, total]);
 
   const sizes = useMemo(() => {
-    const opts = pageSizeOptions && pageSizeOptions.length > 0 ? pageSizeOptions : PAGE_SIZE_OPTIONS;
+    const opts =
+      pageSizeOptions && pageSizeOptions.length > 0
+        ? pageSizeOptions
+        : PAGE_SIZE_OPTIONS;
     return Array.from(new Set([...opts, pageSize])).sort((a, b) => a - b);
   }, [pageSizeOptions, pageSize]);
 
@@ -45,10 +48,17 @@ export default function TablePager({
   const canGoNext = totalPages > 0 && currentPage < totalPages;
 
   return (
-    <div className={cn('mt-4 flex flex-col gap-3 border-t border-[var(--border-subtle)] pt-3', className)}>
+    <div
+      className={cn(
+        "mt-4 flex flex-col gap-3 border-t border-[var(--border-subtle)] pt-3",
+        className,
+      )}
+    >
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="text-sm text-ink/70" aria-live="polite">
-          {totalPages === 0 ? 'No results' : `Page ${currentPage} of ${totalPages} • ${total} total`}
+          {totalPages === 0
+            ? "No results"
+            : `Page ${currentPage} of ${totalPages} • ${total} total`}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <label htmlFor={selectId} className="text-sm text-ink/70">
@@ -80,7 +90,9 @@ export default function TablePager({
           <button
             type="button"
             className="btn text-sm"
-            onClick={() => onPageChange(Math.min(totalPages || 1, currentPage + 1))}
+            onClick={() =>
+              onPageChange(Math.min(totalPages || 1, currentPage + 1))
+            }
             disabled={isPending || !canGoNext}
           >
             Next

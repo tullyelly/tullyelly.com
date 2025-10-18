@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
-import Image from 'next/image';
+import Image from "next/image";
 
 export const metadata = {
-  title: 'Image Sanity Check',
+  title: "Image Sanity Check",
 };
 
 export default function Page() {

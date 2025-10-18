@@ -1,7 +1,13 @@
 import { cn } from "@/lib/cn";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 
-export function YearBadge({ year, className }: { year: number | string; className?: string }) {
+export function YearBadge({
+  year,
+  className,
+}: {
+  year: number | string;
+  className?: string;
+}) {
   return (
     <span
       className={cn(
@@ -9,7 +15,7 @@ export function YearBadge({ year, className }: { year: number | string; classNam
         getBadgeClass("year"),
         // Force Bucks green via CSS var to win specificity/purge battles
         "!bg-[var(--green)] !text-white",
-        className
+        className,
       )}
     >
       {year}

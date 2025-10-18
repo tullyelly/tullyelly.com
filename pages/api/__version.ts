@@ -1,13 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { buildInfo } from "@/lib/build-info";
 
-export default async function handler(_req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  _req: NextApiRequest,
+  res: NextApiResponse,
+) {
   try {
     res.status(200).json({
       ok: true,
       buildIso: buildInfo.buildTime ?? "",
       commitSha: buildInfo.commit ?? "",
-      shortCommit: (buildInfo.commit ?? '').slice(0, 7),
+      shortCommit: (buildInfo.commit ?? "").slice(0, 7),
       branch: buildInfo.branch ?? "",
       version: buildInfo.version ?? "",
     });
