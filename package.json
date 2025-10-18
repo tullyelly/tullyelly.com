@@ -13,6 +13,7 @@
     "prebuild": "npm run gen:build-info",
     "build": "prisma generate && next build",
     "build:clean": "rimraf .next && next build || (rm -rf .next && next build)",
+    "build:ci": "next build",
     "deploy:prod": "vercel build && vercel deploy --prebuilt --prod",
     "postbuild": "npm run gen:build-info",
     "start": "next start",
