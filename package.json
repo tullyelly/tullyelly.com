@@ -16,6 +16,9 @@
     "deploy:prod": "vercel build && vercel deploy --prebuilt --prod",
     "postbuild": "npm run gen:build-info",
     "start": "next start",
+    "start:ci": "cross-env NODE_ENV=production PORT=4010 next start -p 4010",
+    "wait:ci": "wait-on --httpTimeout 10000 --timeout 120000 http://127.0.0.1:4010/api/health",
+    "serve-and-test": "start-server-and-test start:ci http://127.0.0.1:4010/api/health test:ci",
     "start:prod:local": "npm run build && cross-env NODE_ENV=production PORT=4010 npm start",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx,json,yml,yaml,css}\"",
     "format:check": "node scripts/check-formatting.mjs",
@@ -153,6 +156,7 @@
     "secretlint": "^11.2.4",
     "secretlint-rule-custom-pg-url": "file:tools/secretlint-rules",
     "server-only": "^0.0.1",
+    "start-server-and-test": "^2.1.2",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.1",
     "ts-prune": "^0.10.3",
@@ -160,7 +164,8 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
     "undici": "^7.16.0",
-    "vitest": "^1.6.1"
+    "vitest": "^1.6.1",
+    "wait-on": "^7.2.0"
   },
   "lint-staged": {
     "*": [
