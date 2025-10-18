@@ -8,7 +8,6 @@ import { PrismaClient } from "@prisma/client";
 import { getAuthzRevision, getEffectiveFeatures } from "@/app/_auth/policy";
 
 declare global {
-   
   var __PRISMA_CLIENT__: PrismaClient | undefined;
 }
 
