@@ -7,11 +7,17 @@ export type PointerKind = "mouse" | "touch" | "pen" | "keyboard" | "unknown";
 type PointerEventLike =
   | React.PointerEvent<Element>
   | PointerEvent
-  | { pointerType?: string | null | undefined };
+  | (Event & { pointerType?: string | null | undefined });
+
+const supportsPointerEvents =
+  typeof globalThis !== "undefined" && "PointerEvent" in globalThis;
 
 function normalizePointerType(type: string | null | undefined): PointerKind {
   if (type === "mouse" || type === "touch" || type === "pen") {
     return type;
+  }
+  if (!supportsPointerEvents) {
+    return "mouse";
   }
   return "unknown";
 }
@@ -26,7 +32,25 @@ export function useLastPointerType(initial: PointerKind = "unknown") {
 
   const setFromPointerEvent = React.useCallback((event: PointerEventLike) => {
     if (!event) return;
-    last.current = normalizePointerType(event.pointerType);
+    const pointerType =
+      typeof event.pointerType === "string" ? event.pointerType : undefined;
+    let nextKind = normalizePointerType(pointerType);
+
+    if (nextKind === "unknown") {
+      const eventType =
+        "type" in event && typeof event.type === "string" ? event.type : null;
+      if (eventType?.startsWith("mouse") || eventType === "click") {
+        nextKind = "mouse";
+      } else if (eventType?.startsWith("touch")) {
+        nextKind = "touch";
+      } else if (eventType?.startsWith("pen")) {
+        nextKind = "pen";
+      } else if (!supportsPointerEvents) {
+        nextKind = "mouse";
+      }
+    }
+
+    last.current = nextKind;
   }, []);
 
   const setKeyboard = React.useCallback(() => {

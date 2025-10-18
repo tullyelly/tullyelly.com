@@ -261,6 +261,51 @@ export default function NestableMenu({
     placement: "bottom-start",
   });
 
+  const isTargetWithinInteractiveArea = React.useCallback(
+    (target: EventTarget | null) => {
+      const supportsNode = typeof Node !== "undefined";
+      if (!supportsNode || !target || !(target instanceof Node)) {
+        return false;
+      }
+      const trigger = triggerNodeRef.current;
+      if (trigger && (target === trigger || trigger.contains(target))) {
+        return true;
+      }
+      const panel = positionedPanelRef.current;
+      if (panel && panel.contains(target)) {
+        return true;
+      }
+      return false;
+    },
+    [],
+  );
+
+  const closeIfMouseExit = React.useCallback(
+    (nextTarget: EventTarget | null) => {
+      if (!isOpen) {
+        return;
+      }
+      if (lockedByPointer) {
+        return;
+      }
+      const lastKind = getLastPointerKind();
+      if (lastKind === "touch") {
+        return;
+      }
+      if (isTargetWithinInteractiveArea(nextTarget)) {
+        return;
+      }
+      aim.setOpen(false);
+    },
+    [
+      aim,
+      getLastPointerKind,
+      isOpen,
+      isTargetWithinInteractiveArea,
+      lockedByPointer,
+    ],
+  );
+
   React.useEffect(() => {
     const node = triggerNodeRef.current;
     if (!node) return;
@@ -571,18 +616,27 @@ export default function NestableMenu({
       setFromPointerEvent(event);
       if (!isHoverCapablePointer(event.pointerType)) {
         awaitingPointerUpRef.current = false;
+        closeIfMouseExit(event.relatedTarget);
         return;
       }
       setHoverSuspended(false);
       if (lockedByPointer) {
+        closeIfMouseExit(event.relatedTarget);
         return;
       }
       const handler = referenceProps.onPointerLeave as
         | ((ev: React.PointerEvent<HTMLButtonElement>) => void)
         | undefined;
       handler?.(event);
+      closeIfMouseExit(event.relatedTarget);
     },
-    [lockedByPointer, referenceProps, setFromPointerEvent, setHoverSuspended],
+    [
+      closeIfMouseExit,
+      lockedByPointer,
+      referenceProps,
+      setFromPointerEvent,
+      setHoverSuspended,
+    ],
   );
 
   const handleMouseEnter = React.useCallback(
@@ -607,14 +661,22 @@ export default function NestableMenu({
       setFromPointerEvent({ pointerType: "mouse" });
       setHoverSuspended(false);
       if (lockedByPointer) {
+        closeIfMouseExit(event.relatedTarget);
         return;
       }
       const handler = referenceProps.onMouseLeave as
         | ((ev: React.MouseEvent<HTMLButtonElement>) => void)
         | undefined;
       handler?.(event);
+      closeIfMouseExit(event.relatedTarget);
     },
-    [lockedByPointer, referenceProps, setFromPointerEvent, setHoverSuspended],
+    [
+      closeIfMouseExit,
+      lockedByPointer,
+      referenceProps,
+      setFromPointerEvent,
+      setHoverSuspended,
+    ],
   );
 
   const handlePointerCancel = React.useCallback(() => {
@@ -909,12 +971,14 @@ export default function NestableMenu({
                 return;
               }
               floatingHandlers.onPointerLeave?.(event);
+              closeIfMouseExit(event.relatedTarget);
             }}
             onMouseLeave={(event) => {
               if (lockedByPointer) {
                 return;
               }
               floatingHandlers.onMouseLeave?.(event);
+              closeIfMouseExit(event.relatedTarget);
             }}
             onBlurCapture={(event) => {
               const next = event.relatedTarget as HTMLElement | null;
@@ -967,12 +1031,14 @@ export default function NestableMenu({
                     return;
                   }
                   floatingHandlers.onPointerLeave?.(event);
+                  closeIfMouseExit(event.relatedTarget);
                 }}
                 onMouseLeave={(event) => {
                   if (lockedByPointer) {
                     return;
                   }
                   floatingHandlers.onMouseLeave?.(event);
+                  closeIfMouseExit(event.relatedTarget);
                 }}
                 onBlurCapture={(event) => {
                   const next = event.relatedTarget as HTMLElement | null;
