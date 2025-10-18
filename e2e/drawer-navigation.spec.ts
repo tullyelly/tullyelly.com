@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { ensureVisualStability as enforceVisualStability } from "../tests/utils/visual-stability";
 
 const mobileViewport = { width: 390, height: 844 };
 const desktopViewport = { width: 1280, height: 800 };
@@ -68,14 +69,25 @@ test.describe("mobile drawer hierarchy", () => {
 test.describe("desktop navigation regression", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(desktopViewport);
-    await page.goto("/menu-test");
+    await page.goto("/", { waitUntil: "networkidle" });
+    await enforceVisualStability(page);
     await page.waitForSelector("#site-header");
   });
 
   test("header matches baseline screenshot", async ({ page }) => {
     const header = page.locator("#site-header");
     await expect(header).toHaveScreenshot("desktop-header.png", {
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.01,
+      animations: "disabled",
+      caret: "hide",
+      scale: "device",
+      mask: [
+        page.locator("[data-progress]"),
+        page.locator("#build-info"),
+        page.locator("[data-clock]"),
+        page.locator("[data-unread]"),
+        page.locator("[data-avatar]"),
+      ],
     });
   });
 });

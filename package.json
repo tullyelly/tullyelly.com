@@ -59,6 +59,8 @@
     "test:e2e:headed": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --headed",
     "test:e2e:install": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright install --with-deps",
     "test:e2e:ci": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --reporter=html",
+    "test:e2e:header": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test -g \"header matches baseline screenshot\"",
+    "test:e2e:update:header": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test -g \"header matches baseline screenshot\" --update-snapshots",
     "db:ping": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/db-ping.ts",
     "sanity:db": "node scripts/db_sanity.mjs",
     "check:use-server": "bash scripts/check-use-server.sh",
