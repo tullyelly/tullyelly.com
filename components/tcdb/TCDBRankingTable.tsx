@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import type { ReactNode } from 'react';
-import { useEffect, useMemo, useState, useTransition } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import * as Dialog from '@ui/dialog';
-import { X } from 'lucide-react';
-import { fmtDate } from '@/lib/datetime';
-import TrendPill, { TrendValue } from './TrendPill';
-import { Table, TBody, THead } from '@/components/ui/Table';
-import TablePager from '@/components/ui/TablePager';
-import { Card } from '@ui';
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { Route } from "next";
+import * as Dialog from "@ui/dialog";
+import { X } from "lucide-react";
+import { fmtDate } from "@/lib/datetime";
+import TrendPill, { TrendValue } from "./TrendPill";
+import { Table, TBody, THead } from "@/components/ui/Table";
+import TablePager from "@/components/ui/TablePager";
+import { Card } from "@ui";
+import { BusyButton } from "@/components/ui/busy-button";
 
 type Row = {
   homie_id: number;
@@ -37,11 +39,13 @@ type ApiPayload = {
   };
 };
 
-const integerFormatter = new Intl.NumberFormat('en-US');
-const signedFormatter = new Intl.NumberFormat('en-US', { signDisplay: 'always' });
+const integerFormatter = new Intl.NumberFormat("en-US");
+const signedFormatter = new Intl.NumberFormat("en-US", {
+  signDisplay: "always",
+});
 
 function formatSigned(value: number | null | undefined) {
-  if (value === null || value === undefined) return 'Not available';
+  if (value === null || value === undefined) return "Not available";
   return signedFormatter.format(value);
 }
 
@@ -64,7 +68,10 @@ function RankingDetailDialog({ row, trigger }: RankingDetailDialogProps) {
           <div
             data-dialog-handle
             className="-mx-6 -mt-6 flex items-center gap-3 bg-[var(--blue)] px-6 py-2 text-white"
-            style={{ borderTopLeftRadius: '13px', borderTopRightRadius: '13px' }}
+            style={{
+              borderTopLeftRadius: "13px",
+              borderTopRightRadius: "13px",
+            }}
           >
             <div className="min-w-0 flex-1">
               <Dialog.Title className="text-base font-semibold leading-6">
@@ -86,24 +93,52 @@ function RankingDetailDialog({ row, trigger }: RankingDetailDialogProps) {
           <div className="mt-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
-                { label: 'Current Rank', render: () => integerFormatter.format(row.ranking) },
-                { label: 'Total Cards', render: () => integerFormatter.format(row.card_count) },
-                { label: 'Jersey', render: () => row.homie_id },
-                { label: 'Difference', render: () => signedFormatter.format(row.difference) },
-                { label: 'Rank Delta', render: () => formatSigned(row.rank_delta) },
-                { label: 'Difference Delta', render: () => formatSigned(row.diff_delta) },
-                { label: 'Ranking Updated', render: () => formatRankingTimestamp(row.ranking_at) },
-                { label: 'Overall Trend', render: () => <TrendPill trend={row.trend_overall} /> },
-                { label: 'Rank Trend', render: () => <TrendPill trend={row.trend_rank} /> },
-                { label: 'Diff Sign Changed', render: () => (row.diff_sign_changed ? 'Yes' : 'No') },
+                {
+                  label: "Current Rank",
+                  render: () => integerFormatter.format(row.ranking),
+                },
+                {
+                  label: "Total Cards",
+                  render: () => integerFormatter.format(row.card_count),
+                },
+                { label: "Jersey", render: () => row.homie_id },
+                {
+                  label: "Difference",
+                  render: () => signedFormatter.format(row.difference),
+                },
+                {
+                  label: "Rank Delta",
+                  render: () => formatSigned(row.rank_delta),
+                },
+                {
+                  label: "Difference Delta",
+                  render: () => formatSigned(row.diff_delta),
+                },
+                {
+                  label: "Ranking Updated",
+                  render: () => formatRankingTimestamp(row.ranking_at),
+                },
+                {
+                  label: "Overall Trend",
+                  render: () => <TrendPill trend={row.trend_overall} />,
+                },
+                {
+                  label: "Rank Trend",
+                  render: () => <TrendPill trend={row.trend_rank} />,
+                },
+                {
+                  label: "Diff Sign Changed",
+                  render: () => (row.diff_sign_changed ? "Yes" : "No"),
+                },
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm">
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm"
+                >
                   <div className="text-[11px] font-semibold uppercase tracking-wide text-ink/60">
                     {item.label}
                   </div>
-                  <div className="mt-1 text-sm text-ink">
-                    {item.render()}
-                  </div>
+                  <div className="mt-1 text-sm text-ink">{item.render()}</div>
                 </div>
               ))}
             </div>
@@ -114,24 +149,31 @@ function RankingDetailDialog({ row, trigger }: RankingDetailDialogProps) {
   );
 }
 
-export default function TCDBRankingTable({ serverData }: { serverData: ApiPayload }) {
+export default function TCDBRankingTable({
+  serverData,
+}: {
+  serverData: ApiPayload;
+}) {
   const router = useRouter();
   const pathname = usePathname();
-  const currentPath = pathname ?? '/tcdb-rankings';
+  const currentPath = pathname ?? "/cardattack/tcdb-rankings";
   const search = useSearchParams();
-  const searchSnapshot = search?.toString() ?? '';
+  const searchSnapshot = search?.toString() ?? "";
   const [isPending, startTransition] = useTransition();
 
-  const [q, setQ] = useState<string>(() => search?.get('q') ?? '');
-  const [trend, setTrend] = useState<string>(() => search?.get('trend') ?? '');
+  const [q, setQ] = useState<string>(() => search?.get("q") ?? "");
+  const [trend, setTrend] = useState<string>(() => search?.get("trend") ?? "");
 
   useEffect(() => {
-    setQ(search?.get('q') ?? '');
-    setTrend(search?.get('trend') ?? '');
+    setQ(search?.get("q") ?? "");
+    setTrend(search?.get("trend") ?? "");
   }, [searchSnapshot, search]);
 
   const { data, meta } = serverData;
-  const rows = useMemo(() => [...data].sort((a, b) => b.card_count - a.card_count), [data]);
+  const rows = useMemo(
+    () => [...data].sort((a, b) => b.card_count - a.card_count),
+    [data],
+  );
 
   function updateQuery(
     next: Record<string, string | undefined>,
@@ -144,11 +186,14 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
       else current.set(key, value);
     });
     if (resetPage) {
-      current.delete('page');
+      current.delete("page");
     }
     const queryString = current.toString();
     startTransition(() => {
-      router.replace(queryString ? `${currentPath}?${queryString}` : currentPath);
+      const nextPath = queryString
+        ? `${currentPath}?${queryString}`
+        : currentPath;
+      router.replace(nextPath as Route);
     });
   }
 
@@ -165,7 +210,12 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
   const hasRows = rows.length > 0;
 
   return (
-    <section className="space-y-4">
+    <section
+      className="space-y-4"
+      aria-live="polite"
+      aria-busy={isPending ? "true" : undefined}
+      role="region"
+    >
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <form
           onSubmit={onSubmit}
@@ -182,16 +232,17 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
               aria-label="Search homies"
               type="search"
             />
-            <button
+            <BusyButton
               type="submit"
               className="btn shrink-0"
-              disabled={isPending}
+              isLoading={isPending}
+              loadingLabel="Searching…"
             >
-              {isPending ? 'Searching…' : 'Search'}
-            </button>
+              Search
+            </BusyButton>
           </div>
           <div aria-live="polite" className="sr-only">
-            {isPending ? 'Updating results' : 'Results ready'}
+            {isPending ? "Updating results" : "Results ready"}
           </div>
         </form>
         <div className="md:min-w-[12rem]">
@@ -229,17 +280,23 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
               </div>
               <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-ink/60">Jersey</dt>
+                  <dt className="text-xs uppercase tracking-wide text-ink/60">
+                    Jersey
+                  </dt>
                   <dd className="tabular-nums text-ink">{row.homie_id}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-ink/60">Cards</dt>
+                  <dt className="text-xs uppercase tracking-wide text-ink/60">
+                    Cards
+                  </dt>
                   <dd className="tabular-nums text-ink">
                     {integerFormatter.format(row.card_count)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-ink/60">Difference</dt>
+                  <dt className="text-xs uppercase tracking-wide text-ink/60">
+                    Difference
+                  </dt>
                   <dd className="tabular-nums text-ink">
                     {signedFormatter.format(row.difference)}
                   </dd>
@@ -290,7 +347,10 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
         <TBody>
           {hasRows ? (
             rows.map((row) => (
-              <tr key={row.homie_id} className="border-b border-black/5 last:border-0">
+              <tr
+                key={row.homie_id}
+                className="border-b border-black/5 last:border-0"
+              >
                 <td className="tabular-nums text-ink/80">
                   <RankingDetailDialog
                     row={row}
@@ -318,7 +378,11 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
                   <span className="inline-flex items-center gap-1">
                     {integerFormatter.format(row.ranking)}
                     {row.ranking === 1 ? (
-                      <span className="leading-none" role="img" aria-label="Top rank">
+                      <span
+                        className="leading-none"
+                        role="img"
+                        aria-label="Top rank"
+                      >
                         🏆
                       </span>
                     ) : null}
@@ -331,7 +395,10 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
             ))
           ) : (
             <tr>
-              <td colSpan={5} className="px-4 py-6 text-center text-sm text-ink/70">
+              <td
+                colSpan={5}
+                className="px-4 py-6 text-center text-sm text-ink/70"
+              >
                 No rankings match your filters.
               </td>
             </tr>
@@ -345,7 +412,9 @@ export default function TCDBRankingTable({ serverData }: { serverData: ApiPayloa
         total={meta.total}
         isPending={isPending}
         onPageChange={(nextPage) => updateQuery({ page: String(nextPage) })}
-        onPageSizeChange={(nextSize) => updateQuery({ pageSize: String(nextSize) }, { resetPage: true })}
+        onPageSizeChange={(nextSize) =>
+          updateQuery({ pageSize: String(nextSize) }, { resetPage: true })
+        }
       />
     </section>
   );

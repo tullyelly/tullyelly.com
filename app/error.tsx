@@ -1,5 +1,5 @@
-'use client';
-import { useEffect } from 'react';
+"use client";
+import { useEffect } from "react";
 
 export default function GlobalError({
   error,
@@ -9,13 +9,19 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('[GLOBAL_ERROR]', { message: error.message, digest: error.digest });
+    console.error("[GLOBAL_ERROR]", {
+      message: error.message ?? "Unknown error",
+      digest: error.digest,
+      stack: error.stack,
+    });
   }, [error]);
 
   return (
     <div>
       <h1>Something went sideways.</h1>
-      <button className="btn" onClick={reset}>Retry</button>
+      <button className="btn" onClick={reset}>
+        Retry
+      </button>
     </div>
   );
 }

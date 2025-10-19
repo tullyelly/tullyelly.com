@@ -7,8 +7,10 @@ export function getDatabaseUrl() {
     const u = new URL(url);
     const host = u.host.toLowerCase();
     const db = u.pathname.slice(1).toLowerCase();
-    const prodish = host.includes("prod") || host.includes("main") || db.includes("prod");
-    if (prodish) throw new Error(`Refusing prod-looking DB in dev: host=${host} db=${db}`);
+    const prodish =
+      host.includes("prod") || host.includes("main") || db.includes("prod");
+    if (prodish)
+      throw new Error(`Refusing prod-looking DB in dev: host=${host} db=${db}`);
   }
 
   const u = new URL(url);

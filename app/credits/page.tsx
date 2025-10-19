@@ -1,10 +1,11 @@
 import { flowersConfig } from "@/lib/flowersConfig";
 import FlowersBlock from "@/components/flowers/FlowersBlock";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 export const metadata = {
   title: `${flowersConfig.displayLabel}; tullyelly`,
   description: flowersConfig.tooltip,
-  alternates: { canonical: `https://tullyelly.com${flowersConfig.slug}` },
+  alternates: { canonical: canonicalUrl(flowersConfig.slug) },
 };
 
 export default function Page() {

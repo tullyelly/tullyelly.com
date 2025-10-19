@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { DATABASE_URL } from "@/lib/env";
+import { DATABASE_URL, isNextBuild } from "@/lib/env";
 import { assertValidDatabaseUrl } from "@/db/assert-database-url";
 
 interface Queryable {
@@ -62,20 +62,27 @@ function createE2EPool(): Queryable {
 export function getPool(): Queryable {
   if (pool) return pool;
 
+  if (process.env.SKIP_DB === "true") {
+    throw new Error("Database access disabled when SKIP_DB=true.");
+  }
+
   if (process.env.E2E_MODE === "1") {
     pool = createE2EPool();
     return pool;
   }
 
-  if (!DATABASE_URL)
-    throw new Error("Missing DATABASE_URL. Set it in .env.local");
-  assertValidDatabaseUrl(DATABASE_URL);
-  const user = new URL(DATABASE_URL).username;
-  if (process.env.NODE_ENV !== "production") {
-    console.log(`DB user: ${user}`);
+  if (isNextBuild()) {
+    throw new Error(
+      "Database access is disabled during Next.js production build.",
+    );
   }
+
+  const connectionString = DATABASE_URL ?? null;
+  if (!connectionString)
+    throw new Error("Missing DATABASE_URL. Set it in .env.local");
+  assertValidDatabaseUrl(connectionString);
   pool = new Pool({
-    connectionString: DATABASE_URL,
+    connectionString,
     ssl: { rejectUnauthorized: false },
   });
   return pool;

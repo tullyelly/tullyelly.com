@@ -6,16 +6,34 @@ import {
   type QueryConfig,
 } from "pg";
 import { getDatabaseUrl } from "@/lib/db-url";
+import { isNextBuild } from "@/lib/env";
 
 declare global {
   var __PG_POOL__: Pool | undefined;
 }
 
-export const pool: Pool =
-  global.__PG_POOL__ ?? new Pool({ connectionString: getDatabaseUrl() });
+function createPool(): Pool {
+  if (isNextBuild()) {
+    throw new Error(
+      "Database access is disabled during Next.js production build.",
+    );
+  }
+  if (process.env.SKIP_DB === "true") {
+    throw new Error("Database access disabled when SKIP_DB=true.");
+  }
+  return new Pool({ connectionString: getDatabaseUrl() });
+}
 
-if (process.env.NODE_ENV !== "production") {
-  global.__PG_POOL__ = pool;
+let pool: Pool | undefined = global.__PG_POOL__;
+
+export function getPool(): Pool {
+  if (!pool) {
+    pool = createPool();
+    if (process.env.NODE_ENV !== "production") {
+      global.__PG_POOL__ = pool;
+    }
+  }
+  return pool;
 }
 
 /**
@@ -23,26 +41,26 @@ if (process.env.NODE_ENV !== "production") {
  * T must extend QueryResultRow.
  */
 export function query<T extends QueryResultRow = QueryResultRow>(
-  config: QueryConfig<any[]>
+  config: QueryConfig<any[]>,
 ): Promise<QueryResult<T>>;
 export function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params?: any[] | undefined
+  params?: any[] | undefined,
 ): Promise<QueryResult<T>>;
 export function query<T extends QueryResultRow = QueryResultRow>(
   textOrConfig: string | QueryConfig<any[]>,
-  params?: any[] | undefined
+  params?: any[] | undefined,
 ): Promise<QueryResult<T>> {
   return typeof textOrConfig === "string"
-    ? pool.query<T>(textOrConfig, params)
-    : pool.query<T>(textOrConfig);
+    ? getPool().query<T>(textOrConfig, params)
+    : getPool().query<T>(textOrConfig);
 }
 
 /**
  * Transaction helper.
  */
 export async function tx<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query("BEGIN");
     const out = await fn(client);

@@ -3,17 +3,14 @@
 import { useRef } from "react";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
-import { formatReleaseDate } from "@/app/(scrolls)/components/formatReleaseDate";
+import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
 import ScrollDialog from "@/app/(components)/shaolin/ScrollDialog";
 import { useScrollDialog } from "@/app/(components)/shaolin/useScrollDialog";
 import { Table, THead, TBody } from "@/components/ui/Table";
+import type { ReleaseRow } from "@/lib/scrolls";
 
-export interface ReleaseRow {
-  id: number;
-  label: string;
-  status: string;
-  type: string;
-  releaseDate: string | null;
+function getDisplayLabel(row: ReleaseRow) {
+  return row.label ?? row.name;
 }
 
 export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
@@ -26,13 +23,13 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
   };
 
   const onIdClick =
-    (id: number) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    (scrollId: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (e.metaKey || e.ctrlKey || e.button === 1) {
         return;
       }
       e.preventDefault();
       triggerRef.current = e.currentTarget;
-      openWithId(id);
+      openWithId(scrollId);
     };
 
   return (
@@ -40,8 +37,8 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
       <Table
         variant="bucks"
         id="scrolls-table"
-        aria-label="Releases table"
-        data-testid="releases-table"
+        aria-label="Shaolin scrolls table"
+        data-testid="scrolls-table"
         aria-rowcount={rows.length}
         className="thead-sticky"
       >
@@ -61,42 +58,47 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
           </th>
         </THead>
         <TBody>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-b border-black/5 last:border-0">
-              <td className="tabular-nums text-ink/80">
-                <a
-                  href={`/shaolin-scrolls/${r.id}`}
-                  onClick={onIdClick(r.id)}
-                  aria-label={`Open release ${r.id} details`}
-                  className="link-blue"
-                  role="button"
-                  aria-haspopup="dialog"
+          {rows.map((r) => {
+            const releaseDateIso = r.release_date ?? undefined;
+            return (
+              <tr key={r.id} className="border-b border-black/5 last:border-0">
+                <td className="tabular-nums text-ink/80">
+                  <a
+                    href={`/mark2/shaolin-scrolls/${r.id}`}
+                    onClick={onIdClick(r.id)}
+                    aria-label={`Open release ${r.id} details`}
+                    className="link-blue"
+                    role="button"
+                    aria-haspopup="dialog"
+                  >
+                    {r.id}
+                  </a>
+                </td>
+                <td className="truncate">
+                  <span className="block" title={getDisplayLabel(r)}>
+                    {getDisplayLabel(r)}
+                  </span>
+                </td>
+                <td>
+                  <Badge className={getBadgeClass(r.status as any)}>
+                    {r.status}
+                  </Badge>
+                </td>
+                <td>
+                  <Badge className={getBadgeClass(r.type as any)}>
+                    {r.type}
+                  </Badge>
+                </td>
+                <td
+                  className="whitespace-nowrap"
+                  data-testid="release-date"
+                  data-release-iso={releaseDateIso}
                 >
-                  {r.id}
-                </a>
-              </td>
-              <td className="truncate">
-                <span className="block" title={r.label}>
-                  {r.label}
-                </span>
-              </td>
-              <td>
-                <Badge className={getBadgeClass(r.status as any)}>
-                  {r.status}
-                </Badge>
-              </td>
-              <td>
-                <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
-              </td>
-              <td
-                className="whitespace-nowrap"
-                data-testid="release-date"
-                data-release-iso={r.releaseDate ?? undefined}
-              >
-                {formatReleaseDate(r.releaseDate)}
-              </td>
-            </tr>
-          ))}
+                  {formatReleaseDate(r.release_date)}
+                </td>
+              </tr>
+            );
+          })}
         </TBody>
       </Table>
       <ScrollDialog open={open} onOpenChange={handleOpenChange} id={id} />

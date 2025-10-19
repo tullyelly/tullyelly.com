@@ -13,7 +13,7 @@ export type StorageEstimate = {
  * If unavailable, returns an empty object rather than touching deprecated APIs.
  */
 export async function getStorageEstimate(): Promise<StorageEstimate> {
-  if (typeof navigator === 'undefined') return {};
+  if (typeof navigator === "undefined") return {};
   const storage = (navigator as any).storage as StorageManager | undefined;
   if (!storage?.estimate) return {};
   try {
@@ -29,7 +29,7 @@ export async function getStorageEstimate(): Promise<StorageEstimate> {
  * No-ops safely if the browser does not support it.
  */
 export async function ensurePersistentStorage(): Promise<boolean> {
-  if (typeof navigator === 'undefined') return false;
+  if (typeof navigator === "undefined") return false;
   const storage = (navigator as any).storage as StorageManager | undefined;
   if (!storage?.persist || !storage.persisted) return false;
   try {
@@ -42,7 +42,7 @@ export async function ensurePersistentStorage(): Promise<boolean> {
 
 /** Checks if the origin currently has persistent storage. */
 export async function isPersistent(): Promise<boolean> {
-  if (typeof navigator === 'undefined') return false;
+  if (typeof navigator === "undefined") return false;
   const storage = (navigator as any).storage as StorageManager | undefined;
   if (!storage?.persisted) return false;
   try {
@@ -51,4 +51,3 @@ export async function isPersistent(): Promise<boolean> {
     return false;
   }
 }
-

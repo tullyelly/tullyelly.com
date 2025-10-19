@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import * as Dialog from '@ui/dialog';
-import { useEffect, useState } from 'react';
-import { formatReleaseDate } from './formatReleaseDate';
-import { Badge } from '@/app/ui/Badge';
-import { getBadgeClass } from '@/app/ui/badge-maps';
+import * as Dialog from "@ui/dialog";
+import { useEffect, useState } from "react";
+import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
+import { Badge } from "@/app/ui/Badge";
+import { getBadgeClass } from "@/app/ui/badge-maps";
 
 type Details = {
   id: number;
@@ -17,14 +17,20 @@ type Details = {
   release_date: string | null;
 };
 
-export function ScrollDetailsDialog({ id, trigger }: { id: number; trigger: React.ReactNode }) {
+export function ScrollDetailsDialog({
+  id,
+  trigger,
+}: {
+  id: number;
+  trigger: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Details | null>(null);
 
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const res = await fetch(`/api/scrolls/${id}`);
+      const res = await fetch(`/api/shaolin-scrolls/${id}`);
       if (res.ok) setData(await res.json());
     })();
   }, [open, id]);
@@ -38,53 +44,101 @@ export function ScrollDetailsDialog({ id, trigger }: { id: number; trigger: Reac
           <div
             data-dialog-handle
             className="-mx-6 -mt-6 px-6 py-2 bg-[var(--blue)] text-white cursor-move touch-none flex items-center"
-            style={{ borderTopLeftRadius: '13px', borderTopRightRadius: '13px' }}
+            style={{
+              borderTopLeftRadius: "13px",
+              borderTopRightRadius: "13px",
+            }}
           >
-            <Dialog.Title className="text-base font-semibold leading-6">Release #{id}</Dialog.Title>
+            <Dialog.Title className="text-base font-semibold leading-6">
+              Release #{id}
+            </Dialog.Title>
             <div className="ml-auto">
-              <Dialog.Close className="inline-flex items-center justify-center rounded border border-white/80 px-2 py-0.5 text-white hover:opacity-80" aria-label="Close">
+              <Dialog.Close
+                className="inline-flex items-center justify-center rounded border border-white/80 px-2 py-0.5 text-white hover:opacity-80"
+                aria-label="Close"
+              >
                 ×
               </Dialog.Close>
             </div>
           </div>
-          <Dialog.Description className="sr-only">Details for this release</Dialog.Description>
+          <Dialog.Description className="sr-only">
+            Details for this release
+          </Dialog.Description>
           {data ? (
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">ID</div>
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  ID
+                </div>
                 <div className="text-sm font-medium break-words">{data.id}</div>
               </div>
               <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">Label</div>
-                <div className="text-sm font-medium break-words">{data.label ?? ''}</div>
-              </div>
-              <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">SemVer</div>
-                <div className="text-sm font-medium break-words">{data.semver ?? ''}</div>
-              </div>
-              <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">Status</div>
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Label
+                </div>
                 <div className="text-sm font-medium break-words">
-                  {data.status ? <Badge className={getBadgeClass(data.status as any)}>{data.status}</Badge> : ''}
+                  {data.label ?? ""}
                 </div>
               </div>
               <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">Release Type</div>
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  SemVer
+                </div>
                 <div className="text-sm font-medium break-words">
-                  {data.type ? <Badge className={getBadgeClass(data.type as any)}>{data.type}</Badge> : ''}
+                  {data.semver ?? ""}
                 </div>
               </div>
               <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">Release Date</div>
-                <div className="text-sm font-medium break-words">{formatReleaseDate(data.release_date)}</div>
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Status
+                </div>
+                <div className="text-sm font-medium break-words">
+                  {data.status ? (
+                    <Badge className={getBadgeClass(data.status as any)}>
+                      {data.status}
+                    </Badge>
+                  ) : (
+                    ""
+                  )}
+                </div>
               </div>
               <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">Year</div>
-                <div className="text-sm font-medium break-words">{data.year ?? ''}</div>
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Release Type
+                </div>
+                <div className="text-sm font-medium break-words">
+                  {data.type ? (
+                    <Badge className={getBadgeClass(data.type as any)}>
+                      {data.type}
+                    </Badge>
+                  ) : (
+                    ""
+                  )}
+                </div>
               </div>
               <div className="rounded border border-[var(--border-subtle)] p-2">
-                <div className="text-[11px] uppercase tracking-wide opacity-70">Month</div>
-                <div className="text-sm font-medium break-words">{data.month ?? ''}</div>
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Release Date
+                </div>
+                <div className="text-sm font-medium break-words">
+                  {formatReleaseDate(data.release_date)}
+                </div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Year
+                </div>
+                <div className="text-sm font-medium break-words">
+                  {data.year ?? ""}
+                </div>
+              </div>
+              <div className="rounded border border-[var(--border-subtle)] p-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Month
+                </div>
+                <div className="text-sm font-medium break-words">
+                  {data.month ?? ""}
+                </div>
               </div>
             </div>
           ) : (

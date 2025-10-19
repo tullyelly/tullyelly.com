@@ -36,6 +36,19 @@ describe("datetime formatters", () => {
       spy.mockRestore();
     }
   });
+
+  it("handles multiple relative branches", () => {
+    const base = 1_700_000_000_000;
+    const spy = jest.spyOn(Date, "now").mockReturnValue(base);
+    try {
+      expect(fmtRelative(base - 10_000)).toBe("just now");
+      expect(fmtRelative(base + 30 * 60_000)).toBe("30 min from now");
+      expect(fmtRelative(base - 2 * 60 * 60_000)).toBe("2 hrs ago");
+      expect(fmtRelative(base + 3 * 24 * 60 * 60_000)).toBe("3 days from now");
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });
 
 describe("parseDateish", () => {
@@ -46,5 +59,20 @@ describe("parseDateish", () => {
     expect(parsed?.getUTCMonth()).toBe(8);
     expect(parsed?.getUTCDate()).toBe(19);
     expect(parsed?.getUTCHours()).toBe(12);
+  });
+
+  it("returns null for invalid inputs", () => {
+    expect(parseDateish("   ")).toBeNull();
+    expect(parseDateish(new Date("not-a-date"))).toBeNull();
+  });
+
+  it("coerces numbers and Date instances", () => {
+    const now = Date.now();
+    const fromNumber = parseDateish(now);
+    expect(fromNumber?.getTime()).toBe(now);
+
+    const date = new Date(now);
+    const fromDate = parseDateish(date);
+    expect(fromDate).toBe(date);
   });
 });

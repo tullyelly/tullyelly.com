@@ -1,28 +1,31 @@
-import { execSync } from 'node:child_process';
-import { writeFileSync, mkdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { execSync } from "node:child_process";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 
 const sh = (cmd: string) => {
   try {
-    return execSync(cmd, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    return execSync(cmd, { stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim();
   } catch {
-    return '';
+    return "";
   }
 };
 
-type NodeEnv = 'development' | 'test' | 'production';
+type NodeEnv = "development" | "test" | "production";
 
-const env = (process.env.NODE_ENV as NodeEnv) || 'development';
+const env = (process.env.NODE_ENV as NodeEnv) || "development";
 const buildIso = new Date().toISOString();
-const commit = process.env.VERCEL_GIT_COMMIT_SHA || sh('git rev-parse HEAD');
+const commit = process.env.VERCEL_GIT_COMMIT_SHA || sh("git rev-parse HEAD");
 const shortCommit = commit.slice(0, 7);
-const branch = process.env.VERCEL_GIT_COMMIT_REF || sh('git rev-parse --abbrev-ref HEAD');
+const branch =
+  process.env.VERCEL_GIT_COMMIT_REF || sh("git rev-parse --abbrev-ref HEAD");
 const prNumber = process.env.VERCEL_GIT_PULL_REQUEST_ID || null;
 const ciRunId = process.env.GITHUB_RUN_ID || process.env.CI_RUN_ID || null;
-const url = process.env.VERCEL_URL || 'http://localhost:3000';
+const url = process.env.VERCEL_URL || "http://localhost:3000";
 const runtime = `node ${process.version}`;
 const buildYear = buildIso.slice(0, 4);
-const isProd = env === 'production';
+const isProd = env === "production";
 
 const info = {
   commit,
@@ -58,7 +61,7 @@ export interface BuildInfo {
 export const buildInfo: BuildInfo = ${JSON.stringify(info, null, 2)} as const;
 `;
 
-const outDir = resolve(process.cwd(), 'lib');
+const outDir = resolve(process.cwd(), "lib");
 mkdirSync(outDir, { recursive: true });
-writeFileSync(resolve(outDir, 'build-info.ts'), out);
-console.log('✓ Wrote lib/build-info.ts');
+writeFileSync(resolve(outDir, "build-info.ts"), out);
+console.log("✓ Wrote lib/build-info.ts");

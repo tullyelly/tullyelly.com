@@ -1,18 +1,20 @@
 "use client";
 
-import Link, { LinkProps } from "next/link";
-import { ComponentPropsWithoutRef } from "react";
+import Link from "next/link";
+import type { ComponentProps } from "react";
 
-type Props = LinkProps & ComponentPropsWithoutRef<"a"> & {
-  className?: string;
-};
+type BrandedLinkProps = ComponentProps<typeof Link>;
 
 // simple class combiner
 function cn(...xs: Array<string | false | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
-export default function BrandedLink({ className, ...props }: Props) {
+export default function BrandedLink({
+  className,
+  style,
+  ...props
+}: BrandedLinkProps) {
   return (
     <Link
       {...props}
@@ -26,10 +28,10 @@ export default function BrandedLink({ className, ...props }: Props) {
         // accessible focus ring that works on brand chrome
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
         "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-chrome)]",
-        className
+        className,
       )}
       // keep using your CSS var for foreground color (white on blue)
-      style={{ color: "var(--brand-chrome-fg)", ...(props.style || {}) }}
+      style={{ color: "var(--brand-chrome-fg)", ...(style ?? {}) }}
     />
   );
 }

@@ -9,7 +9,7 @@ export interface PageFrontmatter {
   title: string;
   description: string;
   canonical?: string;
-  category?: 'music' | 'video' | 'campaign';
+  category?: "music" | "video" | "campaign";
   hero?: Hero;
   cta?: {
     label: string;

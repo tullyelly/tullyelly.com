@@ -1,11 +1,14 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect } from "@playwright/test";
 
 export const test = base.extend({
   page: async ({ page }, use) => {
     const errors: string[] = [];
-    page.on('console', msg => {
+    page.on("console", (msg) => {
       const type = msg.type();
-      if ((type === 'error' || type === 'warning') && msg.text().includes('Hydration failed')) {
+      if (
+        (type === "error" || type === "warning") &&
+        msg.text().includes("Hydration failed")
+      ) {
         errors.push(msg.text());
       }
     });
@@ -14,4 +17,4 @@ export const test = base.extend({
   },
 });
 
-export { expect } from '@playwright/test';
+export { expect } from "@playwright/test";

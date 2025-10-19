@@ -1,0 +1,10 @@
+.root {
+  pointer-events: none;
+}
+
+.badge {
+  position: relative;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+}

@@ -1,13 +1,13 @@
-name: 'Setup Node and install deps'
-description: 'Install Node.js 20 and project dependencies'
+name: "Setup Node and install deps"
+description: "Install Node.js 20 and project dependencies"
 inputs: {}
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - uses: actions/setup-node@v4
       with:
-        node-version: '20'
-        cache: 'npm'
+        node-version: "20"
+        cache: "npm"
     - name: Cache ESLint cache
       uses: actions/cache@v4
       with:
@@ -18,5 +18,5 @@ runs:
       env:
         npm_config_platform: linux
         npm_config_arch: x64
-        SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
+        SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
       run: npm ci --include=optional

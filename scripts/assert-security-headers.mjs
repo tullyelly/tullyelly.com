@@ -61,8 +61,17 @@ async function main() {
   }
 
   if (!response.ok) {
+    let snippet = "";
+    try {
+      const bodyText = await response.text();
+      const compact = bodyText.replace(/\s+/g, " ").trim();
+      snippet = compact.slice(0, 280);
+    } catch {
+      // ignore body read errors; snippet stays empty
+    }
+    const details = snippet ? ` Body preview: ${snippet}` : "";
     throw new Error(
-      `Security header check expected HTTP 2xx; received ${response.status}.`,
+      `Security header check expected HTTP 2xx; received ${response.status}.${details}`,
     );
   }
 

@@ -14,6 +14,12 @@ function sanitize(url?: string) {
 }
 
 export async function GET() {
+  if (process.env.SKIP_DB === "true") {
+    return NextResponse.json(
+      { ok: false, reason: "Database access disabled in CI." },
+      { status: 503 },
+    );
+  }
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const meta = await pool.query(`
     SELECT

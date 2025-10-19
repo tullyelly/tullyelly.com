@@ -5,4 +5,3 @@ export const flowersConfig = {
   emoji: "💐",
   tooltip: "Sources, credits, and shout-outs.",
 } as const;
-

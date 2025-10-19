@@ -1,9 +1,13 @@
-import { buildInfo } from '@/lib/build-info';
+import { buildInfo } from "@/lib/build-info";
 
 export default function Footer() {
-  const YEAR = (buildInfo.buildTime ?? '').slice(0, 4) || '';
+  const YEAR = (buildInfo.buildTime ?? "").slice(0, 4) || "";
   return (
-    <footer id="footer-zone" role="contentinfo" className="bg-blue on-blue py-6 text-sm text-center">
+    <footer
+      id="footer-zone"
+      role="contentinfo"
+      className="bg-blue on-blue py-6 text-sm text-center"
+    >
       © {YEAR} tullyelly. All rights reserved.
     </footer>
   );

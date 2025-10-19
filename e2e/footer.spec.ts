@@ -1,6 +1,8 @@
 import { test, expect } from "./fixtures";
 
-test("footer is deterministic and at bottom on short pages", async ({ page }) => {
+test("footer is deterministic and at bottom on short pages", async ({
+  page,
+}) => {
   await page.goto("/");
   const footer = page.getByRole("contentinfo");
   await expect(footer).toBeVisible();
@@ -14,5 +16,5 @@ test("footer is deterministic and at bottom on short pages", async ({ page }) =>
   expect(isFixed).toBeFalsy();
 
   // No stray Build labels anywhere
-  await expect(page.locator('text=Build:')).toHaveCount(0);
+  await expect(page.locator("text=Build:")).toHaveCount(0);
 });

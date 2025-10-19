@@ -61,3 +61,9 @@ lib/build-info.ts
 
 # files used to help codex debug
 cipher/
+
+coverage/
+dist/
+build/
+.contentlayer
+.turbo/

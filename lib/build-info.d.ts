@@ -1,7 +1,7 @@
 // Type-only declaration so typecheck passes on clean clones
 // even before the generator writes lib/build-info.ts.
 
-declare module '@/lib/build-info' {
+declare module "@/lib/build-info" {
   export type BuildInfo = {
     name: string;
     version: string;
@@ -16,4 +16,3 @@ declare module '@/lib/build-info' {
   };
   export const buildInfo: BuildInfo;
 }
-

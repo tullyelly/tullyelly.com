@@ -21,10 +21,12 @@
       "@/*": ["*", "app/*"],
       "@components/*": ["components/*"],
       "@ui": ["components/ui"],
-      "@ui/*": ["components/ui/*"]
+      "@ui/*": ["components/ui/*"],
+      "contentlayer/generated": ["./.contentlayer/generated"]
     },
 
     "types": ["jest", "node"],
+    "typeRoots": ["./.contentlayer", "./node_modules/@types"],
 
     "plugins": [{ "name": "next" }],
 
@@ -38,10 +40,5 @@
     "**/*.d.ts",
     "jest.setup.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "coverage"
-  ]
+  "exclude": ["node_modules", "dist", "build", "coverage"]
 }

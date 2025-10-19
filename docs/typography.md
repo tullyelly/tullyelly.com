@@ -5,6 +5,7 @@ This site uses **Inter** for proportional sans (body/headings) and **JetBrains M
 ## Usage
 
 - Defined in `app/fonts.ts` and attached in `app/layout.tsx`:
+
   ```tsx
   <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
     <body className="font-sans">{/* … */}</body>
@@ -12,7 +13,6 @@ This site uses **Inter** for proportional sans (body/headings) and **JetBrains M
   ```
 
 - Tailwind utilities:
-
   - `font-sans` → Inter stack
   - `font-mono` → JetBrains Mono stack
 
@@ -31,5 +31,4 @@ This site uses **Inter** for proportional sans (body/headings) and **JetBrains M
 
 - Build: `npm run build`
 - Test: `npm test`
-- Lighthouse (optional): run against `/typography-demo`; CLS should be ≤ 0.01
-
+- Lighthouse (optional): run against `/mark2/shaolin-scrolls`; CLS should be ≤ 0.01

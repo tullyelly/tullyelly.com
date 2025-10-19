@@ -2,53 +2,147 @@
 import "./globals.css";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
-import NavBar from "@/app/_components/NavBar";
-import Footer from "@/app/_components/Footer";
-import AnnouncementBanner from "@/components/AnnouncementBanner";
+import Script from "next/script";
+import { headers } from "next/headers";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
+import { getMenu as getLegacyMenu } from "@/app/_menu/getMenu";
+import { getMenuData } from "@/lib/menu/getMenu";
+import { resolvePersonaForPath } from "@/lib/menu/persona";
+import type { PersonaKey } from "@/lib/menu/types";
+import { CommandMenuProvider } from "@/components/nav/CommandMenu";
+import AppShell from "@/components/app-shell/AppShell";
+import InitialScrollGuard from "@/components/system/InitialScrollGuard";
+import GlobalProgressProvider from "./_components/GlobalProgressProvider";
+import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
+import { MenuProvider } from "@/components/menu/MenuProvider";
+import { getMenuTree } from "@/lib/menu/tree";
 
 await initSentry();
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+const SITE_TITLE = "tullyelly";
+const SITE_DESCRIPTION = "Watch me lose my mind in real-time.";
+
+const baseMetadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  ),
   title: {
-    default: "tullyelly",
-    template: "%s; tullyelly",
+    default: SITE_TITLE,
+    template: `%s; ${SITE_TITLE}`,
   },
-  description: "Watch me lose my mind in real-time.",
+  description: SITE_DESCRIPTION,
   openGraph: {
-    title: "tullyelly",
-    description: "Watch me lose my mind in real-time.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     type: "website",
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+function resolveRequestedPath(headersList: Headers): string {
+  const candidates = [
+    headersList.get("x-pathname"),
+    headersList.get("next-url"),
+    headersList.get("x-invoke-path"),
+    headersList.get("x-matched-path"),
+  ];
+  const match = candidates.find((value) => value && value.startsWith("/"));
+  return match ?? "/";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const hdrs = await headers();
+  const path = resolveRequestedPath(hdrs);
+  const { index } = await getLegacyMenu();
+  const { title } = buildMenuMetadata(path, index);
+
+  return {
+    ...baseMetadata,
+    title: title || SITE_TITLE,
+    openGraph: {
+      ...baseMetadata.openGraph,
+      title: title ? `${title}; ${SITE_TITLE}` : SITE_TITLE,
+    },
+  };
+}
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
+  const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
+  const [menu, hdrs, menuTree] = await Promise.all([
+    getLegacyMenu(),
+    headers(),
+    getMenuTree(),
+  ]);
+  const path = resolveRequestedPath(hdrs);
+  const resolvedPersona = resolvePersonaForPath(menu.tree, path);
+  const personaKey = (resolvedPersona?.persona ?? "mark2") as PersonaKey;
+  const { menu: personaMenu, children: personaChildren } =
+    await getMenuData(personaKey);
 
   return (
-    <html lang="en" className={`${inter.variable} ${jbMono.variable}`}>
-      <head></head>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jbMono.variable}`}
+      data-e2e-stable={isE2EStable ? "true" : undefined}
+    >
+      <head>
+        {process.env.NEXT_PUBLIC_TEST_MODE === "1" ? (
+          <Script
+            id="test-init"
+            src="/test-init.js"
+            strategy="beforeInteractive"
+          />
+        ) : null}
+      </head>
       <body className="font-sans text-foreground">
-        <Providers>
-          <div id="site-layout" className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-0">
-            <header id="nav-zone">
-              {announcement && <AnnouncementBanner message={announcement} dismissible />}
-              <NavBar />
-            </header>
-
-            <main id="content" tabIndex={-1} className="m-0 p-0 bg-transparent">
-              <div
-                id="content-pane"
-                className="mx-auto max-w-[var(--content-max)] bg-white shadow-sm px-6 md:px-8 lg:px-10 py-6 md:py-8 crop-block-margins"
+        {/* Keep overlay provider first so it sits above all UI */}
+        <GlobalProgressProvider />
+        <Script id="boot-scroll-guard" strategy="beforeInteractive">{`
+  (function () {
+    try { history.scrollRestoration = 'manual'; } catch (e) {}
+    var lock = !location.hash;
+    if (lock) {
+      var forceTop = function () {
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      };
+      forceTop();
+      var until = performance.now() + 800;
+      var onScroll = function () {
+        if (performance.now() < until) forceTop();
+      };
+      window.addEventListener('scroll', onScroll, { passive: false });
+      var release = function () {
+        window.removeEventListener('scroll', onScroll, { passive: false });
+      };
+      window.addEventListener('load', release, { once: true });
+      setTimeout(release, 900);
+    }
+  })();
+`}</Script>
+        <InitialScrollGuard />
+        <MenuProvider value={menuTree}>
+          <CommandMenuProvider items={menu.tree}>
+            <Providers>
+              <AppShell
+                announcement={announcement}
+                menuItems={menu.tree}
+                menu={personaMenu}
+                menuChildren={personaChildren}
+                siteTitle={SITE_TITLE}
+                currentPersona={resolvedPersona}
+                pathname={path}
               >
                 {children}
-              </div>
-            </main>
-            <Footer />
-          </div>
-        </Providers>
+              </AppShell>
+            </Providers>
+          </CommandMenuProvider>
+        </MenuProvider>
       </body>
     </html>
   );

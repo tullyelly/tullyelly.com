@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build-and-check:
     name: Build & Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # keep Linux to match Playwright snapshot baselines; approve new baselines per-OS if you change this
     timeout-minutes: 10
     outputs:
       run_e2e: ${{ steps.filter.outputs.e2e }}
@@ -66,12 +66,9 @@ jobs:
               - 'lib/seo/**'
               - 'next.config.mjs'
             security:
-              - 'middleware.ts'
               - 'next.config.mjs'
               - 'auth.ts'
               - 'lib/security/**'
-              - 'app/**/middleware.{ts,tsx}'
-              - 'pages/**/middleware.{ts,tsx}'
               - 'app/api/**'
             build:
               - 'app/**'
@@ -85,7 +82,6 @@ jobs:
               - 'tsconfig.json'
               - 'tailwind.config.mjs'
               - 'postcss.config.mjs'
-              - 'middleware.ts'
               - 'auth.ts'
             e2e:
               - 'app/**'
@@ -98,7 +94,6 @@ jobs:
               - 'package-lock.json'
               - 'tsconfig.json'
               - 'next.config.mjs'
-              - 'middleware.ts'
               - 'auth.ts'
 
       # Native addon sanity only when it matters (native deps changed or on main)
@@ -174,41 +169,38 @@ jobs:
           GOOGLE_CLIENT_SECRET: ci-dummy
         run: npm run build
 
-      - name: Security headers smoke test
+      - name: Start Next and wait
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true'
+        env:
+          NODE_ENV: production
+          PORT: 4010
+          NEXTAUTH_URL: http://127.0.0.1:4010
+          NEXTAUTH_SECRET: ci-secret
+          SKIP_DB: "true"
+        run: |
+          npx kill-port 4010 || true
+          npm run start:ci > .next/ci-server.log 2>&1 &
+          npx wait-on --httpTimeout 10000 --timeout 120000 http://127.0.0.1:4010/api/health
+
+      - name: Security headers check
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true'
         env:
           PORT: 4010
-          DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
-          NEXTAUTH_URL: http://127.0.0.1:4010
-          AUTH_SECRET: ci-dummy
-          GOOGLE_CLIENT_ID: ci-dummy
-          GOOGLE_CLIENT_SECRET: ci-dummy
+        run: npm run security-headers:check -- "http://127.0.0.1:${PORT}/"
+
+      - name: Stop Next
+        if: always() && (github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true')
+        run: npx kill-port 4010 || true
+
+      - name: Print logs on failure
+        if: failure()
         run: |
-          set -euo pipefail
-          npm run start > /tmp/next.log 2>&1 &
-          NEXT_PID=$!
-          cleanup() {
-            kill "$NEXT_PID" 2>/dev/null || true
-            wait "$NEXT_PID" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          ready=0
-          for i in $(seq 1 30); do
-            if curl -sSf -o /dev/null "http://127.0.0.1:${PORT}/"; then
-              ready=1
-              break
-            fi
-            sleep 1
-          done
-          if [ "$ready" -ne 1 ]; then
-            echo 'Next.js server failed to start in time' >&2
-            exit 1
-          fi
-          npm run security-headers:check -- "http://127.0.0.1:${PORT}/"
+          echo "---- .next/ci-server.log ----"
+          tail -n +1 .next/ci-server.log || true
 
   e2e:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # align with local (Linux) snapshots; add per-OS baselines if changing
     timeout-minutes: 15
     needs: build-and-check
     if: (github.event_name == 'pull_request' || github.ref_name == 'main') && (github.ref_name == 'main' || needs.build-and-check.outputs.run_e2e == 'true')
@@ -216,8 +208,8 @@ jobs:
       NODE_ENV: test
       NEXT_TELEMETRY_DISABLED: 1
       VERCEL_ENV: preview
-      # point Playwright to a cacheable path
-      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+      # point Playwright to the repo-local cache so snapshots stay consistent
+      PLAYWRIGHT_BROWSERS_PATH: .pw-browsers
 
       # your app env
       DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
@@ -225,7 +217,6 @@ jobs:
       AUTH_SECRET: ci-dummy
       GOOGLE_CLIENT_ID: ci-dummy
       GOOGLE_CLIENT_SECRET: ci-dummy
-      AUTH_RULES_JSON: '{"ownerDomains":["tullyelly.com"],"publicPaths":["/","/login","/api/auth"],"protectedPaths":["/shaolin-scrolls","/admin"],"ownerOnlyPaths":["/shaolin-scrolls/admin"],"toggles":{"allowAnyEmailOnPreview":true}}'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -243,7 +234,7 @@ jobs:
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
-          path: ~/.cache/ms-playwright
+          path: .pw-browsers
           key: ${{ runner.os }}-pw-${{ steps.pw.outputs.version }}
           restore-keys: |
             ${{ runner.os }}-pw-

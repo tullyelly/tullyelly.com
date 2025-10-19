@@ -1,3 +1,74 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-npm test
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec /usr/bin/env bash "$0" "$@"
+fi
+
+set -euo pipefail
+
+has_workspaces() {
+  node -e "try{process.exit(require('./package.json').workspaces?0:1)}catch{process.exit(1)}"
+}
+
+run_workspace_script() {
+  local script="$1"
+  if has_workspaces; then
+    npm run "$script" --workspaces --if-present
+  fi
+}
+
+has_npm_script() {
+  local script="$1"
+  node -e "try{const pkg=require('./package.json');process.exit(pkg.scripts && pkg.scripts['$script'] ? 0 : 1)}catch{process.exit(1)}" >/dev/null 2>&1
+}
+
+# Allow bypass when necessary
+if [[ "${SKIP_COVERAGE_GUARD:-}" == "1" ]]; then
+  echo "⚠️  Pre-push guard bypassed via SKIP_COVERAGE_GUARD=1"
+  exit 0
+fi
+
+# Skip guard in CI runners
+if [[ "${CI:-}" == "true" ]]; then
+  exit 0
+fi
+
+echo "🧹 Linting…"
+run_workspace_script lint
+if has_npm_script lint; then
+  npm run -s lint
+else
+  echo "ℹ️  No lint script; skipping."
+fi
+
+echo "🔎 Type checking…"
+run_workspace_script typecheck
+if has_npm_script typecheck; then
+  npm run -s typecheck
+else
+  if command -v npx >/dev/null 2>&1 && npx tsc -v >/dev/null 2>&1; then
+    npx tsc -p tsconfig.json --noEmit
+  else
+    echo "ℹ️  No TypeScript setup detected; skipping."
+  fi
+fi
+
+echo "🧪 Smoke tests (related only)…"
+run_workspace_script test:smoke
+if has_npm_script test:smoke; then
+  npm run -s test:smoke
+else
+  echo "❌ No test:smoke script found. Blocking push."
+  exit 1
+fi
+
+echo "🛡️ Full coverage suite…"
+run_workspace_script test:coverage
+if has_npm_script test:coverage; then
+  npm run -s test:coverage
+else
+  echo "❌ No test:coverage script found. Blocking push."
+  exit 1
+fi
+
+echo "✅ Test suites passed."

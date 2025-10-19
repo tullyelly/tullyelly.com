@@ -12,6 +12,6 @@ export async function GET() {
       site_url: process.env.SITE_URL ?? null,
       ts: new Date().toISOString(),
     },
-    { headers: { "Cache-Control": "no-store" } }
+    { headers: { "Cache-Control": "no-store" } },
   );
 }

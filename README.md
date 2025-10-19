@@ -20,6 +20,47 @@ Pages auto-update when you edit files in the `app/` folder.
 
 ---
 
+## ⚡ Add a Static Page in 60 Seconds
+
+Create `app/<slug>/page.tsx`, export page metadata, and follow the design tokens so the page feels native to the site.
+
+```tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Landing",
+  description: "A quick static landing page built in a minute.",
+};
+
+export default function LandingPage(): JSX.Element {
+  return (
+    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-12">
+      <header className="space-y-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Static page
+        </span>
+        <h1 className="text-3xl font-semibold text-foreground">Landing</h1>
+      </header>
+      <p className="text-base text-muted-foreground">
+        This skeleton uses the shared Tailwind tokens so typography, spacing,
+        and colors stay aligned across the app.
+      </p>
+      <div className="rounded-lg border border-border bg-background p-6">
+        <p className="text-sm text-foreground">
+          Replace the copy with your content or swap the wrapper for cards and
+          tables that already ship with token-aware styles.
+        </p>
+      </div>
+    </main>
+  );
+}
+```
+
+Run `npm run dev` and visit `http://localhost:3000/<slug>` to preview the page locally.
+When the pull request merges into `main`, GitHub pushes the change to Vercel and production updates automatically.
+
+---
+
 ## ✅ Guardrails & Coverage
 
 - The `CI` workflow runs lint, format checks, typechecks, and Jest unit tests with coverage on every push; it also runs each Monday at 06:00 UTC to log coverage trends.
@@ -87,6 +128,16 @@ See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and 
 
 ---
 
+## 📣 Share Kit
+
+Keep stakeholder snippets in sync whenever you ship a new page.
+
+- Add the slug to your metadata so `canonicalUrl(slug)` can supply the canonical entry.
+- Add a one-liner in `/lib/share/oneLiners.ts`.
+- Run `npm run share:generate` to refresh Confluence-ready Markdown in `/docs/share/<slug>.md`.
+
+---
+
 ## 🌐 SEO & Crawl Directives
 
 Robots and sitemap metadata routes live in `app/robots.ts` and `app/sitemap.ts`, providing baseline crawl directives and a simple sitemap for top-level pages.
@@ -135,18 +186,18 @@ curl -s http://localhost:3000/api/_health
 
 # Metadata + counts
 curl -s http://localhost:3000/api/db-meta
-curl -s http://localhost:3000/api/releases-count
+curl -s http://localhost:3000/api/shaolin-scrolls/count
 
-# Releases queries
-curl -s "http://localhost:3000/api/releases?limit=5&offset=0&sort=semver:desc"
-curl -s "http://localhost:3000/api/releases?q=scroll"
+# Shaolin Scrolls queries
+curl -s "http://localhost:3000/api/shaolin-scrolls?limit=5&offset=0&sort=semver:desc"
+curl -s "http://localhost:3000/api/shaolin-scrolls?q=scroll"
 
-# Mutations (creates new releases)
+# Mutations (creates new scrolls)
 curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test patch"}' http://localhost:3000/api/releases/patch
+  -d '{"label":"Test patch"}' http://localhost:3000/api/shaolin-scrolls/patch
 
 curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test minor"}' http://localhost:3000/api/releases/minor
+  -d '{"label":"Test minor"}' http://localhost:3000/api/shaolin-scrolls/minor
 ```
 
 ---
@@ -240,12 +291,12 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 
 ## ✅ Quick Notes
 
-- Static pages: `app/roadwork-rappin`, `app/heels-have-eyes`, `app/ui-lab`, `app/typography-demo`
+- Static pages: `app/theabbott/roadwork-rappin`, `app/theabbott/heels-have-eyes`
 - `globals.css`: design tokens + Tailwind entry point
 - `tailwind.config.mjs`: maps tokens → Tailwind theme
 - Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
 - Always run `npm run images:optimize` before committing new images
-- `app/shaolin-scrolls`: responsive release list with Radix details dialog
+- `app/mark2/shaolin-scrolls`: responsive release list with Radix details dialog
 - `app/page.tsx`: homepage with Mother's Day 2025, Musical Guests, Chronicle of Chronicles, and Shaolin Scrolls sections
 - `app/credits`: sources & acknowledgments via Flowers
 - Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.
