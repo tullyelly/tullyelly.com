@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { Route } from "next";
 import * as Dialog from "@ui/dialog";
 import { X } from "lucide-react";
 import { fmtDate } from "@/lib/datetime";
@@ -189,9 +190,10 @@ export default function TCDBRankingTable({
     }
     const queryString = current.toString();
     startTransition(() => {
-      router.replace(
-        queryString ? `${currentPath}?${queryString}` : currentPath,
-      );
+      const nextPath = queryString
+        ? `${currentPath}?${queryString}`
+        : currentPath;
+      router.replace(nextPath as Route);
     });
   }
 

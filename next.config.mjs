@@ -1,17 +1,11 @@
 // next.config.mjs
 import bundleAnalyzer from '@next/bundle-analyzer';
 import createMDX from '@next/mdx';
+import { withContentlayer } from 'next-contentlayer';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 import remarkSemicolons from './mdx/remark-semicolons-instead-of-emdash.mjs';
 const remarkPlugins = [remarkFrontmatter, remarkMdxFrontmatter, remarkSemicolons];
-
-const withMDX = createMDX({
-  extension: /\.mdx?$/,
-  options: {
-    remarkPlugins,
-  },
-});
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -19,6 +13,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  typedRoutes: true,
   pageExtensions: ['ts', 'tsx', 'mdx'],
   images: {
     // Use Next.js defaults; no custom loader/path.
@@ -41,7 +36,14 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['vaul', 'cmdk', 'lucide-react'],
+    mdxRs: {
+      remarkPlugins,
+    },
   },
 };
 
-export default withBundleAnalyzer(withMDX(nextConfig));
+export default withContentlayer(
+  createMDX()(
+    withBundleAnalyzer(nextConfig),
+  ),
+);

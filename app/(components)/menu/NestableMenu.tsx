@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Lucide from "lucide-react";
 import type { PersonaItem } from "@/types/nav";
@@ -564,6 +565,62 @@ export default function NestableMenu({
           );
         }
 
+        const linkContent = (
+          <>
+            <span className="icon" aria-hidden="true">
+              <Icon name={linkNode.icon} className="pm-icon" />
+            </span>
+            <span className="label">{linkNode.label}</span>
+            {metaItems.length ? (
+              <span className="meta">{metaItems}</span>
+            ) : null}
+          </>
+        );
+
+        if (linkNode.kind === "external") {
+          return (
+            <DropdownMenu.Item
+              key={linkNode.id}
+              asChild
+              data-active={active ? "true" : undefined}
+            >
+              <a
+                href={href}
+                target={target}
+                rel={rel}
+                className="item"
+                data-testid={menuItemTestId}
+                data-pressed={isKeyboardPressed ? "true" : undefined}
+                onClick={() => {
+                  onLinkClick(persona, linkNode);
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    !event.defaultPrevented &&
+                    (event.key === " " || event.key === "Enter")
+                  ) {
+                    setKeyboardPressedId(linkNode.id);
+                  }
+                }}
+                onKeyUp={(event) => {
+                  if (event.key === " " || event.key === "Enter") {
+                    setKeyboardPressedId((current) =>
+                      current === linkNode.id ? null : current,
+                    );
+                  }
+                }}
+                onBlur={() => {
+                  setKeyboardPressedId((current) =>
+                    current === linkNode.id ? null : current,
+                  );
+                }}
+              >
+                {linkContent}
+              </a>
+            </DropdownMenu.Item>
+          );
+        }
+
         return (
           <DropdownMenu.Item
             key={linkNode.id}
@@ -571,7 +628,7 @@ export default function NestableMenu({
             data-active={active ? "true" : undefined}
           >
             <Link
-              href={href ?? "#"}
+              href={href as Route}
               prefetch={prefetch}
               target={target}
               rel={rel}
@@ -602,13 +659,7 @@ export default function NestableMenu({
                 );
               }}
             >
-              <span className="icon" aria-hidden="true">
-                <Icon name={linkNode.icon} className="pm-icon" />
-              </span>
-              <span className="label">{linkNode.label}</span>
-              {metaItems.length ? (
-                <span className="meta">{metaItems}</span>
-              ) : null}
+              {linkContent}
             </Link>
           </DropdownMenu.Item>
         );

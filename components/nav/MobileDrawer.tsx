@@ -4,6 +4,7 @@ import * as React from "react";
 import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import {
   Sheet,
@@ -228,7 +229,7 @@ export default function MobileDrawer({
       if (item.external) {
         window.open(item.href, "_blank", "noopener,noreferrer");
       } else {
-        router.push(item.href);
+        router.push(item.href as Route);
       }
       handleClose(false);
     },
@@ -335,7 +336,7 @@ export default function MobileDrawer({
       { section: "utility", kind: "link" },
     );
     onNavigate?.("/");
-    router.push("/");
+    router.push("/" as Route);
     handleClose(false);
   }, [menu, onNavigate, router, handleClose]);
 
@@ -410,7 +411,7 @@ export default function MobileDrawer({
               )}
               <DrawerItem className="mx-1 mb-3">
                 <Link
-                  href="/"
+                  href={"/" as Route}
                   aria-label="Home"
                   className={cn(drawerActionClasses, "justify-start")}
                   onClick={(event) => {

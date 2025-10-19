@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
+import type { Route } from "next";
 import type { NavItem } from "@/types/nav";
 import {
   Command,
@@ -285,7 +286,7 @@ export default function CommandMenu() {
         return;
       }
 
-      router.push(link.href);
+      router.push(link.href as Route);
     },
     [router, setOpen],
   );

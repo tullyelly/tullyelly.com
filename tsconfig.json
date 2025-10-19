@@ -21,10 +21,12 @@
       "@/*": ["*", "app/*"],
       "@components/*": ["components/*"],
       "@ui": ["components/ui"],
-      "@ui/*": ["components/ui/*"]
+      "@ui/*": ["components/ui/*"],
+      "contentlayer/generated": ["./.contentlayer/generated"]
     },
 
-    "types": ["jest", "node"],
+    "types": ["jest", "node", "contentlayer/generated"],
+    "typeRoots": ["./.contentlayer", "./node_modules/@types"],
 
     "plugins": [{ "name": "next" }],
 

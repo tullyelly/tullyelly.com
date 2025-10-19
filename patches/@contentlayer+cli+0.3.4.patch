@@ -1,0 +1,25 @@
+diff --git a/node_modules/@contentlayer/cli/dist/commands/_BaseCommand.js b/node_modules/@contentlayer/cli/dist/commands/_BaseCommand.js
+index 5f78926..59178b8 100644
+--- a/node_modules/@contentlayer/cli/dist/commands/_BaseCommand.js
++++ b/node_modules/@contentlayer/cli/dist/commands/_BaseCommand.js
+@@ -20,7 +20,7 @@ export class BaseCommand extends Command {
+         this.execute = () => pipe(this.executeSafe(), core.runMain({
+             tracingServiceName: 'contentlayer-cli',
+             verbose: this.verbose || process.env.CL_DEBUG !== undefined,
+-        }));
++        })).then(() => undefined);
+         this.clearCacheIfNeeded = () => {
+             const { clearCache } = this;
+             return T.gen(function* ($) {
+diff --git a/node_modules/@contentlayer/cli/src/commands/_BaseCommand.ts b/node_modules/@contentlayer/cli/src/commands/_BaseCommand.ts
+index 1e8f998..4a238ba 100644
+--- a/node_modules/@contentlayer/cli/src/commands/_BaseCommand.ts
++++ b/node_modules/@contentlayer/cli/src/commands/_BaseCommand.ts
+@@ -30,6 +30,7 @@ export abstract class BaseCommand extends Command {
+         tracingServiceName: 'contentlayer-cli',
+         verbose: this.verbose || process.env.CL_DEBUG !== undefined,
+       }),
++    ).then(() => undefined)
+     )
+ 
+   clearCacheIfNeeded = () => {

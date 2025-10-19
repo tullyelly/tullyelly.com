@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { getMenu as getLegacyMenu } from "@/app/_menu/getMenu";
 import { flattenLinks, type FlatLink } from "@/lib/menu.flatten";
 import { cn } from "@/lib/utils";
@@ -129,33 +130,46 @@ export default async function SearchPage({ searchParams }: PageProps) {
               const context = formatContext(link);
               const personaLabel = link.persona?.label ?? null;
               const isExternal = link.kind === "external";
+              const linkContent = (
+                <>
+                  <span className="text-base font-medium text-[color:var(--text-strong,#0e2240)]">
+                    {link.label}
+                  </span>
+                  <span className="mt-1 text-xs text-[color:var(--text-muted,#58708c)]">
+                    {personaLabel ? `${personaLabel} | ` : ""}
+                    {link.href}
+                  </span>
+                  {context ? (
+                    <span className="mt-1 text-xs text-[color:var(--text-muted,#58708c)]">
+                      {context}
+                    </span>
+                  ) : null}
+                </>
+              );
+
               return (
                 <li key={`${link.kind}:${link.id}`}>
-                  <Link
-                    href={link.href}
-                    className={cn(
-                      "flex flex-col rounded-2xl border border-[color:var(--border-subtle,#d1d5db)] bg-white px-4 py-3 transition hover:border-[color:var(--brand-blue,#0077c0)] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2",
-                    )}
-                    {...(isExternal
-                      ? {
-                          rel: "noreferrer noopener",
-                          target: link.target ?? "_blank",
-                        }
-                      : {})}
-                  >
-                    <span className="text-base font-medium text-[color:var(--text-strong,#0e2240)]">
-                      {link.label}
-                    </span>
-                    <span className="mt-1 text-xs text-[color:var(--text-muted,#58708c)]">
-                      {personaLabel ? `${personaLabel} | ` : ""}
-                      {link.href}
-                    </span>
-                    {context ? (
-                      <span className="mt-1 text-xs text-[color:var(--text-muted,#58708c)]">
-                        {context}
-                      </span>
-                    ) : null}
-                  </Link>
+                  {isExternal ? (
+                    <a
+                      href={link.href}
+                      className={cn(
+                        "flex flex-col rounded-2xl border border-[color:var(--border-subtle,#d1d5db)] bg-white px-4 py-3 transition hover:border-[color:var(--brand-blue,#0077c0)] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2",
+                      )}
+                      rel="noreferrer noopener"
+                      target={link.target ?? "_blank"}
+                    >
+                      {linkContent}
+                    </a>
+                  ) : (
+                    <Link
+                      href={link.href as Route}
+                      className={cn(
+                        "flex flex-col rounded-2xl border border-[color:var(--border-subtle,#d1d5db)] bg-white px-4 py-3 transition hover:border-[color:var(--brand-blue,#0077c0)] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2",
+                      )}
+                    >
+                      {linkContent}
+                    </Link>
+                  )}
                 </li>
               );
             })}

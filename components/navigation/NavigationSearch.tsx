@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { Route } from "next";
 import { analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import type { SuggestionSource } from "@/components/navigation/useLocalSuggestions";
@@ -72,7 +73,7 @@ export default function NavigationSearch({
       queryLength: trimmed.length,
       mode: "submit",
     });
-    router.push(target);
+    router.push(target as Route);
     onSubmitted?.();
   }, [persona, query, router, onSubmitted]);
 
@@ -126,7 +127,7 @@ export default function NavigationSearch({
         queryLength: suggestion.title.length,
         mode: "suggestion",
       });
-      router.push(suggestion.href);
+      router.push(suggestion.href as Route);
       onSuggestionClick?.(suggestion);
       onSubmitted?.();
     },

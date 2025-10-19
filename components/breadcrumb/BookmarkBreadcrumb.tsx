@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Crumb } from "@/lib/breadcrumbs/types";
@@ -49,7 +50,7 @@ export default function BookmarkBreadcrumb({
               const node =
                 !isLast && item.href ? (
                   <Link
-                    href={item.href}
+                    href={item.href as Route}
                     className="inline-flex items-center px-2 py-1 text-ink visited:text-ink transition-colors no-underline underline-offset-4 hover:text-brand-bucksGreen hover:underline hover:decoration-brand-bucksGreen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-bucksGreen focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)]"
                     title={content}
                   >

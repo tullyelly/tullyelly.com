@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import type { Route } from "next";
 import ReleaseCards from "@/components/scrolls/ReleaseCards";
 import ReleasesTable from "@/components/scrolls/ReleasesTable";
 import TablePager from "@/components/ui/TablePager";
@@ -44,7 +45,8 @@ export default function ScrollsPageClient({
     }
     const queryString = current.toString();
     startTransition(() => {
-      router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+      const nextPath = queryString ? `${pathname}?${queryString}` : pathname;
+      router.replace(nextPath as Route);
     });
   }
 

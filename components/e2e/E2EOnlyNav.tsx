@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 
-const LINKS = [
+const LINKS: Array<{ href: Route; label: string; tid: string }> = [
   { href: "/mark2", label: "mark2", tid: "e2e-nav-mark2" },
   {
     href: "/mark2/blueprint",

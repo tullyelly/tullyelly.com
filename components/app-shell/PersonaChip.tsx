@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,7 +30,7 @@ export default function PersonaChip({ persona, className }: PersonaChipProps) {
 
   return (
     <Link
-      href={href}
+      href={href as Route}
       className={cn(
         "inline-flex h-8 items-center gap-2 rounded-full border border-black/10 bg-black/5 px-3 text-sm font-medium text-[color:var(--text-strong,#0e2240)] transition hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
         className,

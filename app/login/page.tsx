@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { Route } from "next";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ function LoginInner() {
   useEffect(() => {
     if (status === "authenticated") {
       const safe = sanitizeCallback(rawCallback, window.location.origin);
-      router.replace(safe);
+      router.replace(safe as Route);
     }
   }, [status, rawCallback, router]);
 
