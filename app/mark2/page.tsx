@@ -260,7 +260,7 @@ export default function Mark2Page() {
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           <b>The Second Brain. The Sandbox. The Lab.</b>
           <br />
-          🧠mark2 exists to experiment; with workflows, knowledge systems, and
+          🧠mark2 exists to experiment - with workflows, knowledge systems, and
           creative prototypes. It&apos;s your testing ground for methods like{" "}
           <Link
             href="https://obsidian.md/"
