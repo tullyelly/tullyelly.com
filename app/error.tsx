@@ -10,8 +10,9 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error("[GLOBAL_ERROR]", {
-      message: error.message,
+      message: error.message ?? "Unknown error",
       digest: error.digest,
+      stack: error.stack,
     });
   }, [error]);
 
