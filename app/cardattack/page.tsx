@@ -188,6 +188,34 @@ export default function CardattackPage() {
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           <i>Mantra: “Data is memory wearing a jersey.”</i>
         </p>
+        <div className="flex justify-center">
+          <div className="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-neutral-950 shadow-lg shadow-black/40">
+            <div className="relative h-0 w-full pb-[56.25%]">
+              <div aria-hidden className="absolute inset-0 bg-neutral-950" />
+              <video
+                className="absolute inset-0 z-10 h-full w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+              >
+                <source
+                  src="/videos/giannis-two-trophies.webp"
+                  type="video/webp"
+                />
+                <source
+                  src="/videos/giannis-two-trophies.mp4"
+                  type="video/mp4"
+                />
+              </video>
+              <div
+                aria-hidden
+                className="absolute inset-0 z-20 bg-gradient-to-b from-black/30 via-black/25 to-black/60"
+              />
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );
