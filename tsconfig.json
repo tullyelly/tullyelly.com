@@ -25,7 +25,7 @@
       "contentlayer/generated": ["./.contentlayer/generated"]
     },
 
-    "types": ["jest", "node", "contentlayer/generated"],
+    "types": ["jest", "node"],
     "typeRoots": ["./.contentlayer", "./node_modules/@types"],
 
     "plugins": [{ "name": "next" }],
