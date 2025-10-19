@@ -190,3 +190,19 @@ SELECT p.id, 'tullyelly','link','Docs','/docs','menu.tullyelly.docs',10
 FROM dojo.menu_node p
 WHERE p.kind='persona' AND p.persona='tullyelly'
   AND NOT EXISTS (SELECT 1 FROM dojo.menu_node c WHERE c.parent_id=p.id AND c.label='Docs');
+
+ALTER TABLE menu_node
+DROP CONSTRAINT IF EXISTS menu_node_persona_check;
+
+ALTER TABLE menu_node
+ADD CONSTRAINT menu_node_persona_check
+    CHECK (persona = ANY (
+        ARRAY[
+            'mark2'::TEXT,
+            'tullyelly'::TEXT,
+            'cardattack'::TEXT,
+            'theabbott'::TEXT,
+            'unclejimmy'::TEXT,
+            'shaolin'::TEXT
+        ]
+    ));

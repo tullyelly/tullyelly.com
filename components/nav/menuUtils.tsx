@@ -6,6 +6,7 @@ import type { NavItem, Persona } from "@/types/nav";
 export type AnyLink = Extract<NavItem, { kind: "link" | "external" }>;
 
 export const PERSONA_EMOJI: Record<Persona, string> = {
+  shaolin: "🧘",
   mark2: "🧠",
   tullyelly: "⚒️",
   cardattack: "🃏",

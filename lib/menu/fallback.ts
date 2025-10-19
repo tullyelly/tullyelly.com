@@ -8,6 +8,12 @@ export const PERSONA_SWITCHER_ITEMS: MenuItem[] = [
     iconKey: "Brain",
   },
   {
+    id: "p-shaolin",
+    label: "shaolin",
+    href: "/?persona=shaolin",
+    iconKey: "ScrollText",
+  },
+  {
     id: "p-tullyelly",
     label: "tullyelly",
     href: "/?persona=tullyelly",
@@ -42,6 +48,14 @@ export const UTILITIES_ITEMS: MenuItem[] = [
 ];
 
 const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
+  shaolin: [
+    {
+      id: "chronicles",
+      label: "Chronicles",
+      href: "/shaolin",
+      iconKey: "ScrollText",
+    },
+  ],
   mark2: [
     {
       id: "overview",

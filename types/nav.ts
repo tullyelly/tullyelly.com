@@ -3,6 +3,7 @@ import type { CapabilityKey as CapabilityKeyType } from "@/app/_auth/capabilitie
 export type CapabilityKey = CapabilityKeyType;
 
 export type Persona =
+  | "shaolin"
   | "mark2"
   | "tullyelly"
   | "cardattack"

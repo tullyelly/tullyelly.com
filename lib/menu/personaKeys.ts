@@ -1,4 +1,5 @@
 export type PersonaKey =
+  | "shaolin"
   | "mark2"
   | "tullyelly"
   | "unclejimmy"
@@ -6,6 +7,7 @@ export type PersonaKey =
   | "theabbott";
 
 export const PERSONA_KEYS = [
+  "shaolin",
   "mark2",
   "tullyelly",
   "unclejimmy",
