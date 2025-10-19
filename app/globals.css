@@ -44,7 +44,9 @@
 
   /* Layout scale */
   --container: 72rem;
-  --content-max: 80rem;
+  --content-max: 72rem; /* 1152px desktop rail, matches ruins */
+  --prose-max: 72ch; /* optimal reading measure for MDX */
+  --page-pad-x: 1rem; /* base gutter; overridden at breakpoints */
 
   /* UI tokens */
   --surface: var(--surface-card);
@@ -56,6 +58,18 @@
   --badge-classic-fg: #00471b; /* Bucks Green */
   --badge-classic-ring: rgba(0, 71, 27, 0.25);
   --header-h: 52px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --page-pad-x: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-pad-x: 2rem;
+  }
 }
 
 html,
