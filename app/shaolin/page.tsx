@@ -28,8 +28,8 @@ export default async function Page({
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold">chronicles</h1>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Field notes from the mark2 chronicles; browse the archive or jump into
-          the latest entries.
+          Welcome to my barely off the ground blog. Much will change. Styling is
+          kinda janky. Stay tuned.
         </p>
       </header>
 
