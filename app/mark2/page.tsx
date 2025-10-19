@@ -62,7 +62,7 @@ export default function Mark2Page() {
           After finishing this page it is recommended you stop by each sibling
           to see how this clock ticks:
         </p>
-        <ol className="list-decimal ml-6 space-y-1 text-[16px] md:text-[18px] text-muted-foreground">
+        <ol className="list-decimal ml-6 text-[16px] md:text-[18px] text-muted-foreground">
           <li>
             blueprint (
             <Link href="/mark2" className="underline hover:no-underline">
