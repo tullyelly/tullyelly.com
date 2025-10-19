@@ -1,7 +1,7 @@
 // next.config.mjs
 import bundleAnalyzer from '@next/bundle-analyzer';
 import createMDX from '@next/mdx';
-import { withContentlayer } from 'next-contentlayer';
+import { withContentlayer } from 'next-contentlayer2';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 import remarkSemicolons from './mdx/remark-semicolons-instead-of-emdash.mjs';
