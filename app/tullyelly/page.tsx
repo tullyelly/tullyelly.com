@@ -5,7 +5,7 @@ export default function TullyellyPage() {
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           forge
         </h2>
-        <p className="text-base leading-relaxed text-muted-foreground">
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
           varius enim in eros elementum tristique.
         </p>
@@ -14,7 +14,7 @@ export default function TullyellyPage() {
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           tullyelly
         </h2>
-        <p className="text-base leading-relaxed text-muted-foreground">
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Aenean vel lorem ac nibh placerat efficitur. Aenean vitae nisl non
           nisi egestas semper eget ut velit.
         </p>
@@ -23,7 +23,7 @@ export default function TullyellyPage() {
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           mr. robot says...
         </h2>
-        <p className="text-base leading-relaxed text-muted-foreground">
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Curabitur aliquet quam id dui posuere blandit. Donec sollicitudin
           molestie malesuada.
         </p>
