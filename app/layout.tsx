@@ -1,4 +1,3 @@
-export const dynamic = "force-dynamic";
 // app/layout.tsx
 import "./globals.css";
 import { initSentry } from "@/lib/sentry";
@@ -8,7 +7,7 @@ import { headers } from "next/headers";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
 import { getMenu as getLegacyMenu } from "@/app/_menu/getMenu";
-import { getMenuData } from "@/lib/menu/getMenu";
+import { getMenuDataCached } from "@/lib/menu/getMenu";
 import { resolvePersonaForPath } from "@/lib/menu/persona";
 import type { PersonaKey } from "@/lib/menu/types";
 import { CommandMenuProvider } from "@/components/nav/CommandMenu";
@@ -18,7 +17,7 @@ import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 import { MenuProvider } from "@/components/menu/MenuProvider";
 import { getMenuTree } from "@/lib/menu/tree";
-import { unstable_noStore as noStore } from "next/cache";
+import { getCapabilities } from "@/app/_auth/session";
 
 await initSentry();
 
@@ -73,19 +72,19 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  noStore();
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
-  const [menu, hdrs, menuTree] = await Promise.all([
+  const [menu, hdrs, menuTree, capabilities] = await Promise.all([
     getLegacyMenu(),
     headers(),
     getMenuTree(),
+    getCapabilities(),
   ]);
   const path = resolveRequestedPath(hdrs);
   const resolvedPersona = resolvePersonaForPath(menu.tree, path);
   const personaKey = (resolvedPersona?.persona ?? "mark2") as PersonaKey;
   const { menu: personaMenu, children: personaChildren } =
-    await getMenuData(personaKey);
+    await getMenuDataCached(personaKey, capabilities.all);
 
   return (
     <html
