@@ -20,8 +20,6 @@ import { MenuProvider } from "@/components/menu/MenuProvider";
 import { getMenuTree } from "@/lib/menu/tree";
 import { unstable_noStore as noStore } from "next/cache";
 
-noStore();
-
 await initSentry();
 
 const SITE_TITLE = "tullyelly";
@@ -75,6 +73,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  noStore();
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
   const [menu, hdrs, menuTree] = await Promise.all([
