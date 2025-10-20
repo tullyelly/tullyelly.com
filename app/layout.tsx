@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // app/layout.tsx
 import "./globals.css";
 import { initSentry } from "@/lib/sentry";
@@ -17,6 +18,9 @@ import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 import { MenuProvider } from "@/components/menu/MenuProvider";
 import { getMenuTree } from "@/lib/menu/tree";
+import { unstable_noStore as noStore } from "next/cache";
+
+noStore();
 
 await initSentry();
 
