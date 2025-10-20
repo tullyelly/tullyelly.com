@@ -24,10 +24,10 @@ import type { NavItem } from "@/types/nav";
 import { isNextBuild } from "@/lib/env";
 
 function capsHash(caps: Set<string>) {
-  return crypto
-    .createHash("sha1")
-    .update([...caps].sort().join("|"))
-    .digest("hex");
+  // Normalize + sort for stable ordering; JSON.stringify removes delimiter ambiguity
+  const arr = [...caps].map((s) => s.normalize("NFC")).sort();
+  const payload = JSON.stringify(arr);
+  return crypto.createHash("sha1").update(payload).digest("hex");
 }
 
 type DbMenuRow = MenuNodeRow & {
