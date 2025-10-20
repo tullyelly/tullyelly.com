@@ -47,6 +47,11 @@ export default function ClientAppShell({
   React.useEffect(() => {
     (window as any).__navDebug = { menu, menuChildren };
     console.info("[nav debug]", { menu, menuChildren });
+    console.info("[nav env]", {
+      NEXT_PUBLIC_TEST_MODE: process.env.NEXT_PUBLIC_TEST_MODE,
+      TEST_MODE: process.env.TEST_MODE,
+      SKIP_DB: process.env.SKIP_DB,
+    });
   }, [menu, menuChildren]);
 
   const [mobileNavOpen, setMobileNavOpenState] = React.useState(false);
