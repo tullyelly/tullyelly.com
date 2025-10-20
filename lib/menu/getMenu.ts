@@ -137,6 +137,8 @@ async function fetchMenuRows(): Promise<MenuNodeRow[]> {
     FROM dojo.menu_node
   `;
 
+  console.info("[menu rows]", rows.length, rows.slice(0, 5));
+
   return rows
     .map(normalizeRow)
     .filter((row): row is MenuNodeRow => row !== null);
