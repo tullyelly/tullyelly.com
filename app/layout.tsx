@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // app/layout.tsx
 import "./globals.css";
 import { initSentry } from "@/lib/sentry";
@@ -17,6 +18,7 @@ import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 import { MenuProvider } from "@/components/menu/MenuProvider";
 import { getMenuTree } from "@/lib/menu/tree";
+import { unstable_noStore as noStore } from "next/cache";
 
 await initSentry();
 
@@ -71,6 +73,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  noStore();
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
   const [menu, hdrs, menuTree] = await Promise.all([
