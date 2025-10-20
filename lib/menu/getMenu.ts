@@ -2,6 +2,8 @@
 
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+import crypto from "node:crypto";
 import { sql } from "@/lib/db";
 import { can as canFeature } from "@/lib/authz/can";
 import { getCapabilities } from "@/app/_auth/session";
@@ -21,6 +23,13 @@ import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
 import type { NavItem } from "@/types/nav";
 import { isNextBuild } from "@/lib/env";
 
+function capsHash(caps: Set<string>) {
+  return crypto
+    .createHash("sha1")
+    .update([...caps].sort().join("|"))
+    .digest("hex");
+}
+
 type DbMenuRow = MenuNodeRow & {
   kind: MenuNodeRow["kind"] | "external" | "group";
   order_index: number;
@@ -31,10 +40,27 @@ const TEST_MODE =
 const BUILD_MODE = isNextBuild();
 const DB_DISABLED = process.env.SKIP_DB === "true";
 
-async function buildGate(): Promise<FeatureGate> {
+async function buildGate(caps?: Set<string>): Promise<FeatureGate> {
   if (BUILD_MODE || DB_DISABLED) {
     const emptyCapabilities = { has: () => false };
     return createFeatureGate(emptyCapabilities, () => false);
+  }
+  if (caps) {
+    const normalizedCaps = new Set<string>();
+    for (const value of caps) {
+      const trimmed = typeof value === "string" ? value.trim() : "";
+      if (trimmed) {
+        normalizedCaps.add(trimmed);
+      }
+    }
+    const snapshot = {
+      has(key: string) {
+        const normalized = typeof key === "string" ? key.trim() : "";
+        if (!normalized) return false;
+        return normalizedCaps.has(normalized);
+      },
+    };
+    return createFeatureGate(snapshot, canFeature);
   }
   const capabilities = await getCapabilities();
   return createFeatureGate(capabilities, canFeature);
@@ -142,13 +168,28 @@ async function fetchMenuRows(): Promise<MenuNodeRow[]> {
     .filter((row): row is MenuNodeRow => row !== null);
 }
 
-export async function getMenuData(persona: PersonaKey): Promise<{
+export async function getMenuData(
+  persona: PersonaKey,
+  caps?: Set<string>,
+): Promise<{
   menu: MenuPayload;
   children: PersonaChildren;
 }> {
   const rows = await fetchMenuRows();
-  const gate = await buildGate();
+  const gate = await buildGate(caps);
   const menu = await buildMenuPayload(rows, persona, gate);
   const children = await buildPersonaChildren(rows, gate);
   return { menu, children };
+}
+
+export async function getMenuDataCached(
+  persona: PersonaKey,
+  caps: Set<string>,
+) {
+  const key = ["menu", persona, capsHash(caps)];
+  const cached = unstable_cache(async () => getMenuData(persona, caps), key, {
+    tags: ["menu", `menu:${persona}`],
+    revalidate: 300,
+  });
+  return cached();
 }
