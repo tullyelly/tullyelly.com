@@ -134,7 +134,7 @@ async function fetchMenuRows(): Promise<MenuNodeRow[]> {
       hidden,
       meta,
       published
-    FROM dojo.menu_node
+    FROM dojo.v_menu_published
   `;
 
   console.info("[menu rows]", rows.length, rows.slice(0, 5));
@@ -149,6 +149,7 @@ export async function getMenuData(persona: PersonaKey): Promise<{
   children: PersonaChildren;
 }> {
   const rows = await fetchMenuRows();
+  console.info("[menu rows runtime]", { total: rows.length });
   const gate = await buildGate();
   const menu = await buildMenuPayload(rows, persona, gate);
   const children = await buildPersonaChildren(rows, gate);
