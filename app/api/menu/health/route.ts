@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { getMenuData } from "@/lib/menu/getMenu";
+import { isPersonaKey, type PersonaKey } from "@/lib/menu/types";
 
 /**
  * Enable by setting MENU_HEALTH_ENABLED="1" in Vercel env.
@@ -18,7 +19,10 @@ export async function GET(request: Request) {
 
   // Optional persona override: /api/menu/health?persona=mark2
   const url = new URL(request.url);
-  const persona = url.searchParams.get("persona") ?? "mark2";
+  const personaParam = url.searchParams.get("persona");
+  const persona: PersonaKey = isPersonaKey(personaParam)
+    ? personaParam
+    : "mark2";
 
   // Grab the same payload the layout uses
   const { menu, children } = await getMenuData(persona);
