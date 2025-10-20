@@ -147,13 +147,6 @@ export async function buildMenuPayload(
 ): Promise<MenuPayload> {
   assertPersonaKey(persona);
   const allowed = await filterRowsByAccess(rows, can);
-  if (typeof console !== "undefined") {
-    console.info("[menu build payload]", {
-      total: rows.length,
-      allowed: allowed.length,
-      sample: allowed.slice(0, 5),
-    });
-  }
   for (const row of allowed) {
     assertPersonaKey(row.persona);
   }
@@ -194,13 +187,6 @@ export async function buildPersonaChildren(
   can: FeatureGate,
 ): Promise<PersonaChildren> {
   const allowed = await filterRowsByAccess(rows, can);
-  if (typeof console !== "undefined") {
-    console.info("[menu build children]", {
-      total: rows.length,
-      allowed: allowed.length,
-      sample: allowed.slice(0, 5),
-    });
-  }
   const personaRoots = allowed.filter(
     (row) => row.kind === "persona" && row.parent_id === null,
   );
