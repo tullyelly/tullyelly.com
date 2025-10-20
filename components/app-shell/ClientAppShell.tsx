@@ -44,16 +44,6 @@ export default function ClientAppShell({
     return (resolved ?? initialPersona) as PersonaSummary;
   }, [menuItems, pathname, initialPersona]);
 
-  React.useEffect(() => {
-    (window as any).__navDebug = { menu, menuChildren };
-    console.info("[nav debug]", { menu, menuChildren });
-    console.info("[nav env]", {
-      NEXT_PUBLIC_TEST_MODE: process.env.NEXT_PUBLIC_TEST_MODE,
-      TEST_MODE: process.env.TEST_MODE,
-      SKIP_DB: process.env.SKIP_DB,
-    });
-  }, [menu, menuChildren]);
-
   const [mobileNavOpen, setMobileNavOpenState] = React.useState(false);
   const [mobileNavPersonaId, setMobileNavPersonaIdState] = React.useState<
     string | null
