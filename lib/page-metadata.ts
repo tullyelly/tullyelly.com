@@ -1,26 +1,19 @@
 import type { Metadata } from "next";
-import type { PageFrontmatter } from "@/types/frontmatter";
+import { buildMetadata } from "@/lib/seo/builders";
 
-export function buildPageMetadata(frontmatter: PageFrontmatter): Metadata {
-  const { title, description, canonical, hero } = frontmatter;
+type LegacyInput = {
+  title: string;
+  description: string;
+  canonical?: string;
+  // Future-friendly fields can be added without breaking callers
+};
 
-  return {
-    title,
-    description,
-    alternates: canonical ? { canonical } : undefined,
-    openGraph: {
-      title,
-      description,
-      images: hero
-        ? [
-            {
-              url: hero.src,
-              width: hero.width,
-              height: hero.height,
-              alt: hero.alt,
-            },
-          ]
-        : undefined,
-    },
-  };
+export function buildPageMetadata(input: LegacyInput): Metadata {
+  return buildMetadata({
+    title: input.title,
+    description: input.description,
+    canonical: input.canonical,
+    type: "website",
+    twitterCard: "summary",
+  });
 }

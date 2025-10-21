@@ -1,3 +1,4 @@
+import { makeListGenerateMetadata } from "@/lib/seo/factories";
 import ActionBar from "./_components/ActionBar";
 import ScrollsPageClient from "./_components/ScrollsPageClient";
 import { getScrollsPage, type Sort } from "@/lib/scrolls";
@@ -10,6 +11,15 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export const generateMetadata = makeListGenerateMetadata({
+  path: "/mark2/shaolin-scrolls",
+  getTitle: (q) => (q ? `Shaolin Scrolls; search: "${q}"` : "Shaolin Scrolls"),
+  getDescription: (q) =>
+    q
+      ? `Browse Shaolin Scrolls filtered by "${q}". Releases, statuses, and dates; queryable and paginated.`
+      : "Browse all Shaolin Scrolls. Releases, statuses, and dates; queryable and paginated.",
+});
 
 interface PageProps {
   searchParams: Promise<{
