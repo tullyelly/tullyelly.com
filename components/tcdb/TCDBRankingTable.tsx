@@ -1,10 +1,23 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import type {
+  MouseEventHandler,
+  MutableRefObject,
+  ReactElement,
+  ReactNode,
+  Ref,
+} from "react";
+import {
+  cloneElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
-import * as Dialog from "@ui/dialog";
 import { X } from "lucide-react";
 import { fmtDate } from "@/lib/datetime";
 import TrendPill, { TrendValue } from "./TrendPill";
@@ -12,6 +25,11 @@ import { Table, TBody, THead } from "@/components/ui/Table";
 import TablePager from "@/components/ui/TablePager";
 import { Card } from "@ui";
 import { BusyButton } from "@/components/ui/busy-button";
+import Modal, {
+  ModalClose,
+  ModalDescription,
+  ModalTitle,
+} from "@/components/ui/Modal";
 
 type Row = {
   homie_id: number;
@@ -55,43 +73,81 @@ function formatRankingTimestamp(value: string | null | undefined) {
 
 type RankingDetailDialogProps = {
   row: Row;
-  trigger: ReactNode;
+  trigger: ReactElement;
 };
 
 function RankingDetailDialog({ row, trigger }: RankingDetailDialogProps) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  const handleOpen = useCallback(() => setOpen(true), []);
+  const handleClose = useCallback(() => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }, []);
+
+  const enhancedTrigger = useMemo(() => {
+    const originalOnClick = (
+      trigger.props as {
+        onClick?: MouseEventHandler<HTMLElement>;
+      }
+    ).onClick;
+    const originalRef = ((trigger as any).ref ??
+      null) as Ref<HTMLElement> | null;
+
+    const assignRef = (node: HTMLElement | null) => {
+      triggerRef.current = node;
+      if (!originalRef) return;
+      if (typeof originalRef === "function") {
+        originalRef(node);
+        return;
+      }
+      if (typeof originalRef === "object" && originalRef) {
+        (originalRef as MutableRefObject<HTMLElement | null>).current = node;
+      }
+    };
+
+    return cloneElement(trigger, {
+      onClick: (event: React.MouseEvent<HTMLElement>) => {
+        originalOnClick?.(event);
+        if (!event.defaultPrevented) {
+          handleOpen();
+        }
+      },
+      ref: assignRef as Ref<HTMLElement>,
+    } as any);
+  }, [trigger, handleOpen]);
+
   return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="app-dialog-overlay" />
-        <Dialog.Content className="app-dialog-content outline-none">
+    <>
+      {enhancedTrigger}
+      <Modal open={open} onClose={handleClose}>
+        <div className="flex min-h-0 flex-1 flex-col">
           <div
             data-dialog-handle
-            className="-mx-6 -mt-6 flex items-center gap-3 bg-[var(--blue)] px-6 py-2 text-white"
-            style={{
-              borderTopLeftRadius: "13px",
-              borderTopRightRadius: "13px",
-            }}
+            className="sticky top-0 z-[1] flex items-center justify-between gap-3 rounded-t-2xl bg-[var(--blue)] px-5 py-3 text-white"
           >
             <div className="min-w-0 flex-1">
-              <Dialog.Title className="text-base font-semibold leading-6">
+              <ModalTitle className="truncate text-base font-semibold leading-6">
                 {row.name}; Jersey {row.homie_id}
-              </Dialog.Title>
+              </ModalTitle>
             </div>
-            <div className="flex items-center gap-2">
-              <Dialog.Close
-                className="inline-flex h-8 w-8 items-center justify-center rounded border border-white/80 text-white transition hover:opacity-80"
+            <ModalClose asChild>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--blue)]"
                 aria-label="Close dialog"
+                onPointerDown={(event) => event.stopPropagation()}
               >
                 <X className="h-4 w-4" />
-              </Dialog.Close>
-            </div>
+              </button>
+            </ModalClose>
           </div>
-          <Dialog.Description className="sr-only">
-            Detailed TCDB ranking information for {row.name}.
-          </Dialog.Description>
-          <div className="mt-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="modal-body grow" data-testid="modal-body">
+            <ModalDescription className="sr-only">
+              Detailed TCDB ranking information for {row.name}.
+            </ModalDescription>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:[grid-template-columns:repeat(2,minmax(0,1fr))]">
               {[
                 {
                   label: "Current Rank",
@@ -133,19 +189,21 @@ function RankingDetailDialog({ row, trigger }: RankingDetailDialogProps) {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-2xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm"
+                  className="min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm"
                 >
                   <div className="text-[11px] font-semibold uppercase tracking-wide text-ink/60">
                     {item.label}
                   </div>
-                  <div className="mt-1 text-sm text-ink">{item.render()}</div>
+                  <div className="mt-1 min-w-0 text-sm text-ink">
+                    {item.render()}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </div>
+      </Modal>
+    </>
   );
 }
 

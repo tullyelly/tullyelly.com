@@ -23,7 +23,7 @@ export default function BookmarkBreadcrumb({
       aria-label="Breadcrumb"
       data-testid="breadcrumb"
       aria-busy={showSkeleton ? "true" : undefined}
-      className={cn("absolute left-0 top-0 z-[2]", styles.root)}
+      className={cn("absolute left-0 top-0 z-[200]", styles.root)}
     >
       <div
         className={cn(
