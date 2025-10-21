@@ -9,8 +9,8 @@ import { useScrollDialog } from "@/app/(components)/shaolin/useScrollDialog";
 import { Table, THead, TBody } from "@/components/ui/Table";
 import type { ReleaseRow } from "@/lib/scrolls";
 
-function getDisplayLabel(row: ReleaseRow) {
-  return row.label ?? row.name;
+function getReleaseName(row: ReleaseRow) {
+  return row.name || row.label || "";
 }
 
 export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
@@ -74,9 +74,9 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
                     {r.id}
                   </a>
                 </td>
-                <td className="truncate">
-                  <span className="block" title={getDisplayLabel(r)}>
-                    {getDisplayLabel(r)}
+                <td className="whitespace-normal break-words">
+                  <span className="block" title={getReleaseName(r)}>
+                    {getReleaseName(r)}
                   </span>
                 </td>
                 <td>
