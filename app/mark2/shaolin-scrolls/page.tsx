@@ -14,11 +14,17 @@ export const revalidate = 0;
 
 export const generateMetadata = makeListGenerateMetadata({
   path: "/mark2/shaolin-scrolls",
-  getTitle: (q) => (q ? `Shaolin Scrolls; search: "${q}"` : "Shaolin Scrolls"),
-  getDescription: (q) =>
-    q
-      ? `Browse Shaolin Scrolls filtered by "${q}". Releases, statuses, and dates; queryable and paginated.`
-      : "Browse all Shaolin Scrolls. Releases, statuses, and dates; queryable and paginated.",
+  getTitle: (q, page) => {
+    const base = "Shaolin Scrolls";
+    const withQuery = q ? `${base}; search: "${q}"` : base;
+    return page && page !== "1" ? `${withQuery}; page ${page}` : withQuery;
+  },
+  getDescription: (q, page) => {
+    const base = q
+      ? `Browse Shaolin Scrolls filtered by "${q}". Releases, statuses, and dates; queryable and paginated`
+      : "Browse all Shaolin Scrolls. Releases, statuses, and dates; queryable and paginated";
+    return page && page !== "1" ? `${base} (page ${page}).` : `${base}.`;
+  },
 });
 
 interface PageProps {

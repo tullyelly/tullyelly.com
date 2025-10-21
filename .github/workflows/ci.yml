@@ -122,6 +122,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Metadata coverage (warn)
+        run: SEO_METADATA_ENFORCE=warn npm run lint:metadata
+
       - name: Format check
         run: npm run format:check
 
@@ -157,6 +160,10 @@ jobs:
       - name: Validate SEO
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.seo == 'true'
         run: npm run validate-seo
+
+      - name: SEO smoke tests
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.seo == 'true'
+        run: npm run test:seo
 
       - name: Build
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.build == 'true' || steps.filter.outputs.security == 'true'
