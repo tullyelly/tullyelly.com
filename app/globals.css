@@ -380,6 +380,10 @@ p {
   .link-blue:focus {
     color: var(--blue-contrast);
   }
+  a.link-blue,
+  button.link-blue {
+    @apply cursor-pointer;
+  }
 
   .aria-busy {
     transition:

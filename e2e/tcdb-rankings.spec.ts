@@ -1,5 +1,39 @@
 import { test, expect } from "./fixtures";
 
+test("ranking detail trigger shows pointer cursor and is keyboard accessible", async ({
+  page,
+}) => {
+  await page.goto("/cardattack/tcdb-rankings");
+  const trigger = page
+    .getByRole("button", { name: /view tcdb details/i })
+    .first();
+
+  await trigger.hover();
+  const cursor = await trigger.evaluate(
+    (node) => getComputedStyle(node).cursor,
+  );
+  expect(cursor).toBe("pointer");
+
+  let focused = false;
+  for (let i = 0; i < 30; i++) {
+    const isActive = await trigger.evaluate(
+      (node) => node === document.activeElement,
+    );
+    if (isActive) {
+      focused = true;
+      break;
+    }
+    await page.keyboard.press("Tab");
+  }
+  expect(focused).toBeTruthy();
+
+  await page.keyboard.press("Enter");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+});
+
 test("ranking detail dialog locks background and focus", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/cardattack/tcdb-rankings");

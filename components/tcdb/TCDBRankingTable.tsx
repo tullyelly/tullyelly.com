@@ -365,7 +365,7 @@ export default function TCDBRankingTable({
                 trigger={
                   <button
                     type="button"
-                    className="mt-3 inline-flex items-center gap-2 bg-transparent p-0 text-sm font-medium link-blue border-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+                    className="mt-3 inline-flex items-center gap-2 bg-transparent p-0 text-sm font-medium link-blue cursor-pointer border-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
                     aria-label={`View TCDB details for ${row.name}`}
                   >
                     View details
@@ -415,7 +415,7 @@ export default function TCDBRankingTable({
                     trigger={
                       <button
                         type="button"
-                        className="link-blue bg-transparent p-0 text-left font-medium border-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+                        className="link-blue cursor-pointer bg-transparent p-0 text-left font-medium border-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
                         aria-haspopup="dialog"
                         aria-label={`View TCDB details for ${row.name}`}
                       >
