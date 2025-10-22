@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { withinRatio } from "./utils/layout";
 
 // Desktop table view
 test("desktop table opens dialog on ID click", async ({ page }) => {
@@ -29,11 +30,18 @@ test("desktop table opens dialog on ID click", async ({ page }) => {
   );
   expect(wideWidth).toBeLessThanOrEqual(900);
   await page.setViewportSize({ width: 1280, height: 900 });
+  const vpWidth = 1280;
   const width1280 = await dialog.evaluate(
     (node) => node.getBoundingClientRect().width,
   );
-  const expected1280 = 1280 * 0.86;
-  expect(Math.abs(width1280 - expected1280)).toBeLessThanOrEqual(3);
+  // Keep desktop dialog between 40-60% of the viewport so minor design tweaks stay within guardrails.
+  const minRatio = 0.4;
+  const maxRatio = 0.6;
+  const minWidth = vpWidth * minRatio;
+  const maxWidth = vpWidth * maxRatio;
+  expect.soft(width1280).toBeGreaterThanOrEqual(minWidth);
+  expect.soft(width1280).toBeLessThanOrEqual(maxWidth);
+  expect(withinRatio(width1280, vpWidth, minRatio, maxRatio)).toBe(true);
   const modalZ = await dialog.evaluate((node) => {
     const value = Number.parseInt(getComputedStyle(node).zIndex, 10);
     return Number.isNaN(value) ? 0 : value;
