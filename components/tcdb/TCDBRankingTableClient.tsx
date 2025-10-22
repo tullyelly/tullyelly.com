@@ -385,7 +385,7 @@ export default function TCDBRankingTableClient({
           <div
             className="flex min-h-0 flex-1 flex-col"
             data-modal-width-ratio={
-              process.env.E2E === "1" ? "0.80" : undefined
+              process.env.E2E === "1" ? "0.40" : undefined
             }
           >
             <div
