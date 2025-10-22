@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import { glob } from 'glob';
-import matter from 'gray-matter';
-import { z } from 'zod';
+import { promises as fs } from "fs";
+import { glob } from "glob";
+import matter from "gray-matter";
+import { z } from "zod";
 
 const schema = z.object({
   title: z.string(),
   description: z.string(),
   canonical: z.string().url().optional(),
-  category: z.enum(['music', 'video', 'campaign']).optional(),
+  category: z.enum(["music", "video", "campaign"]).optional(),
   hero: z.object({
     src: z.string(),
     alt: z.string(),
@@ -19,10 +19,10 @@ const schema = z.object({
   tags: z.array(z.string()).optional(),
 });
 
-const files = await glob('app/**/page.mdx');
+const files = await glob("app/**/page.mdx");
 let hasError = false;
 for (const file of files) {
-  const src = await fs.readFile(file, 'utf8');
+  const src = await fs.readFile(file, "utf8");
   const { data } = matter(src);
   const result = schema.safeParse(data);
   if (!result.success) {

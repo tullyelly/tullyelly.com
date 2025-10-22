@@ -1,8 +1,9 @@
 import { test, expect } from "./fixtures";
+import { withinRatio } from "./utils/layout";
 
 // Desktop table view
 test("desktop table opens dialog on ID click", async ({ page }) => {
-  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/mark2/shaolin-scrolls");
   await expect(page.getByRole("columnheader", { name: "ID" })).toBeVisible();
   await expect(
@@ -14,6 +15,61 @@ test("desktop table opens dialog on ID click", async ({ page }) => {
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText(idText);
+  await expect(page.locator("[data-testid='modal-overlay']")).toBeVisible();
+  await expect(page.locator("#page-root")).toHaveAttribute("inert", "");
+  const bodyOverflow = await page.evaluate(
+    () => getComputedStyle(document.body).overflow,
+  );
+  expect(bodyOverflow).toBe("hidden");
+  const overlayFilter = await page
+    .locator("[data-testid='modal-overlay']")
+    .evaluate((node) => getComputedStyle(node).backdropFilter || "");
+  expect(overlayFilter.includes("blur")).toBeFalsy();
+  const wideWidth = await dialog.evaluate(
+    (node) => node.getBoundingClientRect().width,
+  );
+  expect(wideWidth).toBeLessThanOrEqual(900);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const vpWidth = 1280;
+  const width1280 = await dialog.evaluate(
+    (node) => node.getBoundingClientRect().width,
+  );
+  // Keep desktop dialog between 40-60% of the viewport so minor design tweaks stay within guardrails.
+  const minRatio = 0.4;
+  const maxRatio = 0.6;
+  const minWidth = vpWidth * minRatio;
+  const maxWidth = vpWidth * maxRatio;
+  expect.soft(width1280).toBeGreaterThanOrEqual(minWidth);
+  expect.soft(width1280).toBeLessThanOrEqual(maxWidth);
+  expect(withinRatio(width1280, vpWidth, minRatio, maxRatio)).toBe(true);
+  const modalZ = await dialog.evaluate((node) => {
+    const value = Number.parseInt(getComputedStyle(node).zIndex, 10);
+    return Number.isNaN(value) ? 0 : value;
+  });
+  const breadcrumbZ = await page.getByTestId("breadcrumb").evaluate((node) => {
+    const value = Number.parseInt(getComputedStyle(node).zIndex, 10);
+    return Number.isNaN(value) ? 0 : value;
+  });
+  expect(modalZ).toBeGreaterThan(breadcrumbZ);
+  const modalOverflowX = await dialog.evaluate(
+    (node) => getComputedStyle(node).overflowX,
+  );
+  expect(modalOverflowX).toBe("hidden");
+  const modalBody = page.getByTestId("modal-body");
+  await expect(modalBody).toBeVisible();
+  const bodyOverflowX = await modalBody.evaluate(
+    (node) => getComputedStyle(node).overflowX,
+  );
+  expect(bodyOverflowX).toBe("hidden");
+  const hasHorizontalOverflow = await modalBody.evaluate(
+    (node) => node.scrollWidth > node.clientWidth,
+  );
+  expect(hasHorizontalOverflow).toBeFalsy();
+  await page.setViewportSize({ width: 360, height: 780 });
+  const narrowOverflow = await modalBody.evaluate(
+    (node) => node.scrollWidth > node.clientWidth,
+  );
+  expect(narrowOverflow).toBeFalsy();
   await expect(page).toHaveURL("/mark2/shaolin-scrolls");
 });
 

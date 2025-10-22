@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import "../lib/dns-polyfill.js";
 import dotenv from "dotenv";
 import { Client } from "pg";
 
@@ -391,12 +392,7 @@ async function seedMenu(client) {
   for (const personaDef of PERSONA_DEFS) {
     const personaId = await upsertPersonaNode(client, personaDef);
     for (const child of personaDef.children) {
-      await upsertChildNode(
-        client,
-        personaId,
-        personaDef.persona,
-        child,
-      );
+      await upsertChildNode(client, personaId, personaDef.persona, child);
     }
   }
 }

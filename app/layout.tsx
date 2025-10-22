@@ -18,16 +18,17 @@ import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 import { MenuProvider } from "@/components/menu/MenuProvider";
 import { getMenuTree } from "@/lib/menu/tree";
 import { getCapabilities } from "@/app/_auth/session";
+import {
+  DEFAULT_TWITTER_HANDLE,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  SITE_URL,
+} from "@/lib/seo/constants";
 
 await initSentry();
 
-const SITE_TITLE = "tullyelly";
-const SITE_DESCRIPTION = "Watch me lose my mind in real-time.";
-
 const baseMetadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-  ),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
     template: `%s; ${SITE_TITLE}`,
@@ -37,6 +38,15 @@ const baseMetadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     type: "website",
+  },
+  twitter: {
+    card: "summary",
+    site: DEFAULT_TWITTER_HANDLE,
+    creator: DEFAULT_TWITTER_HANDLE,
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -72,6 +82,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isE2ERun = process.env.E2E === "1";
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
   const [menu, hdrs, menuTree, capabilities] = await Promise.all([
@@ -89,7 +100,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jbMono.variable}`}
+      className={`${inter.variable} ${jbMono.variable} ${isE2ERun ? "e2e" : ""}`.trim()}
       data-e2e-stable={isE2EStable ? "true" : undefined}
     >
       <head>

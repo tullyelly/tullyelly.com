@@ -402,14 +402,20 @@ describe("NestableMenu pointer modality", () => {
     );
 
     await act(async () => {
+      const coords = { button: 0, clientX: 8, clientY: 8, bubbles: true };
       fireEvent.pointerDown(document.body, {
         pointerType: "mouse",
         pointerId: 5,
-        button: 0,
-        clientX: 8,
-        clientY: 8,
-        bubbles: true,
+        ...coords,
       });
+      fireEvent.mouseDown(document.body, coords);
+      fireEvent.pointerUp(document.body, {
+        pointerType: "mouse",
+        pointerId: 5,
+        ...coords,
+      });
+      fireEvent.mouseUp(document.body, coords);
+      fireEvent.click(document.body, coords);
     });
 
     await waitForMenuClose;

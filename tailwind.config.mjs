@@ -1,5 +1,5 @@
 // Tailwind v4 — ESM config
-import tailwindcssAnimate from "tailwindcss-animate"
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   content: [
@@ -31,9 +31,9 @@ export default {
         border: "var(--border)",
         fg: "var(--fg)",
         brand: {
-          bucksGreen: '#00471B',
-          creamCityCream: '#EEE1C6',
-          greatLakesBlue: '#0077C0',
+          bucksGreen: "#00471B",
+          creamCityCream: "#EEE1C6",
+          greatLakesBlue: "#0077C0",
         },
       },
       maxWidth: {

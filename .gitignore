@@ -5,6 +5,7 @@
 .env.local
 .env.test
 !.env.example
+!.env.test.example
 
 # Build output
 .next/
