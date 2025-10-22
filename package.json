@@ -43,7 +43,7 @@
     "guard:self-fetch": "tsx scripts/assert-no-self-fetch.ts",
     "security-headers:check": "node scripts/assert-security-headers.mjs",
     "secrets:scan": "secretlint \"**/*\"",
-    "secrets:scan:staged": "secretlint",
+    "secrets:scan:staged": "secretlint --maskSecrets --secretlintignore .secretlintignore",
     "share:generate": "tsx scripts/generateShareKit.ts",
     "coverage:check": "node scripts/report-coverage.mjs",
     "test": "cross-env NODE_ENV=test jest --config jest.config.cjs",

@@ -1,12 +1,8 @@
-import "dotenv/config";
 import "./lib/dns-polyfill.js";
 import { defineConfig, devices } from "@playwright/test";
-import { config as loadEnv } from "dotenv";
+import * as dotenv from "dotenv";
 
-loadEnv({ path: ".env.test" });
-
-const dummyDatabaseUrl =
-  "postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic";
+dotenv.config({ path: ".env.test" });
 
 const nonEmpty = (value: string | undefined | null): string | undefined => {
   if (typeof value !== "string") return undefined;
@@ -17,14 +13,12 @@ const nonEmpty = (value: string | undefined | null): string | undefined => {
 const effectiveDatabaseUrl =
   nonEmpty(process.env.TEST_DATABASE_URL) ??
   nonEmpty(process.env.DATABASE_URL) ??
-  dummyDatabaseUrl;
+  undefined;
 
-if (
-  !nonEmpty(process.env.TEST_DATABASE_URL) &&
-  !nonEmpty(process.env.DATABASE_URL)
-) {
-  console.warn(
-    "[playwright] DATABASE_URL is empty; using dummy fallback. Set TEST_DATABASE_URL for real data.",
+if (!effectiveDatabaseUrl) {
+  console.warn("[⚠️] Missing TEST_DATABASE_URL — DB tests will fail.");
+  throw new Error(
+    "[playwright] Missing TEST_DATABASE_URL or DATABASE_URL for Playwright tests.",
   );
 }
 
@@ -32,6 +26,7 @@ const sanitizedEnv = {
   ...process.env,
   PLAYWRIGHT: "true",
   DATABASE_URL: effectiveDatabaseUrl,
+  TEST_DATABASE_URL: effectiveDatabaseUrl,
   NEON_HTTP_URL: "",
   NEON_WS_PROXY: "",
   NEON_PROXY: "",
@@ -41,6 +36,7 @@ const sanitizedEnv = {
 
 process.env.PLAYWRIGHT = sanitizedEnv.PLAYWRIGHT;
 process.env.DATABASE_URL = sanitizedEnv.DATABASE_URL;
+process.env.TEST_DATABASE_URL = sanitizedEnv.TEST_DATABASE_URL;
 process.env.NEON_HTTP_URL = sanitizedEnv.NEON_HTTP_URL;
 process.env.NEON_WS_PROXY = sanitizedEnv.NEON_WS_PROXY;
 process.env.NEON_PROXY = sanitizedEnv.NEON_PROXY;
@@ -61,6 +57,7 @@ const webServerEnv = {
   NEXT_PUBLIC_FEATURE_BREADCRUMBS_V1: "true",
   TEST_MODE: "1",
   E2E_MODE: "1",
+  NEXT_PUBLIC_E2E_STABLE: "true",
   AUTH_SECRET: "test-secret",
   DISABLE_SENTRY: "1",
   NEXTAUTH_URL: "http://127.0.0.1:4317",

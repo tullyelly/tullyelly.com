@@ -7,9 +7,12 @@ if (
   delete process.env.NEON_HTTP_URL;
 }
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl =
+  process.env.DATABASE_URL ?? process.env.TEST_DATABASE_URL ?? null;
 if (!databaseUrl) {
-  throw new Error("Missing DATABASE_URL for Neon client.");
+  throw new Error(
+    "Missing DATABASE_URL/TEST_DATABASE_URL (set locally in .env.test or via CI secrets).",
+  );
 }
 
 export const sql = neon(databaseUrl);
