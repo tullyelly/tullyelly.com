@@ -63,7 +63,7 @@
     "test:e2e:ci": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test --reporter=html",
     "test:e2e:header": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test -g \"header matches baseline screenshot\"",
     "test:e2e:update:header": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test -g \"header matches baseline screenshot\" --update-snapshots",
-    "pretest:seo": "npm run pretest:e2e",
+    "pretest:seo": "npm run prepare:content",
     "test:seo": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test tests/e2e/seo.shaolin-scrolls.spec.ts",
     "test:seo:scrolls": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright test tests/e2e/seo.shaolin-scrolls.spec.ts",
     "db:ping": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config scripts/db-ping.ts",
