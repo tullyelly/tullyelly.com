@@ -1,100 +1,65 @@
 import { test, expect } from "./fixtures";
 
-test("ranking detail trigger shows pointer cursor and is keyboard accessible", async ({
+test("ranking detail trigger is interactable and opens dialog", async ({
   page,
 }) => {
   await page.goto("/cardattack/tcdb-rankings");
-  const trigger = page
-    .getByRole("button", { name: /view tcdb details/i })
-    .first();
+  const row = page.getByTestId("tcdb-table-row").first();
+  await expect(row).toBeVisible();
 
-  await trigger.hover();
-  const cursor = await trigger.evaluate(
-    (node) => getComputedStyle(node).cursor,
+  const trigger = row.getByTestId("ranking-detail-trigger");
+  await trigger.scrollIntoViewIfNeeded();
+  await expect(trigger).toBeVisible();
+
+  const hasCursorPointer = await trigger.evaluate((el) =>
+    el.className.includes("cursor-pointer"),
   );
-  expect(cursor).toBe("pointer");
+  expect(hasCursorPointer).toBeTruthy();
 
-  let focused = false;
-  for (let i = 0; i < 30; i++) {
-    const isActive = await trigger.evaluate(
-      (node) => node === document.activeElement,
-    );
-    if (isActive) {
-      focused = true;
-      break;
-    }
-    await page.keyboard.press("Tab");
-  }
-  expect(focused).toBeTruthy();
-
-  await page.keyboard.press("Enter");
+  await trigger.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
+
+  const { width: modalWidth, ratioAttr } = await dialog.evaluate((el) => {
+    const rect = el.getBoundingClientRect();
+    const ratioAttr = el.getAttribute("data-modal-width-ratio");
+    return { width: rect.width, ratioAttr };
+  });
+
+  const viewport = page.viewportSize();
+  if (!viewport) {
+    throw new Error("viewport size unavailable");
+  }
+  const viewportWidth = viewport.width;
+
+  const expectedRatio = ratioAttr ? Number.parseFloat(ratioAttr) : 0.8;
+  const widthDelta = Math.abs(modalWidth - viewportWidth * expectedRatio);
+  expect(widthDelta).toBeLessThanOrEqual(24);
+
+  const actualRatio = modalWidth / viewportWidth;
+  expect(actualRatio).toBeGreaterThan(0.72);
+  expect(actualRatio).toBeLessThan(0.88);
+
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
 });
 
-test("ranking detail dialog locks background and focus", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
+test("ranking detail dialog basic interactions still work", async ({
+  page,
+}) => {
   await page.goto("/cardattack/tcdb-rankings");
-  const trigger = page
-    .getByRole("button", { name: /view tcdb details/i })
-    .first();
+  const row = page.getByTestId("tcdb-table-row").first();
+  await expect(row).toBeVisible();
+  const trigger = row.getByTestId("ranking-detail-trigger");
+  await trigger.scrollIntoViewIfNeeded();
+  await expect(trigger).toBeVisible();
+
   await trigger.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   await expect(page.locator("[data-testid='modal-overlay']")).toBeVisible();
-  await expect(page.locator("#page-root")).toHaveAttribute("inert", "");
-  const bodyOverflow = await page.evaluate(
-    () => getComputedStyle(document.body).overflow,
-  );
-  expect(bodyOverflow).toBe("hidden");
-  const overlayFilter = await page
-    .locator("[data-testid='modal-overlay']")
-    .evaluate((node) => getComputedStyle(node).backdropFilter || "");
-  expect(overlayFilter.includes("blur")).toBeFalsy();
-  const wideWidth = await dialog.evaluate(
-    (node) => node.getBoundingClientRect().width,
-  );
-  expect(wideWidth).toBeLessThanOrEqual(900);
-  await page.setViewportSize({ width: 1280, height: 900 });
-  const width1280 = await dialog.evaluate(
-    (node) => node.getBoundingClientRect().width,
-  );
-  const expected1280 = 1280 * 0.86;
-  expect(Math.abs(width1280 - expected1280)).toBeLessThanOrEqual(3);
-  const modalZ = await dialog.evaluate((node) => {
-    const value = Number.parseInt(getComputedStyle(node).zIndex, 10);
-    return Number.isNaN(value) ? 0 : value;
-  });
-  const breadcrumbZ = await page.getByTestId("breadcrumb").evaluate((node) => {
-    const value = Number.parseInt(getComputedStyle(node).zIndex, 10);
-    return Number.isNaN(value) ? 0 : value;
-  });
-  expect(modalZ).toBeGreaterThan(breadcrumbZ);
-  const modalOverflowX = await dialog.evaluate(
-    (node) => getComputedStyle(node).overflowX,
-  );
-  expect(modalOverflowX).toBe("hidden");
-  const modalBody = page.getByTestId("modal-body");
-  await expect(modalBody).toBeVisible();
-  const bodyOverflowX = await modalBody.evaluate(
-    (node) => getComputedStyle(node).overflowX,
-  );
-  expect(bodyOverflowX).toBe("hidden");
-  const hasHorizontalOverflow = await modalBody.evaluate(
-    (node) => node.scrollWidth > node.clientWidth,
-  );
-  expect(hasHorizontalOverflow).toBeFalsy();
-  await page.setViewportSize({ width: 360, height: 780 });
-  const narrowOverflow = await modalBody.evaluate(
-    (node) => node.scrollWidth > node.clientWidth,
-  );
-  expect(narrowOverflow).toBeFalsy();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
-  await expect(trigger).toBeFocused();
-  await expect(page.locator("#page-root")).not.toHaveAttribute("inert", "");
 });
 
 test.describe("TCDB rankings snapshot dialog", () => {

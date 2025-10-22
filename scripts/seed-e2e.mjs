@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import "../lib/dns-polyfill.js";
 import dotenv from "dotenv";
 import { Client } from "pg";
 

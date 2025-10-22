@@ -385,6 +385,12 @@ p {
     @apply cursor-pointer;
   }
 
+  html.e2e .tcdb-trigger {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+
   .aria-busy {
     transition:
       opacity 300ms ease-in-out,

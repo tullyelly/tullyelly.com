@@ -1,4 +1,5 @@
 // next.config.mjs
+import './lib/dns-polyfill.js';
 import bundleAnalyzer from '@next/bundle-analyzer';
 import createMDX from '@next/mdx';
 import { withContentlayer } from 'next-contentlayer2';

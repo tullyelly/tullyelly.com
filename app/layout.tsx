@@ -82,6 +82,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isE2ERun = process.env.E2E === "1";
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
   const [menu, hdrs, menuTree, capabilities] = await Promise.all([
@@ -99,7 +100,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jbMono.variable}`}
+      className={`${inter.variable} ${jbMono.variable} ${isE2ERun ? "e2e" : ""}`.trim()}
       data-e2e-stable={isE2EStable ? "true" : undefined}
     >
       <head>

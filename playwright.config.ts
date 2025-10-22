@@ -1,3 +1,4 @@
+import "./lib/dns-polyfill.js";
 import { defineConfig, devices } from "@playwright/test";
 
 // at top of playwright.config.ts
@@ -44,14 +45,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "NODE_ENV=test NEXT_E2E=1 PORT=4317 npm run start:e2e",
+    command: "E2E=1 NODE_ENV=test NEXT_E2E=1 PORT=4317 npm run start:e2e",
     url: "http://127.0.0.1:4317",
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 120_000,
     env: {
       NODE_ENV: "test",
       NEXT_E2E: "1",
-      E2E: "true",
+      E2E: "1",
       SHOW_FLOWERS: "true",
       BREADCRUMBS: "true",
       NEXT_PUBLIC_E2E_MODE: "1",
