@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
-const inDir = "public/images/source";   // drop your originals here
-const outDir = "public/images/optimized";  // optimized outputs land here
+const inDir = "public/images/source"; // drop your originals here
+const outDir = "public/images/optimized"; // optimized outputs land here
 
 const exts = new Set([".jpg", ".jpeg", ".png", ".webp", ".tiff"]);
 
@@ -34,10 +34,22 @@ async function optimizeOne(srcAbs) {
 
   // Produce a solid set of formats (JPG, WebP, AVIF, and an optimized PNG)
   await Promise.all([
-    pipe.clone().jpeg({ quality: 82, mozjpeg: true }).toFile(path.join(outSubdir, `${baseName}.jpg`)),
-    pipe.clone().webp({ quality: 80 }).toFile(path.join(outSubdir, `${baseName}.webp`)),
-    pipe.clone().avif({ quality: 50 }).toFile(path.join(outSubdir, `${baseName}.avif`)),
-    pipe.clone().png({ compressionLevel: 9, palette: true }).toFile(path.join(outSubdir, `${baseName}.png`)),
+    pipe
+      .clone()
+      .jpeg({ quality: 82, mozjpeg: true })
+      .toFile(path.join(outSubdir, `${baseName}.jpg`)),
+    pipe
+      .clone()
+      .webp({ quality: 80 })
+      .toFile(path.join(outSubdir, `${baseName}.webp`)),
+    pipe
+      .clone()
+      .avif({ quality: 50 })
+      .toFile(path.join(outSubdir, `${baseName}.avif`)),
+    pipe
+      .clone()
+      .png({ compressionLevel: 9, palette: true })
+      .toFile(path.join(outSubdir, `${baseName}.png`)),
   ]);
 
   console.log(`✓ ${rel}`);

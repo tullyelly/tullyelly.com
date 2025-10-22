@@ -49,20 +49,24 @@ for await (const src of walk(inDirAbs)) {
   const { dir, name } = path.parse(rel);
 
   const outputs = requiredOutputs.map((oExt) =>
-    path.join(outDirAbs, dir, `${name}${oExt}`)
+    path.join(outDirAbs, dir, `${name}${oExt}`),
   );
 
   // ensure all outputs exist
   for (const out of outputs) {
     const exists = await fileExists(out);
     if (!exists) {
-      failures.push(`Missing output for ${rel} → ${path.relative(process.cwd(), out)}`);
+      failures.push(
+        `Missing output for ${rel} → ${path.relative(process.cwd(), out)}`,
+      );
       continue;
     }
     // ensure outputs are not stale
     const [srcTime, outTime] = await Promise.all([mtime(src), mtime(out)]);
     if (outTime < srcTime) {
-      failures.push(`Stale output for ${rel} → ${path.relative(process.cwd(), out)} (re-run optimizer)`);
+      failures.push(
+        `Stale output for ${rel} → ${path.relative(process.cwd(), out)} (re-run optimizer)`,
+      );
     }
   }
 }
@@ -71,10 +75,9 @@ if (failures.length) {
   console.error("\nImage optimization check failed:\n");
   for (const f of failures) console.error(` - ${f}`);
   console.error(
-    `\nFix: run "npm run images:optimize" locally and commit the updated files in ${outDir}/.\n`
+    `\nFix: run "npm run images:optimize" locally and commit the updated files in ${outDir}/.\n`,
   );
   process.exit(1);
 } else {
   console.log("All images are optimized and up to date ✅");
 }
-

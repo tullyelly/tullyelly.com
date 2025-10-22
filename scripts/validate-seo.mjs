@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import { glob } from 'glob';
-import matter from 'gray-matter';
+import { promises as fs } from "fs";
+import { glob } from "glob";
+import matter from "gray-matter";
 
-const files = await glob('app/**/page.mdx');
+const files = await glob("app/**/page.mdx");
 let hasError = false;
 for (const file of files) {
-  const src = await fs.readFile(file, 'utf8');
+  const src = await fs.readFile(file, "utf8");
   const { data } = matter(src);
   if (!data.canonical) {
     console.error(`${file} missing canonical url`);
