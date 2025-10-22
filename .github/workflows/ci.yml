@@ -161,6 +161,17 @@ jobs:
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.seo == 'true'
         run: npm run validate-seo
 
+      - name: Cache Playwright browsers
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.seo == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .pw-browsers
+          key: pw-${{ runner.os }}-chromium-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browsers (chromium only)
+        if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.seo == 'true'
+        run: PLAYWRIGHT_BROWSERS_PATH=.pw-browsers npx playwright install --with-deps chromium
+
       - name: SEO smoke tests
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.seo == 'true'
         run: npm run test:seo
