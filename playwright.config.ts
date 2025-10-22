@@ -8,10 +8,21 @@ loadEnv({ path: ".env.test" });
 const dummyDatabaseUrl =
   "postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic";
 
-const effectiveDatabaseUrl =
-  process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? dummyDatabaseUrl;
+const nonEmpty = (value: string | undefined | null): string | undefined => {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+};
 
-if (!process.env.TEST_DATABASE_URL && !process.env.DATABASE_URL) {
+const effectiveDatabaseUrl =
+  nonEmpty(process.env.TEST_DATABASE_URL) ??
+  nonEmpty(process.env.DATABASE_URL) ??
+  dummyDatabaseUrl;
+
+if (
+  !nonEmpty(process.env.TEST_DATABASE_URL) &&
+  !nonEmpty(process.env.DATABASE_URL)
+) {
   console.warn(
     "[playwright] DATABASE_URL is empty; using dummy fallback. Set TEST_DATABASE_URL for real data.",
   );
