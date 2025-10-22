@@ -5,12 +5,15 @@ import { config as loadEnv } from "dotenv";
 
 loadEnv({ path: ".env.test" });
 
-const effectiveDatabaseUrl =
-  process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? "";
+const dummyDatabaseUrl =
+  "postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic";
 
-if (!effectiveDatabaseUrl) {
+const effectiveDatabaseUrl =
+  process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? dummyDatabaseUrl;
+
+if (!process.env.TEST_DATABASE_URL && !process.env.DATABASE_URL) {
   console.warn(
-    "[playwright] DATABASE_URL is empty; set TEST_DATABASE_URL or DATABASE_URL for e2e tests.",
+    "[playwright] DATABASE_URL is empty; using dummy fallback. Set TEST_DATABASE_URL for real data.",
   );
 }
 
