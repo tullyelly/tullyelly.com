@@ -256,13 +256,15 @@ export default function GlobalProgressProvider() {
         ) {
           return false;
         }
+        const currentLocation = `${location.pathname}${location.search ?? ""}`;
         try {
           const url = new URL(href, location.href);
           if (url.origin !== location.origin) return false;
-          if (isSameRoute(location.pathname, url.pathname)) return false;
+          const targetLocation = `${url.pathname}${url.search}`;
+          if (isSameRoute(currentLocation, targetLocation)) return false;
         } catch {
           if (!href.startsWith("/")) return false;
-          if (isSameRoute(location.pathname, href)) return false;
+          if (isSameRoute(currentLocation, href)) return false;
         }
         if (anchor.target && anchor.target !== "_self") return false;
         return true;

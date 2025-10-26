@@ -5,7 +5,7 @@ import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Sheet,
   SheetContent,
@@ -110,6 +110,12 @@ export default function MobileDrawer({
 }: MobileDrawerProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentRoute = React.useMemo(() => {
+    const path = pathname ?? "/";
+    const search = searchParams?.toString() ?? "";
+    return search ? `${path}?${search}` : path;
+  }, [pathname, searchParams]);
   const { registerCloseHandler } = useNavController();
   useNavResetOnRouteChange();
   const sheetContentRef = React.useRef<HTMLDivElement | null>(null);
@@ -248,7 +254,7 @@ export default function MobileDrawer({
       if (!item.href) return;
 
       const internal = !item.external;
-      if (internal && isSameRoute(pathname ?? "", item.href)) {
+      if (internal && isSameRoute(currentRoute, item.href)) {
         handleSameRouteNoop(event, closeDrawer);
         return;
       }
@@ -263,7 +269,7 @@ export default function MobileDrawer({
       router.push(item.href as Route);
       setTimeout(() => closeDrawer(), 0);
     },
-    [closeDrawer, menu, onNavigate, pathname, router],
+    [closeDrawer, currentRoute, menu, onNavigate, router],
   );
 
   React.useEffect(
@@ -348,7 +354,7 @@ export default function MobileDrawer({
       event.preventDefault();
       const href = "/";
       const section = "utility";
-      if (isSameRoute(pathname ?? "", href)) {
+      if (isSameRoute(currentRoute, href)) {
         handleSameRouteNoop(event, closeDrawer);
         return;
       }
@@ -362,7 +368,7 @@ export default function MobileDrawer({
       router.push(href as Route);
       setTimeout(() => closeDrawer(), 0);
     },
-    [closeDrawer, menu, onNavigate, pathname, router],
+    [closeDrawer, currentRoute, menu, onNavigate, router],
   );
 
   return (

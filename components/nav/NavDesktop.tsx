@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { NavItem, PersonaItem } from "@/types/nav";
 import { useHasReducedMotion } from "@/hooks/use-has-reduced-motion";
 import { analytics } from "@/lib/analytics";
@@ -128,6 +128,12 @@ export default function NavDesktop({
   childrenMap,
 }: Props): React.ReactNode {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentRoute = React.useMemo(() => {
+    const path = pathname ?? "/";
+    const search = searchParams?.toString() ?? "";
+    return search ? `${path}?${search}` : path;
+  }, [pathname, searchParams]);
   const { registerCloseHandler } = useNavController();
   useNavResetOnRouteChange();
   const homeActive = isActiveHref(pathname ?? "", "/");
@@ -422,7 +428,7 @@ export default function NavDesktop({
       if (
         link.kind !== "external" &&
         link.href &&
-        isSameRoute(pathname ?? "", link.href)
+        isSameRoute(currentRoute, link.href)
       ) {
         handleSameRouteNoop(event, forceCloseAll);
         return;
@@ -434,7 +440,7 @@ export default function NavDesktop({
         persona: persona.persona,
       });
     },
-    [forceCloseAll, pathname],
+    [currentRoute, forceCloseAll],
   );
 
   const handleTriggerKeyDown = React.useCallback(
@@ -500,7 +506,7 @@ export default function NavDesktop({
             aria-label="home"
             data-testid="nav-top-home"
             onClick={(event) => {
-              if (isSameRoute(pathname ?? "", "/")) {
+              if (isSameRoute(currentRoute, "/")) {
                 handleSameRouteNoop(event, forceCloseAll);
               }
             }}
