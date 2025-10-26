@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <div
       id="page-root"
-      className="flex min-h-screen flex-col bg-[var(--page-bg,white)]"
+      className="flex min-h-dvh flex-col bg-[var(--page-bg,white)]"
     >
       <header className="site-header bg-[var(--blue)] text-white">
         <div className="sticky top-0 z-50 border-b border-white/10 bg-[var(--blue)]/95 pb-2 pt-[max(env(safe-area-inset-top),0px)] shadow-sm backdrop-blur">
@@ -42,7 +42,6 @@ export default function Loading() {
         id="page-main"
         tabIndex={-1}
         className="m-0 flex-1 bg-transparent p-0"
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0px)" }}
       >
         <div
           id="content-pane"
