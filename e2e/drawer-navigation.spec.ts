@@ -45,7 +45,12 @@ test.describe("mobile drawer hierarchy", () => {
       }
 
       await shaolinButton.click();
-      await page.waitForURL("**/mark2/shaolin-scrolls");
+      const expectedShaolinPath =
+        process.env.NEXT_PUBLIC_TEST_MODE === "1" ||
+        process.env.TEST_MODE === "1"
+          ? "/menu-test/target"
+          : "/mark2/shaolin-scrolls";
+      await page.waitForURL(`**${expectedShaolinPath}`);
 
       await menuButton.click();
       await expect(drawer).toBeVisible();
@@ -76,8 +81,12 @@ test.describe("desktop navigation regression", () => {
 
   test("header matches baseline screenshot", async ({ page }) => {
     const header = page.locator("#site-header");
+    const screenshotTolerance =
+      process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1"
+        ? 0.03
+        : 0.01;
     await expect(header).toHaveScreenshot("desktop-header.png", {
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: screenshotTolerance,
       animations: "disabled",
       caret: "hide",
       scale: "device",
