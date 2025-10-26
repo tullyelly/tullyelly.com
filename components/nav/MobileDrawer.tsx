@@ -5,7 +5,7 @@ import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { useNavController } from "@/components/nav/NavController";
 import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
 import { HOME_EMOJI, PERSONA_EMOJI } from "@/components/nav/menuUtils";
+import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
 import twemoji from "twemoji";
 
 type MobileDrawerProps = {
@@ -108,6 +109,13 @@ export default function MobileDrawer({
   onNavigate,
 }: MobileDrawerProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentRoute = React.useMemo(() => {
+    const path = pathname ?? "/";
+    const search = searchParams?.toString() ?? "";
+    return search ? `${path}?${search}` : path;
+  }, [pathname, searchParams]);
   const { registerCloseHandler } = useNavController();
   useNavResetOnRouteChange();
   const sheetContentRef = React.useRef<HTMLDivElement | null>(null);
@@ -221,21 +229,6 @@ export default function MobileDrawer({
     [onOpenChange],
   );
 
-  const handleNavigate = React.useCallback(
-    (item: MenuItem, section: string) => {
-      if (!item.href) return;
-      trackDrawerClick(menu, item, { section });
-      onNavigate?.(item.href);
-      if (item.external) {
-        window.open(item.href, "_blank", "noopener,noreferrer");
-      } else {
-        router.push(item.href as Route);
-      }
-      handleClose(false);
-    },
-    [handleClose, menu, onNavigate, router],
-  );
-
   const handleSearch = React.useCallback(() => {
     trackDrawerClick(
       menu,
@@ -251,6 +244,33 @@ export default function MobileDrawer({
     setSearchQuery("");
     handleClose(false);
   }, [handleClose]);
+
+  const handleNavigate = React.useCallback(
+    (
+      event: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>,
+      item: MenuItem,
+      section: string,
+    ) => {
+      if (!item.href) return;
+
+      const internal = !item.external;
+      if (internal && isSameRoute(currentRoute, item.href)) {
+        handleSameRouteNoop(event, closeDrawer);
+        return;
+      }
+
+      trackDrawerClick(menu, item, { section });
+      onNavigate?.(item.href);
+      if (item.external) {
+        window.open(item.href, "_blank", "noopener,noreferrer");
+        closeDrawer();
+        return;
+      }
+      router.push(item.href as Route);
+      setTimeout(() => closeDrawer(), 0);
+    },
+    [closeDrawer, currentRoute, menu, onNavigate, router],
+  );
 
   React.useEffect(
     () => registerCloseHandler(closeDrawer),
@@ -329,16 +349,27 @@ export default function MobileDrawer({
     [expandedPersona],
   );
 
-  const handleHome = React.useCallback(() => {
-    trackDrawerClick(
-      menu,
-      { id: "utility-home", label: "Home", href: "/" },
-      { section: "utility", kind: "link" },
-    );
-    onNavigate?.("/");
-    router.push("/" as Route);
-    handleClose(false);
-  }, [menu, onNavigate, router, handleClose]);
+  const handleHome = React.useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      const href = "/";
+      const section = "utility";
+      if (isSameRoute(currentRoute, href)) {
+        handleSameRouteNoop(event, closeDrawer);
+        return;
+      }
+
+      trackDrawerClick(
+        menu,
+        { id: "utility-home", label: "Home", href: "/" },
+        { section, kind: "link" },
+      );
+      onNavigate?.(href);
+      router.push(href as Route);
+      setTimeout(() => closeDrawer(), 0);
+    },
+    [closeDrawer, currentRoute, menu, onNavigate, router],
+  );
 
   return (
     <Sheet open={open} onOpenChange={handleClose} modal>
@@ -414,10 +445,7 @@ export default function MobileDrawer({
                   href={"/" as Route}
                   aria-label="Home"
                   className={cn(drawerActionClasses, "justify-start")}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    handleHome();
-                  }}
+                  onClick={handleHome}
                 >
                   <span
                     className="emoji text-xl leading-none"
@@ -505,8 +533,12 @@ export default function MobileDrawer({
                                       drawerPersonaLinkClasses,
                                       "pr-2",
                                     )}
-                                    onClick={() =>
-                                      handleNavigate(link, `persona:${key}`)
+                                    onClick={(event) =>
+                                      handleNavigate(
+                                        event,
+                                        link,
+                                        `persona:${key}`,
+                                      )
                                     }
                                   >
                                     <Icon

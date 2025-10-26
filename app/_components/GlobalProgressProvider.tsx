@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { TopBar } from "./TopBar";
 import { useReducedMotion } from "./useReducedMotion";
+import { isSameRoute } from "@/components/nav/sameRoute";
 
 // Tunables
 const MIN_VISIBLE_MS = 250;
@@ -255,11 +256,15 @@ export default function GlobalProgressProvider() {
         ) {
           return false;
         }
+        const currentLocation = `${location.pathname}${location.search ?? ""}`;
         try {
           const url = new URL(href, location.href);
           if (url.origin !== location.origin) return false;
+          const targetLocation = `${url.pathname}${url.search}`;
+          if (isSameRoute(currentLocation, targetLocation)) return false;
         } catch {
           if (!href.startsWith("/")) return false;
+          if (isSameRoute(currentLocation, href)) return false;
         }
         if (anchor.target && anchor.target !== "_self") return false;
         return true;

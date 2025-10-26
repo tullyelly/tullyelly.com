@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { NavItem, PersonaItem } from "@/types/nav";
 import { useHasReducedMotion } from "@/hooks/use-has-reduced-motion";
 import { analytics } from "@/lib/analytics";
@@ -18,6 +18,7 @@ import { useNavController } from "@/components/nav/NavController";
 import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
 import NestableMenu from "@/app/(components)/menu/NestableMenu";
 import { AnyLink, HOME_EMOJI, isActiveHref } from "@/components/nav/menuUtils";
+import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
 import twemoji from "twemoji";
 
 const TEST_MODE =
@@ -127,6 +128,12 @@ export default function NavDesktop({
   childrenMap,
 }: Props): React.ReactNode {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentRoute = React.useMemo(() => {
+    const path = pathname ?? "/";
+    const search = searchParams?.toString() ?? "";
+    return search ? `${path}?${search}` : path;
+  }, [pathname, searchParams]);
   const { registerCloseHandler } = useNavController();
   useNavResetOnRouteChange();
   const homeActive = isActiveHref(pathname ?? "", "/");
@@ -413,14 +420,27 @@ export default function NavDesktop({
   );
 
   const handlePersonaLinkClick = React.useCallback(
-    (persona: PersonaItem, link: AnyLink) => {
+    (
+      event: React.MouseEvent<HTMLAnchorElement>,
+      persona: PersonaItem,
+      link: AnyLink,
+    ) => {
+      if (
+        link.kind !== "external" &&
+        link.href &&
+        isSameRoute(currentRoute, link.href)
+      ) {
+        handleSameRouteNoop(event, forceCloseAll);
+        return;
+      }
+
       analytics.track("menu.desktop.click", {
         path: link.href,
         featureKey: link.featureKey ?? null,
         persona: persona.persona,
       });
     },
-    [],
+    [currentRoute, forceCloseAll],
   );
 
   const handleTriggerKeyDown = React.useCallback(
@@ -485,6 +505,11 @@ export default function NavDesktop({
             aria-current={homeActive ? "page" : undefined}
             aria-label="home"
             data-testid="nav-top-home"
+            onClick={(event) => {
+              if (isSameRoute(currentRoute, "/")) {
+                handleSameRouteNoop(event, forceCloseAll);
+              }
+            }}
           >
             <span className="flex items-center gap-2">
               <span className="emoji text-lg leading-none" aria-hidden="true">
