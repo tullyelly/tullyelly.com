@@ -25,7 +25,14 @@ const defaultComponents = {
   ),
   p: ({ className, ...props }: React.ComponentPropsWithoutRef<"p">) => (
     <p
-      className={cn(bodyText, "mt-4 first:mt-0 last:mb-0", className)}
+      className={cn(
+        bodyText,
+        "mt-4 first:mt-0 last:mb-0",
+        "[li_&]:mt-0 [li_&+p]:mt-0",
+        "[li_&]:inline [li_&+p]:inline",
+        "[li_&+p]:before:content-['\\00A0;\\00A0']",
+        className,
+      )}
       {...props}
     />
   ),
@@ -55,7 +62,17 @@ const defaultComponents = {
     <ul
       className={cn(
         bodyText,
-        "mt-4 list-disc space-y-2 pl-5 marker:text-[var(--blue)]",
+        "mt-4 list-disc list-outside space-y-2 pl-6 marker:text-[var(--blue)]",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  li: ({ className, ...props }: React.ComponentPropsWithoutRef<"li">) => (
+    <li
+      className={cn(
+        "leading-relaxed",
+        "[&>p:first-child]:mt-0 [&>p:last-child]:mb-0",
         className,
       )}
       {...props}
