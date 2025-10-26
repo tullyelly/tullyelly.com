@@ -48,7 +48,11 @@ type NestableMenuProps = {
     event: React.KeyboardEvent<HTMLButtonElement>,
     id: string,
   ) => void;
-  onLinkClick: (persona: PersonaItem, link: AnyLink) => void;
+  onLinkClick: (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    persona: PersonaItem,
+    link: AnyLink,
+  ) => void;
   headerRef: React.RefObject<HTMLElement | null>;
   prefersReducedMotion?: boolean;
   disablePointerAim?: boolean;
@@ -591,8 +595,8 @@ export default function NestableMenu({
                 className="item"
                 data-testid={menuItemTestId}
                 data-pressed={isKeyboardPressed ? "true" : undefined}
-                onClick={() => {
-                  onLinkClick(persona, linkNode);
+                onClick={(event) => {
+                  onLinkClick(event, persona, linkNode);
                 }}
                 onKeyDown={(event) => {
                   if (
@@ -635,8 +639,8 @@ export default function NestableMenu({
               className="item"
               data-testid={menuItemTestId}
               data-pressed={isKeyboardPressed ? "true" : undefined}
-              onClick={() => {
-                onLinkClick(persona, linkNode);
+              onClick={(event) => {
+                onLinkClick(event, persona, linkNode);
               }}
               onKeyDown={(event) => {
                 if (

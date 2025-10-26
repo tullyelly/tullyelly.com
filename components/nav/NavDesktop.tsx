@@ -18,6 +18,7 @@ import { useNavController } from "@/components/nav/NavController";
 import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
 import NestableMenu from "@/app/(components)/menu/NestableMenu";
 import { AnyLink, HOME_EMOJI, isActiveHref } from "@/components/nav/menuUtils";
+import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
 import twemoji from "twemoji";
 
 const TEST_MODE =
@@ -413,14 +414,27 @@ export default function NavDesktop({
   );
 
   const handlePersonaLinkClick = React.useCallback(
-    (persona: PersonaItem, link: AnyLink) => {
+    (
+      event: React.MouseEvent<HTMLAnchorElement>,
+      persona: PersonaItem,
+      link: AnyLink,
+    ) => {
+      if (
+        link.kind !== "external" &&
+        link.href &&
+        isSameRoute(pathname ?? "", link.href)
+      ) {
+        handleSameRouteNoop(event, forceCloseAll);
+        return;
+      }
+
       analytics.track("menu.desktop.click", {
         path: link.href,
         featureKey: link.featureKey ?? null,
         persona: persona.persona,
       });
     },
-    [],
+    [forceCloseAll, pathname],
   );
 
   const handleTriggerKeyDown = React.useCallback(
@@ -485,6 +499,11 @@ export default function NavDesktop({
             aria-current={homeActive ? "page" : undefined}
             aria-label="home"
             data-testid="nav-top-home"
+            onClick={(event) => {
+              if (isSameRoute(pathname ?? "", "/")) {
+                handleSameRouteNoop(event, forceCloseAll);
+              }
+            }}
           >
             <span className="flex items-center gap-2">
               <span className="emoji text-lg leading-none" aria-hidden="true">
