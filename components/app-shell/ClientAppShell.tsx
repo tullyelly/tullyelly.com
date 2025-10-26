@@ -109,7 +109,7 @@ export default function ClientAppShell({
   return (
     <AppShellProvider value={contextValue}>
       <NavControllerProvider>
-        <div id="page-root" className="flex min-h-screen flex-col">
+        <div id="page-root" className="flex min-h-dvh flex-col">
           <div className="flex flex-col">
             <HeaderShell className="bg-[var(--blue)] text-white">
               {announcement ? (
@@ -138,9 +138,6 @@ export default function ClientAppShell({
             id="page-main"
             tabIndex={-1}
             className="m-0 flex-1 bg-transparent p-0 overflow-anchor-none"
-            style={{
-              paddingBottom: "max(env(safe-area-inset-bottom), 0px)",
-            }}
           >
             {children}
           </main>
