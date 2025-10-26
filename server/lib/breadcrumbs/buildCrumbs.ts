@@ -2,7 +2,7 @@
 
 import "server-only";
 
-import { getMenu } from "@/app/_menu/getMenu";
+import { getMenu } from "@/lib/menu/getMenu";
 import type { Crumb } from "@/lib/breadcrumbs/types";
 import {
   applyCrumbKinds,

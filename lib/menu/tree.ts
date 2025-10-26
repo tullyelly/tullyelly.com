@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getMenuForLayout } from "@/app/_menu/getMenu";
+import { getMenuForLayout } from "@/lib/menu/getMenu";
 import type { NavItem } from "@/types/nav";
 
 export type MenuNode = {

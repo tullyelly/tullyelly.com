@@ -1,6 +1,6 @@
 # Menu Gating
 
-The menu tree comes from `dojo.v_menu_published` and is filtered server-side before it reaches any React component. Capability enforcement is applied in `app/_menu/getMenu.ts`; the client never sees gated nodes, so there is no hydration flicker.
+The menu tree comes from `dojo.v_menu_published` and is filtered server-side before it reaches any React component. Capability enforcement is applied in `lib/menu/getMenu.ts`; the client never sees gated nodes, so there is no hydration flicker.
 
 ## Capabilities
 
