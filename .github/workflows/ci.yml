@@ -20,7 +20,7 @@ jobs:
   build-and-check:
     name: Build & Check
     runs-on: ubuntu-latest # keep Linux to match Playwright snapshot baselines; approve new baselines per-OS if you change this
-    timeout-minutes: 10
+    timeout-minutes: 30
     outputs:
       run_e2e: ${{ steps.filter.outputs.e2e }}
     env:
@@ -44,6 +44,17 @@ jobs:
 
       - name: Generate build info
         run: npm run gen:build-info
+
+      - name: Cache Next.js artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+            .contentlayer
+            node_modules/.cache
+          key: ${{ runner.os }}-next-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-next-
 
       # Skip heavy work when irrelevant
       - name: Paths filter
@@ -189,7 +200,10 @@ jobs:
           AUTH_SECRET: ci-dummy
           GOOGLE_CLIENT_ID: ci-dummy
           GOOGLE_CLIENT_SECRET: ci-dummy
-        run: npm run build
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          NEXT_TELEMETRY_DISABLED: "1"
+          CI: "true"
+        run: npm run build --silent
 
       - name: Start Next and wait
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.security == 'true'

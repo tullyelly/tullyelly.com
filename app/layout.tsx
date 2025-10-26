@@ -6,8 +6,7 @@ import Script from "next/script";
 import { headers } from "next/headers";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
-import { getMenu as getLegacyMenu } from "@/app/_menu/getMenu";
-import { getMenuDataCached } from "@/lib/menu/getMenu";
+import { getMenu, getMenuDataCached } from "@/lib/menu/getMenu";
 import { resolvePersonaForPath } from "@/lib/menu/persona";
 import type { PersonaKey } from "@/lib/menu/types";
 import { CommandMenuProvider } from "@/components/nav/CommandMenu";
@@ -64,7 +63,7 @@ function resolveRequestedPath(headersList: Headers): string {
 export async function generateMetadata(): Promise<Metadata> {
   const hdrs = await headers();
   const path = resolveRequestedPath(hdrs);
-  const { index } = await getLegacyMenu();
+  const { index } = await getMenu();
   const { title } = buildMenuMetadata(path, index);
 
   return {
@@ -86,7 +85,7 @@ export default async function RootLayout({
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
   const [menu, hdrs, menuTree, capabilities] = await Promise.all([
-    getLegacyMenu(),
+    getMenu(),
     headers(),
     getMenuTree(),
     getCapabilities(),

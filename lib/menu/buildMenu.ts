@@ -34,7 +34,7 @@ export type FeatureGate = (feature: string) => Promise<boolean> | boolean;
 
 export const PERSONA_ORDER: PersonaKey[] = [...PERSONA_KEYS];
 
-async function filterRowsByAccess(
+export async function filterRowsByAccess(
   rows: MenuNodeRow[],
   can: FeatureGate,
 ): Promise<MenuNodeRow[]> {

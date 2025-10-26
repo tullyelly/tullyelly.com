@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { getMenu as getLegacyMenu } from "@/app/_menu/getMenu";
+import { getMenu } from "@/lib/menu/getMenu";
 import { flattenLinks, type FlatLink } from "@/lib/menu.flatten";
 import { cn } from "@/lib/utils";
 
@@ -80,7 +80,7 @@ function dedupeLinks(links: FlatLink[]): FlatLink[] {
 
 async function loadResults(query: string): Promise<Result[]> {
   if (!query.trim()) return [];
-  const { tree } = await getLegacyMenu();
+  const { tree } = await getMenu();
   const flattened = dedupeLinks(flattenLinks(tree));
   const matches = flattened
     .map<Result | null>((link) => {
