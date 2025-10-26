@@ -235,6 +235,9 @@ async function resolveGate(caps?: Set<string>): Promise<FeatureGate> {
   if (shouldBypassFiltering()) {
     return ALLOW_ALL_GATE;
   }
+  if (TEST_MODE || BUILD_MODE || DB_DISABLED) {
+    return ALLOW_ALL_GATE;
+  }
   return buildGate(caps);
 }
 
