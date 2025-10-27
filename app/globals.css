@@ -90,6 +90,7 @@ html {
   );
   background-attachment: fixed;
   background-color: var(--cream);
+  touch-action: manipulation;
 }
 
 body {

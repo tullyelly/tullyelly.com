@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import MenuTestbed from "./MenuTestbed";
+import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+import type { PersonaItem } from "@/types/nav";
 
 export const dynamic = "force-dynamic";
 
@@ -7,13 +10,18 @@ export default function MenuTestPage() {
     notFound();
   }
 
+  const persona = TEST_MENU_ITEMS.find(
+    (item): item is PersonaItem =>
+      item.kind === "persona" && item.persona === "mark2",
+  );
+
+  if (!persona) {
+    throw new Error("Missing mark2 persona for menu test page");
+  }
+
   return (
-    <section className="mx-auto flex min-h-[40vh] max-w-4xl flex-col gap-4 py-10">
-      <h1 className="text-2xl font-semibold">Menu Interaction Testbed</h1>
-      <p data-testid="menu-test-copy" className="text-muted-foreground">
-        This page exists solely for Playwright coverage; navigation surfaces are
-        rendered in the global layout.
-      </p>
-    </section>
+    <div className="bg-transparent">
+      <MenuTestbed persona={persona} />
+    </div>
   );
 }
