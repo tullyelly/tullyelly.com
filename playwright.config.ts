@@ -104,6 +104,15 @@ export default defineConfig({
           : {}),
       },
     },
+    {
+      name: "mobi",
+      use: {
+        ...devices["Pixel 5"],
+        baseURL: "http://127.0.0.1:4321",
+        isMobile: true,
+        hasTouch: true,
+      },
+    },
   ],
   webServer: {
     command:

@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures";
 import { ensureVisualStability as enforceVisualStability } from "../tests/utils/visual-stability";
+import { waitAppReady } from "../tests/utils/waitAppReady";
 
-const mobileViewport = { width: 390, height: 844 };
 const desktopViewport = { width: 1280, height: 800 };
 
 function isTruthyFlag(value: string | undefined): boolean {
@@ -16,18 +16,46 @@ const stubMenuEnabled =
   isTruthyFlag(process.env.TEST_MODE);
 
 test.describe("mobile drawer hierarchy", () => {
-  test.use({ viewport: mobileViewport });
+  test("drill-in navigation keeps hierarchy intact", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "mobi",
+      "This scenario only runs in the mobile Playwright project.",
+    );
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/menu-test");
-  });
+    const baseUrl =
+      process.env.PLAYWRIGHT_TEST_BASE_URL ??
+      process.env.BASE_URL ??
+      "http://127.0.0.1:4321";
 
-  test("drill-in navigation keeps hierarchy intact", async ({ page }) => {
-    const menuButton = page.getByRole("button", { name: /menu/i });
-    await expect(menuButton).toBeVisible();
-    await menuButton.click();
+    await page.goto("/");
+    await waitAppReady(baseUrl);
 
     const drawer = page.getByTestId("nav-mobile-drawer");
+
+    const resolveMenuTrigger = async () => {
+      const byRole = page.getByRole("button", { name: /menu/i });
+      const byTestId = page.getByTestId("nav-mobile-trigger");
+
+      await expect(async () => {
+        const [roleVisible, testIdVisible] = await Promise.all([
+          byRole.isVisible().catch(() => false),
+          byTestId.isVisible().catch(() => false),
+        ]);
+
+        if (!roleVisible && !testIdVisible) {
+          throw new Error("Menu trigger not yet visible");
+        }
+      }).toPass();
+
+      const roleVisible = await byRole.isVisible().catch(() => false);
+      return roleVisible ? byRole : byTestId;
+    };
+
+    const menuTriggerInitial = await resolveMenuTrigger();
+    await menuTriggerInitial.click();
+
     await expect(drawer).toBeVisible();
     await expect(page.getByText("By alter ego")).toBeVisible();
 
@@ -39,6 +67,8 @@ test.describe("mobile drawer hierarchy", () => {
     const shaolinButton = personaRegion.getByRole("button", {
       name: "Shaolin Scrolls",
     });
+
+    let lastTrigger = menuTriggerInitial;
 
     if ((await shaolinButton.count()) > 0) {
       await expect(shaolinButton).toBeVisible();
@@ -64,21 +94,25 @@ test.describe("mobile drawer hierarchy", () => {
         );
       });
 
-      await menuButton.click();
+      const menuTriggerAfterNav = await resolveMenuTrigger();
+      await menuTriggerAfterNav.click();
       await expect(drawer).toBeVisible();
+      lastTrigger = menuTriggerAfterNav;
     } else {
       await expect(personaRegion.getByText("No links yet.")).toBeVisible();
     }
+
     await page.keyboard.press("Escape");
     await expect(drawer).toBeHidden();
 
-    const menuHasFocus = await menuButton.evaluate(
-      (button) => document.activeElement === button,
-    );
-    if (menuHasFocus) {
-      await expect(menuButton).toBeFocused();
+    const triggerHasFocus = await lastTrigger
+      .evaluate((button) => document.activeElement === button)
+      .catch(() => false);
+
+    if (triggerHasFocus) {
+      await expect(lastTrigger).toBeFocused();
     } else {
-      await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+      await expect(lastTrigger).toHaveAttribute("aria-expanded", "false");
     }
   });
 });

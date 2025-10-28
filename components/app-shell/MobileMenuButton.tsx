@@ -19,6 +19,7 @@ export default function MobileMenuButton({ className }: MobileMenuButtonProps) {
       aria-controls="nav-mobile-drawer"
       aria-expanded={mobileNavOpen}
       onClick={() => openMobileNav()}
+      data-testid="nav-mobile-trigger"
       className={cn(
         "md:hidden inline-flex items-center justify-center gap-2 rounded-full",
         "h-11 min-h-[44px] px-4 leading-none text-base",
