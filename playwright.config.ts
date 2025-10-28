@@ -51,7 +51,7 @@ const webServerEnv = {
   SHOW_FLOWERS: "true",
   BREADCRUMBS: "true",
   NEXT_PUBLIC_E2E_MODE: "1",
-  NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:4317",
+  NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:4321",
   NEXT_PUBLIC_ANALYTICS_ENABLED: "1",
   NEXT_PUBLIC_TEST_MODE: "1",
   NEXT_PUBLIC_FEATURE_BREADCRUMBS_V1: "true",
@@ -60,10 +60,10 @@ const webServerEnv = {
   NEXT_PUBLIC_E2E_STABLE: "true",
   AUTH_SECRET: "test-secret",
   DISABLE_SENTRY: "1",
-  NEXTAUTH_URL: "http://127.0.0.1:4317",
+  NEXTAUTH_URL: "http://127.0.0.1:4321",
   HOST: "127.0.0.1",
   HOSTNAME: "127.0.0.1",
-  PORT: "4317",
+  PORT: "4321",
 };
 
 export default defineConfig({
@@ -72,7 +72,7 @@ export default defineConfig({
   reporter: [["html", { open: "never" }], ["list"]],
   retries: 1,
   use: {
-    baseURL: "http://127.0.0.1:4317",
+    baseURL: "http://127.0.0.1:4321",
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
     trace: "on-first-retry",
@@ -107,8 +107,8 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "E2E=1 NODE_ENV=test NEXT_E2E=1 PORT=4317 npm run start:e2e -- --hostname 127.0.0.1",
-    url: "http://127.0.0.1:4317",
+      "E2E=1 NODE_ENV=test NEXT_E2E=1 PORT=4321 npm run start:e2e -- --hostname 127.0.0.1",
+    url: "http://127.0.0.1:4321",
     reuseExistingServer: true,
     timeout: 120_000,
     env: webServerEnv,
