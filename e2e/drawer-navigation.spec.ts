@@ -232,7 +232,7 @@ test.describe("mobile drawer hierarchy", () => {
     await withDrawerPointerEventsUnlocked(page, async () => {
       await markToggle.scrollIntoViewIfNeeded();
       await markToggle.evaluate((el) => {
-        const createPointer = (type) => {
+        const createPointer = (type: string) => {
           if (typeof PointerEvent === "function") {
             return new PointerEvent(type, {
               bubbles: true,
@@ -340,10 +340,25 @@ test.describe("mobile drawer hierarchy", () => {
 
       const beforePath = trimPath(new URL(page.url()).pathname);
 
-      const waitForUrlMatch = page
-        .waitForURL((url) => looksLikeScrolls(url.pathname), { timeout: 6000 })
-        .then((url) => url.pathname)
-        .catch(() => null);
+      const waitForUrlMatch = (async () => {
+        try {
+          let matched: string | null = null;
+          await page.waitForURL(
+            (url) => {
+              const path = url.pathname;
+              if (looksLikeScrolls(path)) {
+                matched = path;
+                return true;
+              }
+              return false;
+            },
+            { timeout: 6000 },
+          );
+          return matched;
+        } catch {
+          return null;
+        }
+      })();
 
       await withDrawerPointerEventsUnlocked(page, async () => {
         try {
