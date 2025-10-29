@@ -1,4 +1,5 @@
 import { test as base, expect } from "@playwright/test";
+import { waitAppReady } from "../tests/utils/waitAppReady";
 
 export const test = base.extend({
   page: async ({ page }, use) => {
@@ -15,6 +16,14 @@ export const test = base.extend({
     await use(page);
     expect(errors).toHaveLength(0);
   },
+});
+
+test.beforeAll(async () => {
+  const baseURL =
+    process.env.PLAYWRIGHT_TEST_BASE_URL ??
+    process.env.BASE_URL ??
+    "http://127.0.0.1:4321";
+  await waitAppReady(baseURL);
 });
 
 export { expect } from "@playwright/test";

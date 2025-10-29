@@ -25,6 +25,7 @@ export default function ShadowPortal({
   const hostRef = React.useRef<HTMLElement | null>(null);
   const shadowRef = React.useRef<ShadowRoot | null>(null);
   const styleRef = React.useRef<HTMLStyleElement | null>(null);
+  const layerRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     let host = document.getElementById(containerId) as HTMLElement | null;
@@ -47,8 +48,15 @@ export default function ShadowPortal({
     localShadow.appendChild(styleEl);
     styleRef.current = styleEl;
 
+    const layerEl = document.createElement("div");
+    layerEl.className = "menu-portal-layer";
+    layerEl.setAttribute("data-testid", "menu-portal-root");
+    localShadow.appendChild(layerEl);
+    layerRef.current = layerEl;
+
     const mountEl = document.createElement("div");
-    localShadow.appendChild(mountEl);
+    mountEl.className = "menu-portal-surface";
+    layerEl.appendChild(mountEl);
     setSlot(mountEl);
     onReady?.({ shadowRoot: localShadow, mount: mountEl });
 
@@ -58,9 +66,16 @@ export default function ShadowPortal({
         localShadow.removeChild(styleRef.current);
       }
       styleRef.current = null;
+      if (layerRef.current && layerRef.current.contains(mountEl)) {
+        layerRef.current.removeChild(mountEl);
+      }
       if (mountEl && localShadow.contains(mountEl)) {
         localShadow.removeChild(mountEl);
       }
+      if (layerRef.current && localShadow.contains(layerRef.current)) {
+        localShadow.removeChild(layerRef.current);
+      }
+      layerRef.current = null;
       setSlot(null);
     };
   }, [containerId, onReady, styleText]);
@@ -75,6 +90,23 @@ export default function ShadowPortal({
 export const PERSONA_MENU_CSS = `
 :host {
   all: initial;
+}
+
+.menu-portal-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483646;
+}
+
+.menu-portal-surface {
+  position: relative;
+  pointer-events: none;
+  min-width: 0;
+}
+
+.menu-portal-surface > * {
+  pointer-events: auto;
 }
 
 *, *::before, *::after {

@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { ensureReady, navigateToSlug, expectBreadcrumbs } from "./utils/ui";
+import {
+  ensureReady,
+  navigateToSlug,
+  expectBreadcrumbs,
+  clickNavLink,
+} from "./utils/ui";
 
 const ROUTES = [
   { path: "/", expectation: /home/i },
@@ -37,9 +42,8 @@ test("breadcrumbs update immediately during client navigation", async ({
   await expectBreadcrumbs(page, /home\s*\/\s*mark2/i);
 
   // Navigate to /tullyelly/ruins using E2E nav shortcuts.
-  await navigateToSlug(page, "tullyelly");
+  await navigateToSlug(page, "tullyelly", { allowBypass: true });
   await expectBreadcrumbs(page, /home\s*\/\s*tullyelly/i);
-  await page.getByTestId("e2e-nav-tullyelly-ruins").click();
-  await page.waitForURL("/tullyelly/ruins");
+  await clickNavLink(page, "tullyelly-ruins", { allowBypass: true });
   await expectBreadcrumbs(page, /home\s*\/\s*tullyelly\s*\/\s*ruins/i);
 });

@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { startTransition } from "react";
 import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import type { DropdownMenuItemProps } from "@radix-ui/react-dropdown-menu";
 import * as Lucide from "lucide-react";
 import type { PersonaItem } from "@/types/nav";
 import ShadowPortal, {
@@ -20,6 +22,11 @@ import {
   isActiveHref,
   readHotkey,
 } from "@/components/nav/menuUtils";
+import {
+  MenuActionProvider,
+  useMenuActionCtx,
+  type PendingAction,
+} from "./menu-action-context";
 
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
@@ -35,6 +42,94 @@ function isHoverCapablePointer(
 type OutsideEvent = Event & {
   preventDefault(): void;
 };
+
+type DropdownMenuSelectEvent = Parameters<
+  NonNullable<DropdownMenuItemProps["onSelect"]>
+>[0];
+
+type OriginalSelectEvent = Event & {
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+  button?: number;
+};
+
+function getOriginalSelectEvent(
+  event: DropdownMenuSelectEvent,
+): Event | undefined {
+  if (typeof (event as CustomEvent).detail === "object") {
+    const detail = (event as CustomEvent<{ originalEvent?: Event }>).detail;
+    if (detail && "originalEvent" in detail) {
+      return detail.originalEvent;
+    }
+  }
+  return undefined;
+}
+
+function isModifiedActivation(original: Event | undefined): boolean {
+  if (!original) return false;
+  const event = original as OriginalSelectEvent;
+  return Boolean(
+    event.metaKey || event.ctrlKey || event.altKey || event.shiftKey,
+  );
+}
+
+function isAuxiliaryActivation(original: Event | undefined): boolean {
+  if (!original) return false;
+  const event = original as OriginalSelectEvent;
+  if (typeof event.button === "number" && event.button !== 0) {
+    return true;
+  }
+  return false;
+}
+
+function createSyntheticClickEvent(
+  selectEvent: DropdownMenuSelectEvent,
+  originalEvent: Event | undefined,
+): React.MouseEvent<HTMLAnchorElement> {
+  let prevented =
+    typeof selectEvent.defaultPrevented === "boolean"
+      ? selectEvent.defaultPrevented
+      : false;
+
+  const nativeEvent =
+    (originalEvent as unknown as MouseEvent | undefined) ??
+    ({
+      stopPropagation: () => {
+        selectEvent.stopPropagation();
+      },
+      stopImmediatePropagation: () => {
+        selectEvent.stopPropagation();
+      },
+    } as unknown as MouseEvent);
+
+  const synthetic: Partial<React.MouseEvent<HTMLAnchorElement>> & {
+    nativeEvent: MouseEvent;
+  } = {
+    nativeEvent,
+    preventDefault: () => {
+      if (!prevented) {
+        selectEvent.preventDefault();
+        prevented = true;
+      }
+    },
+    stopPropagation: () => {
+      selectEvent.stopPropagation();
+      nativeEvent.stopPropagation?.();
+    },
+  };
+
+  Object.defineProperty(synthetic, "defaultPrevented", {
+    get: () =>
+      prevented ||
+      (typeof selectEvent.defaultPrevented === "boolean"
+        ? selectEvent.defaultPrevented
+        : false),
+  });
+
+  return synthetic as React.MouseEvent<HTMLAnchorElement>;
+}
 
 type NestableMenuProps = {
   persona: PersonaItem;
@@ -115,7 +210,17 @@ function useIsPointerCoarse(): boolean {
  * Keyboard access mirrors Radix Dropdown semantics and coarse pointers degrade
  * to click/tap toggles.
  */
-export default function NestableMenu({
+export default function NestableMenu(
+  props: NestableMenuProps,
+): React.ReactNode {
+  return (
+    <MenuActionProvider>
+      <NestableMenuInner {...props} />
+    </MenuActionProvider>
+  );
+}
+
+function NestableMenuInner({
   persona,
   pathname,
   isOpen,
@@ -132,7 +237,9 @@ export default function NestableMenu({
   aimCloseDelay = 160,
   aimBuffer = 6,
 }: NestableMenuProps): React.ReactNode {
+  const { pendingRef } = useMenuActionCtx();
   const personaEmoji = PERSONA_EMOJI[persona.persona];
+  const router = useRouter();
   const triggerNodeRef = React.useRef<HTMLButtonElement | null>(null);
   const panelSurfaceRef = React.useRef<HTMLDivElement | null>(null);
   const positionedPanelRef = React.useRef<HTMLElement | null>(null);
@@ -152,6 +259,7 @@ export default function NestableMenu({
   );
   const skipNextClickRef = React.useRef(false);
   const [hoverSuspended, setHoverSuspended] = React.useState(false);
+  const prefetchedRoutesRef = React.useRef<Set<string>>(new Set());
 
   const links = React.useMemo(
     () =>
@@ -518,12 +626,92 @@ export default function NestableMenu({
     }
   }, [isOpen, keyboardPressedId]);
 
+  const runPending = React.useCallback(() => {
+    const action = pendingRef.current;
+    pendingRef.current = null;
+    if (!action) {
+      return;
+    }
+
+    const markNavigated = (href: string) => {
+      if (!TEST_MODE) return;
+      try {
+        const scope = globalThis as {
+          __navTest?: {
+            lastSelect?: Record<string, unknown>;
+          };
+        };
+        const record = scope.__navTest?.lastSelect;
+        if (record) {
+          record.navigated = true;
+          record.href = href;
+        }
+      } catch {
+        // ignore debug telemetry errors
+      }
+    };
+
+    if (action.type === "callback") {
+      try {
+        action.fn?.();
+      } catch (error) {}
+      return;
+    }
+
+    if (action.type === "external") {
+      const runtime = globalThis as {
+        open?: (
+          url: string,
+          target?: string,
+          features?: string,
+        ) => Window | null;
+        location?: Location;
+      };
+      if (action.newTab) {
+        runtime.open?.(action.href, "_blank", "noopener,noreferrer");
+      } else {
+        runtime.location?.assign(action.href);
+      }
+      markNavigated(action.href);
+      return;
+    }
+
+    const go = () => {
+      startTransition(() => {
+        router.push(action.href as Route);
+      });
+      markNavigated(action.href);
+    };
+
+    if (typeof queueMicrotask === "function") {
+      queueMicrotask(() => requestAnimationFrame(go));
+    } else {
+      setTimeout(() => requestAnimationFrame(go), 0);
+    }
+  }, [pendingRef, router]);
+
+  const scheduleRunPending = React.useCallback(() => {
+    if (typeof requestAnimationFrame === "function") {
+      if (typeof queueMicrotask === "function") {
+        queueMicrotask(() => requestAnimationFrame(runPending));
+      } else {
+        setTimeout(() => requestAnimationFrame(runPending), 0);
+      }
+    } else {
+      runPending();
+    }
+  }, [runPending]);
+
   React.useEffect(() => {
-    if (previousIsOpenRef.current && !isOpen && lockedByPointer) {
-      setLockedByPointer(false);
+    if (previousIsOpenRef.current && !isOpen) {
+      if (lockedByPointer) {
+        setLockedByPointer(false);
+      }
+      scheduleRunPending();
+    } else if (!previousIsOpenRef.current && isOpen) {
     }
     previousIsOpenRef.current = isOpen;
-  }, [isOpen, lockedByPointer]);
+  }, [isOpen, lockedByPointer, scheduleRunPending]);
 
   const menuItems = React.useMemo(
     () =>
@@ -532,12 +720,18 @@ export default function NestableMenu({
         const active = isActiveHref(pathname, href);
         const hotkey = readHotkey(linkNode);
         const badge = linkNode.badge?.text;
-        const prefetch = linkNode.kind === "link";
-        const target =
-          linkNode.kind === "external"
-            ? (linkNode.target ?? "_blank")
+        const isExternalLink = linkNode.kind === "external";
+        const target = isExternalLink
+          ? (linkNode.target ?? "_blank")
+          : undefined;
+        const rel =
+          isExternalLink && target === "_blank"
+            ? "noreferrer noopener"
             : undefined;
-        const rel = target === "_blank" ? "noreferrer noopener" : undefined;
+        const prefetchable =
+          !isExternalLink &&
+          linkNode.kind === "link" &&
+          typeof href === "string";
         const overviewMatch =
           linkNode.id === "overview" ||
           linkNode.label?.toLowerCase() === "overview" ||
@@ -581,94 +775,202 @@ export default function NestableMenu({
           </>
         );
 
-        if (linkNode.kind === "external") {
-          return (
-            <DropdownMenu.Item
-              key={linkNode.id}
-              asChild
-              data-active={active ? "true" : undefined}
-            >
-              <a
-                href={href}
-                target={target}
-                rel={rel}
-                className="item"
-                data-testid={menuItemTestId}
-                data-pressed={isKeyboardPressed ? "true" : undefined}
-                onClick={(event) => {
-                  onLinkClick(event, persona, linkNode);
-                }}
-                onKeyDown={(event) => {
-                  if (
-                    !event.defaultPrevented &&
-                    (event.key === " " || event.key === "Enter")
-                  ) {
-                    setKeyboardPressedId(linkNode.id);
-                  }
-                }}
-                onKeyUp={(event) => {
-                  if (event.key === " " || event.key === "Enter") {
-                    setKeyboardPressedId((current) =>
-                      current === linkNode.id ? null : current,
-                    );
-                  }
-                }}
-                onBlur={() => {
-                  setKeyboardPressedId((current) =>
-                    current === linkNode.id ? null : current,
-                  );
-                }}
-              >
-                {linkContent}
-              </a>
-            </DropdownMenu.Item>
+        const handlePrefetch = () => {
+          if (!prefetchable || !href) {
+            return;
+          }
+          if (prefetchedRoutesRef.current.has(href)) {
+            return;
+          }
+          prefetchedRoutesRef.current.add(href);
+          try {
+            router.prefetch(href as Route);
+          } catch {
+            prefetchedRoutesRef.current.delete(href);
+          }
+        };
+
+        const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+          if (
+            !event.defaultPrevented &&
+            (event.key === " " || event.key === "Enter")
+          ) {
+            setKeyboardPressedId(linkNode.id);
+          }
+        };
+
+        const handleKeyUp = (event: React.KeyboardEvent<HTMLElement>) => {
+          if (event.key === " " || event.key === "Enter") {
+            setKeyboardPressedId((current) =>
+              current === linkNode.id ? null : current,
+            );
+          }
+        };
+
+        const handleBlur = () => {
+          setKeyboardPressedId((current) =>
+            current === linkNode.id ? null : current,
           );
-        }
+        };
+
+        const setPendingAction = () => {
+          let action: PendingAction | null = null;
+
+          if (href) {
+            if (isExternalLink) {
+              action = {
+                type: "external",
+                href,
+                newTab: target === "_blank",
+              };
+            } else {
+              action = { type: "internal", href };
+            }
+          }
+
+          if (!action) {
+            return false;
+          }
+
+          const current = pendingRef.current;
+          const sameAction =
+            current?.type === action.type &&
+            ((action.type === "internal" &&
+              current.type === "internal" &&
+              current.href === action.href) ||
+              (action.type === "external" &&
+                current.type === "external" &&
+                current.href === action.href &&
+                current.newTab === action.newTab));
+
+          if (!sameAction) {
+            pendingRef.current = action;
+          }
+          return true;
+        };
+
+        const handleSelect = (event: DropdownMenuSelectEvent) => {
+          const originalEvent = getOriginalSelectEvent(event);
+          const syntheticEvent = createSyntheticClickEvent(
+            event,
+            originalEvent,
+          );
+          onLinkClick(syntheticEvent, persona, linkNode);
+
+          if (TEST_MODE) {
+            const scope = globalThis as unknown as {
+              document?: Document;
+              __navTest?: {
+                lastSelect?: {
+                  id: string;
+                  href?: string;
+                  prevented?: boolean;
+                  kind?: string;
+                  navigated?: boolean;
+                };
+              };
+            };
+            if (scope.document) {
+              scope.__navTest = scope.__navTest ?? {};
+              scope.__navTest.lastSelect = {
+                id: linkNode.id,
+                href,
+                prevented: syntheticEvent.defaultPrevented,
+                kind: linkNode.kind,
+                navigated: scope.__navTest.lastSelect?.navigated ?? false,
+              };
+            }
+          }
+
+          if (syntheticEvent.defaultPrevented) {
+            event.preventDefault();
+            return;
+          }
+
+          if (
+            isModifiedActivation(originalEvent) ||
+            isAuxiliaryActivation(originalEvent)
+          ) {
+            return;
+          }
+
+          event.preventDefault();
+          syntheticEvent.preventDefault();
+
+          if (!href) {
+            aim.setOpen(false);
+            onOpenChange(persona.id, false);
+            return;
+          }
+
+          setPendingAction();
+
+          aim.setOpen(false);
+          onOpenChange(persona.id, false);
+        };
+
+        const sharedProps = {
+          className: "item",
+          "data-testid": menuItemTestId,
+          "data-pressed": isKeyboardPressed ? "true" : undefined,
+          "data-active": active ? "true" : undefined,
+          onPointerEnter: handlePrefetch,
+          onFocus: handlePrefetch,
+          onKeyDown: handleKeyDown,
+          onKeyUp: handleKeyUp,
+          onBlur: handleBlur,
+        };
+
+        const fallbackPendingHandler = () => {
+          setPendingAction();
+        };
+
+        const child = isExternalLink ? (
+          <a
+            href={href}
+            target={target}
+            rel={rel}
+            {...sharedProps}
+            onPointerUpCapture={fallbackPendingHandler}
+            onClickCapture={fallbackPendingHandler}
+            onTouchEndCapture={fallbackPendingHandler}
+          >
+            {linkContent}
+          </a>
+        ) : (
+          <button
+            type="button"
+            {...sharedProps}
+            onPointerUpCapture={fallbackPendingHandler}
+            onClickCapture={fallbackPendingHandler}
+            onTouchEndCapture={fallbackPendingHandler}
+          >
+            {linkContent}
+          </button>
+        );
 
         return (
           <DropdownMenu.Item
             key={linkNode.id}
             asChild
             data-active={active ? "true" : undefined}
+            onSelect={handleSelect}
           >
-            <Link
-              href={href as Route}
-              prefetch={prefetch}
-              target={target}
-              rel={rel}
-              className="item"
-              data-testid={menuItemTestId}
-              data-pressed={isKeyboardPressed ? "true" : undefined}
-              onClick={(event) => {
-                onLinkClick(event, persona, linkNode);
-              }}
-              onKeyDown={(event) => {
-                if (
-                  !event.defaultPrevented &&
-                  (event.key === " " || event.key === "Enter")
-                ) {
-                  setKeyboardPressedId(linkNode.id);
-                }
-              }}
-              onKeyUp={(event) => {
-                if (event.key === " " || event.key === "Enter") {
-                  setKeyboardPressedId((current) =>
-                    current === linkNode.id ? null : current,
-                  );
-                }
-              }}
-              onBlur={() => {
-                setKeyboardPressedId((current) =>
-                  current === linkNode.id ? null : current,
-                );
-              }}
-            >
-              {linkContent}
-            </Link>
+            {child}
           </DropdownMenu.Item>
         );
       }),
-    [keyboardPressedId, links, onLinkClick, pathname, persona],
+    [
+      aim,
+      keyboardPressedId,
+      links,
+      onLinkClick,
+      onOpenChange,
+      pathname,
+      persona,
+      pendingRef,
+      router,
+    ],
   );
 
   const referenceProps = React.useMemo(
@@ -1231,164 +1533,88 @@ export default function NestableMenu({
           </span>
         </button>
       </DropdownMenu.Trigger>
-      {TEST_MODE ? (
-        <DropdownMenu.Content
-          side="bottom"
-          align="start"
-          sideOffset={0}
-          collisionPadding={0}
-          avoidCollisions
-          loop
-          aria-label={`Persona menu: ${persona.label}`}
-          data-nav-dropdown="true"
-          onPointerDownOutside={handlePointerDownOutside}
-          onInteractOutside={handleInteractOutside}
-          asChild
-        >
-          <div
-            {...floatingStylelessProps}
-            className="menu"
+      <DropdownMenu.Portal forceMount>
+        <ShadowPortal styleText={PERSONA_MENU_CSS} onReady={handlePortalReady}>
+          <DropdownMenu.Content
+            side="bottom"
+            align="start"
+            sideOffset={0}
+            collisionPadding={0}
+            avoidCollisions
+            loop
+            aria-label={`Persona menu: ${persona.label}`}
             data-nav-dropdown="true"
-            data-persona={persona.persona}
-            data-persona-menu={persona.id}
-            data-state={isOpen ? "open" : "closed"}
-            role="menu"
-            hidden={!isOpen}
-            ref={(node) => {
-              aim.floating(node);
-              setPanelSurface(node);
-            }}
-            onFocusCapture={() => aim.setOpen(true)}
-            onPointerEnter={(event) => {
-              cancelPendingClose();
-              floatingHandlers.onPointerEnter?.(event);
-            }}
-            onMouseEnter={(event) => {
-              cancelPendingClose();
-              floatingHandlers.onMouseEnter?.(event);
-            }}
-            onPointerMove={(event) => {
-              cancelPendingClose();
-              floatingHandlers.onPointerMove?.(event);
-            }}
-            onMouseMove={(event) => {
-              cancelPendingClose();
-              floatingHandlers.onMouseMove?.(event);
-            }}
-            onPointerLeave={(event) => {
-              if (lockedByPointer) {
-                return;
-              }
-              floatingHandlers.onPointerLeave?.(event);
-              scheduleCloseForMouse(event.relatedTarget);
-            }}
-            onMouseLeave={(event) => {
-              if (lockedByPointer) {
-                return;
-              }
-              floatingHandlers.onMouseLeave?.(event);
-              scheduleCloseForMouse(event.relatedTarget);
-            }}
-            onBlurCapture={(event) => {
-              const next = event.relatedTarget as HTMLElement | null;
-              if (next && event.currentTarget.contains(next)) {
-                return;
-              }
-              if (!lockedByPointer) {
-                aim.setOpen(false);
-              }
-            }}
+            onPointerDownOutside={handlePointerDownOutside}
+            onInteractOutside={handleInteractOutside}
+            asChild
           >
-            <div className="list">{menuItems}</div>
-          </div>
-        </DropdownMenu.Content>
-      ) : (
-        <DropdownMenu.Portal forceMount>
-          <ShadowPortal
-            styleText={PERSONA_MENU_CSS}
-            onReady={handlePortalReady}
-          >
-            <DropdownMenu.Content
-              side="bottom"
-              align="start"
-              sideOffset={0}
-              collisionPadding={0}
-              avoidCollisions
-              loop
-              aria-label={`Persona menu: ${persona.label}`}
-              data-nav-dropdown="true"
-              onPointerDownOutside={handlePointerDownOutside}
-              onInteractOutside={handleInteractOutside}
-              asChild
+            <PersonaMenuSurface
+              {...floatingStylelessProps}
+              id={menuId}
+              surfaceVars={surfaceVars}
+              data-persona={persona.persona}
+              data-persona-menu={persona.id}
+              data-state={isOpen ? "open" : "closed"}
+              role="menu"
+              hidden={!isOpen}
+              ref={(node) => {
+                aim.floating(node);
+                setPanelSurface(node);
+              }}
+              onFocusCapture={() => aim.setOpen(true)}
+              onPointerEnter={(event) => {
+                cancelPendingClose();
+                floatingHandlers.onPointerEnter?.(event);
+              }}
+              onMouseEnter={(event) => {
+                cancelPendingClose();
+                floatingHandlers.onMouseEnter?.(event);
+              }}
+              onPointerMove={(event) => {
+                cancelPendingClose();
+                floatingHandlers.onPointerMove?.(event);
+              }}
+              onMouseMove={(event) => {
+                cancelPendingClose();
+                floatingHandlers.onMouseMove?.(event);
+              }}
+              onPointerLeave={(event) => {
+                if (lockedByPointer) {
+                  return;
+                }
+                floatingHandlers.onPointerLeave?.(event);
+                scheduleCloseForMouse(event.relatedTarget);
+              }}
+              onMouseLeave={(event) => {
+                if (lockedByPointer) {
+                  return;
+                }
+                floatingHandlers.onMouseLeave?.(event);
+                scheduleCloseForMouse(event.relatedTarget);
+              }}
+              onBlurCapture={(event) => {
+                const next = event.relatedTarget as HTMLElement | null;
+                if (next && event.currentTarget.contains(next)) {
+                  return;
+                }
+                if (!lockedByPointer) {
+                  aim.setOpen(false);
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  closeByExplicitDismissal();
+                  focusTrigger(persona.id);
+                }
+              }}
             >
-              <PersonaMenuSurface
-                {...floatingStylelessProps}
-                id={menuId}
-                surfaceVars={surfaceVars}
-                data-persona={persona.persona}
-                data-persona-menu={persona.id}
-                data-state={isOpen ? "open" : "closed"}
-                role="menu"
-                hidden={!isOpen}
-                ref={(node) => {
-                  aim.floating(node);
-                  setPanelSurface(node);
-                }}
-                onFocusCapture={() => aim.setOpen(true)}
-                onPointerEnter={(event) => {
-                  cancelPendingClose();
-                  floatingHandlers.onPointerEnter?.(event);
-                }}
-                onMouseEnter={(event) => {
-                  cancelPendingClose();
-                  floatingHandlers.onMouseEnter?.(event);
-                }}
-                onPointerMove={(event) => {
-                  cancelPendingClose();
-                  floatingHandlers.onPointerMove?.(event);
-                }}
-                onMouseMove={(event) => {
-                  cancelPendingClose();
-                  floatingHandlers.onMouseMove?.(event);
-                }}
-                onPointerLeave={(event) => {
-                  if (lockedByPointer) {
-                    return;
-                  }
-                  floatingHandlers.onPointerLeave?.(event);
-                  scheduleCloseForMouse(event.relatedTarget);
-                }}
-                onMouseLeave={(event) => {
-                  if (lockedByPointer) {
-                    return;
-                  }
-                  floatingHandlers.onMouseLeave?.(event);
-                  scheduleCloseForMouse(event.relatedTarget);
-                }}
-                onBlurCapture={(event) => {
-                  const next = event.relatedTarget as HTMLElement | null;
-                  if (next && event.currentTarget.contains(next)) {
-                    return;
-                  }
-                  if (!lockedByPointer) {
-                    aim.setOpen(false);
-                  }
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    closeByExplicitDismissal();
-                    focusTrigger(persona.id);
-                  }
-                }}
-              >
-                <div className="list">{menuItems}</div>
-              </PersonaMenuSurface>
-            </DropdownMenu.Content>
-          </ShadowPortal>
-        </DropdownMenu.Portal>
-      )}
+              <div className="list">{menuItems}</div>
+            </PersonaMenuSurface>
+          </DropdownMenu.Content>
+        </ShadowPortal>
+      </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
 }

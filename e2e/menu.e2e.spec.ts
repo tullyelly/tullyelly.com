@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect } from "./fixtures";
 import type { EventName } from "@/lib/analytics";
+type CorePage = import("playwright-core").Page;
 
 const desktopViewport = { width: 1366, height: 900 };
 const mobileViewport = { width: 390, height: 844 };
@@ -48,7 +49,11 @@ test.describe.skip("menu navigation analytics (quarantine)", () => {
     page: import("@playwright/test").Page,
     selector: string,
   ) {
-    const axe = await new AxeBuilder({ page }).include(selector).analyze();
+    const axe = await new AxeBuilder({
+      page: page as unknown as CorePage,
+    })
+      .include(selector)
+      .analyze();
     const serious = axe.violations.filter((violation) =>
       ["serious", "critical"].includes(violation.impact ?? ""),
     );

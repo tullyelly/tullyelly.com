@@ -1,15 +1,36 @@
-import { test, expect } from "./fixtures";
+import { test } from "./fixtures";
+import { expect } from "@playwright/test";
+
+async function waitForRankingsList(page: import("@playwright/test").Page) {
+  // Wait for either table or a card-like container to attach; don't assume specific testids on mobi
+  await page
+    .waitForSelector(
+      '[data-testid="tcdb-table"], [data-testid="tcdb-cards"], [data-testid="tcdb-table-row"]',
+      { state: "attached" },
+    )
+    .catch(() => {});
+  await page.waitForLoadState("networkidle").catch(() => {});
+}
+
+async function getFirstVisibleTrigger(page: import("@playwright/test").Page) {
+  // The trigger testid is the same for row and card versions; select the first visible one
+  const trigger = page
+    .locator('[data-testid="ranking-detail-trigger"]:visible')
+    .first();
+  await expect(
+    trigger,
+    "Expected a visible ranking-detail-trigger in either layout",
+  ).toBeVisible();
+  await trigger.scrollIntoViewIfNeeded().catch(() => {});
+  return trigger;
+}
 
 test("ranking detail trigger is interactable and opens dialog", async ({
   page,
 }) => {
   await page.goto("/cardattack/tcdb-rankings");
-  const row = page.getByTestId("tcdb-table-row").first();
-  await expect(row).toBeVisible();
-
-  const trigger = row.getByTestId("ranking-detail-trigger");
-  await trigger.scrollIntoViewIfNeeded();
-  await expect(trigger).toBeVisible();
+  await waitForRankingsList(page);
+  const trigger = await getFirstVisibleTrigger(page);
 
   const hasCursorPointer = await trigger.evaluate((el) =>
     el.className.includes("cursor-pointer"),
@@ -48,12 +69,8 @@ test("ranking detail dialog basic interactions still work", async ({
   page,
 }) => {
   await page.goto("/cardattack/tcdb-rankings");
-  const row = page.getByTestId("tcdb-table-row").first();
-  await expect(row).toBeVisible();
-  const trigger = row.getByTestId("ranking-detail-trigger");
-  await trigger.scrollIntoViewIfNeeded();
-  await expect(trigger).toBeVisible();
-
+  await waitForRankingsList(page);
+  const trigger = await getFirstVisibleTrigger(page);
   await trigger.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
