@@ -78,14 +78,13 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
       if (!container) return;
 
       const doc = container.ownerDocument;
-      const candidateWidths = [
-        win.innerWidth ?? 0,
-        win.visualViewport?.width ?? 0,
-        doc?.documentElement?.clientWidth ?? 0,
-        doc?.body?.clientWidth ?? 0,
-      ].filter((value) => Number.isFinite(value) && value > 0) as number[];
-      const viewportWidth =
-        candidateWidths.length > 0 ? Math.min(...candidateWidths) : 0;
+      let viewportWidth = win.visualViewport?.width ?? win.innerWidth ?? 0;
+
+      if (!Number.isFinite(viewportWidth) || viewportWidth <= 0) {
+        const docWidth = doc?.documentElement?.clientWidth ?? 0;
+        const bodyWidth = doc?.body?.clientWidth ?? 0;
+        viewportWidth = Math.max(docWidth, bodyWidth);
+      }
       if (!Number.isFinite(viewportWidth) || viewportWidth <= 0) return;
 
       const targetWidth = Math.min(viewportWidth * 0.8, 640);

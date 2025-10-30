@@ -381,9 +381,13 @@ export default function TCDBRankingTableClient({
       </section>
 
       {detailRow ? (
-        <Modal open onClose={handleCloseDetail}>
+        <Modal
+          open
+          onClose={handleCloseDetail}
+          className="w-[min(80vw,640px)] max-w-[640px] sm:w-[min(80vw,640px)] overflow-x-hidden box-border"
+        >
           <div
-            className="flex min-h-0 flex-1 flex-col"
+            className="flex min-h-0 w-full flex-1 flex-col"
             data-modal-width-ratio={
               process.env.E2E === "1" ? "0.40" : undefined
             }

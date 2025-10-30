@@ -369,7 +369,7 @@ p {
   }
 
   .modal-body {
-    @apply min-h-0 overflow-x-hidden overflow-y-auto px-5 pb-5 pt-4;
+    @apply min-h-0 box-border overflow-x-hidden overflow-y-auto px-5 pb-5 pt-4;
   }
 
   .modal-body * {
