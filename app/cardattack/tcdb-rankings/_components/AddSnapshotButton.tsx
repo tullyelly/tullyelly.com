@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import * as Dialog from "@/components/ui/dialog";
+import * as Dialog from "@ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useActivity } from "@/components/activity/activity-provider";
 import {
