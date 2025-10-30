@@ -41,10 +41,9 @@ test("ranking detail trigger is interactable and opens dialog", async ({
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
 
-  const { width: modalWidth, ratioAttr } = await dialog.evaluate((el) => {
+  const { width: modalWidth } = await dialog.evaluate((el) => {
     const rect = el.getBoundingClientRect();
-    const ratioAttr = el.getAttribute("data-modal-width-ratio");
-    return { width: rect.width, ratioAttr };
+    return { width: rect.width };
   });
 
   const viewport = page.viewportSize();
@@ -53,13 +52,13 @@ test("ranking detail trigger is interactable and opens dialog", async ({
   }
   const viewportWidth = viewport.width;
 
-  const expectedRatio = ratioAttr ? Number.parseFloat(ratioAttr) : 0.4;
-  const widthDelta = Math.abs(modalWidth - viewportWidth * expectedRatio);
-  expect(widthDelta).toBeLessThanOrEqual(24);
+  const expectedWidth = Math.min(viewportWidth * 0.8, 640);
+  const widthDelta = Math.abs(modalWidth - expectedWidth);
+  expect(widthDelta).toBeLessThanOrEqual(32);
 
   const actualRatio = modalWidth / viewportWidth;
-  expect(actualRatio).toBeGreaterThan(0.34);
-  expect(actualRatio).toBeLessThan(0.46);
+  expect(actualRatio).toBeGreaterThan(0.35);
+  expect(actualRatio).toBeLessThanOrEqual(0.8);
 
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();

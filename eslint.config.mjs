@@ -78,7 +78,7 @@ const baseRestrictedImports = [
   {
     name: "@radix-ui/react-dialog",
     message:
-      "Import dialog primitives only via components/ui/dialog-safe (or components/ui/command.tsx). This guarantees an accessible Title.",
+      "Import dialog primitives only via @ui/dialog (or components/ui/command.tsx). This guarantees an accessible Title.",
   },
 ];
 
@@ -231,7 +231,6 @@ const config = [
 
   {
     files: [
-      "components/ui/dialog-safe.tsx",
       "components/ui/command.tsx",
       "components/ui/dialog.tsx",
       "components/ui/sheet.tsx",

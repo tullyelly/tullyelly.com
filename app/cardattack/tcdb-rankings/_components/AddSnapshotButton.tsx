@@ -345,7 +345,7 @@ export default function AddSnapshotButton({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="app-dialog-overlay" />
-        <Dialog.Content className="app-dialog-content outline-none">
+        <Dialog.Content className="outline-none rounded-[16px] border-[6px] border-[var(--cream)] bg-[var(--white)] text-[var(--black)] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]">
           <div
             data-dialog-handle
             className="-mx-6 -mt-6 flex items-center gap-3 bg-[var(--blue)] px-6 py-2 text-white"
