@@ -6,11 +6,11 @@ import { fmtDate, fmtDateTime } from "@/lib/datetime";
 import { isTimestampKey } from "@/lib/dates";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
-import Modal, {
-  ModalClose,
-  ModalDescription,
-  ModalTitle,
-} from "@/components/ui/Modal";
+import DialogPanel, {
+  DialogPanelClose,
+  DialogPanelDescription,
+  DialogPanelTitle,
+} from "@/components/ui/DialogPanel";
 
 type ScrollDialogProps = {
   open: boolean;
@@ -69,16 +69,16 @@ export default function ScrollDialog({
   }, [open, id]);
 
   return (
-    <Modal open={open} onClose={() => onOpenChange(false)}>
+    <DialogPanel open={open} onClose={() => onOpenChange(false)}>
       <div className="flex min-h-0 flex-1 flex-col">
         <div
           data-dialog-handle
           className="sticky top-0 z-[1] flex items-center justify-between gap-3 rounded-t-2xl bg-[var(--blue)] px-5 py-3 text-white"
         >
-          <ModalTitle className="truncate text-base font-semibold leading-6">
+          <DialogPanelTitle className="truncate text-base font-semibold leading-6">
             Scroll {id}
-          </ModalTitle>
-          <ModalClose asChild>
+          </DialogPanelTitle>
+          <DialogPanelClose asChild>
             <button
               type="button"
               className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--blue)]"
@@ -87,12 +87,12 @@ export default function ScrollDialog({
             >
               ×
             </button>
-          </ModalClose>
+          </DialogPanelClose>
         </div>
         <div className="modal-body grow" data-testid="modal-body">
-          <ModalDescription className="sr-only">
+          <DialogPanelDescription className="sr-only">
             Details for this scroll
-          </ModalDescription>
+          </DialogPanelDescription>
           {loading && <p>Loading…</p>}
           {error && <p>Error loading scroll.</p>}
           {!loading && !error && row && (
@@ -169,6 +169,6 @@ export default function ScrollDialog({
           )}
         </div>
       </div>
-    </Modal>
+    </DialogPanel>
   );
 }

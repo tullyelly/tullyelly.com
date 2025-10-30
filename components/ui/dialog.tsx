@@ -77,10 +77,15 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
       const container = containerRef.current;
       if (!container) return;
 
-      const viewportWidth = Math.max(
+      const doc = container.ownerDocument;
+      const candidateWidths = [
         win.innerWidth ?? 0,
         win.visualViewport?.width ?? 0,
-      );
+        doc?.documentElement?.clientWidth ?? 0,
+        doc?.body?.clientWidth ?? 0,
+      ].filter((value) => Number.isFinite(value) && value > 0) as number[];
+      const viewportWidth =
+        candidateWidths.length > 0 ? Math.min(...candidateWidths) : 0;
       if (!Number.isFinite(viewportWidth) || viewportWidth <= 0) return;
 
       const targetWidth = Math.min(viewportWidth * 0.8, 640);
@@ -88,10 +93,10 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
       container.style.width = `${Math.round(targetWidth)}px`;
       container.style.maxWidth = "";
       if (process.env.NODE_ENV !== "production") {
-         
         console.debug("[dialog-width]", {
           innerWidth: win.innerWidth,
           visualWidth: win.visualViewport?.width ?? null,
+          clientWidth: doc?.documentElement?.clientWidth ?? null,
           viewportWidth,
           targetWidth,
           width: container.style.width,
