@@ -294,7 +294,7 @@ export function CommandDialog({
             aria-hidden={open ? undefined : "true"}
             className={cn(
               "fixed z-[99] p-0 !bottom-auto",
-              "max-w-[calc(100vw-2rem)]",
+              "w-[min(80vw,640px)] sm:w-full sm:max-w-lg",
               "rounded-b-2xl rounded-t-none",
               "border-[6px] border-[var(--green)]",
               "shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]",
@@ -303,6 +303,7 @@ export function CommandDialog({
               className,
             )}
             style={{
+              boxSizing: "border-box",
               top: topPx,
               left: leftPx,
               right: "auto",

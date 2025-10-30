@@ -3,6 +3,8 @@
 import * as React from "react";
 import * as RadixDialog from "@radix-ui/react-dialog";
 
+import { cn } from "@/lib/cn";
+
 // Global default for draggability. Can be toggled by the app if needed.
 export let draggableByDefault = true;
 export function setDialogDraggableByDefault(value: boolean) {
@@ -28,6 +30,13 @@ function composeRefs<T>(...refs: Array<React.Ref<T> | undefined>) {
   };
 }
 
+function getWindow(): Window | null {
+  if (typeof globalThis !== "object" || !globalThis) return null;
+  return "window" in globalThis
+    ? ((globalThis as typeof globalThis & { window?: Window }).window ?? null)
+    : null;
+}
+
 export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
   (
     {
@@ -35,8 +44,9 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
       draggable,
       dragHandleSelector = "[data-dialog-handle]",
       clampPadding = 16,
+      className,
       style,
-      ...props
+      ...contentProps
     },
     forwardedRef,
   ) => {
@@ -60,6 +70,65 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
       halfH: 0,
     });
     const pointerIdRef = React.useRef<number | null>(null);
+
+    const updateViewportWidth = React.useCallback(() => {
+      const win = getWindow();
+      if (!win) return;
+      const container = containerRef.current;
+      if (!container) return;
+
+      const doc = container.ownerDocument;
+      let viewportWidth = win.visualViewport?.width ?? win.innerWidth ?? 0;
+
+      if (!Number.isFinite(viewportWidth) || viewportWidth <= 0) {
+        const docWidth = doc?.documentElement?.clientWidth ?? 0;
+        const bodyWidth = doc?.body?.clientWidth ?? 0;
+        viewportWidth = Math.max(docWidth, bodyWidth);
+      }
+      if (!Number.isFinite(viewportWidth) || viewportWidth <= 0) return;
+
+      const targetWidth = Math.min(viewportWidth * 0.8, 640);
+      container.style.boxSizing = "border-box";
+      container.style.width = `${Math.round(targetWidth)}px`;
+      container.style.maxWidth = "";
+      if (process.env.NODE_ENV !== "production") {
+        console.debug("[dialog-width]", {
+          innerWidth: win.innerWidth,
+          visualWidth: win.visualViewport?.width ?? null,
+          clientWidth: doc?.documentElement?.clientWidth ?? null,
+          viewportWidth,
+          targetWidth,
+          width: container.style.width,
+        });
+      }
+
+      const rect = container.getBoundingClientRect();
+      halfSizeRef.current = {
+        halfW: rect.width / 2,
+        halfH: rect.height / 2,
+      };
+      let viewportHeight = win.visualViewport?.height ?? win.innerHeight ?? 0;
+      if (!Number.isFinite(viewportHeight) || viewportHeight <= 0) {
+        viewportHeight = rect.height + clampPadding * 2;
+      }
+      const { halfW, halfH } = halfSizeRef.current;
+      let { x, y } = offsetRef.current;
+
+      const minX = -(viewportWidth / 2 - halfW - clampPadding);
+      const maxX = viewportWidth / 2 - halfW - clampPadding;
+      const minY = -(viewportHeight / 2 - halfH - clampPadding);
+      const maxY = viewportHeight / 2 - halfH - clampPadding;
+
+      if (x < minX) x = minX;
+      if (x > maxX) x = maxX;
+      if (y < minY) y = minY;
+      if (y > maxY) y = maxY;
+
+      if (x !== offsetRef.current.x || y !== offsetRef.current.y) {
+        offsetRef.current = { x, y };
+      }
+      container.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0)`;
+    }, [clampPadding, containerRef, halfSizeRef, offsetRef]);
 
     const onPointerDown = React.useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
@@ -131,19 +200,23 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
       [clampPadding],
     );
 
-    const endDrag = React.useCallback((e?: PointerEvent) => {
-      if (pointerIdRef.current == null) return;
-      const container = containerRef.current;
-      if (container && pointerIdRef.current != null) {
-        try {
-          container.releasePointerCapture(pointerIdRef.current);
-        } catch {
-          // ignore
+    const endDrag = React.useCallback(
+      (e?: PointerEvent) => {
+        if (pointerIdRef.current == null) return;
+        const container = containerRef.current;
+        if (container && pointerIdRef.current != null) {
+          try {
+            container.releasePointerCapture(pointerIdRef.current);
+          } catch {
+            // ignore
+          }
         }
-      }
-      pointerIdRef.current = null;
-      startRef.current = null;
-    }, []);
+        pointerIdRef.current = null;
+        startRef.current = null;
+        updateViewportWidth();
+      },
+      [updateViewportWidth],
+    );
 
     React.useEffect(() => {
       // Attach global listeners while dragging
@@ -172,12 +245,7 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
           // reset position on open
           offsetRef.current = { x: 0, y: 0 };
           node.style.transform = `translate(-50%, -50%)`;
-          // re-measure size for clamping
-          const rect = node.getBoundingClientRect();
-          halfSizeRef.current = {
-            halfW: rect.width / 2,
-            halfH: rect.height / 2,
-          };
+          updateViewportWidth();
         }
       });
       observer.observe(node, {
@@ -185,7 +253,29 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
         attributeFilter: ["hidden", "aria-hidden", "data-state"],
       });
       return () => observer.disconnect();
-    }, []);
+    }, [updateViewportWidth]);
+
+    React.useEffect(() => {
+      const win = getWindow();
+      if (!win) return;
+      updateViewportWidth();
+
+      const handleResize = () => {
+        updateViewportWidth();
+      };
+
+      win.addEventListener("resize", handleResize);
+      win.addEventListener("orientationchange", handleResize);
+
+      const viewport = win.visualViewport;
+      viewport?.addEventListener("resize", handleResize);
+
+      return () => {
+        win.removeEventListener("resize", handleResize);
+        win.removeEventListener("orientationchange", handleResize);
+        viewport?.removeEventListener("resize", handleResize);
+      };
+    }, [updateViewportWidth]);
 
     // Reset transform whenever content node changes (e.g., open/close remount)
     React.useEffect(() => {
@@ -194,20 +284,32 @@ export const Content = React.forwardRef<HTMLDivElement, ContentProps>(
         node.style.transform = `translate(-50%, -50%)`;
       }
       offsetRef.current = { x: 0, y: 0 };
-    }, []);
+      updateViewportWidth();
+    }, [updateViewportWidth]);
 
     // Merge incoming styles while allowing runtime transform updates
     const initialStyle = React.useMemo<React.CSSProperties>(() => {
-      const base = (style as React.CSSProperties) || {};
-      // The transform will be mutated during drag; seed with any provided transform
-      return { ...base, willChange: "transform" };
+      // Ensure border-box sizing while preserving any caller overrides.
+      return {
+        boxSizing: "border-box",
+        transform: "translate(-50%, -50%)",
+        ...(style as React.CSSProperties),
+        willChange: "transform",
+      };
     }, [style]);
 
     return (
-      <RadixDialog.Content asChild {...props}>
+      <RadixDialog.Content asChild {...contentProps}>
         <div
           ref={mergedRef}
           data-overlay-root
+          className={cn(
+            "fixed left-1/2 top-1/2 z-50 grid w-[min(80vw,640px)] max-w-[640px]",
+            "sm:w-[min(80vw,640px)] max-h-[calc(100vh-2rem)]",
+            "box-border overflow-x-hidden overflow-y-auto gap-4 border bg-background p-6 shadow-lg",
+            "sm:rounded-lg",
+            className,
+          )}
           style={initialStyle}
           onPointerDown={onPointerDown}
         >

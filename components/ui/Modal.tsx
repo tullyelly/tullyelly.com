@@ -10,7 +10,7 @@ import {
   Overlay as DialogOverlay,
   Root as DialogRoot,
   Title as DialogTitle,
-} from "./dialog";
+} from "@ui/dialog";
 
 type ModalProps = {
   open: boolean;
@@ -140,7 +140,7 @@ function createContentStyle(initialPosition?: ModalProps["initialPosition"]) {
 }
 
 const MODAL_CONTAINER_BASE =
-  "fixed left-1/2 top-1/2 z-[1001] flex max-h-[min(88vh,900px)] [--modal-vw:40vw] w-[var(--modal-vw)] max-w-[var(--modal-vw)] flex-col overflow-hidden box-border rounded-2xl border-[6px] border-[var(--cream)] bg-white text-ink shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)]";
+  "fixed left-1/2 top-1/2 z-[1001] flex max-h-[min(88vh,900px)] w-[min(80vw,640px)] max-w-[640px] sm:w-[min(80vw,640px)] flex-col overflow-hidden box-border rounded-2xl border-[6px] border-[var(--cream)] bg-white text-ink shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)]";
 
 export function Modal({
   open,

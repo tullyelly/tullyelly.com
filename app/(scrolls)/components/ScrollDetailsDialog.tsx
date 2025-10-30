@@ -40,7 +40,7 @@ export function ScrollDetailsDialog({
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="app-dialog-overlay data-[state=open]:animate-in" />
-        <Dialog.Content className="app-dialog-content">
+        <Dialog.Content className="rounded-[16px] border-[6px] border-[var(--cream)] bg-[var(--white)] text-[var(--black)] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]">
           <div
             data-dialog-handle
             className="-mx-6 -mt-6 px-6 py-2 bg-[var(--blue)] text-white cursor-move touch-none flex items-center"
