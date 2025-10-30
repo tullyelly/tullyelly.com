@@ -3,6 +3,10 @@ import { withinRatio } from "./utils/layout";
 
 // Desktop table view
 test("desktop table opens dialog on ID click", async ({ page }) => {
+  test.skip(
+    test.info().project.name === "mobi",
+    "Desktop-only layout width expectations do not apply to mobi.",
+  );
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/mark2/shaolin-scrolls");
   await expect(page.getByRole("columnheader", { name: "ID" })).toBeVisible();
