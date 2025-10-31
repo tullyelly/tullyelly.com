@@ -2,6 +2,7 @@ import "./lib/dns-polyfill.js";
 import { defineConfig, devices } from "@playwright/test";
 import * as dotenv from "dotenv";
 
+// ✅ Ensure test env parity between local and CI
 dotenv.config({ path: ".env.test" });
 
 const nonEmpty = (value: string | undefined | null): string | undefined => {
