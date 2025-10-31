@@ -144,8 +144,8 @@ export default async function Page({
                 className={[
                   "inline-flex min-w-9 items-center justify-center rounded-full px-3 py-1 font-medium transition",
                   isCurrent
-                    ? "bg-[var(--blue)] text-[var(--text-on-blue)]"
-                    : "bg-[var(--surface-card)] text-muted-foreground border border-[var(--border-subtle)] hover:text-[var(--text-primary)]",
+                    ? "bg-[var(--blue)] !text-white hover:!text-white focus-visible:!text-white"
+                    : "bg-[var(--surface-card)] text-blue-600 border border-[var(--border-subtle)] hover:text-[var(--text-primary)]",
                 ].join(" ")}
               >
                 {n}
