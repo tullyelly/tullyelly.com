@@ -31,36 +31,66 @@ async function waitForHealth(baseURL: string): Promise<void> {
 }
 
 async function waitForHydration(page: Page): Promise<void> {
+  await page.waitForLoadState("domcontentloaded");
+
   const deadline = Date.now() + HYDRATION_TIMEOUT_MS;
 
   while (Date.now() < deadline) {
     // Prefer explicit app-ready signals when available.
-    const readySignal = await page.$('[data-app-ready="true"]');
-    if (readySignal) {
-      await readySignal.dispose();
-      await page.waitForTimeout(HYDRATION_SETTLE_DELAY_MS);
-      return;
-    }
-
-    // Fallback: wait for key navigation affordances to hydrate.
-    const [navHandle, footerHandle] = await Promise.all([
+    const [
+      readySignal,
+      drawerHandle,
+      triggerHandle,
+      footerHandle,
+      contentInfo,
+    ] = await Promise.all([
+      page.$('[data-app-ready="true"]'),
       page.$('[data-testid="nav-mobile-drawer"]'),
+      page.$('[data-testid="nav-mobile-trigger"]'),
       page.$("footer"),
+      page.$('[role="contentinfo"]'),
     ]);
 
-    const navReady = Boolean(navHandle);
-    const footerReady = Boolean(footerHandle);
+    const structuralReady =
+      (drawerHandle || triggerHandle) && (footerHandle || contentInfo);
 
-    if (navHandle) await navHandle.dispose();
-    if (footerHandle) await footerHandle.dispose();
+    if (readySignal || structuralReady) {
+      await disposeHandles([
+        readySignal,
+        drawerHandle,
+        triggerHandle,
+        footerHandle,
+        contentInfo,
+      ]);
 
-    if (navReady && footerReady) {
       await page.waitForTimeout(HYDRATION_SETTLE_DELAY_MS);
       return;
     }
 
+    await disposeHandles([
+      readySignal,
+      drawerHandle,
+      triggerHandle,
+      footerHandle,
+      contentInfo,
+    ]);
     await page.waitForTimeout(150);
   }
 
   throw new Error("App did not hydrate within the expected window.");
+}
+
+async function disposeHandles(
+  handles: Array<Awaited<ReturnType<Page["$"]>>>,
+): Promise<void> {
+  await Promise.all(
+    handles.map(async (handle) => {
+      if (!handle) return;
+      try {
+        await handle.dispose();
+      } catch {
+        // ignore disposal failures; handles are best-effort
+      }
+    }),
+  );
 }

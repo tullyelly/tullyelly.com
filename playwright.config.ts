@@ -112,6 +112,8 @@ export default defineConfig({
         baseURL: "http://127.0.0.1:4321",
         isMobile: true,
         hasTouch: true,
+        // Belt-and-suspenders: lock the viewport so CI UA changes do not widen layout.
+        viewport: { width: 390, height: 844 },
       },
     },
   ],
@@ -121,6 +123,7 @@ export default defineConfig({
     url: "http://127.0.0.1:4321",
     reuseExistingServer: true,
     timeout: 120_000,
+    // Inherit sanitized env so the server sees .env.test alongside CI overrides.
     env: webServerEnv,
   },
 });
