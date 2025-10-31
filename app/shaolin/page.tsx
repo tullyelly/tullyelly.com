@@ -8,7 +8,8 @@ import { Card } from "@ui";
 import { getPublishedPosts, getTagsWithCounts, paginate } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
 
-export const dynamic = "force-static"; // ensure static generation
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const PER_PAGE = 10;
 
