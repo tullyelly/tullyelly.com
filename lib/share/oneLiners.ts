@@ -7,4 +7,6 @@ export const oneLiners: Record<string, string> = {
     "Heels Have Eyes pairs the video with essential albums and nudges new listeners to explore.",
   "unclejimmy/cute-stamps":
     "Cute Stamps recounts a playful postal adventure while spotlighting the design inspiration set.",
+  "tullyelly/ruins":
+    "Ruins keeps the original tullyelly homepage on display; a resting place for ideas awaiting their next revival.",
 };
