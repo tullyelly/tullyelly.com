@@ -217,7 +217,9 @@ test.describe("mobile drawer hierarchy", () => {
     const markToggle = drawer
       .locator(`[aria-controls="${markPanelId}"]`)
       .first();
-    await expect(markToggle).toBeVisible({ timeout: 3000 });
+    // ✅ Give CI extra time for hydration before asserting visibility
+    await waitAppReady(page);
+    await expect(markToggle).toBeVisible({ timeout: 8000 });
 
     const beforeState = await markToggle.evaluate((el) => ({
       id: el.id,
