@@ -38,7 +38,7 @@ function PostContent({ slug }: { slug: string }) {
   const post = allPosts.find((p) => p.slug === slug && !p.draft);
   if (!post) notFound();
   return (
-    <article className="max-w-3xl mx-auto space-y-10">
+    <article className="max-w-3xl mx-auto space-y-10 mt-8 md:mt-10">
       <Card as="section" className="p-6 md:p-8 space-y-6">
         <header className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
