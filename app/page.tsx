@@ -4,7 +4,10 @@ import { getPublishedPosts } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
 import { MdxRenderer } from "@/components/mdx-renderer";
 
-export const dynamic = "force-static";
+// Home references shared header/menu; keep runtime to avoid test stub during build.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function generateMetadata() {
   const posts = getPublishedPosts();

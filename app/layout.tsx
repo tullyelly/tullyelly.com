@@ -24,6 +24,12 @@ import {
   SITE_URL,
 } from "@/lib/seo/constants";
 
+// Ensure menu data is always fetched at runtime (not during build),
+// so we never bake TEST_MENU_ITEMS into static output.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 await initSentry();
 
 const baseMetadata: Metadata = {

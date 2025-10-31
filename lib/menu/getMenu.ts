@@ -198,8 +198,13 @@ function resolveRequirements(
   return undefined;
 }
 
+// Only allow TEST_MODE in non-production *or* when explicitly forced with a private server flag.
+// This prevents NEXT_PUBLIC_TEST_MODE from accidentally activating stubs in prod.
 const TEST_MODE =
-  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+  (process.env.NODE_ENV !== "production" &&
+    (process.env.NEXT_PUBLIC_TEST_MODE === "1" ||
+      process.env.TEST_MODE === "1")) ||
+  process.env.FORCE_TEST_MENU === "1";
 const BUILD_MODE = isNextBuild();
 const DB_DISABLED = process.env.SKIP_DB === "true";
 
@@ -316,7 +321,16 @@ function flattenTestTree(items: NavItem[]): MenuNodeRow[] {
 }
 
 async function fetchMenuRows(): Promise<MenuNodeRow[]> {
-  if (TEST_MODE || BUILD_MODE || DB_DISABLED) {
+  if (DB_DISABLED) {
+    // When DB is intentionally disabled at runtime (not our prod norm), use test tree.
+    return flattenTestTree(TEST_MENU_ITEMS);
+  }
+  if (BUILD_MODE) {
+    // During production build, avoid leaking test links into static output.
+    // Return an empty set; runtime requests will fill from DB.
+    return [];
+  }
+  if (TEST_MODE) {
     return flattenTestTree(TEST_MENU_ITEMS);
   }
 
