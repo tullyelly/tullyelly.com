@@ -7,11 +7,25 @@ import { SectionDivider } from "@/components/SectionDivider";
 import { Card } from "@ui";
 import { getPublishedPosts, getTagsWithCounts, paginate } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
+import { makeListGenerateMetadata } from "@/lib/seo/factories";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const PER_PAGE = 10;
+
+export const generateMetadata = makeListGenerateMetadata({
+  path: "/shaolin",
+  getTitle: (_q, page) => {
+    const base = "Shaolin Chronicles | tullyelly";
+    return page && page !== "1" ? `${base}; page ${page}` : base;
+  },
+  getDescription: (_q, page) => {
+    const base =
+      "Browse the latest shaolin chronicles; tags, pagination, and archives for ongoing experiments";
+    return page && page !== "1" ? `${base} (page ${page}).` : `${base}.`;
+  },
+});
 
 export default async function Page({
   searchParams,

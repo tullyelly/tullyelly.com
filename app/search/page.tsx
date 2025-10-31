@@ -3,12 +3,26 @@ import type { Route } from "next";
 import { getMenu } from "@/lib/menu/getMenu";
 import { flattenLinks, type FlatLink } from "@/lib/menu.flatten";
 import { cn } from "@/lib/utils";
+import { makeListGenerateMetadata } from "@/lib/seo/factories";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   searchParams: Promise<{ q?: string } | undefined>;
 };
+
+export const generateMetadata = makeListGenerateMetadata({
+  path: "/search",
+  getTitle: (q) => {
+    const base = "Search | tullyelly";
+    return q ? `${base}; q: "${q}"` : base;
+  },
+  getDescription: (q) => {
+    return q
+      ? `Results for "${q}" across tullyelly menus, chronicles, and experiments.`
+      : "Search across tullyelly menus, chronicles, and experiments.";
+  },
+});
 
 type Result = {
   link: FlatLink;

@@ -1,19 +1,23 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import FlowersInline from "@/components/flowers/FlowersInline";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 const pageTitle = "🧠mark2 | tullyelly";
 const pageDescription =
   "Explore the 🧠mark2 blueprint: a second-brain sandbox for planning, creative prototyping, and shaolin scroll experiments across the tullyelly multiverse.";
+const canonical = canonicalUrl("mark2");
 
-export const metadata: Metadata = {
+export const metadata = {
   title: pageTitle,
   description: pageDescription,
+  alternates: { canonical },
   openGraph: {
     title: pageTitle,
     description: pageDescription,
+    url: "/mark2",
+    type: "website",
     images: [
       {
         url: "/images/optimized/iron-man-hope.jpg",
@@ -27,7 +31,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: pageTitle,
     description: pageDescription,
-    images: ["/images/optimized/iron-man-hope.jpg"],
+    images: [
+      {
+        url: "/images/optimized/iron-man-hope.jpg",
+        alt: "A hopeful Iron Man illustration representing the 🧠mark2 blueprint lab.",
+      },
+    ],
   },
 };
 

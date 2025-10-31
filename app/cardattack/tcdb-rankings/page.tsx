@@ -10,12 +10,28 @@ import {
   coercePage,
   coercePageSize,
 } from "@/lib/pagination";
+import { makeListGenerateMetadata } from "@/lib/seo/factories";
 import { getHomieOptions } from "./_lib/getHomieOptions";
 import { getCurrentDateIso } from "./_lib/getCurrentDate";
 import TcdbRankingsView from "./_components/TcdbRankingsView";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export const generateMetadata = makeListGenerateMetadata({
+  path: "/cardattack/tcdb-rankings",
+  getTitle: (q, page) => {
+    const base = "cardattack; TCDb rankings";
+    const withQuery = q ? `${base}; search: "${q}"` : base;
+    return page && page !== "1" ? `${withQuery}; page ${page}` : withQuery;
+  },
+  getDescription: (q, page) => {
+    const base = q
+      ? `Cardattack TCDb rankings filtered by "${q}"; review snapshots and handmade trends`
+      : "Cardattack TCDb rankings; review snapshots and handmade trends";
+    return page && page !== "1" ? `${base} (page ${page}).` : `${base}.`;
+  },
+});
 
 type SearchParams = {
   page?: string;
