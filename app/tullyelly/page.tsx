@@ -1,3 +1,26 @@
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
+
+const pageTitle = "⚒️tullyelly forge | tullyelly";
+const pageDescription =
+  "Step into the ⚒️tullyelly forge; a personal lab for shipping experiments, refining routines, and shaping the broader site persona.";
+
+export const metadata = {
+  title: pageTitle,
+  description: pageDescription,
+  alternates: { canonical: canonicalUrl("tullyelly") },
+  openGraph: {
+    title: pageTitle,
+    description: pageDescription,
+    url: "/tullyelly",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: pageTitle,
+    description: pageDescription,
+  },
+};
+
 export default function TullyellyPage() {
   return (
     <div className="space-y-12">

@@ -1,3 +1,26 @@
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
+
+const pageTitle = "🎙unclejimmy circus | tullyelly";
+const pageDescription =
+  "Meet the 🎙unclejimmy circus persona; rabble rousing energy, family stories, and heart-first storytelling across tullyelly.";
+
+export const metadata = {
+  title: pageTitle,
+  description: pageDescription,
+  alternates: { canonical: canonicalUrl("unclejimmy") },
+  openGraph: {
+    title: pageTitle,
+    description: pageDescription,
+    url: "/unclejimmy",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: pageTitle,
+    description: pageDescription,
+  },
+};
+
 export default function UncleJimmyPage() {
   return (
     <div className="space-y-12">

@@ -1,4 +1,27 @@
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
+
 export const dynamic = "force-static";
+
+const pageTitle = "mark2 blueprint landing | tullyelly";
+const pageDescription =
+  "Blueprint landing page for mark2; validates breadcrumb handling when marketing routes alias deeper structures.";
+
+export const metadata = {
+  title: pageTitle,
+  description: pageDescription,
+  alternates: { canonical: canonicalUrl("mark2/blueprint") },
+  openGraph: {
+    title: pageTitle,
+    description: pageDescription,
+    url: "/mark2/blueprint",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: pageTitle,
+    description: pageDescription,
+  },
+};
 
 export default function Mark2BlueprintLanding() {
   return (

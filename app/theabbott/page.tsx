@@ -1,4 +1,26 @@
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
+
+const pageTitle = "🪶theabbott cipher | tullyelly";
+const pageDescription =
+  "Explore the 🪶theabbott cipher persona; hip-hop roots, creative philosophy, and twelve jewelz inspiration woven through tullyelly.";
+
+export const metadata = {
+  title: pageTitle,
+  description: pageDescription,
+  alternates: { canonical: canonicalUrl("theabbott") },
+  openGraph: {
+    title: pageTitle,
+    description: pageDescription,
+    url: "/theabbott",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: pageTitle,
+    description: pageDescription,
+  },
+};
 export default function TheAbbottPage() {
   return (
     <div className="space-y-12">
