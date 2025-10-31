@@ -86,8 +86,13 @@ export default function Page() {
           bois to help me build the homepage.😉
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          As we wait for all dat, the homepage will always have the most current
-          chronicle (blog) below. Thank you for visiting.
+          Raistlin had his spellbook, I have{" "}
+          <Link href="/shaolin" className="underline hover:no-underline">
+            shaolin chronicles
+          </Link>
+          . If that&#39;s too much magic for you, the latest chronicle will
+          always be on the homepage as I figure out what I want this to evolve
+          into.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Hug ball.
