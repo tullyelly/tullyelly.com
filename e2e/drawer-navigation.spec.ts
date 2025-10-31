@@ -1,5 +1,4 @@
 import { test, expect } from "./fixtures";
-import { debugDumpDrawer, openMobileDrawer } from "./utils/debugDrawer";
 import type { Locator, Page } from "@playwright/test";
 import { ensureVisualStability as enforceVisualStability } from "../tests/utils/visual-stability";
 import { waitAppReady } from "../tests/utils/waitAppReady";
