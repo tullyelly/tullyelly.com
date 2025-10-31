@@ -198,8 +198,13 @@ function resolveRequirements(
   return undefined;
 }
 
+// Only allow TEST_MODE in non-production *or* when explicitly forced with a private server flag.
+// This prevents NEXT_PUBLIC_TEST_MODE from accidentally activating stubs in prod.
 const TEST_MODE =
-  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+  (process.env.NODE_ENV !== "production" &&
+    (process.env.NEXT_PUBLIC_TEST_MODE === "1" ||
+      process.env.TEST_MODE === "1")) ||
+  process.env.FORCE_TEST_MENU === "1";
 const BUILD_MODE = isNextBuild();
 const DB_DISABLED = process.env.SKIP_DB === "true";
 
