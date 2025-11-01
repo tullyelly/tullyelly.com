@@ -456,122 +456,163 @@ export default function MobileDrawer({
                   <span className="flex-1 truncate">Home</span>
                 </Link>
               </DrawerItem>
+              {/* Mobile-only: surface shaolin once just under Home */}
+              {(() => {
+                const shaolinEntry = personaEntries.find(
+                  (entry) => entry.key === "shaolin",
+                );
+                if (!shaolinEntry?.item?.href) return null;
+                const personaEmoji = PERSONA_EMOJI["shaolin"];
+                const buttonId = `mobile-drawer-root-${shaolinEntry.item.id}`;
+                return (
+                  <DrawerItem className="mx-1 mb-3">
+                    <button
+                      type="button"
+                      id={buttonId}
+                      className={cn(drawerActionClasses, "justify-start")}
+                      aria-label="shaolin"
+                      onClick={(event) =>
+                        handleNavigate(event, shaolinEntry.item, "primary")
+                      }
+                    >
+                      {personaEmoji ? (
+                        <span
+                          className="emoji text-xl leading-none"
+                          aria-hidden="true"
+                        >
+                          {personaEmoji}
+                        </span>
+                      ) : (
+                        <Icon
+                          name={shaolinEntry.item.iconKey}
+                          className="size-5"
+                        />
+                      )}
+                      <span className="flex-1 truncate">
+                        {shaolinEntry.label}
+                      </span>
+                    </button>
+                  </DrawerItem>
+                );
+              })()}
               <div className="space-y-3">
                 <p className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
                   By alter ego
                 </p>
                 <div className="space-y-2 px-1">
-                  {personaEntries.map(({ key, item, label }) => {
-                    const personaLinks = (childrenMap[key] ?? []).filter(
-                      (link) => Boolean(link.href),
-                    );
-                    const isExpanded = expandedPersona === key;
-                    const buttonId = `mobile-drawer-root-${item.id}`;
-                    const panelId = `mobile-drawer-persona-panel-${key}`;
-                    const personaEmoji = PERSONA_EMOJI[key];
-                    return (
-                      <div
-                        key={item.id}
-                        className={cn("space-y-2", isExpanded && "space-y-0")}
-                      >
-                        <DrawerItem
-                          className={cn(
-                            isExpanded &&
-                              "relative z-10 rounded-b-none border-b-transparent ring-1 ring-black/10",
-                          )}
-                        >
-                          <button
-                            type="button"
-                            id={buttonId}
-                            className={cn(
-                              drawerActionClasses,
-                              isExpanded && "rounded-b-none bg-black/5",
-                            )}
-                            aria-expanded={isExpanded}
-                            aria-controls={panelId}
-                            onClick={() => handleTogglePersona(key)}
-                          >
-                            {personaEmoji ? (
-                              <span
-                                className="emoji text-xl leading-none"
-                                aria-hidden="true"
-                              >
-                                {personaEmoji}
-                              </span>
-                            ) : (
-                              <Icon name={item.iconKey} className="size-5" />
-                            )}
-                            <span className="flex-1 truncate">{label}</span>
-                            <Lucide.ChevronRight
-                              className={`size-4 text-[color:var(--text-muted,#58708c)] transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
-                              aria-hidden="true"
-                            />
-                          </button>
-                        </DrawerItem>
+                  {personaEntries
+                    .filter(({ key }) => key !== "shaolin")
+                    .map(({ key, item, label }) => {
+                      const personaLinks = (childrenMap[key] ?? []).filter(
+                        (link) => Boolean(link.href),
+                      );
+                      const isExpanded = expandedPersona === key;
+                      const buttonId = `mobile-drawer-root-${item.id}`;
+                      const panelId = `mobile-drawer-persona-panel-${key}`;
+                      const personaEmoji = PERSONA_EMOJI[key];
+                      return (
                         <div
-                          id={panelId}
-                          role="region"
-                          aria-labelledby={buttonId}
-                          hidden={!isExpanded}
-                          className="relative z-0 mt-0 transition-[height,opacity] duration-150 ease-out"
+                          key={item.id}
+                          className={cn("space-y-2", isExpanded && "space-y-0")}
                         >
-                          <div className="mx-1 mt-1 overflow-visible rounded-2xl border border-black/10 bg-[rgba(0,0,0,0.02)]">
-                            <div
+                          <DrawerItem
+                            className={cn(
+                              isExpanded &&
+                                "relative z-10 rounded-b-none border-b-transparent ring-1 ring-black/10",
+                            )}
+                          >
+                            <button
+                              type="button"
+                              id={buttonId}
                               className={cn(
-                                "flex flex-col overflow-visible rounded-2xl border-l-2 border-[color:var(--persona-accent,#00471B)] pl-4 pr-3 py-2",
-                                personaLinks.length &&
-                                  "divide-y divide-black/5",
+                                drawerActionClasses,
+                                isExpanded && "rounded-b-none bg-black/5",
                               )}
+                              aria-expanded={isExpanded}
+                              aria-controls={panelId}
+                              onClick={() => handleTogglePersona(key)}
                             >
-                              {personaLinks.length ? (
-                                personaLinks.map((link) => (
-                                  <button
-                                    type="button"
-                                    key={link.id}
-                                    id={`mobile-drawer-persona-${key}-${link.id}`}
-                                    className={cn(
-                                      drawerPersonaLinkClasses,
-                                      "pr-2",
-                                    )}
-                                    onClick={(event) =>
-                                      handleNavigate(
-                                        event,
-                                        link,
-                                        `persona:${key}`,
-                                      )
-                                    }
-                                  >
-                                    <Icon
-                                      name={link.iconKey}
-                                      className="size-5"
-                                    />
-                                    <span className="flex-1 truncate">
-                                      {link.label}
-                                    </span>
-                                    {link.external ? (
-                                      <Lucide.ExternalLink
-                                        className="size-4 text-[color:var(--text-muted,#58708c)]"
-                                        aria-hidden="true"
-                                      />
-                                    ) : (
-                                      <Lucide.ChevronRight
-                                        className="size-4 text-[color:var(--text-muted,#58708c)]"
-                                        aria-hidden="true"
-                                      />
-                                    )}
-                                  </button>
-                                ))
+                              {personaEmoji ? (
+                                <span
+                                  className="emoji text-xl leading-none"
+                                  aria-hidden="true"
+                                >
+                                  {personaEmoji}
+                                </span>
                               ) : (
-                                <p className="px-0 py-3 text-sm text-[color:var(--text-muted,#58708c)]">
-                                  No links yet.
-                                </p>
+                                <Icon name={item.iconKey} className="size-5" />
                               )}
+                              <span className="flex-1 truncate">{label}</span>
+                              <Lucide.ChevronRight
+                                className={`size-4 text-[color:var(--text-muted,#58708c)] transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                                aria-hidden="true"
+                              />
+                            </button>
+                          </DrawerItem>
+                          <div
+                            id={panelId}
+                            role="region"
+                            aria-labelledby={buttonId}
+                            hidden={!isExpanded}
+                            className="relative z-0 mt-0 transition-[height,opacity] duration-150 ease-out"
+                          >
+                            <div className="mx-1 mt-1 overflow-visible rounded-2xl border border-black/10 bg-[rgba(0,0,0,0.02)]">
+                              <div
+                                className={cn(
+                                  "flex flex-col overflow-visible rounded-2xl border-l-2 border-[color:var(--persona-accent,#00471B)] pl-4 pr-3 py-2",
+                                  personaLinks.length &&
+                                    "divide-y divide-black/5",
+                                )}
+                              >
+                                {personaLinks.length ? (
+                                  personaLinks.map((link) => (
+                                    <button
+                                      type="button"
+                                      key={link.id}
+                                      id={`mobile-drawer-persona-${key}-${link.id}`}
+                                      className={cn(
+                                        drawerPersonaLinkClasses,
+                                        "pr-2",
+                                      )}
+                                      onClick={(event) =>
+                                        handleNavigate(
+                                          event,
+                                          link,
+                                          `persona:${key}`,
+                                        )
+                                      }
+                                    >
+                                      <Icon
+                                        name={link.iconKey}
+                                        className="size-5"
+                                      />
+                                      <span className="flex-1 truncate">
+                                        {link.label}
+                                      </span>
+                                      {link.external ? (
+                                        <Lucide.ExternalLink
+                                          className="size-4 text-[color:var(--text-muted,#58708c)]"
+                                          aria-hidden="true"
+                                        />
+                                      ) : (
+                                        <Lucide.ChevronRight
+                                          className="size-4 text-[color:var(--text-muted,#58708c)]"
+                                          aria-hidden="true"
+                                        />
+                                      )}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <p className="px-0 py-3 text-sm text-[color:var(--text-muted,#58708c)]">
+                                    No links yet.
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               </div>
             </div>
