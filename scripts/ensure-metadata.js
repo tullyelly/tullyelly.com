@@ -4,7 +4,9 @@ import path from "node:path";
 const appDir = path.join(process.cwd(), "app");
 
 // ---- configuration ----
-const ENFORCEMENT = (process.env.SEO_METADATA_ENFORCE || "warn").toLowerCase(); // "warn" | "strict" | "off"
+const ENFORCEMENT = (
+  process.env.SEO_METADATA_ENFORCE || "strict"
+).toLowerCase(); // "strict" | "warn" | "off"
 const IGNORE_PREFIXES = [
   "/api",
   "/play",
@@ -49,12 +51,17 @@ if (!offenders.length) {
   process.exit(0);
 }
 
+const modeMessage =
+  ENFORCEMENT === "strict"
+    ? "\nCurrently running in STRICT mode (SEO_METADATA_ENFORCE=strict).\nCI fails until metadata is added.\n"
+    : ENFORCEMENT === "warn"
+      ? "\nCurrently running in WARNING mode (SEO_METADATA_ENFORCE=warn).\nCI passes, but add metadata to eliminate warnings.\n"
+      : "\nSEO metadata enforcement is disabled (SEO_METADATA_ENFORCE=off).\n";
+
 const report =
   "\n⚠️  Pages missing metadata:\n" +
   offenders.map((f) => ` - ${f}`).join("\n") +
-  "\n\nCurrently running in WARNING mode (SEO_METADATA_ENFORCE=warn).\n" +
-  "CI passes, but add metadata to eliminate warnings.\n" +
-  "To enforce failures later, set SEO_METADATA_ENFORCE=strict.\n";
+  modeMessage;
 
 if (ENFORCEMENT === "strict") {
   console.error(report);
