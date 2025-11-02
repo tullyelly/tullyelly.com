@@ -137,8 +137,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Metadata coverage (warn)
-        run: SEO_METADATA_ENFORCE=warn npm run lint:metadata
+      - name: Metadata coverage (strict)
+        run: SEO_METADATA_ENFORCE=strict npm run lint:metadata
 
       - name: Format check
         run: npm run format:check
