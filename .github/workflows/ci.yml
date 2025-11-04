@@ -280,6 +280,9 @@ jobs:
       - name: Install Playwright (browsers + OS deps)
         run: npx playwright install --with-deps chromium
 
+      - name: Prepare content for E2E
+        run: npm run prepare:content && npm run contentlayer:build
+
       - name: Build (deterministic for E2E)
         run: npm run build:test
 
