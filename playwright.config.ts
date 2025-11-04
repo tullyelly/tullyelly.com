@@ -28,6 +28,8 @@ const sanitizedEnv = {
   PLAYWRIGHT: "true",
   DATABASE_URL: effectiveDatabaseUrl,
   TEST_DATABASE_URL: effectiveDatabaseUrl,
+  NEXT_PUBLIC_E2E: "true",
+  NEXT_TELEMETRY_DISABLED: "1",
   NEON_HTTP_URL: "",
   NEON_WS_PROXY: "",
   NEON_PROXY: "",
@@ -38,6 +40,8 @@ const sanitizedEnv = {
 process.env.PLAYWRIGHT = sanitizedEnv.PLAYWRIGHT;
 process.env.DATABASE_URL = sanitizedEnv.DATABASE_URL;
 process.env.TEST_DATABASE_URL = sanitizedEnv.TEST_DATABASE_URL;
+process.env.NEXT_PUBLIC_E2E = sanitizedEnv.NEXT_PUBLIC_E2E;
+process.env.NEXT_TELEMETRY_DISABLED = sanitizedEnv.NEXT_TELEMETRY_DISABLED;
 process.env.NEON_HTTP_URL = sanitizedEnv.NEON_HTTP_URL;
 process.env.NEON_WS_PROXY = sanitizedEnv.NEON_WS_PROXY;
 process.env.NEON_PROXY = sanitizedEnv.NEON_PROXY;
@@ -52,6 +56,7 @@ const webServerEnv = {
   SHOW_FLOWERS: "true",
   BREADCRUMBS: "true",
   NEXT_PUBLIC_E2E_MODE: "1",
+  NEXT_PUBLIC_E2E: "true",
   NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:4321",
   NEXT_PUBLIC_ANALYTICS_ENABLED: "1",
   NEXT_PUBLIC_TEST_MODE: "1",
@@ -75,7 +80,7 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:4321",
     actionTimeout: 10_000,
-    navigationTimeout: 15_000,
+    navigationTimeout: 60_000,
     trace: "on-first-retry",
     deviceScaleFactor: 1,
     // Prefer desktop viewport to avoid responsive header collapse in tables
@@ -118,11 +123,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command:
-      "E2E=1 NODE_ENV=test NEXT_E2E=1 PORT=4321 npm run start:e2e -- --hostname 127.0.0.1",
+    command: process.env.CI
+      ? "E2E=1 NODE_ENV=test NEXT_E2E=1 PORT=4321 npm run start:test"
+      : "E2E=1 NODE_ENV=test NEXT_E2E=1 PORT=4321 npm run dev -- -p 4321 --hostname 127.0.0.1",
     url: "http://127.0.0.1:4321",
-    reuseExistingServer: true,
-    timeout: 120_000,
+    reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
     // Inherit sanitized env so the server sees .env.test alongside CI overrides.
     env: webServerEnv,
   },

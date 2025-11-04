@@ -48,6 +48,7 @@ export default function ClientAppShell({
   const [mobileNavPersonaId, setMobileNavPersonaIdState] = React.useState<
     string | null
   >(null);
+  const mobileNavOpenRef = React.useRef(mobileNavOpen);
 
   const { setOpen: setCommandMenuOpen } = useCommandMenu();
   const setMobileNavOpen = React.useCallback((next: boolean) => {
@@ -86,6 +87,10 @@ export default function ClientAppShell({
   );
 
   React.useEffect(() => {
+    mobileNavOpenRef.current = mobileNavOpen;
+  }, [mobileNavOpen]);
+
+  React.useEffect(() => {
     if (!mobileNavOpen) {
       setMobileNavPersonaIdState(null);
     }
@@ -105,6 +110,55 @@ export default function ClientAppShell({
     window.addEventListener("menu:action", handleMenuAction);
     return () => window.removeEventListener("menu:action", handleMenuAction);
   }, [setCommandMenuOpen]);
+
+  React.useEffect(() => {
+    if (process.env.NEXT_PUBLIC_E2E !== "true") {
+      return;
+    }
+    const w = window as typeof window & {
+      __navTest?: {
+        openMobileDrawer?: () => Promise<void>;
+        closeMobileDrawer?: () => Promise<void>;
+        isMobileDrawerOpen?: () => boolean;
+        [key: string]: unknown;
+      };
+    };
+    if (!w.__navTest) {
+      w.__navTest = {};
+    }
+    const waitForState = async (target: boolean, timeoutMs = 8_000) => {
+      const start = performance.now();
+      while (performance.now() - start < timeoutMs) {
+        if (mobileNavOpenRef.current === target) return;
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      }
+    };
+    const openMobileDrawer = async () => {
+      openMobileNav();
+      await waitForState(true);
+    };
+    const closeMobileDrawer = async () => {
+      setMobileNavOpen(false);
+      await waitForState(false);
+    };
+    const isMobileDrawerOpen = () => mobileNavOpenRef.current;
+    const previous = w.__navTest;
+    w.__navTest = {
+      ...previous,
+      openMobileDrawer,
+      closeMobileDrawer,
+      isMobileDrawerOpen,
+    };
+    return () => {
+      if (!w.__navTest) return;
+      delete w.__navTest.openMobileDrawer;
+      delete w.__navTest.closeMobileDrawer;
+      delete w.__navTest.isMobileDrawerOpen;
+      if (Object.keys(w.__navTest).length === 0) {
+        delete w.__navTest;
+      }
+    };
+  }, [openMobileNav, setMobileNavOpen]);
 
   return (
     <AppShellProvider value={contextValue}>

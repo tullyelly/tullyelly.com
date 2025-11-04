@@ -49,18 +49,17 @@ test.describe("ghost overlay safeguards", () => {
 
   test("upper-left clicks and scroll operate normally", async ({ page }) => {
     await page.goto("/");
-    const point = await page.evaluate(() => {
-      const main = document.querySelector("main");
-      if (!main) return null;
-      const rect = main.getBoundingClientRect();
-      return {
-        x: Math.round(rect.left + Math.min(rect.width / 4, 80)),
-        y: Math.round(rect.top + Math.min(rect.height / 4, 80)),
-      };
-    });
-
-    expect(point).not.toBeNull();
-    const { x, y } = point!;
+    const header = page.locator("#site-header");
+    await expect(header).toBeVisible();
+    const bbox = await header.boundingBox();
+    expect(bbox).not.toBeNull();
+    if (!bbox) {
+      throw new Error(
+        "Header bounding box unavailable for ghost overlay click test.",
+      );
+    }
+    const x = Math.floor(bbox.x + 8);
+    const y = Math.floor(bbox.y + bbox.height + 8);
 
     const beforeUrl = page.url();
     await page.mouse.move(x, y);

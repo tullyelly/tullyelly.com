@@ -13,6 +13,7 @@
     "prebuild": "npm run gen:build-info",
     "build": "prisma generate && next build",
     "build:e2e": "NEXT_E2E=1 NODE_ENV=test next build",
+    "build:test": "cross-env NEXT_PUBLIC_E2E=true NEXT_TELEMETRY_DISABLED=1 NEXT_E2E=1 NODE_ENV=test next build",
     "prebuild:e2e": "npm run prepare:content",
     "build:clean": "rimraf .next && next build || (rm -rf .next && next build)",
     "build:ci": "next build",
@@ -20,6 +21,7 @@
     "postbuild": "npm run gen:build-info",
     "start": "next start",
     "start:e2e": "npm run build:e2e && next start -p ${PORT:-4321} --hostname 127.0.0.1",
+    "start:test": "next start -p ${PORT:-4321} --hostname 127.0.0.1",
     "start:ci": "cross-env NODE_ENV=production PORT=4010 next start -p 4010 -H 127.0.0.1",
     "wait:ci": "wait-on --httpTimeout 10000 --timeout 120000 http://127.0.0.1:4010/api/health",
     "serve-and-test": "start-server-and-test start:ci http://127.0.0.1:4010/api/health test:ci",
@@ -182,7 +184,7 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
     "undici": "^7.16.0",
-    "vitest": "^1.6.1",
+    "vitest": "^4.0.6",
     "wait-on": "^7.2.0"
   },
   "lint-staged": {

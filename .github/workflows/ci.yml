@@ -280,7 +280,13 @@ jobs:
       - name: Install Playwright (browsers + OS deps)
         run: npx playwright install --with-deps chromium
 
+      - name: Build (deterministic for E2E)
+        run: npm run build:test
+
       - name: Run E2E tests
+        env:
+          NEXT_PUBLIC_E2E: "true"
+          NEXT_TELEMETRY_DISABLED: "1"
         run: npx playwright test --reporter=html
 
       - name: Upload HTML report
