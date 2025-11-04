@@ -111,7 +111,7 @@ test.describe("desktop touch menu activation", () => {
       await menuItem.waitFor({ state: "visible", timeout: 5_000 });
       await page.waitForTimeout(100);
       await tapTouch(page, menuItem);
-
+      await page.waitForURL(/\/menu-test(\/target)?$/, { timeout: 10_000 });
       await expect(page).toHaveURL(/\/menu-test\/target$/);
       await expect(page.getByTestId("menu-test-target-heading")).toBeVisible();
 
