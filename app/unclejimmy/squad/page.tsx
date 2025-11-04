@@ -59,7 +59,14 @@ export default function UncleJimmySquadPage() {
               bonnibel
             </Link>
           </li>
-          <li>lulu {"<---tag coming soon"}</li>
+          <li>
+            <Link
+              href="/shaolin/tags/lulu"
+              className="underline hover:no-underline"
+            >
+              lulu
+            </Link>
+          </li>
           <li>
             <Link
               href="/shaolin/tags/jeff-meff"
