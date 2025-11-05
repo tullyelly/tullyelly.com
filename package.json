@@ -96,6 +96,7 @@
     "@sentry/nextjs": "^10.8.0",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
+    "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
@@ -182,7 +183,7 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
     "undici": "^7.16.0",
-    "vitest": "^1.6.1",
+    "vitest": "^4.0.7",
     "wait-on": "^7.2.0"
   },
   "lint-staged": {

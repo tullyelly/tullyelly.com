@@ -1,5 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
 import Script from "next/script";
@@ -161,6 +162,7 @@ export default async function RootLayout({
             </Providers>
           </CommandMenuProvider>
         </MenuProvider>
+        <Analytics />
       </body>
     </html>
   );
