@@ -3,6 +3,7 @@ import { allPosts } from "contentlayer/generated";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import FlowersInline from "@/components/flowers/FlowersInline";
+import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
 import { MdxRenderer } from "@/components/mdx-renderer";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
@@ -46,8 +47,14 @@ function PostContent({ slug }: { slug: string }) {
           </h1>
           <p className="text-sm text-muted-foreground">{fmtDate(post.date)}</p>
         </header>
-        <div className="space-y-6">
+        <div className="space-y-4">
           <MdxRenderer code={post.body.code} />
+          <ChronicleSignature
+            title={post.title}
+            date={post.date}
+            summary={post.summary}
+            tags={post.tags}
+          />
         </div>
       </Card>
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getPublishedPosts } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
 import { MdxRenderer } from "@/components/mdx-renderer";
+import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
 
 // Home references shared header/menu; keep runtime to avoid test stub during build.
 export const dynamic = "force-dynamic";
@@ -34,12 +35,20 @@ type Post = ReturnType<typeof getPublishedPosts>[number];
 
 function LatestPost({ post }: { post: Post }) {
   return (
-    <article className="prose max-w-3xl mx-auto py-8">
-      <header className="mb-6">
+    <article className="prose max-w-3xl mx-auto py-8 space-y-6">
+      <header className="space-y-2">
         <h1>{post.title}</h1>
         <p className="text-sm opacity-70">{fmtDate(post.date)}</p>
       </header>
-      <MdxRenderer code={post.body.code} />
+      <div className="space-y-4">
+        <MdxRenderer code={post.body.code} />
+        <ChronicleSignature
+          title={post.title}
+          date={post.date}
+          summary={post.summary}
+          tags={post.tags}
+        />
+      </div>
     </article>
   );
 }
