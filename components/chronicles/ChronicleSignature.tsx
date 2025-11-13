@@ -19,7 +19,7 @@ export function ChronicleSignature({
   const normalizedTags = tags?.map((tag) => tag.trim()).filter(Boolean) ?? [];
 
   return (
-    <div className="mt-10 space-y-4">
+    <div className="space-y-4">
       <p className="text-[16px] md:text-[18px] leading-relaxed text-muted-foreground">
         <Link href="/unclejimmy/hug-ball">Hug ball</Link>
       </p>

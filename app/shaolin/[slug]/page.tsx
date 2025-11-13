@@ -47,7 +47,7 @@ function PostContent({ slug }: { slug: string }) {
           </h1>
           <p className="text-sm text-muted-foreground">{fmtDate(post.date)}</p>
         </header>
-        <div className="space-y-6">
+        <div className="space-y-4">
           <MdxRenderer code={post.body.code} />
           <ChronicleSignature
             title={post.title}
