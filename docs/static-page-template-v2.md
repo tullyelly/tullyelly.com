@@ -62,7 +62,7 @@
 
 8. **Performance Budget & Image Strategy (Hardened)**
    - Targets: LCP <2.5 s on 3G, TTI <3 s, total image bytes <300 KB.
-   - Hero image <150 KB; inline images lazy‑load and use AVIF/WebP.
+   - Hero image <150 KB; inline images lazy-load and use WebP.
    - Max width 1920 px, mandatory `sizes` attribute, defer non-critical JS.
 
 9. **File/Folder Layout (Stabilized)**
@@ -84,7 +84,7 @@
     1. `npm run new-page` prompts for slug/title.
     2. Drop source hero image into `/content/<slug>/hero.jpg`.
     3. Edit frontmatter and write content in `/app/<slug>/page.mdx`.
-    4. `npm run images:optimize` generates `/public/images/<slug>/` variants.
+    4. `npm run images:optimize` generates `/public/images/<slug>/` WebP assets.
     5. `npm run dev` previews page and surfaces frontmatter violations.
     6. Commit, push, open PR.
 
