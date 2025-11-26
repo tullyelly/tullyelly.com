@@ -118,7 +118,7 @@ Optimize large images before pushing to the repo:
    public/images/optimized/
    ```
 
-Images are resized to a **1920px** max width and exported as **JPG, WebP, AVIF, PNG**.
+Images are resized to a **1920px** max width and exported as **WebP**.
 
 ---
 

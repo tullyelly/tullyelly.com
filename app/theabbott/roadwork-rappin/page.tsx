@@ -17,7 +17,7 @@ export const metadata = {
     url: "/theabbott/roadwork-rappin",
     images: [
       {
-        url: "/images/optimized/roadwork rappin.jpg",
+        url: "/images/optimized/roadwork rappin.webp",
         alt: "Roadwork Rappin’ cover art",
       },
     ],
@@ -34,7 +34,7 @@ export const metadata = {
       "Aesop Rock’s Roadwork Rappin’. Build a road where there isn't a road!",
     images: [
       {
-        url: "/images/optimized/roadwork rappin.jpg",
+        url: "/images/optimized/roadwork rappin.webp",
         alt: "Roadwork Rappin’ cover art",
       },
     ],

@@ -20,7 +20,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/images/optimized/iron-man-hope.jpg",
+        url: "/images/optimized/iron-man-hope.webp",
         width: 595,
         height: 842,
         alt: "A hopeful Iron Man illustration representing the 🧠mark2 blueprint lab.",
@@ -33,7 +33,7 @@ export const metadata = {
     description: pageDescription,
     images: [
       {
-        url: "/images/optimized/iron-man-hope.jpg",
+        url: "/images/optimized/iron-man-hope.webp",
         alt: "A hopeful Iron Man illustration representing the 🧠mark2 blueprint lab.",
       },
     ],

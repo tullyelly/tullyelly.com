@@ -32,25 +32,11 @@ async function optimizeOne(srcAbs) {
 
   const pipe = sharp(srcAbs).resize({ width: maxW, withoutEnlargement: true });
 
-  // Produce a solid set of formats (JPG, WebP, AVIF, and an optimized PNG)
-  await Promise.all([
-    pipe
-      .clone()
-      .jpeg({ quality: 82, mozjpeg: true })
-      .toFile(path.join(outSubdir, `${baseName}.jpg`)),
-    pipe
-      .clone()
-      .webp({ quality: 80 })
-      .toFile(path.join(outSubdir, `${baseName}.webp`)),
-    pipe
-      .clone()
-      .avif({ quality: 50 })
-      .toFile(path.join(outSubdir, `${baseName}.avif`)),
-    pipe
-      .clone()
-      .png({ compressionLevel: 9, palette: true })
-      .toFile(path.join(outSubdir, `${baseName}.png`)),
-  ]);
+  // Export a single optimized WebP
+  await pipe
+    .clone()
+    .webp({ quality: 80 })
+    .toFile(path.join(outSubdir, `${baseName}.webp`));
 
   console.log(`✓ ${rel}`);
 }

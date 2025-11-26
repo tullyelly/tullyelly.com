@@ -18,7 +18,7 @@ export const metadata = {
     type: "music.song",
     images: [
       {
-        url: "/images/optimized/HEELS HAVE EYES.jpg",
+        url: "/images/optimized/HEELS HAVE EYES.webp",
         alt: "HEELS HAVE EYES cover art",
       },
     ],
@@ -34,7 +34,7 @@ export const metadata = {
       "Westside Gunn's HEELS HAVE EYES takes over unclejimmy's playlist",
     images: [
       {
-        url: "/images/optimized/HEELS HAVE EYES.jpg",
+        url: "/images/optimized/HEELS HAVE EYES.webp",
         alt: "HEELS HAVE EYES cover art",
       },
     ],

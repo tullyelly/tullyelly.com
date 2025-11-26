@@ -5,7 +5,7 @@ const inDir = "public/images/source";
 const outDir = "public/images/optimized";
 
 const srcExts = new Set([".jpg", ".jpeg", ".png", ".webp", ".tiff"]);
-const requiredOutputs = [".jpg", ".webp", ".avif", ".png"]; // what optimize-images.mjs produces
+const requiredOutputs = [".webp"]; // what optimize-images.mjs produces
 
 async function* walk(dir) {
   for (const d of await fs.readdir(dir, { withFileTypes: true })) {
