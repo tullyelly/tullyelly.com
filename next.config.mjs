@@ -45,6 +45,27 @@ const nextConfig = {
       remarkPlugins,
     },
   },
+  webpack: (config) => {
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      (warning) => {
+        const resource =
+          warning && warning.module && warning.module.resource
+            ? warning.module.resource
+            : "";
+        const msg = String(warning?.message || "");
+        const fromContentlayer =
+          /@contentlayer2[\\/]+core[\\/]+dist[\\/]+generation[\\/]+generate-dotpkg\.js/.test(
+            resource
+          );
+        const isCacheWarning = msg.includes(
+          "Build dependencies behind this expression are ignored and might cause incorrect cache invalidation."
+        );
+        return fromContentlayer && isCacheWarning;
+      },
+    ];
+    return config;
+  },
 };
 
 export default withContentlayer(createMDX()(withBundleAnalyzer(nextConfig)));
