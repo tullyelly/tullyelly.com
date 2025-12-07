@@ -26,22 +26,28 @@ export async function TopChronicleTagsCard() {
   return (
     <HomeCard title="Chronicle Tags [GOAT]" info={info}>
       {tags.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No tags found.</p>
+        <p className="px-4 pb-4 pt-3 text-sm text-muted-foreground">
+          No tags found.
+        </p>
       ) : (
-        <div className="flex flex-wrap gap-2">
-          {tags.map((t) => (
-            <Link
-              key={t.tag}
-              href={`/shaolin/tags/${encodeURIComponent(t.tag)}`}
-              className="inline-flex"
-              prefetch={false}
-            >
-              <Badge className={getBadgeClass("classic")}>
-                #{t.tag}{" "}
-                <span className="pl-1 text-[11px] opacity-80">({t.count})</span>
-              </Badge>
-            </Link>
-          ))}
+        <div className="px-4 pb-4 pt-3">
+          <div className="flex flex-wrap gap-2">
+            {tags.map((t) => (
+              <Link
+                key={t.tag}
+                href={`/shaolin/tags/${encodeURIComponent(t.tag)}`}
+                className="inline-flex"
+                prefetch={false}
+              >
+                <Badge className={getBadgeClass("classic")}>
+                  #{t.tag}{" "}
+                  <span className="pl-1 text-[11px] opacity-80">
+                    ({t.count})
+                  </span>
+                </Badge>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </HomeCard>
