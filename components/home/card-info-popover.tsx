@@ -72,7 +72,7 @@ export function CardInfoPopover({ ariaLabel, children }: CardInfoPopoverProps) {
         onMouseEnter={handleHoverOpen}
         onMouseLeave={handleHoverClose}
         className="max-w-xs text-sm leading-snug border-2 bg-white px-4 py-3 shadow-none"
-        style={{ borderColor: "#0077C0" }}
+        style={{ borderColor: "var(--blue)" }}
       >
         {children}
       </PopoverContent>
