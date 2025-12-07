@@ -1,3 +1,6 @@
+import Image from "next/image";
+import Link from "next/link";
+
 import { AlterEgoCard } from "@/components/home/cards/alter-ego-card";
 import { BlogBoiCard } from "@/components/home/blog-boi-card";
 import { InfinityStonesCard } from "@/components/home/infinity-stones-card";
@@ -32,7 +35,19 @@ export default async function HomePage() {
         <RelationalRuckusCard />
         <SideQuestsCard />
       </div>
+      <div className="flex justify-center">
+        <figure className="overflow-hidden rounded-2xl border border-border/60 bg-white/70">
+          <Image
+            src="/images/optimized/homepage.webp"
+            alt="Homepage collage preview"
+            width={1280}
+            height={853}
+            sizes="(max-width: 1024px) 100vw, 960px"
+            className="h-auto w-full"
+            priority
+          />
+        </figure>
+      </div>
     </div>
   );
 }
-import Link from "next/link";
