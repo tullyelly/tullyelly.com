@@ -19,6 +19,7 @@ export async function TopChronicleTagsCard() {
         Click on any tag to follow along on the individual journey the tag
         represents.
       </p>
+      <p className="m-0 mt-2">GOAT = Greatest Of All Tags</p>
     </CardInfoPopover>
   );
 
