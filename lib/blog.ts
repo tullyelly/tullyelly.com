@@ -33,6 +33,16 @@ export async function getRecentBlogPosts(limit = 5): Promise<RecentBlogPost[]> {
     }));
 }
 
+export async function getInfinityStonePosts(): Promise<RecentBlogPost[]> {
+  return getPublishedPosts()
+    .filter((post) => post.infinityStone)
+    .map((post) => ({
+      slug: post.slug,
+      title: post.title,
+      publishedAt: new Date(post.date).toISOString(),
+    }));
+}
+
 export function getTagsWithCounts(posts: Post[]): Record<string, number> {
   const map: Record<string, number> = {};
   for (const p of posts) {
