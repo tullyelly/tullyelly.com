@@ -9,7 +9,7 @@ export function AlterEgoCard() {
   const info = (
     <CardInfoPopover ariaLabel="About the alter egos">
       <p className="m-0">
-        Each alter ego represents a different wing of the Shaolin dojo:
+        Each alter ego represents a different wing of the shaolin dojo:
         architecture, data, writing, performance, and the forge where everything
         gets built.
       </p>

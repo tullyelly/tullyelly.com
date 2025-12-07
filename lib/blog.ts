@@ -1,5 +1,11 @@
 import { allPosts, Post } from "contentlayer/generated";
 
+export type RecentBlogPost = {
+  slug: string;
+  title: string;
+  publishedAt: string;
+};
+
 export function isPublished(p: Post) {
   return !p.draft;
 }
@@ -13,6 +19,18 @@ export function byDateDesc(a: Post, b: Post) {
 
 export function getPublishedPosts(): Post[] {
   return allPosts.filter(isPublished).sort(byDateDesc);
+}
+
+export async function getRecentBlogPosts(limit = 5): Promise<RecentBlogPost[]> {
+  const safeLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 0;
+
+  return getPublishedPosts()
+    .slice(0, safeLimit)
+    .map((post) => ({
+      slug: post.slug,
+      title: post.title,
+      publishedAt: new Date(post.date).toISOString(),
+    }));
 }
 
 export function getTagsWithCounts(posts: Post[]): Record<string, number> {
