@@ -1,6 +1,7 @@
 import { AlterEgoCard } from "@/components/home/cards/alter-ego-card";
 import { BlogBoiCard } from "@/components/home/blog-boi-card";
 import { InfinityStonesCard } from "@/components/home/infinity-stones-card";
+import { RelationalRuckusCard } from "@/components/home/relational-ruckus-card";
 import { TopChronicleTagsCard } from "@/components/home/top-chronicle-tags-card";
 
 export default async function HomePage() {
@@ -10,6 +11,7 @@ export default async function HomePage() {
       <BlogBoiCard />
       <InfinityStonesCard />
       <TopChronicleTagsCard />
+      <RelationalRuckusCard />
     </div>
   );
 }
