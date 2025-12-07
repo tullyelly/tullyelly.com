@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CardInfoPopover } from "@/components/home/card-info-popover";
+import { homeCardRowClassName } from "@/components/home/home-card-row";
 import { HomeCard } from "@/components/home/home-card";
 
 const sideQuests = [
@@ -51,7 +52,7 @@ export function SideQuestsCard() {
         <Link
           key={quest.href}
           href={quest.href}
-          className="flex items-center gap-2 text-base"
+          className={homeCardRowClassName("flex items-center gap-2 text-base")}
         >
           <span aria-hidden>{quest.emoji}</span>
           <span>{quest.label}</span>

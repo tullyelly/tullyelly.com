@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CardInfoPopover } from "@/components/home/card-info-popover";
+import { homeCardRowClassName } from "@/components/home/home-card-row";
 import { HomeCard } from "@/components/home/home-card";
 import { fmtDate } from "@/lib/datetime";
 import { getInfinityStonePosts, type RecentBlogPost } from "@/lib/blog";
@@ -37,14 +38,14 @@ export async function InfinityStonesCard() {
           <Link
             key={post.slug}
             href={`/shaolin/${post.slug}`}
-            className="block"
+            className={homeCardRowClassName(
+              "flex items-baseline justify-between gap-2",
+            )}
           >
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="truncate">{post.title}</span>
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {post.publishedLabel}
-              </span>
-            </div>
+            <span className="truncate">{post.title}</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {post.publishedLabel}
+            </span>
           </Link>
         ))
       )}

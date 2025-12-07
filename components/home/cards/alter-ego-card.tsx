@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { CardInfoPopover } from "@/components/home/card-info-popover";
 import { HomeCard } from "@/components/home/home-card";
+import { homeCardRowClassName } from "@/components/home/home-card-row";
 
 export function AlterEgoCard() {
   const info = (
@@ -19,20 +20,40 @@ export function AlterEgoCard() {
 
   return (
     <HomeCard title="Alter Ego Origin Stories" info={info}>
-      <Link href="/mark2" className="block">
-        🧠 mark2 | blueprint
+      <Link
+        href="/mark2"
+        className={homeCardRowClassName("flex items-center gap-2")}
+      >
+        <span aria-hidden>🧠</span>
+        <span className="truncate">mark2 | blueprint</span>
       </Link>
-      <Link href="/cardattack" className="block">
-        🃏 cardattack | vault
+      <Link
+        href="/cardattack"
+        className={homeCardRowClassName("flex items-center gap-2")}
+      >
+        <span aria-hidden>🃏</span>
+        <span className="truncate">cardattack | vault</span>
       </Link>
-      <Link href="/theabbott" className="block">
-        🪶 theabbott | cipher
+      <Link
+        href="/theabbott"
+        className={homeCardRowClassName("flex items-center gap-2")}
+      >
+        <span aria-hidden>🪶</span>
+        <span className="truncate">theabbott | cipher</span>
       </Link>
-      <Link href="/unclejimmy" className="block">
-        🎙️ unclejimmy | circus
+      <Link
+        href="/unclejimmy"
+        className={homeCardRowClassName("flex items-center gap-2")}
+      >
+        <span aria-hidden>🎙️</span>
+        <span className="truncate">unclejimmy | circus</span>
       </Link>
-      <Link href="/tullyelly" className="block">
-        🛠️ tullyelly | forge
+      <Link
+        href="/tullyelly"
+        className={homeCardRowClassName("flex items-center gap-2")}
+      >
+        <span aria-hidden>🛠️</span>
+        <span className="truncate">tullyelly | forge</span>
       </Link>
     </HomeCard>
   );

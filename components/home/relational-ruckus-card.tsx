@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CardInfoPopover } from "@/components/home/card-info-popover";
+import { homeCardRowClassName } from "@/components/home/home-card-row";
 import { HomeCard } from "@/components/home/home-card";
 
 export function RelationalRuckusCard() {
@@ -22,14 +23,14 @@ export function RelationalRuckusCard() {
     <HomeCard title="The Relational Ruckus" info={info}>
       <Link
         href="/mark2/shaolin-scrolls"
-        className="flex items-center gap-2 text-base"
+        className={homeCardRowClassName("flex items-center gap-2 text-base")}
       >
         <span aria-hidden>📜</span>
         <span>Shaolin Scrolls</span>
       </Link>
       <Link
         href="/cardattack/tcdb-rankings"
-        className="flex items-center gap-2 text-base"
+        className={homeCardRowClassName("flex items-center gap-2 text-base")}
       >
         <span aria-hidden>🏀</span>
         <span>TCDB Rankings</span>

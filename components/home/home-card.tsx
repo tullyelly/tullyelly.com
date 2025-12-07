@@ -20,11 +20,13 @@ export function HomeCard({
         <span className="text-lg font-semibold">{title}</span>
         {info ? <div className="shrink-0">{info}</div> : null}
       </div>
-      <div className="space-y-3 p-4">
+      <div className="space-y-3 px-0 pb-0 pt-0">
         {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="px-4 pt-3 text-sm text-muted-foreground">
+            {description}
+          </p>
         )}
-        <div className="space-y-2">{children}</div>
+        <div className="space-y-1">{children}</div>
       </div>
     </Card>
   );
