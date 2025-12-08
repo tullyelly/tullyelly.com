@@ -59,8 +59,12 @@ export function SideQuestsCard() {
             href={quest.href}
             className="flex items-center gap-2 text-base"
           >
-            <span aria-hidden>{quest.emoji}</span>
-            <span>{quest.label}</span>
+            <span aria-hidden className="no-underline">
+              {quest.emoji}
+            </span>
+            <span className="underline decoration-current underline-offset-2">
+              {quest.label}
+            </span>
             <span className="ml-auto flex h-4 w-4 items-center justify-center">
               <HomeCardRowSpinner />
             </span>

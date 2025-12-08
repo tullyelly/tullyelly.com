@@ -24,7 +24,7 @@ const pressableMotion: MotionProps = {
 
 export function homeCardRowClassName(className?: string) {
   return cn(
-    "group relative block w-full px-4 py-1 cursor-pointer select-none transition-all",
+    "group relative block w-full px-4 py-1 cursor-pointer select-none transition-all no-underline",
     "hover:bg-[var(--cream)]",
     "active:bg-[color-mix(in_srgb,var(--cream)_82%,var(--green)_18%)]",
     "data-[loading=true]:bg-[color-mix(in_srgb,var(--cream)_78%,var(--green)_22%)]",
@@ -64,6 +64,7 @@ export function HomeCardRowLink({
   href,
   onClick,
   children,
+  style,
   ...props
 }: HomeCardRowLinkProps) {
   const router = useRouter();
@@ -97,6 +98,7 @@ export function HomeCardRowLink({
         data-loading={isPending ? "true" : undefined}
         data-has-pending={hasPending ? "true" : undefined}
         data-inactive={isInactive ? "true" : undefined}
+        style={{ textDecoration: "none", ...style }}
         className={homeCardRowClassName(
           cn(
             className,

@@ -28,8 +28,12 @@ export function RelationalRuckusCard() {
           href="/mark2/shaolin-scrolls"
           className="flex items-center gap-2 text-base"
         >
-          <span aria-hidden>📜</span>
-          <span>Shaolin Scrolls</span>
+          <span aria-hidden className="no-underline">
+            📜
+          </span>
+          <span className="underline decoration-current underline-offset-2">
+            Shaolin Scrolls
+          </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
           </span>
@@ -38,8 +42,12 @@ export function RelationalRuckusCard() {
           href="/cardattack/tcdb-rankings"
           className="flex items-center gap-2 text-base"
         >
-          <span aria-hidden>🏀</span>
-          <span>TCDB Rankings</span>
+          <span aria-hidden className="no-underline">
+            🏀
+          </span>
+          <span className="underline decoration-current underline-offset-2">
+            TCDB Rankings
+          </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
           </span>
