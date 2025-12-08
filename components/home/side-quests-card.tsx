@@ -1,32 +1,36 @@
-import Link from "next/link";
+import type { Route } from "next";
 
 import { CardInfoPopover } from "@/components/home/card-info-popover";
-import { homeCardRowClassName } from "@/components/home/home-card-row";
+import {
+  HomeCardRowLink,
+  HomeCardRowSpinner,
+  HomeCardRows,
+} from "@/components/home/home-card-row";
 import { HomeCard } from "@/components/home/home-card";
 
 const sideQuests = [
   {
-    href: "/unclejimmy/hug-ball",
+    href: "/unclejimmy/hug-ball" as Route,
     label: "Hug Ball",
     emoji: "🤗",
   },
   {
-    href: "/tullyelly/ruins",
+    href: "/tullyelly/ruins" as Route,
     label: "Ruins",
     emoji: "🪦",
   },
   {
-    href: "/unclejimmy/cute-stamps",
+    href: "/unclejimmy/cute-stamps" as Route,
     label: "Cute Stamps",
     emoji: "📮",
   },
   {
-    href: "/theabbott/heels-have-eyes",
+    href: "/theabbott/heels-have-eyes" as Route,
     label: "Heels Have Eyes",
     emoji: "🤼",
   },
   {
-    href: "/theabbott/roadwork-rappin",
+    href: "/theabbott/roadwork-rappin" as Route,
     label: "Roadwork Rappin'",
     emoji: "🚧",
   },
@@ -48,16 +52,21 @@ export function SideQuestsCard() {
 
   return (
     <HomeCard title="Side Quests" info={info}>
-      {sideQuests.map((quest) => (
-        <Link
-          key={quest.href}
-          href={quest.href}
-          className={homeCardRowClassName("flex items-center gap-2 text-base")}
-        >
-          <span aria-hidden>{quest.emoji}</span>
-          <span>{quest.label}</span>
-        </Link>
-      ))}
+      <HomeCardRows>
+        {sideQuests.map((quest) => (
+          <HomeCardRowLink
+            key={quest.href}
+            href={quest.href}
+            className="flex items-center gap-2 text-base"
+          >
+            <span aria-hidden>{quest.emoji}</span>
+            <span>{quest.label}</span>
+            <span className="ml-auto flex h-4 w-4 items-center justify-center">
+              <HomeCardRowSpinner />
+            </span>
+          </HomeCardRowLink>
+        ))}
+      </HomeCardRows>
     </HomeCard>
   );
 }

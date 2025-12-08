@@ -1,10 +1,12 @@
 "use client";
 
-import Link from "next/link";
-
 import { CardInfoPopover } from "@/components/home/card-info-popover";
 import { HomeCard } from "@/components/home/home-card";
-import { homeCardRowClassName } from "@/components/home/home-card-row";
+import {
+  HomeCardRowLink,
+  HomeCardRowSpinner,
+  HomeCardRows,
+} from "@/components/home/home-card-row";
 
 export function AlterEgoCard() {
   const info = (
@@ -20,41 +22,43 @@ export function AlterEgoCard() {
 
   return (
     <HomeCard title="Alter Ego Origin Stories" info={info}>
-      <Link
-        href="/mark2"
-        className={homeCardRowClassName("flex items-center gap-2")}
-      >
-        <span aria-hidden>🧠</span>
-        <span className="truncate">mark2 | blueprint</span>
-      </Link>
-      <Link
-        href="/cardattack"
-        className={homeCardRowClassName("flex items-center gap-2")}
-      >
-        <span aria-hidden>🃏</span>
-        <span className="truncate">cardattack | vault</span>
-      </Link>
-      <Link
-        href="/theabbott"
-        className={homeCardRowClassName("flex items-center gap-2")}
-      >
-        <span aria-hidden>🪶</span>
-        <span className="truncate">theabbott | cipher</span>
-      </Link>
-      <Link
-        href="/unclejimmy"
-        className={homeCardRowClassName("flex items-center gap-2")}
-      >
-        <span aria-hidden>🎙️</span>
-        <span className="truncate">unclejimmy | circus</span>
-      </Link>
-      <Link
-        href="/tullyelly"
-        className={homeCardRowClassName("flex items-center gap-2")}
-      >
-        <span aria-hidden>🛠️</span>
-        <span className="truncate">tullyelly | forge</span>
-      </Link>
+      <HomeCardRows>
+        <HomeCardRowLink href="/mark2" className="flex items-center gap-2">
+          <span aria-hidden>🧠</span>
+          <span className="truncate">mark2 | blueprint</span>
+          <span className="ml-auto flex h-4 w-4 items-center justify-center">
+            <HomeCardRowSpinner />
+          </span>
+        </HomeCardRowLink>
+        <HomeCardRowLink href="/cardattack" className="flex items-center gap-2">
+          <span aria-hidden>🃏</span>
+          <span className="truncate">cardattack | vault</span>
+          <span className="ml-auto flex h-4 w-4 items-center justify-center">
+            <HomeCardRowSpinner />
+          </span>
+        </HomeCardRowLink>
+        <HomeCardRowLink href="/theabbott" className="flex items-center gap-2">
+          <span aria-hidden>🪶</span>
+          <span className="truncate">theabbott | cipher</span>
+          <span className="ml-auto flex h-4 w-4 items-center justify-center">
+            <HomeCardRowSpinner />
+          </span>
+        </HomeCardRowLink>
+        <HomeCardRowLink href="/unclejimmy" className="flex items-center gap-2">
+          <span aria-hidden>🎙️</span>
+          <span className="truncate">unclejimmy | circus</span>
+          <span className="ml-auto flex h-4 w-4 items-center justify-center">
+            <HomeCardRowSpinner />
+          </span>
+        </HomeCardRowLink>
+        <HomeCardRowLink href="/tullyelly" className="flex items-center gap-2">
+          <span aria-hidden>🛠️</span>
+          <span className="truncate">tullyelly | forge</span>
+          <span className="ml-auto flex h-4 w-4 items-center justify-center">
+            <HomeCardRowSpinner />
+          </span>
+        </HomeCardRowLink>
+      </HomeCardRows>
     </HomeCard>
   );
 }

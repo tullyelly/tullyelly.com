@@ -1,7 +1,11 @@
-import Link from "next/link";
+import type { Route } from "next";
 
 import { CardInfoPopover } from "@/components/home/card-info-popover";
-import { homeCardRowClassName } from "@/components/home/home-card-row";
+import {
+  HomeCardRowLink,
+  HomeCardRowSpinner,
+  HomeCardRows,
+} from "@/components/home/home-card-row";
 import { HomeCard } from "@/components/home/home-card";
 import { fmtDate } from "@/lib/datetime";
 import { getRecentBlogPosts, type RecentBlogPost } from "@/lib/blog";
@@ -11,6 +15,7 @@ export async function BlogBoiCard() {
   const postsWithDate = posts.map((post) => ({
     ...post,
     publishedLabel: fmtDate(post.publishedAt),
+    href: `/shaolin/${post.slug}` as Route,
   }));
 
   const info = (
@@ -33,20 +38,23 @@ export async function BlogBoiCard() {
           No posts yet; the dojo is still warming up.
         </p>
       ) : (
-        postsWithDate.map((post) => (
-          <Link
-            key={post.slug}
-            href={`/shaolin/${post.slug}`}
-            className={homeCardRowClassName(
-              "flex items-baseline justify-between gap-2",
-            )}
-          >
-            <span className="truncate">{post.title}</span>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {post.publishedLabel}
-            </span>
-          </Link>
-        ))
+        <HomeCardRows>
+          {postsWithDate.map((post) => (
+            <HomeCardRowLink
+              key={post.slug}
+              href={post.href}
+              className="flex items-baseline gap-2"
+            >
+              <span className="truncate">{post.title}</span>
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {post.publishedLabel}
+                </span>
+                <HomeCardRowSpinner />
+              </div>
+            </HomeCardRowLink>
+          ))}
+        </HomeCardRows>
       )}
     </HomeCard>
   );

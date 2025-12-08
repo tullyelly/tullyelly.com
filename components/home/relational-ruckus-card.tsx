@@ -1,7 +1,9 @@
-import Link from "next/link";
-
 import { CardInfoPopover } from "@/components/home/card-info-popover";
-import { homeCardRowClassName } from "@/components/home/home-card-row";
+import {
+  HomeCardRowLink,
+  HomeCardRowSpinner,
+  HomeCardRows,
+} from "@/components/home/home-card-row";
 import { HomeCard } from "@/components/home/home-card";
 
 export function RelationalRuckusCard() {
@@ -21,20 +23,28 @@ export function RelationalRuckusCard() {
 
   return (
     <HomeCard title="The Relational Ruckus" info={info}>
-      <Link
-        href="/mark2/shaolin-scrolls"
-        className={homeCardRowClassName("flex items-center gap-2 text-base")}
-      >
-        <span aria-hidden>📜</span>
-        <span>Shaolin Scrolls</span>
-      </Link>
-      <Link
-        href="/cardattack/tcdb-rankings"
-        className={homeCardRowClassName("flex items-center gap-2 text-base")}
-      >
-        <span aria-hidden>🏀</span>
-        <span>TCDB Rankings</span>
-      </Link>
+      <HomeCardRows>
+        <HomeCardRowLink
+          href="/mark2/shaolin-scrolls"
+          className="flex items-center gap-2 text-base"
+        >
+          <span aria-hidden>📜</span>
+          <span>Shaolin Scrolls</span>
+          <span className="ml-auto flex h-4 w-4 items-center justify-center">
+            <HomeCardRowSpinner />
+          </span>
+        </HomeCardRowLink>
+        <HomeCardRowLink
+          href="/cardattack/tcdb-rankings"
+          className="flex items-center gap-2 text-base"
+        >
+          <span aria-hidden>🏀</span>
+          <span>TCDB Rankings</span>
+          <span className="ml-auto flex h-4 w-4 items-center justify-center">
+            <HomeCardRowSpinner />
+          </span>
+        </HomeCardRowLink>
+      </HomeCardRows>
     </HomeCard>
   );
 }
