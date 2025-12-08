@@ -1,113 +1,53 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { getPublishedPosts } from "@/lib/blog";
-import { fmtDate } from "@/lib/datetime";
-import { MdxRenderer } from "@/components/mdx-renderer";
-import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
+import { AlterEgoCard } from "@/components/home/cards/alter-ego-card";
+import { BlogBoiCard } from "@/components/home/blog-boi-card";
+import { InfinityStonesCard } from "@/components/home/infinity-stones-card";
+import { RelationalRuckusCard } from "@/components/home/relational-ruckus-card";
+import { SideQuestsCard } from "@/components/home/side-quests-card";
+import { TopChronicleTagsCard } from "@/components/home/top-chronicle-tags-card";
 
-// Home references shared header/menu; keep runtime to avoid test stub during build.
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-export const revalidate = 0;
-
-export async function generateMetadata() {
-  const posts = getPublishedPosts();
-  const latest = posts[0];
-  if (!latest) {
-    return {
-      title: "tullyelly; under construction",
-      description: "Homepage is warming up. Visit chronicles while we build.",
-    };
-  }
-  return {
-    title: latest.title,
-    description: latest.summary,
-    alternates: { canonical: latest.canonical ?? undefined },
-    openGraph: {
-      title: latest.title,
-      description: latest.summary,
-      url: latest.url,
-    },
-  };
-}
-
-type Post = ReturnType<typeof getPublishedPosts>[number];
-
-function LatestPost({ post }: { post: Post }) {
+export default async function HomePage() {
   return (
-    <article className="prose max-w-3xl mx-auto py-8 space-y-6">
-      <header className="space-y-2">
-        <h1>{post.title}</h1>
-        <p className="text-sm opacity-70">{fmtDate(post.date)}</p>
-      </header>
-      <div className="space-y-4">
-        <MdxRenderer code={post.body.code} />
-        <ChronicleSignature
-          title={post.title}
-          date={post.date}
-          summary={post.summary}
-          tags={post.tags}
-        />
+    <div className="space-y-4 p-6">
+      <p className="text-base text-muted-foreground">
+        Welcome to the next last homepage. Here you&apos;ll find a collection of
+        whatever I arbitarily decide should be the first thing you see. Also
+        known as, engagement farming.
+      </p>
+      <p className="text-base text-muted-foreground">
+        Hover over or click on the information icon to experience a deeper level
+        of comtemplation.
+      </p>
+      <p className="text-base text-muted-foreground">
+        Visit the{" "}
+        <Link href="/tullyelly/ruins" className="underline hover:no-underline">
+          ruins
+        </Link>{" "}
+        to see the evolution of a homepage.
+      </p>
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        <AlterEgoCard />
+        <BlogBoiCard />
+        <InfinityStonesCard />
+        <TopChronicleTagsCard />
+        <RelationalRuckusCard />
+        <SideQuestsCard />
       </div>
-    </article>
-  );
-}
-
-export default function Page() {
-  const posts = getPublishedPosts();
-  const latest = posts[0];
-
-  if (!latest) {
-    return (
-      <div className="space-y-4 py-24">
-        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          under construction
-        </h2>
-        <p className="text-base leading-relaxed text-muted-foreground">
-          The homepage will feature the latest chronicle soon.
-        </p>
-        <Link href="/shaolin" className="link-blue text-sm font-medium">
-          Browse chronicles →
-        </Link>
+      <div className="flex justify-center">
+        <figure className="overflow-hidden rounded-2xl border border-border/60 bg-white/70">
+          <Image
+            src="/images/optimized/homepage.webp"
+            alt="Homepage collage preview"
+            width={1280}
+            height={853}
+            sizes="(max-width: 1024px) 100vw, 960px"
+            className="h-auto w-full"
+            priority
+          />
+        </figure>
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-12">
-      <section className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          mic check, 1, 2, um, 12....
-        </h2>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          The homepage is currently under construction. Meanwhile, if you are
-          new to the site, it is recommended you visit the 🧠mark2{" "}
-          <Link href="/mark2" className="underline hover:no-underline">
-            blueprint
-          </Link>{" "}
-          landing page to begin your journey. Maybe I&apos;ll call the{" "}
-          <Link
-            href="/theabbott/roadwork-rappin"
-            className="underline hover:no-underline"
-          >
-            roadwork rappin&#39;
-          </Link>{" "}
-          bois to help me build the homepage.😉
-        </p>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Raistlin had his spellbook, I have{" "}
-          <Link href="/shaolin" className="underline hover:no-underline">
-            shaolin chronicles
-          </Link>
-          . If that&#39;s too much magic for you, the latest chronicle will
-          always be on the homepage as I figure out what I want this to evolve
-          into.
-        </p>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Hug ball.
-        </p>
-      </section>
-      <LatestPost post={latest} />
     </div>
   );
 }

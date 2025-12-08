@@ -10,6 +10,7 @@ const Post = defineDocumentType(() => ({
     summary: { type: "string", required: true },
     tags: { type: "list", of: { type: "string" }, default: [] },
     draft: { type: "boolean", default: false },
+    infinityStone: { type: "boolean", default: false },
     cover: { type: "string", required: false },
     canonical: { type: "string", required: false },
   },

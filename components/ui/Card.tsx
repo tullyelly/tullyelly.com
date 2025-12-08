@@ -3,13 +3,14 @@ import { cn } from "@/lib/cn";
 
 type CardProps<T extends React.ElementType = "div"> = {
   as?: T;
-  accent?: "bucks" | "great-lakes-blue";
+  accent?: "bucks" | "cream-city-cream" | "great-lakes-blue";
   thickness?: "thin" | "thick";
   className?: string;
 } & React.ComponentPropsWithoutRef<T>;
 
 const ACCENT = {
   bucks: "border-brand-bucksGreen",
+  "cream-city-cream": "border-[var(--cream)]",
   "great-lakes-blue": "border-brand-greatLakesBlue",
 } as const;
 
