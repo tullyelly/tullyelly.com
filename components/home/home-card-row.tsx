@@ -25,11 +25,11 @@ const pressableMotion: MotionProps = {
 export function homeCardRowClassName(className?: string) {
   return cn(
     "group relative block w-full px-4 py-1 cursor-pointer select-none transition-all",
-    "hover:bg-[color-mix(in_srgb,var(--cream)_88%,var(--green)_12%)]",
+    "hover:bg-[var(--cream)]",
     "active:bg-[color-mix(in_srgb,var(--cream)_82%,var(--green)_18%)]",
     "data-[loading=true]:bg-[color-mix(in_srgb,var(--cream)_78%,var(--green)_22%)]",
     "data-[loading=true]:text-[color-mix(in_srgb,var(--green)_82%,var(--ink)_18%)]",
-    "focus-visible:bg-[color-mix(in_srgb,var(--cream)_88%,var(--green)_12%)]",
+    "focus-visible:bg-[var(--cream)]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-card)]",
     "active:scale-[.97]",
     className,
