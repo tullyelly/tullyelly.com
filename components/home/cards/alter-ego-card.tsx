@@ -24,36 +24,56 @@ export function AlterEgoCard() {
     <HomeCard title="Alter Ego Origin Stories" info={info}>
       <HomeCardRows>
         <HomeCardRowLink href="/mark2" className="flex items-center gap-2">
-          <span aria-hidden>🧠</span>
-          <span className="truncate">mark2 | blueprint</span>
+          <span aria-hidden className="no-underline">
+            🧠
+          </span>
+          <span className="truncate underline decoration-current underline-offset-2">
+            mark2 | blueprint
+          </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
           </span>
         </HomeCardRowLink>
         <HomeCardRowLink href="/cardattack" className="flex items-center gap-2">
-          <span aria-hidden>🃏</span>
-          <span className="truncate">cardattack | vault</span>
+          <span aria-hidden className="no-underline">
+            🃏
+          </span>
+          <span className="truncate underline decoration-current underline-offset-2">
+            cardattack | vault
+          </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
           </span>
         </HomeCardRowLink>
         <HomeCardRowLink href="/theabbott" className="flex items-center gap-2">
-          <span aria-hidden>🪶</span>
-          <span className="truncate">theabbott | cipher</span>
+          <span aria-hidden className="no-underline">
+            🪶
+          </span>
+          <span className="truncate underline decoration-current underline-offset-2">
+            theabbott | cipher
+          </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
           </span>
         </HomeCardRowLink>
         <HomeCardRowLink href="/unclejimmy" className="flex items-center gap-2">
-          <span aria-hidden>🎙️</span>
-          <span className="truncate">unclejimmy | circus</span>
+          <span aria-hidden className="no-underline">
+            🎙️
+          </span>
+          <span className="truncate underline decoration-current underline-offset-2">
+            unclejimmy | circus
+          </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
           </span>
         </HomeCardRowLink>
         <HomeCardRowLink href="/tullyelly" className="flex items-center gap-2">
-          <span aria-hidden>🛠️</span>
-          <span className="truncate">tullyelly | forge</span>
+          <span aria-hidden className="no-underline">
+            🛠️
+          </span>
+          <span className="truncate underline decoration-current underline-offset-2">
+            tullyelly | forge
+          </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
           </span>

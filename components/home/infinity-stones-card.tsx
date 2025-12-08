@@ -46,9 +46,11 @@ export async function InfinityStonesCard() {
               href={post.href}
               className="flex items-baseline gap-2"
             >
-              <span className="truncate">{post.title}</span>
+              <span className="truncate underline decoration-current underline-offset-2">
+                {post.title}
+              </span>
               <div className="ml-auto flex items-center gap-2">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                <span className="text-xs text-muted-foreground whitespace-nowrap underline decoration-current underline-offset-2">
                   {post.publishedLabel}
                 </span>
                 <HomeCardRowSpinner />
