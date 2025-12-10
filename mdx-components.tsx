@@ -2,6 +2,7 @@ import * as React from "react";
 import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
 import SmartLink from "@/components/mdx/SmartLink";
+import { XEmbed } from "@/components/Tweet";
 import { cn } from "@/lib/utils";
 
 const bodyText =
@@ -116,6 +117,7 @@ const defaultComponents = {
 export const mdxComponents: MDXComponents = {
   ...defaultComponents,
   a: SmartLink, // override default link
+  XEmbed,
 };
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
