@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import FlowersInline from "@/components/flowers/FlowersInline";
 import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
+import { ChroniclePostTailCards } from "@/components/chronicles/ChroniclePostTailCards";
+import { ChroniclePrevNextNav } from "@/components/chronicles/ChroniclePrevNextNav";
 import { MdxRenderer } from "@/components/mdx-renderer";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
@@ -55,8 +57,11 @@ function PostContent({ slug }: { slug: string }) {
             summary={post.summary}
             tags={post.tags}
           />
+          <ChroniclePrevNextNav slug={post.slug} />
         </div>
       </Card>
+
+      <ChroniclePostTailCards />
 
       <SectionDivider />
 

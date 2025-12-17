@@ -6,6 +6,7 @@ export const revalidate = 0;
 import Link from "next/link";
 
 import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
+import { ChroniclePostTailCards } from "@/components/chronicles/ChroniclePostTailCards";
 import { ChroniclesSection } from "@/components/ChroniclesSection";
 import { FirstOffTheLineSection } from "@/components/FirstOffTheLineSection";
 import { MdxRenderer } from "@/components/mdx-renderer";
@@ -57,6 +58,9 @@ function LatestPost({ post }: { post: Post }) {
           summary={post.summary}
           tags={post.tags}
         />
+      </div>
+      <div className="not-prose">
+        <ChroniclePostTailCards />
       </div>
     </article>
   );
