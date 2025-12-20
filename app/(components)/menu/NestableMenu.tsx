@@ -351,7 +351,14 @@ function NestableMenuInner({
     panelNode.style.transform = "none";
     panelNode.style.setProperty("transform", "none");
     panelNode.style.margin = "0";
-    panelNode.style.minWidth = "";
+    const triggerWidth = Math.round(triggerRect.width);
+    panelNode.style.minWidth = `${triggerWidth}px`;
+    panelNode.style.setProperty("--pm-min-width", `${triggerWidth}px`);
+    const surface = panelSurfaceRef.current;
+    if (surface) {
+      surface.style.minWidth = `${triggerWidth}px`;
+      surface.style.setProperty("--pm-min-width", `${triggerWidth}px`);
+    }
   }, [headerRef]);
 
   const aim = useMenuAim({

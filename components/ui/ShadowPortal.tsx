@@ -137,7 +137,7 @@ export const PERSONA_MENU_CSS = `
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18),
     0 4px 12px rgba(0, 0, 0, 0.12);
   width: auto;
-  min-width: 16rem;
+  min-width: var(--pm-min-width, 0);
   max-width: min(22rem, 92vw);
   min-height: 0;
   max-height: min(60vh, 520px);
@@ -157,7 +157,7 @@ export const PERSONA_MENU_CSS = `
 
 [data-nav-dropdown-wrapper] {
   width: auto !important;
-  min-width: auto !important;
+  min-width: var(--pm-min-width, auto) !important;
   max-width: none !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -205,7 +205,8 @@ export const PERSONA_MENU_CSS = `
   justify-content: flex-start;
   gap: 8px;
   min-height: 0;
-  padding: 4px 0;
+  padding: 4px 16px;
+  min-width: 100%;
   margin: 0;
   width: 100%;
   border-radius: 0;
@@ -228,7 +229,7 @@ export const PERSONA_MENU_CSS = `
   font-weight: 500;
   font-size: 1rem;
   line-height: 1.5;
-  width: 100%;
+  width: auto;
   text-align: left;
 }
 
