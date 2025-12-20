@@ -144,7 +144,6 @@ export const PERSONA_MENU_CSS = `
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -206,7 +205,7 @@ export const PERSONA_MENU_CSS = `
   justify-content: flex-start;
   gap: 8px;
   min-height: 0;
-  padding: 4px 16px;
+  padding: 4px 0;
   margin: 0;
   width: 100%;
   border-radius: 0;
@@ -241,9 +240,7 @@ export const PERSONA_MENU_CSS = `
 
 .item:focus-visible {
   background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
-  box-shadow:
-    0 0 0 2px var(--surface-card, var(--pm-surface, #ffffff)),
-    0 0 0 4px var(--pm-ring, #00471b);
+  box-shadow: none;
 }
 
 .item:active,
