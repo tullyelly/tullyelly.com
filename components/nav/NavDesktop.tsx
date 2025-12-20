@@ -20,6 +20,7 @@ import NestableMenu from "@/app/(components)/menu/NestableMenu";
 import { AnyLink, HOME_EMOJI, isActiveHref } from "@/components/nav/menuUtils";
 import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
 import twemoji from "twemoji";
+import HeaderUser from "./HeaderUser";
 
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
@@ -537,6 +538,9 @@ export default function NavDesktop({
               aimBuffer={AIM_BUFFER}
             />
           ))}
+        </div>
+        <div className="ml-auto flex items-center gap-3 shrink-0">
+          <HeaderUser />
         </div>
       </div>
     </nav>

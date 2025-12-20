@@ -4,22 +4,7 @@ import { Suspense, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
-
-// Accept undefined to keep TS happy; restrict to path-only callbacks (same-origin)
-function sanitizeCallback(raw?: string | null, currentOrigin?: string): string {
-  if (!raw) return "/";
-  try {
-    const base = currentOrigin || "http://localhost";
-    const url = new URL(raw, base);
-    // Allow relative paths always. Allow absolute URLs only if same-origin.
-    const isRelative = raw.startsWith("/") || !/^https?:/i.test(raw);
-    const isSameOrigin = !!currentOrigin && url.origin === currentOrigin;
-    if (isRelative || isSameOrigin) {
-      return url.pathname + url.search + url.hash;
-    }
-  } catch {}
-  return "/";
-}
+import { sanitizeCallback } from "@/lib/auth/sanitizeCallback";
 
 function LoginInner() {
   const { status } = useSession();

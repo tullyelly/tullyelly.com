@@ -1,6 +1,7 @@
 "use client";
 
 import BrandedLink from "@/components/BrandedLink";
+import HeaderUser from "@/components/nav/HeaderUser";
 
 export default function SiteHeader() {
   return (
@@ -22,6 +23,7 @@ export default function SiteHeader() {
           >
             Flowers
           </BrandedLink>
+          <HeaderUser />
         </nav>
       </div>
     </header>
