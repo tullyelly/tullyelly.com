@@ -139,7 +139,7 @@ export const PERSONA_MENU_CSS = `
   width: auto;
   min-width: 16rem;
   max-width: min(22rem, 92vw);
-  min-height: 56px;
+  min-height: 0;
   max-height: min(60vh, 520px);
   box-sizing: border-box;
   overflow-y: auto;
