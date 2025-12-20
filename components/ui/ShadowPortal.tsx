@@ -132,7 +132,7 @@ export const PERSONA_MENU_CSS = `
   background: var(--pm-surface, #ffffff);
   color: var(--pm-ink, #0b1220);
   border: 2px solid var(--pm-frame, #eee1c6);
-  border-radius: 20px;
+  border-radius: 0 0 20px 20px;
   margin-top: -1px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18),
     0 4px 12px rgba(0, 0, 0, 0.12);
@@ -143,11 +143,13 @@ export const PERSONA_MENU_CSS = `
   max-height: min(60vh, 520px);
   box-sizing: border-box;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   padding: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 [data-nav-dropdown]:focus {
@@ -174,7 +176,7 @@ export const PERSONA_MENU_CSS = `
 .list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.25rem;
   align-items: stretch;
   width: 100%;
   padding: 0;
@@ -202,9 +204,9 @@ export const PERSONA_MENU_CSS = `
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 12px;
-  min-height: 44px;
-  padding: 12px 0;
+  gap: 8px;
+  min-height: 0;
+  padding: 4px 16px;
   margin: 0;
   width: 100%;
   border-radius: 0;
@@ -219,14 +221,13 @@ export const PERSONA_MENU_CSS = `
   -ms-user-select: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  transition: background-color 150ms ease-out, border-color 150ms ease-out,
-    box-shadow 150ms ease-out,
-    transform 150ms ease-out;
+  transition: background-color 150ms ease, color 150ms ease,
+    transform 120ms ease, box-shadow 150ms ease;
   transform-origin: center;
   will-change: transform;
   box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 1rem;
   line-height: 1.5;
   width: 100%;
   text-align: left;
@@ -235,21 +236,24 @@ export const PERSONA_MENU_CSS = `
 .item:hover,
 .item[data-highlighted] {
   background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
+  transform: scale(1.01);
 }
 
 .item:focus-visible {
   background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
-  box-shadow: none;
+  box-shadow:
+    0 0 0 2px var(--surface-card, var(--pm-surface, #ffffff)),
+    0 0 0 4px var(--pm-ring, #00471b);
 }
 
 .item:active,
 .item[data-pressed="true"] {
   background: var(
     --pm-surface-active,
-    var(--pm-surface-hover, #eee1c6)
+    color-mix(in srgb, var(--cream, #eee1c6) 82%, var(--green, #00471b) 18%)
   );
   box-shadow: none;
-  transform: translateY(0.5px) scale(0.99);
+  transform: scale(0.97);
 }
 
 .item[data-active="true"] {
@@ -283,14 +287,8 @@ export const PERSONA_MENU_CSS = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font: 500 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font: 500 1rem/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   user-select: none;
-}
-
-@media (min-width: 768px) {
-  [data-nav-dropdown] {
-    padding: 1rem 0;
-  }
 }
 
 .meta {
@@ -350,7 +348,7 @@ a {
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
