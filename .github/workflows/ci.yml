@@ -16,10 +16,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# 🔒 Global kill-switch: defaults OFF until you set vars.CI_ENABLED=true
+env:
+  CI_ENABLED: ${{ vars.CI_ENABLED || 'false' }}
+
 jobs:
   build-and-check:
     name: Build & Check
-    runs-on: ubuntu-latest # keep Linux to match Playwright snapshot baselines; approve new baselines per-OS if you change this
+    if: env.CI_ENABLED == 'true'
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
       run_e2e: ${{ steps.filter.outputs.e2e }}
@@ -34,9 +39,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # required for format diffing against main
+          fetch-depth: 0
 
-      # Composite setup (node, cache, deps)
       - uses: ./.github/actions/setup
 
       - name: Secrets scan (Secretlint)
@@ -56,7 +60,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-next-
 
-      # Skip heavy work when irrelevant
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v3
@@ -111,7 +114,6 @@ jobs:
               - 'next.config.mjs'
               - 'auth.ts'
 
-      # Native addon sanity only when it matters (native deps changed or on main)
       - name: Verify sharp binding
         if: github.ref_name == 'main' || steps.filter.outputs.native == 'true'
         env:
@@ -130,7 +132,6 @@ jobs:
           npm rebuild lightningcss --foreground-scripts
           npm rebuild sharp --foreground-scripts
 
-      # Split the CI pipeline so we can selectively skip heavy steps
       - name: Lint
         run: npm run lint
 
@@ -193,7 +194,6 @@ jobs:
 
       - name: Build
         if: github.event_name == 'schedule' || github.ref_name == 'main' || steps.filter.outputs.build == 'true' || steps.filter.outputs.security == 'true'
-        # harmless env so Next/Auth won't crash during build
         env:
           DATABASE_URL: postgresql://dummy:dummy@127.0.0.1:5432/dummy?sslmode=disable&options=-c%20search_path%3Dauth%2Cdojo%2Cpublic
           NEXTAUTH_URL: http://localhost:3000
@@ -236,18 +236,15 @@ jobs:
 
   e2e:
     name: E2E Tests
-    runs-on: ubuntu-latest # align with local (Linux) snapshots; add per-OS baselines if changing
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: build-and-check
-    if: (github.event_name == 'pull_request' || github.ref_name == 'main') && (github.ref_name == 'main' || needs.build-and-check.outputs.run_e2e == 'true')
+    if: env.CI_ENABLED == 'true' && (github.event_name == 'pull_request' || github.ref_name == 'main') && (github.ref_name == 'main' || needs.build-and-check.outputs.run_e2e == 'true')
     env:
       NODE_ENV: test
       NEXT_TELEMETRY_DISABLED: 1
       VERCEL_ENV: preview
-      # point Playwright to the repo-local cache so snapshots stay consistent
       PLAYWRIGHT_BROWSERS_PATH: .pw-browsers
-
-      # your app env
       DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       NEXTAUTH_URL: http://localhost:3000
       AUTH_SECRET: ci-dummy
@@ -260,7 +257,6 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # grab the local @playwright/test version for cache keying
       - name: Get Playwright version
         id: pw
         shell: bash
@@ -275,8 +271,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pw-
 
-      # 🌟 New: install browsers + OS deps via CLI (works on Ubuntu 24.04)
-      # Specify chromium to keep it lean; drop "chromium" to install all browsers.
       - name: Install Playwright (browsers + OS deps)
         run: npx playwright install --with-deps chromium
 
