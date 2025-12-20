@@ -270,6 +270,16 @@ function NestableMenuInner({
   );
 
   const hasLinks = links.length > 0;
+  const longestLinkId = React.useMemo(() => {
+    let longest: { id: string; len: number } | null = null;
+    for (const link of links) {
+      const len = (link.label ?? "").length;
+      if (longest === null || len > longest.len) {
+        longest = { id: link.id, len };
+      }
+    }
+    return longest?.id ?? null;
+  }, [links]);
   const [keyboardPressedId, setKeyboardPressedId] = React.useState<
     string | null
   >(null);
@@ -779,6 +789,9 @@ function NestableMenuInner({
             {metaItems.length ? (
               <span className="meta">{metaItems}</span>
             ) : null}
+            {longestLinkId === linkNode.id ? (
+              <span className="pm-spacer" aria-hidden="true" />
+            ) : null}
           </>
         );
 
@@ -919,6 +932,7 @@ function NestableMenuInner({
         const sharedProps = {
           className: "item",
           "data-testid": menuItemTestId,
+          "data-longest": longestLinkId === linkNode.id ? "true" : undefined,
           "data-pressed": isKeyboardPressed ? "true" : undefined,
           "data-active": active ? "true" : undefined,
           onPointerEnter: handlePrefetch,

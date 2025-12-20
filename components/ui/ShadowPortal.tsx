@@ -138,7 +138,7 @@ export const PERSONA_MENU_CSS = `
     0 4px 12px rgba(0, 0, 0, 0.12);
   width: auto;
   min-width: var(--pm-min-width, 0);
-  max-width: min(22rem, 92vw);
+  max-width: min(32rem, 92vw);
   min-height: 0;
   max-height: min(60vh, 520px);
   box-sizing: border-box;
@@ -259,6 +259,20 @@ export const PERSONA_MENU_CSS = `
   box-shadow: none;
 }
 
+.item[data-longest="true"] {
+  justify-content: center;
+}
+
+.item[data-longest="true"] .label {
+  text-align: center;
+}
+
+.pm-spacer {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+}
+
 .item > * {
   cursor: inherit;
 }
@@ -281,10 +295,10 @@ export const PERSONA_MENU_CSS = `
 
 .label {
   flex: 1 1 auto;
-  min-width: 0;
+  min-width: max-content;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   font: 500 1rem/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   user-select: none;
 }
