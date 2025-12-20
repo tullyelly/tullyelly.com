@@ -278,20 +278,19 @@ function NestableMenuInner({
   const surfaceVars = React.useMemo(
     () =>
       ({
-        "--pm-surface": "var(--color-surface)",
-        "--pm-ink": "var(--color-ink-strong)",
-        "--pm-outline": "var(--color-outline-subtle)",
-        "--pm-surface-hover": "var(--color-surface-hover)",
-        "--pm-surface-active": "var(--color-surface-pressed, #eef2fb)",
-        "--pm-item-bg": "var(--surface-muted, rgba(226, 232, 240, 0.6))",
-        "--pm-item-hover": "var(--surface-hover, rgba(226, 232, 240, 0.85))",
-        "--pm-item-border": "var(--border-subtle, rgba(148, 163, 184, 0.8))",
-        "--pm-item-border-active":
-          "var(--border-strong, rgba(148, 163, 184, 1))",
-        "--pm-ring": "var(--ring, rgba(59, 130, 246, 0.45))",
+        "--pm-surface": "var(--white)",
+        "--pm-ink": "var(--ink)",
+        "--pm-outline": "var(--cream)",
+        "--pm-surface-hover": "var(--cream)",
+        "--pm-surface-active": "var(--cream)",
+        "--pm-item-bg": "var(--white)",
+        "--pm-item-hover": "var(--cream)",
+        "--pm-item-border": "var(--cream)",
+        "--pm-item-border-active": "var(--cream)",
+        "--pm-ring": "color-mix(in srgb, var(--green) 70%, transparent)",
         "--pm-badge-bg": "var(--blue)",
         "--pm-badge-fg": "var(--text-on-blue)",
-        "--pm-frame": "var(--green)",
+        "--pm-frame": "var(--cream)",
       }) as React.CSSProperties,
     [],
   );

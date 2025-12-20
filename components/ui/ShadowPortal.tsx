@@ -90,6 +90,15 @@ export default function ShadowPortal({
 export const PERSONA_MENU_CSS = `
 :host {
   all: initial;
+  --pm-cream: #eee1c6;
+  --pm-frame: var(--pm-cream);
+  --pm-outline: var(--pm-cream);
+  --pm-surface: #ffffff;
+  --pm-surface-hover: var(--pm-cream);
+  --pm-item-bg: #ffffff;
+  --pm-item-hover: var(--pm-cream);
+  --pm-ring: color-mix(in srgb, #00471b 70%, transparent);
+  --pm-pad: 0px;
 }
 
 .menu-portal-layer {
@@ -122,7 +131,7 @@ export const PERSONA_MENU_CSS = `
   z-index: 2000;
   background: var(--pm-surface, #ffffff);
   color: var(--pm-ink, #0b1220);
-  border: 6px solid var(--pm-frame, #00471b);
+  border: 2px solid var(--pm-frame, #eee1c6);
   border-radius: 20px;
   margin-top: -1px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18),
@@ -134,7 +143,7 @@ export const PERSONA_MENU_CSS = `
   max-height: min(60vh, 520px);
   box-sizing: border-box;
   overflow-y: auto;
-  padding: 0.875rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -168,7 +177,7 @@ export const PERSONA_MENU_CSS = `
   gap: 0.75rem;
   align-items: stretch;
   width: 100%;
-  padding: 0.25rem 0;
+  padding: 0;
 }
 
 [data-nav-dropdown] a,
@@ -195,12 +204,12 @@ export const PERSONA_MENU_CSS = `
   justify-content: flex-start;
   gap: 12px;
   min-height: 44px;
-  padding: 12px 16px;
+  padding: 12px 0;
   margin: 0;
-  border-radius: 14px;
-  border: 1px solid
-    var(--pm-item-border, var(--pm-outline, #d8dfea));
-  background: var(--pm-item-bg, rgba(226, 232, 240, 0.6));
+  width: 100%;
+  border-radius: 0;
+  border: 0;
+  background: var(--pm-item-bg, #ffffff);
   cursor: pointer;
   outline: none;
   color: inherit;
@@ -225,46 +234,27 @@ export const PERSONA_MENU_CSS = `
 
 .item:hover,
 .item[data-highlighted] {
-  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
+  background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
 }
 
 .item:focus-visible {
-  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
-  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
-    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.45));
+  background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
+  box-shadow: none;
 }
 
 .item:active,
 .item[data-pressed="true"] {
   background: var(
     --pm-surface-active,
-    var(--pm-surface-hover, #f3f6fb)
+    var(--pm-surface-hover, #eee1c6)
   );
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
-  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
-    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.35));
+  box-shadow: none;
   transform: translateY(0.5px) scale(0.99);
 }
 
 .item[data-active="true"] {
-  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
-  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
-    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.35));
+  background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
+  box-shadow: none;
 }
 
 .item > * {
@@ -299,7 +289,7 @@ export const PERSONA_MENU_CSS = `
 
 @media (min-width: 768px) {
   [data-nav-dropdown] {
-    padding: 1rem;
+    padding: 1rem 0;
   }
 }
 
