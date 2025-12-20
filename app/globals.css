@@ -47,6 +47,7 @@
   --content-max: 72rem; /* 1152px desktop rail, matches ruins */
   --prose-max: 72ch; /* optimal reading measure for MDX */
   --page-pad-x: 1rem; /* base gutter; overridden at breakpoints */
+  --bookmark-offset: 4.5rem;
 
   /* UI tokens */
   --surface: var(--surface-card);
