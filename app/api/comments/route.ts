@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -39,6 +40,11 @@ type CreateInput = {
   body?: unknown;
 };
 
+const createSchema = z.object({
+  postSlug: z.string().min(1, "postSlug is required"),
+  body: z.string().trim().min(1, "body is required").max(2000, "body too long"),
+});
+
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user?.id) {
@@ -52,19 +58,12 @@ export async function POST(req: Request) {
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
 
-  const postSlug =
-    typeof payload.postSlug === "string" ? payload.postSlug.trim() : "";
-  const body = typeof payload.body === "string" ? payload.body.trim() : "";
-
-  if (!postSlug) {
-    return Response.json({ error: "postSlug is required" }, { status: 400 });
+  const parsed = createSchema.safeParse(payload);
+  if (!parsed.success) {
+    const message = parsed.error.errors[0]?.message ?? "invalid input";
+    return Response.json({ error: message }, { status: 400 });
   }
-  if (!body) {
-    return Response.json({ error: "body is required" }, { status: 400 });
-  }
-  if (body.length > 2000) {
-    return Response.json({ error: "body too long" }, { status: 400 });
-  }
+  const { postSlug, body } = parsed.data;
 
   try {
     const [created] = await sql<CommentRow>`

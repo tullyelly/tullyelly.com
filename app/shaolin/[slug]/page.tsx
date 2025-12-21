@@ -6,6 +6,7 @@ import FlowersInline from "@/components/flowers/FlowersInline";
 import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
 import { ChroniclePostTailCards } from "@/components/chronicles/ChroniclePostTailCards";
 import { ChroniclePrevNextNav } from "@/components/chronicles/ChroniclePrevNextNav";
+import { CommentsSection } from "@/components/chronicles/CommentsSection";
 import { MdxRenderer } from "@/components/mdx-renderer";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
@@ -60,6 +61,10 @@ function PostContent({ slug }: { slug: string }) {
           <ChroniclePrevNextNav slug={post.slug} />
         </div>
       </Card>
+
+      <CommentsSection postSlug={post.slug} />
+
+      <SectionDivider />
 
       <ChroniclePostTailCards />
 
