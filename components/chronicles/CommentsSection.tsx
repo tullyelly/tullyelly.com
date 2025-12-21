@@ -9,6 +9,7 @@ type Comment = {
   id: number;
   post_slug: string;
   user_id: string;
+  user_name: string;
   body: string;
   created_at: string;
 };
@@ -123,7 +124,10 @@ export function CommentsSection({ postSlug }: Props) {
                 {comment.body}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {fmtDateTime(comment.created_at)}
+                <span className="font-semibold text-foreground">
+                  {comment.user_name}
+                </span>{" "}
+                · {fmtDateTime(comment.created_at)}
               </p>
             </li>
           ))}

@@ -9,6 +9,7 @@ type CommentRow = {
   id: number;
   post_slug: string;
   user_id: string;
+  user_name: string;
   body: string;
   created_at: string;
 };
@@ -23,8 +24,8 @@ export async function GET(req: Request) {
 
   try {
     const comments = await sql<CommentRow>`
-      SELECT id, post_slug, user_id, body, created_at
-      FROM dojo.blog_comment
+      SELECT id, post_slug, user_id, user_name, body, created_at
+      FROM dojo.v_blog_comment
       WHERE post_slug = ${postSlug}
       ORDER BY created_at DESC;
     `;
@@ -67,9 +68,14 @@ export async function POST(req: Request) {
 
   try {
     const [created] = await sql<CommentRow>`
-      INSERT INTO dojo.blog_comment (post_slug, user_id, body)
-      VALUES (${postSlug}, ${user.id}::uuid, ${body})
-      RETURNING id, post_slug, user_id, body, created_at
+      WITH ins AS (
+        INSERT INTO dojo.blog_comment (post_slug, user_id, body)
+        VALUES (${postSlug}, ${user.id}::uuid, ${body})
+        RETURNING id
+      )
+      SELECT v.id, v.post_slug, v.user_id, v.user_name, v.body, v.created_at
+      FROM ins
+      JOIN dojo.v_blog_comment v ON v.id = ins.id
     `;
     return Response.json(created, { status: 201 });
   } catch (err) {
