@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { signIn, useSession } from "next-auth/react";
 import { fmtDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
+import { SignInGate } from "@/components/auth/SignInGate";
 
 type Comment = {
   id: number;
@@ -18,8 +18,6 @@ type Props = {
 };
 
 export function CommentsSection({ postSlug }: Props) {
-  const { status } = useSession();
-  const [callbackUrl, setCallbackUrl] = useState("/");
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
@@ -54,14 +52,6 @@ export function CommentsSection({ postSlug }: Props) {
   useEffect(() => {
     void fetchComments();
   }, [fetchComments]);
-
-  useEffect(() => {
-    setCallbackUrl(window.location.href);
-  }, []);
-
-  const handleSignIn = useCallback(() => {
-    void signIn("google", { callbackUrl });
-  }, [callbackUrl]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -140,7 +130,7 @@ export function CommentsSection({ postSlug }: Props) {
         </ul>
       )}
 
-      {status === "authenticated" ? (
+      <SignInGate align="end">
         <form onSubmit={handleSubmit} className="space-y-3">
           <label className="block text-sm font-medium" htmlFor="comment-body">
             Add a comment
@@ -168,17 +158,7 @@ export function CommentsSection({ postSlug }: Props) {
             )}
           </div>
         </form>
-      ) : (
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleSignIn}
-            className="inline-flex h-10 min-w-[120px] items-center justify-center rounded-full border border-[color:var(--blue)] bg-[color:var(--blue)] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--blue-contrast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--blue-contrast)] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
-            Sign in
-          </button>
-        </div>
-      )}
+      </SignInGate>
     </section>
   );
 }
