@@ -90,6 +90,15 @@ export default function ShadowPortal({
 export const PERSONA_MENU_CSS = `
 :host {
   all: initial;
+  --pm-cream: #eee1c6;
+  --pm-frame: var(--pm-cream);
+  --pm-outline: var(--pm-cream);
+  --pm-surface: #ffffff;
+  --pm-surface-hover: var(--pm-cream);
+  --pm-item-bg: #ffffff;
+  --pm-item-hover: var(--pm-cream);
+  --pm-ring: color-mix(in srgb, #00471b 70%, transparent);
+  --pm-pad: 0px;
 }
 
 .menu-portal-layer {
@@ -122,23 +131,24 @@ export const PERSONA_MENU_CSS = `
   z-index: 2000;
   background: var(--pm-surface, #ffffff);
   color: var(--pm-ink, #0b1220);
-  border: 6px solid var(--pm-frame, #00471b);
-  border-radius: 20px;
+  border: 2px solid var(--pm-frame, #eee1c6);
+  border-radius: 0 0 20px 20px;
   margin-top: -1px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18),
     0 4px 12px rgba(0, 0, 0, 0.12);
   width: auto;
-  min-width: 16rem;
-  max-width: min(22rem, 92vw);
-  min-height: 56px;
+  min-width: var(--pm-min-width, 0);
+  max-width: min(32rem, 92vw);
+  min-height: 0;
   max-height: min(60vh, 520px);
   box-sizing: border-box;
   overflow-y: auto;
-  padding: 0.875rem;
+  overflow-x: hidden;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 [data-nav-dropdown]:focus {
@@ -147,7 +157,7 @@ export const PERSONA_MENU_CSS = `
 
 [data-nav-dropdown-wrapper] {
   width: auto !important;
-  min-width: auto !important;
+  min-width: var(--pm-min-width, auto) !important;
   max-width: none !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -165,10 +175,10 @@ export const PERSONA_MENU_CSS = `
 .list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.25rem;
   align-items: stretch;
   width: 100%;
-  padding: 0.25rem 0;
+  padding: 0;
 }
 
 [data-nav-dropdown] a,
@@ -193,14 +203,15 @@ export const PERSONA_MENU_CSS = `
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 12px;
-  min-height: 44px;
-  padding: 12px 16px;
+  gap: 8px;
+  min-height: 0;
+  padding: 4px 16px;
+  min-width: 100%;
   margin: 0;
-  border-radius: 14px;
-  border: 1px solid
-    var(--pm-item-border, var(--pm-outline, #d8dfea));
-  background: var(--pm-item-bg, rgba(226, 232, 240, 0.6));
+  width: 100%;
+  border-radius: 0;
+  border: 0;
+  background: var(--pm-item-bg, #ffffff);
   cursor: pointer;
   outline: none;
   color: inherit;
@@ -210,61 +221,56 @@ export const PERSONA_MENU_CSS = `
   -ms-user-select: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  transition: background-color 150ms ease-out, border-color 150ms ease-out,
-    box-shadow 150ms ease-out,
-    transform 150ms ease-out;
+  transition: background-color 150ms ease, color 150ms ease,
+    transform 120ms ease, box-shadow 150ms ease;
   transform-origin: center;
   will-change: transform;
   box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 1rem;
   line-height: 1.5;
-  width: 100%;
+  width: auto;
   text-align: left;
 }
 
 .item:hover,
 .item[data-highlighted] {
-  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
+  background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
+  transform: scale(1.01);
 }
 
 .item:focus-visible {
-  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
-  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
-    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.45));
+  background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
+  box-shadow: none;
 }
 
 .item:active,
 .item[data-pressed="true"] {
   background: var(
     --pm-surface-active,
-    var(--pm-surface-hover, #f3f6fb)
+    color-mix(in srgb, var(--cream, #eee1c6) 82%, var(--green, #00471b) 18%)
   );
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
-  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
-    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.35));
-  transform: translateY(0.5px) scale(0.99);
+  box-shadow: none;
+  transform: scale(0.97);
 }
 
 .item[data-active="true"] {
-  background: var(--pm-item-hover, var(--pm-surface-hover, #f3f6fb));
-  border-color: var(
-    --pm-item-border-active,
-    var(--pm-outline, #d8dfea)
-  );
-  box-shadow: 0 0 0 2px var(--pm-surface, #ffffff),
-    0 0 0 4px var(--pm-ring, rgba(59, 130, 246, 0.35));
+  background: var(--pm-item-hover, var(--pm-surface-hover, #eee1c6));
+  box-shadow: none;
+}
+
+.item[data-longest="true"] {
+  justify-content: center;
+}
+
+.item[data-longest="true"] .label {
+  text-align: center;
+}
+
+.pm-spacer {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .item > * {
@@ -289,18 +295,12 @@ export const PERSONA_MENU_CSS = `
 
 .label {
   flex: 1 1 auto;
-  min-width: 0;
+  min-width: max-content;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font: 500 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  overflow: visible;
+  text-overflow: clip;
+  font: 500 1rem/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   user-select: none;
-}
-
-@media (min-width: 768px) {
-  [data-nav-dropdown] {
-    padding: 1rem;
-  }
 }
 
 .meta {
@@ -360,7 +360,7 @@ a {
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

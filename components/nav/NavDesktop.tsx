@@ -20,6 +20,7 @@ import NestableMenu from "@/app/(components)/menu/NestableMenu";
 import { AnyLink, HOME_EMOJI, isActiveHref } from "@/components/nav/menuUtils";
 import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
 import twemoji from "twemoji";
+import HeaderUser from "./HeaderUser";
 
 const TEST_MODE =
   process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
@@ -488,8 +489,8 @@ export default function NavDesktop({
       data-emoji-scope="nav"
       className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block"
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-start px-4 py-2">
-        <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-3">
+      <div className="mx-auto flex w-full max-w-[var(--content-max)] items-center px-6 py-2 md:px-8 md:pl-[var(--bookmark-offset)] lg:px-10">
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-x-6 overflow-hidden">
           <Link
             href="/"
             data-nav-home
@@ -537,6 +538,9 @@ export default function NavDesktop({
               aimBuffer={AIM_BUFFER}
             />
           ))}
+        </div>
+        <div className="flex shrink-0 items-center gap-6 pl-6">
+          <HeaderUser />
         </div>
       </div>
     </nav>

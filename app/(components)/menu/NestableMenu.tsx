@@ -270,6 +270,16 @@ function NestableMenuInner({
   );
 
   const hasLinks = links.length > 0;
+  const longestLinkId = React.useMemo(() => {
+    let longest: { id: string; len: number } | null = null;
+    for (const link of links) {
+      const len = (link.label ?? "").length;
+      if (longest === null || len > longest.len) {
+        longest = { id: link.id, len };
+      }
+    }
+    return longest?.id ?? null;
+  }, [links]);
   const [keyboardPressedId, setKeyboardPressedId] = React.useState<
     string | null
   >(null);
@@ -278,20 +288,20 @@ function NestableMenuInner({
   const surfaceVars = React.useMemo(
     () =>
       ({
-        "--pm-surface": "var(--color-surface)",
-        "--pm-ink": "var(--color-ink-strong)",
-        "--pm-outline": "var(--color-outline-subtle)",
-        "--pm-surface-hover": "var(--color-surface-hover)",
-        "--pm-surface-active": "var(--color-surface-pressed, #eef2fb)",
-        "--pm-item-bg": "var(--surface-muted, rgba(226, 232, 240, 0.6))",
-        "--pm-item-hover": "var(--surface-hover, rgba(226, 232, 240, 0.85))",
-        "--pm-item-border": "var(--border-subtle, rgba(148, 163, 184, 0.8))",
-        "--pm-item-border-active":
-          "var(--border-strong, rgba(148, 163, 184, 1))",
-        "--pm-ring": "var(--ring, rgba(59, 130, 246, 0.45))",
+        "--pm-surface": "var(--white)",
+        "--pm-ink": "var(--ink)",
+        "--pm-outline": "var(--cream, #eee1c6)",
+        "--pm-surface-hover": "var(--cream, #eee1c6)",
+        "--pm-surface-active":
+          "color-mix(in srgb, var(--cream, #eee1c6) 82%, var(--green, #00471b) 18%)",
+        "--pm-item-bg": "var(--white)",
+        "--pm-item-hover": "var(--cream, #eee1c6)",
+        "--pm-item-border": "var(--cream, #eee1c6)",
+        "--pm-item-border-active": "var(--cream, #eee1c6)",
+        "--pm-ring": "var(--green, #00471b)",
         "--pm-badge-bg": "var(--blue)",
         "--pm-badge-fg": "var(--text-on-blue)",
-        "--pm-frame": "var(--green)",
+        "--pm-frame": "var(--cream, #eee1c6)",
       }) as React.CSSProperties,
     [],
   );
@@ -351,7 +361,14 @@ function NestableMenuInner({
     panelNode.style.transform = "none";
     panelNode.style.setProperty("transform", "none");
     panelNode.style.margin = "0";
-    panelNode.style.minWidth = "";
+    const triggerWidth = Math.round(triggerRect.width);
+    panelNode.style.minWidth = `${triggerWidth}px`;
+    panelNode.style.setProperty("--pm-min-width", `${triggerWidth}px`);
+    const surface = panelSurfaceRef.current;
+    if (surface) {
+      surface.style.minWidth = `${triggerWidth}px`;
+      surface.style.setProperty("--pm-min-width", `${triggerWidth}px`);
+    }
   }, [headerRef]);
 
   const aim = useMenuAim({
@@ -772,6 +789,9 @@ function NestableMenuInner({
             {metaItems.length ? (
               <span className="meta">{metaItems}</span>
             ) : null}
+            {longestLinkId === linkNode.id ? (
+              <span className="pm-spacer" aria-hidden="true" />
+            ) : null}
           </>
         );
 
@@ -912,6 +932,7 @@ function NestableMenuInner({
         const sharedProps = {
           className: "item",
           "data-testid": menuItemTestId,
+          "data-longest": longestLinkId === linkNode.id ? "true" : undefined,
           "data-pressed": isKeyboardPressed ? "true" : undefined,
           "data-active": active ? "true" : undefined,
           onPointerEnter: handlePrefetch,
@@ -969,6 +990,7 @@ function NestableMenuInner({
       pathname,
       persona,
       pendingRef,
+      longestLinkId,
       router,
     ],
   );

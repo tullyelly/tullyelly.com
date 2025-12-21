@@ -127,6 +127,29 @@ jest.mock("next/link", () => ({
   },
 }));
 
+jest.mock("next-auth/react", () => {
+  const actual = jest.requireActual("next-auth/react");
+  return {
+    ...actual,
+    useSession: jest.fn(() => ({
+      data: {
+        user: {
+          id: "test-user-id",
+          name: "Test User",
+          email: "test@example.com",
+          role: "user",
+          features: [],
+          authzRevision: 0,
+        },
+      },
+      status: "authenticated",
+    })),
+    SessionProvider: ({ children }: { children: any }) => children,
+    signIn: jest.fn(),
+    signOut: jest.fn(),
+  };
+});
+
 // Minimal IntersectionObserver so Next's useIntersection doesn't schedule updates.
 class __JestMockIO {
   observe() {}
