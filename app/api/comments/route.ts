@@ -60,7 +60,7 @@ export async function POST(req: Request) {
 
   const parsed = createSchema.safeParse(payload);
   if (!parsed.success) {
-    const message = parsed.error.errors[0]?.message ?? "invalid input";
+    const message = parsed.error.issues[0]?.message ?? "invalid input";
     return Response.json({ error: message }, { status: 400 });
   }
   const { postSlug, body } = parsed.data;

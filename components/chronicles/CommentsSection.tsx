@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { fmtDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
@@ -17,12 +18,14 @@ type Props = {
 };
 
 export function CommentsSection({ postSlug }: Props) {
+  const { status } = useSession();
+  const [callbackUrl, setCallbackUrl] = useState("/");
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
   const [listError, setListError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const fetchComments = useCallback(async () => {
@@ -52,10 +55,18 @@ export function CommentsSection({ postSlug }: Props) {
     void fetchComments();
   }, [fetchComments]);
 
+  useEffect(() => {
+    setCallbackUrl(window.location.href);
+  }, []);
+
+  const handleSignIn = useCallback(() => {
+    void signIn("google", { callbackUrl });
+  }, [callbackUrl]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
-    setStatus(null);
+    setMessage(null);
 
     const trimmedBody = body.trim();
     if (!trimmedBody) {
@@ -79,17 +90,15 @@ export function CommentsSection({ postSlug }: Props) {
         const message =
           data && typeof data.error === "string"
             ? data.error
-            : res.status === 401
-              ? "Please sign in to comment."
-              : res.status >= 500
-                ? "Server error; try again."
-                : "Failed to post comment";
+            : res.status >= 500
+              ? "Server error; try again."
+              : "Failed to post comment";
         setFormError(message);
         return;
       }
 
       setBody("");
-      setStatus("Comment posted.");
+      setMessage("Comment posted.");
       await fetchComments();
     } catch {
       setFormError("Failed to post comment");
@@ -102,8 +111,8 @@ export function CommentsSection({ postSlug }: Props) {
     <section className="space-y-4 rounded-2xl border-2 border-[var(--cream)] bg-white p-4 shadow-sm md:p-6">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-xl font-semibold">Comments</h2>
-        {status ? (
-          <span className="text-sm text-emerald-700">{status}</span>
+        {message ? (
+          <span className="text-sm text-emerald-700">{message}</span>
         ) : null}
       </div>
 
@@ -131,33 +140,45 @@ export function CommentsSection({ postSlug }: Props) {
         </ul>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <label className="block text-sm font-medium" htmlFor="comment-body">
-          Add a comment
-        </label>
-        <textarea
-          id="comment-body"
-          name="comment"
-          className={cn(
-            "min-h-[140px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-          )}
-          value={body}
-          onChange={(event) => setBody(event.target.value)}
-          maxLength={2000}
-          placeholder="Share your thoughts..."
-        />
-        <div className="flex items-center gap-3">
-          <button type="submit" className="btn" disabled={submitting}>
-            {submitting ? "Posting..." : "Submit"}
+      {status === "authenticated" ? (
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <label className="block text-sm font-medium" htmlFor="comment-body">
+            Add a comment
+          </label>
+          <textarea
+            id="comment-body"
+            name="comment"
+            className={cn(
+              "min-h-[140px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+            )}
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            maxLength={2000}
+            placeholder="Share your thoughts..."
+          />
+          <div className="flex items-center gap-3">
+            <button type="submit" className="btn" disabled={submitting}>
+              {submitting ? "Posting..." : "Submit"}
+            </button>
+            {formError && (
+              <span className="rounded bg-[#C41E3A] px-2 py-1 text-xs font-medium text-white shadow-sm">
+                {formError}
+              </span>
+            )}
+          </div>
+        </form>
+      ) : (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleSignIn}
+            className="inline-flex h-10 min-w-[120px] items-center justify-center rounded-full border border-[color:var(--blue)] bg-[color:var(--blue)] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--blue-contrast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--blue-contrast)] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          >
+            Sign in
           </button>
-          {formError && (
-            <span className="rounded bg-[#C41E3A] px-2 py-1 text-xs font-medium text-white shadow-sm">
-              {formError}
-            </span>
-          )}
         </div>
-      </form>
+      )}
     </section>
   );
 }
