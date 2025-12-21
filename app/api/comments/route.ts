@@ -11,7 +11,7 @@ type CommentRow = {
   user_id: string;
   user_name: string;
   body: string;
-  created_at: string;
+  created_at: string | Date;
 };
 
 export async function GET(req: Request) {
@@ -29,10 +29,14 @@ export async function GET(req: Request) {
       WHERE post_slug = ${postSlug}
       ORDER BY created_at DESC;
     `;
-    return Response.json(comments);
+    return Response.json(comments.map(serializeComment));
   } catch (err) {
-    console.error("comments fetch failed:", err);
-    return Response.json({ error: "database error" }, { status: 500 });
+    console.error("[comments] fetch failed", err);
+    const detail =
+      process.env.NODE_ENV !== "production" && err instanceof Error
+        ? err.message
+        : undefined;
+    return Response.json({ error: "database error", detail }, { status: 500 });
   }
 }
 
@@ -45,6 +49,20 @@ const createSchema = z.object({
   postSlug: z.string().min(1, "postSlug is required"),
   body: z.string().trim().min(1, "body is required").max(2000, "body too long"),
 });
+
+function serializeComment(row: CommentRow) {
+  return {
+    id: row.id,
+    post_slug: row.post_slug,
+    user_id: row.user_id,
+    user_name: row.user_name,
+    body: row.body,
+    created_at:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at),
+  };
+}
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -67,19 +85,33 @@ export async function POST(req: Request) {
   const { postSlug, body } = parsed.data;
 
   try {
-    const [created] = await sql<CommentRow>`
-      WITH ins AS (
-        INSERT INTO dojo.blog_comment (post_slug, user_id, body)
-        VALUES (${postSlug}, ${user.id}::uuid, ${body})
-        RETURNING id
-      )
-      SELECT v.id::text AS id, v.post_slug, v.user_id, v.user_name, v.body, v.created_at
-      FROM ins
-      JOIN dojo.v_blog_comment v ON v.id = ins.id
+    const rows = await sql<CommentRow>`
+      INSERT INTO dojo.blog_comment (post_slug, user_id, body)
+      VALUES (${postSlug}, ${user.id}::uuid, ${body})
+      RETURNING
+        id::text AS id,
+        post_slug,
+        user_id::text AS user_id,
+        (
+          SELECT COALESCE(u.name, u.email, 'Anonymous')
+          FROM auth.users u
+          WHERE u.id = blog_comment.user_id
+        ) AS user_name,
+        body,
+        created_at
     `;
-    return Response.json(created, { status: 201 });
+    const created = rows?.[0];
+    if (!created) {
+      console.error("[comments] insert returned no rows");
+      return Response.json({ error: "database error" }, { status: 500 });
+    }
+    return Response.json(serializeComment(created), { status: 201 });
   } catch (err) {
-    console.error("comment create failed:", err);
-    return Response.json({ error: "database error" }, { status: 500 });
+    console.error("[comments] create failed", err);
+    const detail =
+      process.env.NODE_ENV !== "production" && err instanceof Error
+        ? err.message
+        : undefined;
+    return Response.json({ error: "database error", detail }, { status: 500 });
   }
 }
