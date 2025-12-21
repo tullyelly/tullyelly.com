@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { SignInGate } from "@/components/auth/SignInGate";
 
 type Comment = {
-  id: number;
+  id: string;
   post_slug: string;
   user_id: string;
   user_name: string;
