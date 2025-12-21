@@ -6,6 +6,7 @@ import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
 import {
   Sheet,
   SheetContent,
@@ -32,6 +33,7 @@ import { useNavController } from "@/components/nav/NavController";
 import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
 import { HOME_EMOJI, PERSONA_EMOJI } from "@/components/nav/menuUtils";
 import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
+import { sanitizeCallback } from "@/lib/auth/sanitizeCallback";
 import twemoji from "twemoji";
 
 type MobileDrawerProps = {
@@ -47,6 +49,37 @@ const drawerActionClasses =
 
 const drawerPersonaLinkClasses =
   "flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-base leading-6 text-[color:var(--text-strong,#0e2240)] transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue,#0077c0)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
+
+function buildDisplayName(
+  name: string | null | undefined,
+  email: string | null | undefined,
+): string {
+  if (name && name.trim()) {
+    return name.trim().split(/\s+/)[0] || "User";
+  }
+  if (email && email.includes("@")) {
+    const local = email.split("@")[0] || "";
+    if (local) {
+      return local;
+    }
+  }
+  return "User";
+}
+
+function useSafeCallbackUrl(): string {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [safe, setSafe] = React.useState<string>("/");
+  const searchKey = searchParams?.toString() ?? "";
+
+  React.useEffect(() => {
+    const href = window.location.href;
+    const origin = window.location.origin;
+    setSafe(sanitizeCallback(href, origin));
+  }, [pathname, searchKey]);
+
+  return safe;
+}
 
 function Icon({
   name,
@@ -125,6 +158,9 @@ export default function MobileDrawer({
   const [searchActive, setSearchActive] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const searchButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const { data, status } = useSession();
+  const callbackUrl = useSafeCallbackUrl();
+  const [accountExpanded, setAccountExpanded] = React.useState(false);
 
   const personaSection = React.useMemo(
     () => menu.sections.find((section) => section.id === "personas"),
@@ -154,6 +190,7 @@ export default function MobileDrawer({
       setExpandedPersona(null);
       setSearchActive(false);
       setSearchQuery("");
+      setAccountExpanded(false);
     }
   }, [open]);
 
@@ -271,6 +308,45 @@ export default function MobileDrawer({
     },
     [closeDrawer, currentRoute, menu, onNavigate, router],
   );
+
+  const displayName = React.useMemo(
+    () => buildDisplayName(data?.user?.name, data?.user?.email),
+    [data?.user?.email, data?.user?.name],
+  );
+
+  const handleSignIn = React.useCallback(() => {
+    void signIn("google", { callbackUrl });
+  }, [callbackUrl]);
+
+  const handleSignOut = React.useCallback(() => {
+    void signOut({ callbackUrl });
+  }, [callbackUrl]);
+
+  const handleProfile = React.useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      const href = "/profile";
+      const section = "account";
+      if (isSameRoute(currentRoute, href)) {
+        handleSameRouteNoop(event, closeDrawer);
+        return;
+      }
+      trackDrawerClick(
+        menu,
+        { id: "account-profile", label: "Profile", href },
+        { section, kind: "link" },
+      );
+      onNavigate?.(href);
+      router.push(href as Route);
+      setTimeout(() => closeDrawer(), 0);
+    },
+    [closeDrawer, currentRoute, menu, onNavigate, router],
+  );
+
+  const handleToggleAccount = React.useCallback(() => {
+    if (status !== "authenticated") return;
+    setAccountExpanded((current) => !current);
+  }, [status]);
 
   React.useEffect(
     () => registerCloseHandler(closeDrawer),
@@ -404,6 +480,85 @@ export default function MobileDrawer({
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-4 pb-[max(env(safe-area-inset-bottom),24px)]">
             <div>
+              <div data-testid="nav-mobile-auth" className="mx-1 mb-4">
+                <div className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--text-muted,#58708c)]">
+                  Account
+                </div>
+                {status === "loading" ? (
+                  <div
+                    className="h-10 rounded-xl bg-black/5"
+                    aria-hidden="true"
+                  />
+                ) : status !== "authenticated" ? (
+                  <DrawerItem>
+                    <button
+                      type="button"
+                      className={cn(drawerActionClasses, "justify-start")}
+                      onClick={handleSignIn}
+                    >
+                      Sign in
+                    </button>
+                  </DrawerItem>
+                ) : (
+                  <div className="space-y-2">
+                    <DrawerItem
+                      className={cn(
+                        accountExpanded &&
+                          "relative z-10 rounded-b-none border-b-transparent ring-1 ring-black/10",
+                      )}
+                    >
+                      <button
+                        type="button"
+                        id="nav-mobile-account-trigger"
+                        className={cn(
+                          drawerActionClasses,
+                          "justify-start",
+                          accountExpanded && "rounded-b-none bg-black/5",
+                        )}
+                        aria-expanded={accountExpanded}
+                        aria-controls="nav-mobile-account-panel"
+                        onClick={handleToggleAccount}
+                      >
+                        <span className="flex-1 truncate">{displayName}</span>
+                        <Lucide.ChevronRight
+                          className={`size-4 text-[color:var(--text-muted,#58708c)] transition-transform duration-200 ${accountExpanded ? "rotate-90" : ""}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </DrawerItem>
+                    <div
+                      id="nav-mobile-account-panel"
+                      role="region"
+                      aria-labelledby="nav-mobile-account-trigger"
+                      hidden={!accountExpanded}
+                      className="relative z-0 mt-0 transition-[height,opacity] duration-150 ease-out"
+                    >
+                      <div className="mx-1 mt-1 overflow-visible rounded-2xl border border-black/10 bg-[rgba(0,0,0,0.02)]">
+                        <div className="flex flex-col overflow-visible rounded-2xl border-l-2 border-[color:var(--brand-blue,#0077c0)] py-2 pl-4 pr-3">
+                          <Link
+                            href={"/profile" as Route}
+                            className={cn(drawerPersonaLinkClasses, "pr-2")}
+                            onClick={handleProfile}
+                          >
+                            <span className="flex-1 truncate">Profile</span>
+                            <Lucide.ChevronRight
+                              className="size-4 text-[color:var(--text-muted,#58708c)]"
+                              aria-hidden="true"
+                            />
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className={cn(drawerPersonaLinkClasses, "pr-2")}
+                          >
+                            <span className="flex-1 truncate">Sign out</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               {searchActive ? (
                 <div className="mx-1 mb-3 flex items-center gap-2">
                   <NavigationSearch
