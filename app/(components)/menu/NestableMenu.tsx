@@ -990,6 +990,7 @@ function NestableMenuInner({
       pathname,
       persona,
       pendingRef,
+      longestLinkId,
       router,
     ],
   );
