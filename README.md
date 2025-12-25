@@ -1,92 +1,69 @@
 # tullyelly.com
 
-[![Coverage ≥80%](https://img.shields.io/badge/coverage-%E2%89%A580%25-blue)](#-guardrails--coverage)
+[![Coverage ≥85%](https://img.shields.io/badge/coverage-%E2%89%A585%25-blue)](#-guardrails--coverage)
 
-A [Next.js](https://nextjs.org) project customized with **Tailwind v4 design tokens** and an **image optimization pipeline**.
+Next.js App Router with Tailwind v4 tokens, Contentlayer-powered chronicles, Postgres-backed menus and comments, and NextAuth (Google) via Prisma for the auth schema.
 
 ---
 
 ## 🚀 Getting Started
 
-Install dependencies and run the development server:
+Recommended Node: **20**. Install deps and start dev:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-Pages auto-update when you edit files in the `app/` folder.
+Environment basics:
+
+- `DATABASE_URL` – required for most pages; production rejects `neondb_owner/neondb` combos.
+- `TEST_DATABASE_URL` – used by tests and Playwright.
+- `NEXTAUTH_SECRET` (or `AUTH_SECRET`), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` – NextAuth with Prisma adapter scoped to the `auth` schema.
+- `NEXT_PUBLIC_SITE_URL` – base URL for metadata; defaults to `http://localhost:3000`.
+- Optional local flags: `NEXT_PUBLIC_ANNOUNCEMENT` (banner), `NEXT_PUBLIC_MENU_SHOW_ALL=1` (bypass menu gating), `SKIP_DB=true` (explicitly fail DB access), `E2E_MODE=1` (stubbed pool for scrolls reads).
+- `npm run prepare:content` regenerates `lib/build-info.ts` and Contentlayer data; it runs before dev, typecheck, and tests.
 
 ---
 
-## ⚡ Add a Static Page in 60 Seconds
+## 📚 Content & Authoring
 
-Create `app/<slug>/page.tsx`, export page metadata, and follow the design tokens so the page feels native to the site.
-
-```tsx
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Landing",
-  description: "A quick static landing page built in a minute.",
-};
-
-export default function LandingPage(): JSX.Element {
-  return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-12">
-      <header className="space-y-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Static page
-        </span>
-        <h1 className="text-3xl font-semibold text-foreground">Landing</h1>
-      </header>
-      <p className="text-base text-muted-foreground">
-        This skeleton uses the shared Tailwind tokens so typography, spacing,
-        and colors stay aligned across the app.
-      </p>
-      <div className="rounded-lg border border-border bg-background p-6">
-        <p className="text-sm text-foreground">
-          Replace the copy with your content or swap the wrapper for cards and
-          tables that already ship with token-aware styles.
-        </p>
-      </div>
-    </main>
-  );
-}
-```
-
-Run `npm run dev` and visit `http://localhost:3000/<slug>` to preview the page locally.
-When the pull request merges into `main`, GitHub pushes the change to Vercel and production updates automatically.
+- Chronicles live in `content/chronicles/*.mdx` and are built by Contentlayer. Frontmatter: `title`, `date`, `summary`, `tags`, `draft`, `infinityStone`, `cover`, `canonical`. Slugs map to `/shaolin/<slug>`.
+- Chronicle pages render via `app/shaolin/[slug]/page.tsx`; comments post to `/api/comments` and require a signed-in user.
+- Scaffold a static MDX page with `npm run new-page <slug> "Title"`. It writes `app/<slug>/page.mdx` with frontmatter and expects a hero at `public/images/optimized/<slug>/hero.webp` (drop sources in `public/images/source/` first).
+- Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimize && npm run images:check` to keep assets within budget.
+- Reference docs: `docs/authoring.md`, `docs/static-page-template-v2.md`, and `docs/hydration*.md` for SSR to client hydration contracts.
 
 ---
 
-## ✅ Guardrails & Coverage
+## 🗃️ Database, Auth, and Menu
 
-- The `CI` workflow runs lint, format checks, typechecks, and Jest unit tests with coverage on every push; it also runs each Monday at 06:00 UTC to log coverage trends.
-- Coverage must stay at or above 80 percent; `npm run coverage:check` reads `coverage/coverage-summary.json`, posts the metrics to the job summary, and fails the workflow if the threshold is missed.
-- The pipeline uploads `coverage/coverage-summary.json` as an artifact so you can track the week to week history.
-- A smoke test boots the production build and verifies the Strict-Transport-Security, X-Frame-Options, and X-Content-Type-Options headers configured in `next.config.mjs`.
-- Husky with lint-staged runs Prettier and ESLint before every commit; keep branch protection on `main` so merges require a passing `CI` run.
+- Postgres via `pg` and the `lib/db` tagged template helper; DB access is blocked during production builds and when `SKIP_DB=true`.
+- Prisma is scoped to the `auth` schema only (`prisma/schema.prisma`). `postinstall` runs `prisma generate` and `patch-package`.
+- Menu data flows from `dojo.v_menu_published`, filtered by capabilities in `dojo.authz_effective_features`, and cached per capability hash (`lib/menu/getMenu`). Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` locally to bypass filtering.
+- `scripts/seed-e2e.mjs` seeds menu personas/features in test DBs; Playwright setup expects `.env.test` with `TEST_DATABASE_URL`.
+- Shaolin Scrolls (`app/mark2/shaolin-scrolls`) and TCDB rankings (`app/cardattack/tcdb-rankings`) read from database views; `E2E_MODE=1` swaps in a stub pool for scrolls reads only.
+- `/api/comments` uses `dojo.v_blog_comment`; posting requires a NextAuth session and Zod-validated input.
 
 ---
 
 ## 🎨 Design Tokens & Styles
 
-- Tokens are defined as CSS variables in `app/globals.css`.
-- Tailwind (`tailwind.config.mjs`) maps tokens to classes.
-- Cards use a white background with thin Bucks green borders; pass `accent="great-lakes-blue"` and `thickness="thick"` to `Card` for the special blue-bordered case.
-- Desktop tables use the shared `Table` component with `.zebra-desktop` striping.
-- For form fields; apply the `form-input` class to reuse border and padding.
-- Use them like this:
+- Tokens live in `app/globals.css`; Tailwind (`tailwind.config.mjs`) maps them to utilities and brand colors.
+- `Card` supports `accent="bucks" | "cream-city-cream" | "great-lakes-blue"` with 2px borders.
+- Desktop tables use `components/ui/Table` with `.zebra-desktop` striping and optional `variant="bucks"` framing.
+- Form inputs share the `.form-input` class defined in `app/globals.css`.
+- MDX uses a remark plugin that swaps em dashes for semicolons; keep user-visible copy em dash free.
 
-```jsx
-<div className="bg-background text-foreground border-border">
-  Hello world with tokens!
-</div>
-```
+---
 
-This keeps typography, colors, and spacing consistent across the site.
+## ✅ Guardrails & Coverage
+
+- Jest thresholds: 85% lines/statements/functions, 80% branches (see `jest.config.cjs`). `npm run test:coverage` and `npm run test:ci` enforce them.
+- `npm run coverage:check` reads `coverage/coverage-summary.json` and fails if lines dip below `COVERAGE_MINIMUM` (default 80); CI uploads the summary artifact.
+- `.husky/pre-push` runs `lint`, `typecheck`, `test:smoke`, and `test:coverage`; bypass with `SKIP_COVERAGE_GUARD=1` only in emergencies.
+- Security headers (HSTS, frame denial, MIME sniffing) are asserted in CI via `npm run security-headers:check`.
+- Lint-staged (pre-commit) runs Prettier, ESLint, secretlint, and the MD/MDX semicolon fixer.
 
 ---
 
@@ -122,12 +99,6 @@ Images are resized to a **1920px** max width and exported as **WebP**.
 
 ---
 
-## 📝 Authoring Static Pages
-
-See [docs/authoring.md](docs/authoring.md) for the quickest way to scaffold and validate a new page.
-
----
-
 ## 📣 Share Kit
 
 Keep stakeholder snippets in sync whenever you ship a new page.
@@ -138,18 +109,9 @@ Keep stakeholder snippets in sync whenever you ship a new page.
 
 ---
 
-## 🌐 SEO & Crawl Directives
-
-Robots and sitemap metadata routes live in `app/robots.ts` and `app/sitemap.ts`, providing baseline crawl directives and a simple sitemap for top-level pages.
-
----
-
 ## 🗃️ Database
 
-This project requires a **Postgres** database.
-
-- `DATABASE_URL` – runtime connection string
-- `TEST_DATABASE_URL` – local tests
+This project requires a **Postgres** database and NextAuth secrets.
 
 Set `NEXT_PUBLIC_DEBUG_DB_META=1` to expose `/api/env-check` with redacted database env vars for debugging.
 
@@ -168,15 +130,6 @@ TEST_DATABASE_URL="postgresql://<user>:<password>@<your-neon-branch-host>/<db-na
 ```
 
 🔐 Secrets hygiene: Never paste real connection strings into docs or code. In CI or Vercel use secrets (`DATABASE_URL`, `TEST_DATABASE_URL`). Locally, keep them only in untracked `.env*` files.
-
-We run Secretlint in CI to prevent accidental secret commits.
-
-Apply release helper functions:
-
-```bash
-psql $DATABASE_URL -f db/migrations/002_fn_next_release_functions.sql
-psql $DATABASE_URL -f db/migrations/003_semver_columns.sql
-```
 
 Verify connectivity:
 
@@ -210,25 +163,27 @@ See [docs/hydration.md](docs/hydration.md) and [docs/hydration-contract.md](docs
 
 ## 📜 Scripts
 
-Recommended Node version: **20**.
-
-- `npm run lint` – lint the codebase
-- `npm run typecheck` – run TypeScript checks
+- `npm run lint` – lint the codebase (includes metadata enforcement via `lint:metadata`)
+- `npm run typecheck` – run TypeScript checks; preflight runs `prepare:content`
 - `npm run format:check` – verify formatting without writing changes
 - `npm run deadcode` – list unused exports
-- `npm run build` – build the production bundle
-- `npm run start` – start the production server
-- `npm run db:ping` – verify DB connectivity (SELECT 1)
+- `npm run guard:self-fetch` – block Next.js self-fetch patterns
 - `npm run check:use-server` – flag invalid `"use server"` exports
+- `npm run prepare:content` – generate build info and Contentlayer data
+- `npm run build` – production build; `npm run start` starts it locally
+- `npm run db:ping` – verify DB connectivity (SELECT 1)
+- `npm run check:emdash` – reject em dashes in MD/MDX/JSX copy
+- `npm run security-headers:check` – assert HSTS, frame, and MIME headers
+- `npm run share:generate` – refresh `/docs/share/<slug>.md`
 
 ---
 
 ## 🧪 CI
 
-Pull requests run two GitHub Actions checks:
+GitHub Actions includes:
 
-- **Build & Check** – lint, typecheck, image checks, and build
-- **E2E Tests** – Playwright end-to-end suite
+- **CI** (`.github/workflows/ci.yml`) – gated by `CI_ENABLED` repo variable. Runs lint, typecheck, metadata lint, format check, Jest smoke + coverage (`test:ci`), `coverage:check`, optional image/SEO validators, build, and security header smoke. E2E job follows when enabled and paths match.
+- **coverage** – always on `main` and PRs to `main`, runs `npm run test:coverage` and uploads `coverage/lcov.info`.
 
 ---
 
@@ -242,7 +197,7 @@ npm run test:e2e:install
 npm run test:e2e
 ```
 
-**System-Chrome fallback:**
+`.env.test` must provide `TEST_DATABASE_URL` (used for seeding menu/authz fixtures in `pretest:e2e:seed`). Set `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` and `PLAYWRIGHT_USE_SYSTEM_CHROME=1` to lean on a system Chrome:
 
 ```bash
 export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
@@ -291,12 +246,9 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 
 ## ✅ Quick Notes
 
-- Static pages: `app/theabbott/roadwork-rappin`, `app/theabbott/heels-have-eyes`
-- `globals.css`: design tokens + Tailwind entry point
-- `tailwind.config.mjs`: maps tokens → Tailwind theme
-- Set `NEXT_PUBLIC_ANNOUNCEMENT` to display the top banner
-- Always run `npm run images:optimize` before committing new images
-- `app/mark2/shaolin-scrolls`: responsive release list with Radix details dialog
-- `app/page.tsx`: homepage with Mother's Day 2025, Musical Guests, Chronicle of Chronicles, and Shaolin Scrolls sections
-- `app/credits`: sources & acknowledgments via Flowers
-- Security headers configured in `next.config.mjs` enforce HSTS, deny framing, and prevent MIME sniffing.
+- App shell lives in `components/app-shell/AppShell` with menu data from `lib/menu/getMenu` and persona-aware metadata in `app/_menu`.
+- Home tiles render from `components/home/*` (`app/page.tsx`).
+- Chronicles index and tag filters: `app/shaolin/page.tsx`; details: `app/shaolin/[slug]/page.tsx`.
+- Shaolin Scrolls UI: `app/mark2/shaolin-scrolls`; TCDB rankings live at `app/cardattack/tcdb-rankings`.
+- Credits and Flowers plumbing: `app/credits` and `components/flowers/FlowersInline.tsx`.
+- Build info is written to `lib/build-info.ts` by `npm run gen:build-info`; Contentlayer output sits in `.contentlayer`.
