@@ -8,6 +8,7 @@ import { getTopChronicleTags } from "@/lib/chronicles";
 
 export async function TopChronicleTagsCard() {
   const tags = await getTopChronicleTags(10);
+  const viewAllHref = "/shaolin/tags";
 
   const info = (
     <CardInfoPopover ariaLabel="About Chronicle tags">
@@ -47,6 +48,14 @@ export async function TopChronicleTagsCard() {
                 </Badge>
               </Link>
             ))}
+            <Link
+              href={viewAllHref}
+              prefetch={false}
+              className="inline-flex"
+              aria-label="View all chronicle tags"
+            >
+              <Badge className={getBadgeClass("classic")}>View All</Badge>
+            </Link>
           </div>
         </div>
       )}

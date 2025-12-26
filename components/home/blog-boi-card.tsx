@@ -17,6 +17,8 @@ export async function BlogBoiCard() {
     publishedLabel: fmtDate(post.publishedAt),
     href: `/shaolin/${post.slug}` as Route,
   }));
+  const postRows = postsWithDate.slice(0, 4);
+  const viewAllHref = "/shaolin" as Route;
 
   const info = (
     <CardInfoPopover ariaLabel="About the blog">
@@ -39,7 +41,7 @@ export async function BlogBoiCard() {
         </p>
       ) : (
         <HomeCardRows>
-          {postsWithDate.map((post) => (
+          {postRows.map((post) => (
             <HomeCardRowLink
               key={post.slug}
               href={post.href}
@@ -56,6 +58,17 @@ export async function BlogBoiCard() {
               </div>
             </HomeCardRowLink>
           ))}
+          <HomeCardRowLink
+            href={viewAllHref}
+            className="flex items-center gap-2"
+          >
+            <span className="underline decoration-current underline-offset-2">
+              View All
+            </span>
+            <div className="ml-auto flex items-center gap-2">
+              <HomeCardRowSpinner />
+            </div>
+          </HomeCardRowLink>
         </HomeCardRows>
       )}
     </HomeCard>
