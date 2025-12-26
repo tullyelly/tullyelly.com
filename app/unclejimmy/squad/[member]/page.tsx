@@ -14,9 +14,14 @@ export function generateStaticParams(): Params[] {
   return squadMembers.map(({ slug }) => ({ member: slug }));
 }
 
-export function generateMetadata({ params }: { params: Params }): Metadata {
-  const member = getSquadMember(params.member);
-  const label = member?.label ?? params.member;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
+  const { member: memberSlug } = await params;
+  const member = getSquadMember(memberSlug);
+  const label = member?.label ?? memberSlug;
   const title = `${label} | 🎙unclejimmy squad`;
   const description =
     member?.blurb || `Profile page for ${label} within the 🎙unclejimmy squad.`;
@@ -25,12 +30,12 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
     title,
     description,
     alternates: {
-      canonical: canonicalUrl(`unclejimmy/squad/${params.member}`),
+      canonical: canonicalUrl(`unclejimmy/squad/${memberSlug}`),
     },
     openGraph: {
       title,
       description,
-      url: `/unclejimmy/squad/${params.member}`,
+      url: `/unclejimmy/squad/${memberSlug}`,
       type: "website",
     },
     twitter: {
@@ -41,8 +46,9 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   };
 }
 
-export default function Page({ params }: { params: Params }) {
-  const member = getSquadMember(params.member);
+export default async function Page({ params }: { params: Promise<Params> }) {
+  const { member: memberSlug } = await params;
+  const member = getSquadMember(memberSlug);
 
   if (!member) {
     notFound();
