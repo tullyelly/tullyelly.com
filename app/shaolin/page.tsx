@@ -35,7 +35,10 @@ export default async function Page({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const pageNum = Number(resolvedSearchParams?.page ?? "1");
   const posts = getPublishedPosts();
-  const tags = getTagsWithCounts(posts);
+  const tags = Object.entries(getTagsWithCounts(posts)).sort(
+    ([tagA, countA], [tagB, countB]) =>
+      countB - countA || tagA.localeCompare(tagB),
+  );
   const { items, pages, current } = paginate(posts, pageNum, PER_PAGE);
 
   return (
@@ -48,15 +51,24 @@ export default async function Page({
         </p>
       </header>
 
-      {Object.keys(tags).length > 0 ? (
+      {tags.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-medium leading-snug">Browse by tag</h2>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(tags).map(([tag, count]) => (
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-lg font-medium leading-snug">Browse by tag</h2>
+            <Link
+              href={"/shaolin/tags" as Route}
+              className="text-sm link-blue"
+              prefetch={false}
+            >
+              View all
+            </Link>
+          </div>
+          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1">
+            {tags.map(([tag, count]) => (
               <Link
                 key={tag}
                 href={`/shaolin/tags/${encodeURIComponent(tag)}` as Route}
-                className="inline-flex"
+                className="inline-flex flex-shrink-0"
                 prefetch={false}
               >
                 <Badge className={getBadgeClass("classic")}>
