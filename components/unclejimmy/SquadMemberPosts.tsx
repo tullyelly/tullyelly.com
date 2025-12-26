@@ -40,8 +40,8 @@ export default function SquadMemberPosts({
           recent chronicles for {tag.toLowerCase()}
         </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Latest entries tagged {tag.toLowerCase()}; browse without leaving this
-          page.
+          Latest entries tagged {tag.toLowerCase()}; follow along with the
+          journey.
         </p>
       </header>
 

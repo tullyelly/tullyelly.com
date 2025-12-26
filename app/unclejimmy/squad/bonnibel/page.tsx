@@ -60,7 +60,8 @@ export default function UncleJimmySquadBonnibelPage() {
         </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           For xmas 2024, I made a special series of paintings for the kiddos,
-          and we&rsquo;re going to share some content around <i>bonnibel</i>
+          titled <i>lost</i>, and we&rsquo;re going to share some content around{" "}
+          <i>bonnibel</i>
           &rsquo;s painting to begin. Let&rsquo;s start with the OG reddit post:
         </p>
         <div className="rounded-lg border border-border bg-white p-2 shadow-sm">
@@ -89,9 +90,12 @@ export default function UncleJimmySquadBonnibelPage() {
           />
         </div>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          This is seemingly written in third person because <i>eeeeeeeemma</i>{" "}
-          performed what I wrote. Eventually, I&rsquo;ll build the rest of this
+          This is written in third person because <i>eeeeeeeemma</i> performed
+          what I wrote. Eventually, I&rsquo;ll build the rest of this
           performance into the site as we keep iterating.
+        </p>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          Stay tuned for more <i>lost</i> content coming soon!
         </p>
       </section>
       <SectionDivider className="my-6" />
