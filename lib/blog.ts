@@ -6,6 +6,15 @@ export type RecentBlogPost = {
   publishedAt: string;
 };
 
+export type TaggedPost = {
+  slug: string;
+  title: string;
+  summary: string;
+  date: string;
+  url: string;
+  tags: string[];
+};
+
 export function isPublished(p: Post) {
   return !p.draft;
 }
@@ -60,4 +69,23 @@ export function paginate<T>(items: T[], page: number, perPage: number) {
   const start = (current - 1) * perPage;
   const end = start + perPage;
   return { items: items.slice(start, end), total, pages, current, perPage };
+}
+
+export function getPostsByTag(tag: string): Post[] {
+  const target = tag.trim().toLowerCase();
+  if (!target) return [];
+  return getPublishedPosts().filter((post) =>
+    (post.tags ?? []).some((t) => t.toLowerCase() === target),
+  );
+}
+
+export function getTaggedPosts(tag: string): TaggedPost[] {
+  return getPostsByTag(tag).map((post) => ({
+    slug: post.slug,
+    title: post.title,
+    summary: post.summary ?? "",
+    date: post.date,
+    url: post.url,
+    tags: (post.tags ?? []).map((t) => t.toLowerCase()),
+  }));
 }
