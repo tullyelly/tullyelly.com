@@ -53,7 +53,7 @@ export default function UncleJimmySquadPage() {
           </li>
           <li>
             <Link
-              href="/shaolin/tags/bonnibel"
+              href="/unclejimmy/squad/bonnibel"
               className="underline hover:no-underline"
             >
               bonnibel

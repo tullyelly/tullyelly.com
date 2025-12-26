@@ -9,6 +9,7 @@ import {
   applyCrumbKinds,
   buildFallbackCrumbs,
   ensureSingleHome,
+  humanizePathSegment,
   normalizePathForCrumbs,
 } from "@/lib/breadcrumbs/utils";
 import { breadcrumbJsonLd } from "@/lib/breadcrumb";
@@ -73,7 +74,35 @@ export default function Breadcrumbs({
       { label: "Home", href: "/" },
       ...menuCrumbs,
     ]);
-    return applyCrumbKinds(withHome);
+
+    const lastMenuCrumb = menuCrumbs[menuCrumbs.length - 1];
+    const normalizedLastHref = lastMenuCrumb?.href
+      ? normalizePathForCrumbs(lastMenuCrumb.href)
+      : null;
+    const needsTail =
+      normalizedLastHref &&
+      normalizedPath.startsWith(`${normalizedLastHref}/`) &&
+      normalizedPath !== normalizedLastHref;
+
+    if (!needsTail) {
+      return applyCrumbKinds(withHome);
+    }
+
+    const remainder = normalizedPath.slice(normalizedLastHref.length);
+    const tailSegment = remainder.split("/").filter(Boolean).pop();
+    const tailLabel = tailSegment
+      ? humanizePathSegment(tailSegment) || tailSegment
+      : null;
+
+    if (!tailLabel) {
+      return applyCrumbKinds(withHome);
+    }
+
+    const extended = ensureSingleHome([
+      ...withHome,
+      { label: tailLabel, href: undefined },
+    ]);
+    return applyCrumbKinds(extended);
   }, [forcedCrumbs, trail, normalizedPath, suppressed]);
 
   const items = useMemo<Crumb[]>(() => {
