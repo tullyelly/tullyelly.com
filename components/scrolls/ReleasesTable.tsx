@@ -43,17 +43,17 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
         className="thead-sticky"
       >
         <THead variant="bucks">
-          <th scope="col" className="w-[72px]">
+          <th scope="col" className="w-[64px] whitespace-nowrap">
             ID
           </th>
           <th scope="col">Release Name</th>
-          <th scope="col" className="w-[140px]">
+          <th scope="col" className="w-[112px] whitespace-nowrap">
             Status
           </th>
-          <th scope="col" className="w-[120px]">
+          <th scope="col" className="w-[104px] whitespace-nowrap">
             Type
           </th>
-          <th scope="col" className="w-[220px]">
+          <th scope="col" className="w-[148px] whitespace-nowrap">
             Release Date
           </th>
         </THead>
@@ -79,12 +79,12 @@ export default function ReleasesTable({ rows }: { rows: ReleaseRow[] }) {
                     {getReleaseName(r)}
                   </span>
                 </td>
-                <td>
+                <td className="whitespace-nowrap">
                   <Badge className={getBadgeClass(r.status as any)}>
                     {r.status}
                   </Badge>
                 </td>
-                <td>
+                <td className="whitespace-nowrap">
                   <Badge className={getBadgeClass(r.type as any)}>
                     {r.type}
                   </Badge>
