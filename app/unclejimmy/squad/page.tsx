@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import { squadMembers } from "@/lib/unclejimmy/squadMembers";
 
 const pageTitle = "🎙unclejimmy squad | tullyelly";
 const pageDescription =
@@ -43,46 +44,16 @@ export default function UncleJimmySquadPage() {
           Primary sources of energy:
         </p>
         <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
-          <li>
-            <Link
-              href="/shaolin/tags/nikkigirl"
-              className="underline hover:no-underline"
-            >
-              nikkigirl
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/unclejimmy/squad/bonnibel"
-              className="underline hover:no-underline"
-            >
-              bonnibel
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/shaolin/tags/lulu"
-              className="underline hover:no-underline"
-            >
-              lulu
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/shaolin/tags/jeff-meff"
-              className="underline hover:no-underline"
-            >
-              jeff-meff
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/shaolin/tags/eeeeeeeemma"
-              className="underline hover:no-underline"
-            >
-              eeeeeeeemma
-            </Link>
-          </li>
+          {squadMembers.map((member) => (
+            <li key={member.slug}>
+              <Link
+                href={member.href ?? `/unclejimmy/squad/${member.slug}`}
+                className="underline hover:no-underline"
+              >
+                {member.label}
+              </Link>
+            </li>
+          ))}
         </ul>
       </section>
       <section className="space-y-4">
