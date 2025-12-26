@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { squadMembers } from "@/lib/unclejimmy/squadMembers";
@@ -44,16 +45,17 @@ export default function UncleJimmySquadPage() {
           Primary sources of energy:
         </p>
         <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
-          {squadMembers.map((member) => (
-            <li key={member.slug}>
-              <Link
-                href={member.href ?? `/unclejimmy/squad/${member.slug}`}
-                className="underline hover:no-underline"
-              >
-                {member.label}
-              </Link>
-            </li>
-          ))}
+          {squadMembers.map((member) => {
+            const href = (member.href ??
+              `/unclejimmy/squad/${member.slug}`) as Route;
+            return (
+              <li key={member.slug}>
+                <Link href={href} className="underline hover:no-underline">
+                  {member.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </section>
       <section className="space-y-4">
