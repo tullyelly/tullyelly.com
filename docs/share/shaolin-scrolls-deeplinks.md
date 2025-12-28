@@ -8,6 +8,11 @@ Approach implemented:
 - Navigation: table and card links push `/mark2/shaolin-scrolls/:id` on primary clicks, letting the route-based effect open the modal; meta/ctrl/middle clicks still use normal navigation.
 - The `/mark2/shaolin-scrolls/[id]` route now renders the list page so deep links load the list plus modal instead of a standalone detail page.
 
+SEO and sitemap:
+
+- `app/sitemap.ts` now enumerates all scroll IDs (paged in batches) and adds `/mark2/shaolin-scrolls/:id` entries with `lastModified` from `release_date` when present; failures fall back to base URLs.
+- Existing detail metadata uses `makeDetailGenerateMetadata` to emit canonical URLs and OpenGraph/Twitter data for each release path; no query params are used.
+
 Open questions resolved:
 
 - `useParams` was not used; pathname parsing keeps the logic centralized and resilient to list pagination/query params.
