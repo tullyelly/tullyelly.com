@@ -67,9 +67,6 @@ export default function ScrollsPageClient({
     setOpen(v);
     if (!v) {
       triggerRef.current?.focus();
-      if (pathname !== basePath) {
-        router.replace(basePath as Route);
-      }
     }
   };
 

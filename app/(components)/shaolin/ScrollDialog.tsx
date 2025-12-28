@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Dateish } from "@/lib/datetime";
 import { fmtDate, fmtDateTime } from "@/lib/datetime";
 import { isTimestampKey } from "@/lib/dates";
@@ -37,9 +38,16 @@ export default function ScrollDialog({
   onOpenChange,
   id,
 }: ScrollDialogProps) {
+  const router = useRouter();
   const [row, setRow] = useState<ShaolinScroll | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const handleChange = (nextOpen: boolean) => {
+    onOpenChange(nextOpen);
+    if (!nextOpen) {
+      router.replace("/mark2/shaolin-scrolls");
+    }
+  };
 
   useEffect(() => {
     if (!open || id == null) return;
@@ -69,7 +77,7 @@ export default function ScrollDialog({
   }, [open, id]);
 
   return (
-    <DialogPanel open={open} onClose={() => onOpenChange(false)}>
+    <DialogPanel open={open} onClose={() => handleChange(false)}>
       <div className="flex min-h-0 flex-1 flex-col">
         <div
           data-dialog-handle
