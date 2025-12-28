@@ -55,9 +55,23 @@ export default function ScrollsPageClient({
     });
   }
 
-  const openDialog = useCallback(
+  const handleNavigate = useCallback(
     (nextId: string | number, trigger?: HTMLAnchorElement) => {
       triggerRef.current = trigger ?? null;
+      router.push(`/mark2/shaolin-scrolls/${nextId}` as Route);
+    },
+    [router],
+  );
+
+  const handleCardTrigger = useCallback(
+    (_id: string | number, trigger?: HTMLAnchorElement) => {
+      triggerRef.current = trigger ?? null;
+    },
+    [],
+  );
+
+  const openDialogWithId = useCallback(
+    (nextId: string | number) => {
       openWithId(nextId);
     },
     [openWithId],
@@ -71,6 +85,7 @@ export default function ScrollsPageClient({
   };
 
   useEffect(() => {
+    const baseSegmentsCount = 2; // "mark2", "shaolin-scrolls"
     const normalized =
       pathname.endsWith("/") && pathname !== "/"
         ? pathname.slice(0, -1)
@@ -82,10 +97,15 @@ export default function ScrollsPageClient({
     if (!normalized.startsWith(basePath)) return;
     const segments = normalized.split("/").filter(Boolean);
     const lastSegment = segments[segments.length - 1];
-    if (lastSegment && /^\d+$/.test(lastSegment)) {
-      openDialog(lastSegment);
+    const isNumericId = lastSegment && /^\d+$/.test(lastSegment);
+    if (!isNumericId) {
+      if (segments.length > baseSegmentsCount) {
+        router.replace(basePath as Route);
+      }
+      return;
     }
-  }, [pathname, basePath, close, openDialog]);
+    openDialogWithId(lastSegment);
+  }, [pathname, basePath, close, openDialogWithId, router]);
 
   return (
     <div
@@ -95,9 +115,9 @@ export default function ScrollsPageClient({
       role="region"
     >
       <div className="md:hidden" suppressHydrationWarning>
-        <ReleaseCards rows={rows} onOpen={openDialog} />
+        <ReleaseCards rows={rows} onOpen={handleCardTrigger} />
       </div>
-      <ReleasesTable rows={rows} onOpen={openDialog} />
+      <ReleasesTable rows={rows} onOpen={handleNavigate} />
       <TablePager
         page={meta.page}
         pageSize={meta.pageSize}
