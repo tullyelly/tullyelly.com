@@ -2,21 +2,18 @@ import path from "node:path";
 
 import { defineDocumentType, makeSource } from "contentlayer2/source-files";
 
+import {
+  ALTER_EGO_OPTIONS,
+  DEFAULT_ALTER_EGO,
+  inferAlterEgoFromTree,
+  mergeTagsWithAlterEgo,
+} from "./lib/alterEgo";
+
 const contentDirPath = "content";
-const alterEgoOptions = [
-  "mark2",
-  "cardattack",
-  "theabbott",
-  "unclejimmy",
-  "tullyelly",
-];
-const defaultAlterEgo = "tullyelly";
 const inferredAlterEgos = new Map<string, string>();
 
 function remarkInferReleaseSectionAlterEgo() {
   return (tree: any, file: any) => {
-    let foundAlterEgo: string | undefined;
-
     const absolutePath =
       typeof file?.path === "string"
         ? file.path
@@ -36,50 +33,10 @@ function remarkInferReleaseSectionAlterEgo() {
 
     const errorPrefix = `Chronicle ${sourceFilePath}`;
 
-    const visitNode = (node: any) => {
-      const isReleaseSection =
-        (node.type === "mdxJsxFlowElement" ||
-          node.type === "mdxJsxTextElement") &&
-        node.name === "ReleaseSection";
-
-      if (isReleaseSection) {
-        const alterEgoAttr = (node.attributes ?? []).find(
-          (attr: any) =>
-            attr?.type === "mdxJsxAttribute" && attr.name === "alterEgo",
-        );
-        if (!alterEgoAttr) {
-          throw new Error(
-            `${errorPrefix}: ReleaseSection is missing the required alterEgo prop.`,
-          );
-        }
-
-        if (typeof alterEgoAttr.value !== "string") {
-          throw new Error(
-            `${errorPrefix}: ReleaseSection alterEgo must be a string literal.`,
-          );
-        }
-
-        if (!alterEgoOptions.includes(alterEgoAttr.value)) {
-          throw new Error(
-            `${errorPrefix}: alterEgo must be one of ${alterEgoOptions.join(", ")}.`,
-          );
-        }
-
-        if (foundAlterEgo && foundAlterEgo !== alterEgoAttr.value) {
-          throw new Error(
-            `${errorPrefix}: multiple ReleaseSection alterEgo values found (${foundAlterEgo} vs ${alterEgoAttr.value}).`,
-          );
-        }
-
-        foundAlterEgo = alterEgoAttr.value;
-      }
-
-      if (node?.children) {
-        for (const child of node.children) visitNode(child);
-      }
-    };
-
-    visitNode(tree);
+    const foundAlterEgo = inferAlterEgoFromTree(tree, {
+      errorPrefix,
+      allowedAlterEgos: ALTER_EGO_OPTIONS,
+    });
 
     if (foundAlterEgo) {
       inferredAlterEgos.set(sourceFilePath, foundAlterEgo);
@@ -105,7 +62,7 @@ const Post = defineDocumentType(() => ({
     canonical: { type: "string", required: false },
     alterEgo: {
       type: "enum",
-      options: alterEgoOptions,
+      options: ALTER_EGO_OPTIONS,
       required: false,
     },
   },
@@ -124,10 +81,7 @@ const Post = defineDocumentType(() => ({
       of: { type: "string" },
       resolve: (doc) => {
         const inferred = inferredAlterEgos.get(doc._raw.sourceFilePath);
-        const merged = inferred
-          ? [...(doc.tags ?? []), inferred]
-          : [...(doc.tags ?? [])];
-        return Array.from(new Set(merged));
+        return mergeTagsWithAlterEgo(doc.tags, inferred);
       },
     },
     resolvedAlterEgo: {
@@ -135,7 +89,7 @@ const Post = defineDocumentType(() => ({
       resolve: (doc) =>
         doc.alterEgo ??
         inferredAlterEgos.get(doc._raw.sourceFilePath) ??
-        defaultAlterEgo,
+        DEFAULT_ALTER_EGO,
     },
   },
 }));
