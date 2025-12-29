@@ -13,6 +13,18 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const PER_PAGE = 10;
+const ALTER_EGO_TAGS = [
+  "mark2",
+  "cardattack",
+  "theabbott",
+  "unclejimmy",
+  "tullyelly",
+] as const;
+type AlterEgoTag = (typeof ALTER_EGO_TAGS)[number];
+
+function isAlterEgoTag(value: string | undefined): value is AlterEgoTag {
+  return (ALTER_EGO_TAGS as readonly string[]).includes(value ?? "");
+}
 
 export const generateMetadata = makeListGenerateMetadata({
   path: "/shaolin",
@@ -30,16 +42,36 @@ export const generateMetadata = makeListGenerateMetadata({
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string }>;
+  searchParams?: Promise<{ page?: string; alterEgo?: string }>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const alterEgoFilter = (() => {
+    const raw = resolvedSearchParams?.alterEgo?.toString().trim().toLowerCase();
+    return isAlterEgoTag(raw) ? raw : undefined;
+  })();
   const pageNum = Number(resolvedSearchParams?.page ?? "1");
   const posts = getPublishedPosts();
-  const tags = Object.entries(getTagsWithCounts(posts)).sort(
+  const filteredPosts = alterEgoFilter
+    ? posts.filter((post) =>
+        (post.tags ?? []).map((t) => t.toLowerCase()).includes(alterEgoFilter),
+      )
+    : posts;
+  const tags = Object.entries(getTagsWithCounts(filteredPosts)).sort(
     ([tagA, countA], [tagB, countB]) =>
       countB - countA || tagA.localeCompare(tagB),
   );
-  const { items, pages, current } = paginate(posts, pageNum, PER_PAGE);
+  const { items, pages, current } = paginate(filteredPosts, pageNum, PER_PAGE);
+
+  const alterEgoQuery = alterEgoFilter
+    ? `alterEgo=${encodeURIComponent(alterEgoFilter)}`
+    : "";
+  const pageHref = (page: number) => {
+    const base =
+      page === 1 ? "/shaolin" : `/shaolin?page=${encodeURIComponent(page)}`;
+    if (!alterEgoQuery) return base as Route;
+    const joiner = base.includes("?") ? "&" : "?";
+    return `${base}${joiner}${alterEgoQuery}` as Route;
+  };
 
   return (
     <main className="max-w-4xl mx-auto space-y-12 py-6 md:py-8">
@@ -50,6 +82,69 @@ export default async function Page({
           kinda janky. Stay tuned.
         </p>
       </header>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-medium leading-snug">
+            Filter by alter-ego
+          </h2>
+          {alterEgoFilter ? (
+            <Link
+              href={"/shaolin" as Route}
+              className="text-sm link-blue"
+              prefetch={false}
+            >
+              Clear filter
+            </Link>
+          ) : null}
+        </div>
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1">
+          <Link
+            href={"/shaolin" as Route}
+            className="inline-flex flex-shrink-0"
+            prefetch={false}
+            aria-current={alterEgoFilter ? undefined : "page"}
+          >
+            <Badge
+              className={[
+                getBadgeClass(alterEgoFilter ? "archived" : "planned"),
+                "whitespace-nowrap",
+              ].join(" ")}
+            >
+              All alter-egos
+            </Badge>
+          </Link>
+          {ALTER_EGO_TAGS.map((tag) => {
+            const href = `/shaolin?alterEgo=${encodeURIComponent(
+              tag,
+            )}` as Route;
+            const isActive = alterEgoFilter === tag;
+            return (
+              <Link
+                key={tag}
+                href={href}
+                className="inline-flex flex-shrink-0"
+                prefetch={false}
+                aria-current={isActive ? "page" : undefined}
+              >
+                <Badge
+                  className={[
+                    getBadgeClass(isActive ? "planned" : "archived"),
+                    "whitespace-nowrap",
+                  ].join(" ")}
+                >
+                  #{tag}
+                </Badge>
+              </Link>
+            );
+          })}
+        </div>
+        {alterEgoFilter ? (
+          <p className="text-sm text-muted-foreground">
+            Showing chronicles tagged #{alterEgoFilter}.
+          </p>
+        ) : null}
+      </section>
 
       {tags.length > 0 ? (
         <section className="space-y-3">
@@ -160,8 +255,7 @@ export default async function Page({
         >
           {Array.from({ length: pages }).map((_, i) => {
             const n = i + 1;
-            const href =
-              n === 1 ? ("/shaolin" as Route) : (`/shaolin?page=${n}` as Route);
+            const href = pageHref(n);
             const isCurrent = n === current;
             return (
               <Link

@@ -87,13 +87,38 @@ test("mobile renders cards only", async ({ page }) => {
   await expect(page.getByTestId("release-card").first()).toBeVisible();
 });
 
-test("navigate back from details", async ({ page }) => {
+test("deep link opens dialog for scroll 33", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto("/mark2/shaolin-scrolls/33");
+  await expect(
+    page.getByRole("heading", { name: "Shaolin Scrolls" }),
+  ).toBeVisible();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Scroll 33");
+});
+
+test("closing deep-linked dialog returns to list URL", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto("/mark2/shaolin-scrolls/33");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await page.getByRole("button", { name: "Close dialog" }).click();
+  await expect(page).toHaveURL("/mark2/shaolin-scrolls");
+  await expect(dialog).toHaveCount(0);
+});
+
+test("meta/ctrl click opens scroll ID in new tab", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await page.goto("/mark2/shaolin-scrolls");
+  const modifier = process.platform === "darwin" ? "Meta" : "Control";
   const firstLink = page.locator("tbody tr").first().locator("a").first();
-  const idText = (await firstLink.textContent())?.trim();
-  await page.goto(`/mark2/shaolin-scrolls/${idText}`);
-  await expect(page.getByRole("link", { name: "Back to list" })).toBeVisible();
-  await page.getByRole("link", { name: "Back to list" }).click();
-  await expect(page).toHaveURL("/mark2/shaolin-scrolls");
+  const [newPage] = await Promise.all([
+    page.context().waitForEvent("page"),
+    firstLink.click({ modifiers: [modifier] }),
+  ]);
+  await newPage.waitForLoadState("domcontentloaded");
+  await expect(newPage).toHaveURL(/\/mark2\/shaolin-scrolls\/\d+$/);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await newPage.close();
 });
