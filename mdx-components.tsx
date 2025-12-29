@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
 import LoopedGIF from "@/components/LoopedGIF";
 import SmartLink from "@/components/mdx/SmartLink";
+import ReleaseSection from "@/components/mdx/ReleaseSection";
 import { XEmbed } from "@/components/Tweet";
 import { cn } from "@/lib/utils";
 
@@ -120,6 +121,7 @@ export const mdxComponents: MDXComponents = {
   a: SmartLink, // override default link
   XEmbed,
   LoopedGIF,
+  ReleaseSection,
 };
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {

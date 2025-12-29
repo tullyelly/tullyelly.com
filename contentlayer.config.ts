@@ -5,25 +5,34 @@ import { defineDocumentType, makeSource } from "contentlayer2/source-files";
 import {
   ALTER_EGO_OPTIONS,
   DEFAULT_ALTER_EGO,
-  inferAlterEgoFromTree,
+  inferAlterEgosFromTree,
   mergeTagsWithAlterEgo,
 } from "./lib/alterEgo";
 
 const contentDirPath = "content";
-const inferredAlterEgos = new Map<string, string>();
+const inferredAlterEgos = new Map<string, string[]>();
 
 function remarkInferReleaseSectionAlterEgo() {
   return (tree: any, file: any) => {
-    const absolutePath =
-      typeof file?.path === "string"
-        ? file.path
-        : Array.isArray(file?.history) && file.history.length > 0
-          ? file.history[0]
+    const resolveSourcePath = (): string | undefined => {
+      const rawDocPath = file?.data?.rawDocumentData?.sourceFilePath;
+      if (typeof rawDocPath === "string") return rawDocPath;
+
+      const historyPath =
+        Array.isArray(file?.history) && file.history.length > 0
+          ? (file.history.find((entry: string) => entry.endsWith(".mdx")) ??
+            file.history[file.history.length - 1])
           : undefined;
 
-    const sourceFilePath = absolutePath
-      ? path.relative(path.join(process.cwd(), contentDirPath), absolutePath)
-      : undefined;
+      const absolutePath =
+        typeof file?.path === "string" ? file.path : historyPath;
+
+      return absolutePath
+        ? path.relative(path.join(process.cwd(), contentDirPath), absolutePath)
+        : undefined;
+    };
+
+    const sourceFilePath = resolveSourcePath();
 
     if (!sourceFilePath || sourceFilePath.startsWith("..")) {
       throw new Error(
@@ -33,13 +42,13 @@ function remarkInferReleaseSectionAlterEgo() {
 
     const errorPrefix = `Chronicle ${sourceFilePath}`;
 
-    const foundAlterEgo = inferAlterEgoFromTree(tree, {
+    const foundAlterEgos = inferAlterEgosFromTree(tree, {
       errorPrefix,
       allowedAlterEgos: ALTER_EGO_OPTIONS,
     });
 
-    if (foundAlterEgo) {
-      inferredAlterEgos.set(sourceFilePath, foundAlterEgo);
+    if (foundAlterEgos.length > 0) {
+      inferredAlterEgos.set(sourceFilePath, foundAlterEgos);
     } else {
       inferredAlterEgos.delete(sourceFilePath);
     }
@@ -81,14 +90,14 @@ const Post = defineDocumentType(() => ({
       of: { type: "string" },
       resolve: (doc) => {
         const inferred = inferredAlterEgos.get(doc._raw.sourceFilePath);
-        return mergeTagsWithAlterEgo(doc.tags, inferred);
+        return mergeTagsWithAlterEgo(doc.tags, inferred ?? []);
       },
     },
     resolvedAlterEgo: {
       type: "string",
       resolve: (doc) =>
         doc.alterEgo ??
-        inferredAlterEgos.get(doc._raw.sourceFilePath) ??
+        inferredAlterEgos.get(doc._raw.sourceFilePath)?.[0] ??
         DEFAULT_ALTER_EGO,
     },
   },

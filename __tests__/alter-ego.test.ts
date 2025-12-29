@@ -1,6 +1,6 @@
 import {
   ALTER_EGO_OPTIONS,
-  inferAlterEgoFromTree,
+  inferAlterEgosFromTree,
   mergeTagsWithAlterEgo,
 } from "@/lib/alterEgo";
 
@@ -29,29 +29,30 @@ const root = (children: TestNode[] = []): TestNode => ({
   children,
 });
 
-describe("inferAlterEgoFromTree", () => {
+describe("inferAlterEgosFromTree", () => {
   const errorPrefix = "Chronicle sample.mdx";
 
   it("extracts a single alterEgo from ReleaseSection", () => {
     const tree = root([releaseNode("mark2")]);
-    expect(inferAlterEgoFromTree(tree, { errorPrefix })).toBe("mark2");
+    expect(inferAlterEgosFromTree(tree, { errorPrefix })).toEqual(["mark2"]);
   });
 
   it("allows multiple sections with the same alterEgo", () => {
     const tree = root([releaseNode("mark2"), releaseNode("mark2")]);
-    expect(inferAlterEgoFromTree(tree, { errorPrefix })).toBe("mark2");
+    expect(inferAlterEgosFromTree(tree, { errorPrefix })).toEqual(["mark2"]);
   });
 
-  it("throws when ReleaseSection alterEgo values conflict", () => {
+  it("collects multiple alterEgos across sections", () => {
     const tree = root([releaseNode("mark2"), releaseNode("theabbott")]);
-    expect(() => inferAlterEgoFromTree(tree, { errorPrefix })).toThrow(
-      `${errorPrefix}: multiple ReleaseSection alterEgo values found (mark2 vs theabbott).`,
-    );
+    expect(inferAlterEgosFromTree(tree, { errorPrefix })).toEqual([
+      "mark2",
+      "theabbott",
+    ]);
   });
 
   it("throws when alterEgo attribute is missing", () => {
     const tree = root([releaseNode(undefined)]);
-    expect(() => inferAlterEgoFromTree(tree, { errorPrefix })).toThrow(
+    expect(() => inferAlterEgosFromTree(tree, { errorPrefix })).toThrow(
       `${errorPrefix}: ReleaseSection is missing the required alterEgo prop.`,
     );
   });
@@ -66,21 +67,21 @@ describe("inferAlterEgoFromTree", () => {
         ],
       },
     ]);
-    expect(() => inferAlterEgoFromTree(tree, { errorPrefix })).toThrow(
+    expect(() => inferAlterEgosFromTree(tree, { errorPrefix })).toThrow(
       `${errorPrefix}: ReleaseSection alterEgo must be a string literal.`,
     );
   });
 
   it("throws when alterEgo value is not in the allowed list", () => {
     const tree = root([releaseNode("unknown")]);
-    expect(() => inferAlterEgoFromTree(tree, { errorPrefix })).toThrow(
+    expect(() => inferAlterEgosFromTree(tree, { errorPrefix })).toThrow(
       `${errorPrefix}: alterEgo must be one of ${ALTER_EGO_OPTIONS.join(", ")}.`,
     );
   });
 
   it("returns undefined when no ReleaseSection is present", () => {
     const tree = root([{ type: "paragraph", children: [] }]);
-    expect(inferAlterEgoFromTree(tree, { errorPrefix })).toBeUndefined();
+    expect(inferAlterEgosFromTree(tree, { errorPrefix })).toEqual([]);
   });
 });
 
@@ -106,5 +107,11 @@ describe("mergeTagsWithAlterEgo", () => {
 
   it("returns alterEgo as the only tag when none exist", () => {
     expect(mergeTagsWithAlterEgo(undefined, "mark2")).toEqual(["mark2"]);
+  });
+
+  it("merges multiple alterEgos into tags", () => {
+    expect(
+      mergeTagsWithAlterEgo(["alpha", "beta"], ["mark2", "cardattack"]),
+    ).toEqual(["alpha", "beta", "mark2", "cardattack"]);
   });
 });

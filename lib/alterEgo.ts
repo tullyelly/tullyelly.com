@@ -23,14 +23,14 @@ type InferOptions = {
   allowedAlterEgos?: readonly string[];
 };
 
-export function inferAlterEgoFromTree(
+export function inferAlterEgosFromTree(
   tree: MdxNode,
   {
     errorPrefix = "Chronicle",
     allowedAlterEgos = ALTER_EGO_OPTIONS,
   }: InferOptions = {},
-): AlterEgo | undefined {
-  let foundAlterEgo: AlterEgo | undefined;
+): AlterEgo[] {
+  const foundAlterEgos: AlterEgo[] = [];
 
   const visitNode = (node: MdxNode | undefined) => {
     if (!node) return;
@@ -40,15 +40,23 @@ export function inferAlterEgoFromTree(
       node.name === "ReleaseSection";
 
     if (isReleaseSection) {
-      const alterEgoAttr = (node.attributes ?? []).find(
+      const alterEgoAttrs = (node.attributes ?? []).filter(
         (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "alterEgo",
       );
 
-      if (!alterEgoAttr) {
+      if (alterEgoAttrs.length === 0) {
         throw new Error(
           `${errorPrefix}: ReleaseSection is missing the required alterEgo prop.`,
         );
       }
+
+      if (alterEgoAttrs.length > 1) {
+        throw new Error(
+          `${errorPrefix}: ReleaseSection should declare exactly one alterEgo prop.`,
+        );
+      }
+
+      const alterEgoAttr = alterEgoAttrs[0];
 
       if (typeof alterEgoAttr.value !== "string") {
         throw new Error(
@@ -62,13 +70,7 @@ export function inferAlterEgoFromTree(
         );
       }
 
-      if (foundAlterEgo && foundAlterEgo !== alterEgoAttr.value) {
-        throw new Error(
-          `${errorPrefix}: multiple ReleaseSection alterEgo values found (${foundAlterEgo} vs ${alterEgoAttr.value}).`,
-        );
-      }
-
-      foundAlterEgo = alterEgoAttr.value as AlterEgo;
+      foundAlterEgos.push(alterEgoAttr.value as AlterEgo);
     }
 
     if (node.children) {
@@ -79,13 +81,18 @@ export function inferAlterEgoFromTree(
   };
 
   visitNode(tree);
-  return foundAlterEgo;
+  return Array.from(new Set(foundAlterEgos));
 }
 
 export function mergeTagsWithAlterEgo(
   tags: string[] | undefined,
-  alterEgo: string | undefined,
+  alterEgo: string | string[] | undefined,
 ): string[] {
-  const merged = alterEgo ? [...(tags ?? []), alterEgo] : [...(tags ?? [])];
+  const alterEgos = Array.isArray(alterEgo)
+    ? alterEgo
+    : alterEgo
+      ? [alterEgo]
+      : [];
+  const merged = [...(tags ?? []), ...alterEgos];
   return Array.from(new Set(merged));
 }
