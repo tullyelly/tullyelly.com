@@ -165,6 +165,9 @@ export default async function ReleaseSection({
     textDecoration: "none",
     ["--tab-bg" as string]: resolvedReleaseColor,
     borderColor: resolvedReleaseColor,
+    borderRightWidth: 0,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
   };
 
   return (
