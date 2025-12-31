@@ -38,7 +38,7 @@ describe("ReleaseSection", () => {
     expect(container.querySelector(".relative")).toBeNull();
   });
 
-  it("wraps content with a release container and tab when releaseId is provided", async () => {
+  it("wraps content with a release container and link tab when releaseId is provided", async () => {
     getScrollMock.mockResolvedValue({
       id: "12",
       release_name: "Minor Move",
@@ -57,8 +57,13 @@ describe("ReleaseSection", () => {
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb("#00471B") });
 
-    const tab = wrapper.querySelector(".absolute") as HTMLSpanElement;
+    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
+    expect(tab.tagName.toLowerCase()).toBe("a");
+    expect(tab.getAttribute("href")).toBe("/mark2/shaolin-scrolls/12");
+    expect(tab.className).toContain("no-underline");
+    expect(tab.className).toContain("focus-visible:outline");
+    expect(tab).toHaveStyle({ textDecoration: "none" });
     expect(tab).toHaveTextContent("Minor Move");
     expect(tab).toHaveStyle({
       backgroundColor: toRgb("#00471B"),
@@ -72,7 +77,7 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-release-type", "year");
     expect(content).toHaveAttribute("data-release-color", "#00471B");
 
-    expect(container.querySelector("hr")).toBeInTheDocument();
+    expect(container.querySelector("hr")).toBeNull();
   });
 
   it("falls back to the archived color when release_type is unknown and divider can be suppressed", async () => {

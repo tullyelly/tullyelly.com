@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 import { Badge } from "@/app/ui/Badge";
 import {
@@ -162,6 +163,7 @@ export default async function ReleaseSection({
     backgroundColor: releaseColor,
     borderColor: releaseColor,
     color: releaseTextColor,
+    outlineColor: releaseColor,
   };
 
   return (
@@ -171,12 +173,15 @@ export default async function ReleaseSection({
         style={borderStyle}
       >
         {releaseName || releaseId ? (
-          <span
-            className="absolute -top-[4px] left-[-4px] inline-flex items-center rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none"
-            style={tabStyle}
+          <Link
+            href={`/mark2/shaolin-scrolls/${releaseId}`}
+            prefetch={false}
+            className="absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none transition-colors hover:opacity-90 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 no-underline hover:no-underline focus-visible:no-underline"
+            style={{ ...tabStyle, textDecoration: "none" }}
           >
-            {releaseName ?? releaseId}
-          </span>
+            <span>{releaseName ?? releaseId}</span>
+            <span aria-hidden="true">{"\u203a"}</span>
+          </Link>
         ) : null}
         {baseContent}
       </div>
