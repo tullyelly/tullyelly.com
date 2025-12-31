@@ -1,0 +1,106 @@
+import { render, screen } from "@testing-library/react";
+import ReleaseSection from "@/components/mdx/ReleaseSection";
+
+const getScrollMock = jest.fn();
+
+jest.mock("@/lib/scrolls", () => ({
+  getScroll: (...args: unknown[]) => getScrollMock(...args),
+}));
+
+const toRgb = (hex: string) => {
+  const normalized = hex.replace("#", "");
+  const value = parseInt(normalized, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+const baseProps = {
+  alterEgo: "mark2",
+  children: <p>hello world</p>,
+};
+
+describe("ReleaseSection", () => {
+  beforeEach(() => {
+    getScrollMock.mockReset();
+  });
+
+  it("renders the default layout when releaseId is missing", async () => {
+    const ui = await ReleaseSection(baseProps);
+    const { container } = render(ui);
+
+    expect(getScrollMock).not.toHaveBeenCalled();
+    expect(screen.getByText("hello world")).toBeInTheDocument();
+    expect(screen.getByText("#mark2")).toBeInTheDocument();
+    expect(container.querySelector("hr")).toBeInTheDocument();
+    expect(container.querySelector("[data-release-name]")).toBeNull();
+    expect(container.querySelector(".relative")).toBeNull();
+  });
+
+  it("wraps content with a release container and tab when releaseId is provided", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "12",
+      release_name: "Minor Move",
+      release_type: "year",
+      status: "released",
+      release_date: "2024-01-01",
+      label: "Minor Move",
+    });
+
+    const ui = await ReleaseSection({ ...baseProps, releaseId: "12" });
+    const { container } = render(ui);
+
+    expect(getScrollMock).toHaveBeenCalledWith("12");
+
+    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper).toHaveStyle({ borderColor: toRgb("#00471B") });
+
+    const tab = wrapper.querySelector(".absolute") as HTMLSpanElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab).toHaveTextContent("Minor Move");
+    expect(tab).toHaveStyle({
+      backgroundColor: toRgb("#00471B"),
+      borderColor: toRgb("#00471B"),
+    });
+
+    const content = wrapper.querySelector(
+      "[data-release-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-release-name", "Minor Move");
+    expect(content).toHaveAttribute("data-release-type", "year");
+    expect(content).toHaveAttribute("data-release-color", "#00471B");
+
+    expect(container.querySelector("hr")).toBeInTheDocument();
+  });
+
+  it("falls back to the archived color when release_type is unknown and divider can be suppressed", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "99",
+      release_name: "Mystery",
+      release_type: "unknown",
+      status: "planned",
+      release_date: null,
+      label: "Mystery",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "99",
+      divider: false,
+    });
+    const { container } = render(ui);
+
+    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper).toHaveStyle({ borderColor: toRgb("#EEE1C6") });
+
+    const content = wrapper.querySelector(
+      "[data-release-color]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-release-color", "#EEE1C6");
+
+    expect(container.querySelector("hr")).toBeNull();
+  });
+});
