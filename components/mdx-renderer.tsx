@@ -1,7 +1,5 @@
-"use client";
-
 import type { MDXComponents } from "mdx/types";
-import { useMDXComponent } from "next-contentlayer2/hooks";
+import { getMDXComponent } from "next-contentlayer2/hooks";
 import { mdxComponents } from "@/mdx-components";
 
 import * as React from "react";
@@ -32,6 +30,6 @@ type Props = {
 };
 
 export function MdxRenderer({ code, components }: Props) {
-  const Component = useMDXComponent(code);
+  const Component = getMDXComponent(code);
   return <Component components={{ ...mdxComponents, ...components }} />;
 }
