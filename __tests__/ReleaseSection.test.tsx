@@ -65,10 +65,16 @@ describe("ReleaseSection", () => {
     expect(tab.className).toContain("focus-visible:outline");
     expect(tab).toHaveStyle({ textDecoration: "none" });
     expect(tab).toHaveTextContent("Minor Move");
-    expect(tab).toHaveStyle({
-      backgroundColor: toRgb("#00471B"),
-      borderColor: toRgb("#00471B"),
-    });
+    expect(tab.className).toContain("bg-[var(--tab-bg)]");
+    expect(tab.className).toContain("!text-white");
+    expect(tab.className).toContain("hover:!bg-white");
+    expect(tab.className).toContain("hover:!text-[#0077C0]");
+    expect(tab.className).toContain("focus-visible:!bg-white");
+    expect(tab.className).toContain("focus-visible:!text-[#0077C0]");
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#00471B");
+    expect(tab.style.getPropertyValue("--tab-fg")).toBe("");
+    expect(tab.style.getPropertyValue("--tab-bg-hover")).toBe("");
+    expect(tab.style.getPropertyValue("--tab-fg-hover")).toBe("");
 
     const content = wrapper.querySelector(
       "[data-release-name]",
@@ -105,6 +111,10 @@ describe("ReleaseSection", () => {
       "[data-release-color]",
     ) as HTMLDivElement;
     expect(content).toHaveAttribute("data-release-color", "#EEE1C6");
+    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#EEE1C6");
+    expect(tab.className).toContain("!text-white");
+    expect(tab.className).toContain("hover:!text-[#0077C0]");
 
     expect(container.querySelector("hr")).toBeNull();
   });

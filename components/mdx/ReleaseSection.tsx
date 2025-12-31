@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 
 import { Badge } from "@/app/ui/Badge";
@@ -156,14 +156,15 @@ export default async function ReleaseSection({
   }
 
   const borderStyle = {
-    borderColor: releaseColor,
+    borderColor: releaseColor ?? archivedReleaseColor,
     borderWidth: "4px",
   };
-  const tabStyle = {
-    backgroundColor: releaseColor,
-    borderColor: releaseColor,
-    color: releaseTextColor,
-    outlineColor: releaseColor,
+  const resolvedReleaseColor = releaseColor ?? archivedReleaseColor;
+  const tabStyle: CSSProperties = {
+    outlineColor: resolvedReleaseColor,
+    textDecoration: "none",
+    ["--tab-bg" as string]: resolvedReleaseColor,
+    borderColor: resolvedReleaseColor,
   };
 
   return (
@@ -176,8 +177,8 @@ export default async function ReleaseSection({
           <Link
             href={`/mark2/shaolin-scrolls/${releaseId}`}
             prefetch={false}
-            className="absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none transition-colors hover:opacity-90 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 no-underline hover:no-underline focus-visible:no-underline"
-            style={{ ...tabStyle, textDecoration: "none" }}
+            className="absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none transition-colors hover:opacity-90 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 no-underline hover:no-underline focus-visible:no-underline bg-[var(--tab-bg)] !text-white hover:!bg-white hover:!text-[#0077C0] focus-visible:!bg-white focus-visible:!text-[#0077C0]"
+            style={tabStyle}
           >
             <span>{releaseName ?? releaseId}</span>
             <span aria-hidden="true">{"\u203a"}</span>
