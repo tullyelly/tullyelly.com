@@ -249,6 +249,6 @@ npx vercel --prod --token "$VERCEL_TOKEN"
 - App shell lives in `components/app-shell/AppShell` with menu data from `lib/menu/getMenu` and persona-aware metadata in `app/_menu`.
 - Home tiles render from `components/home/*` (`app/page.tsx`).
 - Chronicles index and tag filters: `app/shaolin/page.tsx`; details: `app/shaolin/[slug]/page.tsx`.
-- Shaolin Scrolls UI: `app/mark2/shaolin-scrolls`; TCDB rankings live at `app/cardattack/tcdb-rankings`.
+- Shaolin Scrolls UI: `app/mark2/shaolin-scrolls`; TCDB rankings live at `app/cardattack/tcdb-rankings` and accept deep links at `/cardattack/tcdb-rankings/[homie_id]`.
 - Credits and Flowers plumbing: `app/credits` and `components/flowers/FlowersInline.tsx`.
 - Build info is written to `lib/build-info.ts` by `npm run gen:build-info`; Contentlayer output sits in `.contentlayer`.

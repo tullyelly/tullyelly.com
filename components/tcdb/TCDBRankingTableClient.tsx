@@ -94,13 +94,18 @@ export default function TCDBRankingTableClient({
 }: TCDBRankingTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const currentPath = pathname ?? "/cardattack/tcdb-rankings";
+  const basePath = "/cardattack/tcdb-rankings";
+  const currentPath = pathname ?? basePath;
   const search = useSearchParams();
   const searchSnapshot = search?.toString() ?? "";
   const [isPending, startTransition] = useTransition();
 
   const [q, setQ] = useState<string>(() => search?.get("q") ?? "");
   const [trend, setTrend] = useState<string>(() => search?.get("trend") ?? "");
+  const [detailId, setDetailId] = useState<string | number | null>(null);
+  const [detailRow, setDetailRow] = useState<Row | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState(false);
 
   useEffect(() => {
     setQ(search?.get("q") ?? "");
@@ -112,8 +117,7 @@ export default function TCDBRankingTableClient({
     [serverData.data],
   );
 
-  const [detailRow, setDetailRow] = useState<Row | null>(null);
-  const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const lastTriggerRef = useRef<HTMLAnchorElement | null>(null);
 
   const updateQuery = useCallback(
     (
@@ -157,29 +161,113 @@ export default function TCDBRankingTableClient({
   );
 
   const handleOpenDetail = useCallback(
-    (row: Row, trigger: HTMLButtonElement) => {
-      setDetailRow(row);
+    (row: Row, trigger: HTMLAnchorElement) => {
       lastTriggerRef.current = trigger;
+      setDetailRow(row);
+      setDetailId(row.homie_id);
+      setDetailError(false);
+      setDetailLoading(false);
+      router.push(`${basePath}/${row.homie_id}` as Route);
     },
-    [],
+    [router, basePath],
   );
 
   const handleCloseDetail = useCallback(() => {
+    setDetailId(null);
     setDetailRow(null);
-  }, []);
+    setDetailError(false);
+    setDetailLoading(false);
+    router.replace(basePath as Route);
+  }, [router, basePath]);
 
   useEffect(() => {
-    if (detailRow) return;
+    const normalized =
+      currentPath.endsWith("/") && currentPath !== "/"
+        ? currentPath.slice(0, -1)
+        : currentPath;
+    const baseSegmentsCount = 2; // "cardattack", "tcdb-rankings"
+    if (normalized === basePath) {
+      setDetailId(null);
+      setDetailRow(null);
+      setDetailError(false);
+      setDetailLoading(false);
+      return;
+    }
+    if (!normalized.startsWith(basePath)) return;
+    const segments = normalized.split("/").filter(Boolean);
+    const lastSegment = segments[segments.length - 1];
+    const isNumericId = lastSegment && /^\d+$/.test(lastSegment);
+    if (!isNumericId) {
+      if (segments.length > baseSegmentsCount) {
+        router.replace(basePath as Route);
+      }
+      return;
+    }
+    if (detailId !== lastSegment) {
+      setDetailId(lastSegment);
+      setDetailError(false);
+      setDetailLoading(false);
+    }
+    const inlineRow = rows.find(
+      (row) => String(row.homie_id) === String(lastSegment),
+    );
+    if (inlineRow) {
+      setDetailRow(inlineRow);
+    } else if (
+      detailRow &&
+      String(detailRow.homie_id) !== String(lastSegment)
+    ) {
+      setDetailRow(null);
+    }
+  }, [basePath, currentPath, detailId, detailRow, rows, router]);
+
+  useEffect(() => {
+    if (!detailId) return;
+    if (detailRow && String(detailRow.homie_id) === String(detailId)) {
+      return;
+    }
+    let active = true;
+    setDetailLoading(true);
+    setDetailError(false);
+    fetch(`/api/tcdb-rankings/${detailId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(String(res.status));
+        return res.json();
+      })
+      .then((data: Row) => {
+        if (!active) return;
+        setDetailRow(data);
+      })
+      .catch(() => {
+        if (!active) return;
+        setDetailError(true);
+      })
+      .finally(() => {
+        if (active) setDetailLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [detailId, detailRow]);
+
+  useEffect(() => {
+    if (detailId) return;
     const trigger = lastTriggerRef.current;
     if (!trigger) return;
     const frame = requestAnimationFrame(() => {
       trigger.focus();
     });
     return () => cancelAnimationFrame(frame);
-  }, [detailRow]);
+  }, [detailId]);
 
   const hasRows = rows.length > 0;
   const { meta } = serverData;
+  const detailOpen = detailId !== null;
+  const detailHeading = detailRow
+    ? `${detailRow.name}; Jersey ${detailRow.homie_id}`
+    : detailId != null
+      ? `Ranking ${detailId}`
+      : "TCDB ranking";
 
   return (
     <>
@@ -380,7 +468,7 @@ export default function TCDBRankingTableClient({
         />
       </section>
 
-      {detailRow ? (
+      {detailOpen ? (
         <Modal
           open
           onClose={handleCloseDetail}
@@ -398,7 +486,7 @@ export default function TCDBRankingTableClient({
             >
               <div className="min-w-0 flex-1">
                 <ModalTitle className="truncate text-base font-semibold leading-6">
-                  {detailRow.name}; Jersey {detailRow.homie_id}
+                  {detailHeading}
                 </ModalTitle>
               </div>
               <ModalClose asChild>
@@ -414,23 +502,32 @@ export default function TCDBRankingTableClient({
             </div>
             <div className="modal-body grow" data-testid="modal-body">
               <ModalDescription className="sr-only">
-                Detailed TCDB ranking information for {detailRow.name}.
+                Detailed TCDB ranking information
+                {detailRow ? ` for ${detailRow.name}` : ""}.
               </ModalDescription>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:[grid-template-columns:repeat(2,minmax(0,1fr))]">
-                {dialogFields.map(({ label, render }) => (
-                  <div
-                    key={label}
-                    className="min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm"
-                  >
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-ink/60">
-                      {label}
+              {detailLoading ? (
+                <p>Loading…</p>
+              ) : detailError ? (
+                <p>Unable to load ranking.</p>
+              ) : detailRow ? (
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:[grid-template-columns:repeat(2,minmax(0,1fr))]">
+                  {dialogFields.map(({ label, render }) => (
+                    <div
+                      key={label}
+                      className="min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm"
+                    >
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-ink/60">
+                        {label}
+                      </div>
+                      <div className="mt-1 min-w-0 text-sm text-ink">
+                        {render(detailRow)}
+                      </div>
                     </div>
-                    <div className="mt-1 min-w-0 text-sm text-ink">
-                      {render(detailRow)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p>Ranking not found.</p>
+              )}
             </div>
           </div>
         </Modal>
