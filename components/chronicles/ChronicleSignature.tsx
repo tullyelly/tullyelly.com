@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Badge } from "@/app/ui/Badge";
-import { getBadgeClass } from "@/app/ui/badge-maps";
 import { fmtDate } from "@/lib/datetime";
+import { PILL_BLUE, pillInteractionClasses } from "@/components/ui/pillStyles";
 
 type ChronicleSignatureProps = {
   title: string;
@@ -43,12 +42,17 @@ export function ChronicleSignature({
                 <Link
                   key={tag}
                   href={`/shaolin/tags/${tagSlug}`}
-                  className="inline-flex"
+                  className={[
+                    "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
+                    pillInteractionClasses,
+                  ].join(" ")}
+                  style={{
+                    ["--tab-bg" as string]: PILL_BLUE,
+                    textDecoration: "none",
+                  }}
                   prefetch={false}
                 >
-                  <Badge className={getBadgeClass("planned")}>
-                    #{tag.toLowerCase()}
-                  </Badge>
+                  #{tag.toLowerCase()}
                 </Link>
               );
             })}

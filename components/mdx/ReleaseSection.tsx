@@ -7,6 +7,12 @@ import {
   getBadgeClass,
   type BadgeVariant,
 } from "@/app/ui/badge-maps";
+import {
+  PILL_BLUE,
+  PILL_BLACK,
+  PILL_CREAM_CITY,
+  pillInteractionClasses,
+} from "@/components/ui/pillStyles";
 import { getScroll } from "@/lib/scrolls";
 
 type Props = {
@@ -139,7 +145,23 @@ export default async function ReleaseSection({
     >
       {children}
       <div className="flex justify-end">
-        <Badge className={getBadgeClass("planned")}>#{String(alterEgo)}</Badge>
+        <Link
+          href={`/shaolin/tags/${encodeURIComponent(alterEgo.toLowerCase())}`}
+          prefetch={false}
+          className={[
+            "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
+            pillInteractionClasses,
+          ].join(" ")}
+          style={{
+            ["--tab-bg" as string]: PILL_BLUE,
+            ["--tab-fg" as string]: "#FFFFFF",
+            ["--tab-hover-bg" as string]: "#FFFFFF",
+            ["--tab-hover-fg" as string]: PILL_BLUE,
+            textDecoration: "none",
+          }}
+        >
+          <span>#{String(alterEgo)}</span>
+        </Link>
       </div>
     </div>
   );
@@ -164,6 +186,12 @@ export default async function ReleaseSection({
     outlineColor: resolvedReleaseColor,
     textDecoration: "none",
     ["--tab-bg" as string]: resolvedReleaseColor,
+    ["--tab-fg" as string]:
+      resolvedReleaseColor === PILL_CREAM_CITY ? PILL_BLACK : "#FFFFFF",
+    ["--tab-hover-bg" as string]:
+      resolvedReleaseColor === PILL_CREAM_CITY ? PILL_BLACK : "#FFFFFF",
+    ["--tab-hover-fg" as string]:
+      resolvedReleaseColor === PILL_CREAM_CITY ? PILL_CREAM_CITY : PILL_BLUE,
     borderColor: resolvedReleaseColor,
     borderRightWidth: 0,
     borderTopRightRadius: 0,
@@ -180,7 +208,10 @@ export default async function ReleaseSection({
           <Link
             href={`/mark2/shaolin-scrolls/${releaseId}`}
             prefetch={false}
-            className="absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none transition-colors hover:opacity-90 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 no-underline hover:no-underline focus-visible:no-underline bg-[var(--tab-bg)] !text-white hover:!bg-white hover:!text-[#0077C0] focus-visible:!bg-white focus-visible:!text-[#0077C0]"
+            className={[
+              "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
+              pillInteractionClasses,
+            ].join(" ")}
             style={tabStyle}
           >
             <span>{releaseName ?? releaseId}</span>
