@@ -112,6 +112,20 @@ function getReleaseTypeTextColor(releaseType?: string): string {
 
 // ReleaseSection acts as a no-op wrapper for MDX content and optionally renders a
 // divider after the block (Great Lakes blue hr from global MDX styles).
+/**
+ * ReleaseSection wraps MDX content with alter-ego tagging and optional release metadata.
+ *
+ * - alterEgo: required persona tag rendered as a pill.
+ * - releaseId: optional scroll ID; when present, the section renders a release-colored border and a linked tab to `/mark2/shaolin-scrolls/{releaseId}` with hover inversion.
+ * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
+ *
+ * @example
+ * ```mdx
+ * <ReleaseSection alterEgo="mark2" releaseId="86">
+ *   This section references release 86.
+ * </ReleaseSection>
+ * ```
+ */
 export default async function ReleaseSection({
   alterEgo,
   children,
