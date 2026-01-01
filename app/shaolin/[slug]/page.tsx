@@ -13,6 +13,9 @@ import { fmtDate } from "@/lib/datetime";
 
 type Params = { slug: string };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateStaticParams() {
   return allPosts.filter((p) => !p.draft).map((p) => ({ slug: p.slug }));
 }

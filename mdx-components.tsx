@@ -11,6 +11,10 @@ const bodyText =
   "text-[16px] md:text-[18px] leading-relaxed text-muted-foreground";
 const headingBase = "font-semibold leading-snug text-ink";
 
+type CustomMDXComponents = MDXComponents & {
+  ReleaseSection: typeof ReleaseSection;
+};
+
 const defaultComponents = {
   img: ({
     className,
@@ -116,7 +120,7 @@ const defaultComponents = {
   ),
 } satisfies MDXComponents;
 
-export const mdxComponents: MDXComponents = {
+export const mdxComponents: CustomMDXComponents = {
   ...defaultComponents,
   a: SmartLink, // override default link
   XEmbed,
@@ -124,7 +128,9 @@ export const mdxComponents: MDXComponents = {
   ReleaseSection,
 };
 
-export function useMDXComponents(components: MDXComponents): MDXComponents {
+export function useMDXComponents(
+  components: MDXComponents,
+): CustomMDXComponents {
   return {
     ...mdxComponents,
     ...components,
