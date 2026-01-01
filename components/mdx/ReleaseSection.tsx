@@ -15,6 +15,14 @@ import {
 } from "@/components/ui/pillStyles";
 import { getScroll } from "@/lib/scrolls";
 
+/*
+Spike note (ReleaseSection styling)
+- release_type → border colors: we reuse badge maps (e.g., planned → Great Lakes Blue, wax → Cream City) and parse the badge bg classes into hex values, so the border and tab always align with badge semantics.
+- Source of truth: BADGE_VARIANTS already centralizes palette + tokens across the app; using it here prevents divergence between badges, tabs, and list/table views.
+- Tab integration: the tab sits inside the container with 4px borders; right border is removed and radii flattened on the right edge so it visually fuses with the parent border while still being a link.
+- Rejected: hard-coded color map for ReleaseSection (would drift from badges) and pseudo-element overlays for the tab (added complexity and layering issues).
+*/
+
 type Props = {
   alterEgo: string;
   children: ReactNode;
