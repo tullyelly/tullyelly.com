@@ -66,11 +66,15 @@ describe("ReleaseSection", () => {
     expect(tab).toHaveStyle({ textDecoration: "none" });
     expect(tab).toHaveTextContent("Minor Move");
     expect(tab.className).toContain("bg-[var(--tab-bg)]");
-    expect(tab.className).toContain("!text-white");
-    expect(tab.className).toContain("hover:!bg-white");
-    expect(tab.className).toContain("hover:!text-[#0077C0]");
-    expect(tab.className).toContain("focus-visible:!bg-white");
-    expect(tab.className).toContain("focus-visible:!text-[#0077C0]");
+    expect(tab.className).toContain("!text-[color:var(--tab-fg");
+    expect(tab.className).toContain("hover:!bg-[color:var(--tab-hover-bg");
+    expect(tab.className).toContain("hover:!text-[color:var(--tab-hover-fg");
+    expect(tab.className).toContain(
+      "focus-visible:!bg-[color:var(--tab-hover-bg",
+    );
+    expect(tab.className).toContain(
+      "focus-visible:!text-[color:var(--tab-hover-fg",
+    );
     expect(tab.style.getPropertyValue("--tab-bg")).toBe("#00471B");
     expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
     expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
@@ -116,8 +120,8 @@ describe("ReleaseSection", () => {
     expect(tab.style.getPropertyValue("--tab-fg")).toBe("#000000");
     expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#000000");
     expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#EEE1C6");
-    expect(tab.className).toContain("!text-white");
-    expect(tab.className).toContain("hover:!text-[#0077C0]");
+    expect(tab.className).toContain("!text-[color:var(--tab-fg");
+    expect(tab.className).toContain("hover:!text-[color:var(--tab-hover-fg");
 
     expect(container.querySelector("hr")).toBeNull();
   });
