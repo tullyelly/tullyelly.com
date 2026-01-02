@@ -139,3 +139,37 @@ export async function listTcdbRankings(opts: {
     meta: { page, pageSize, total, totalPages, q: q || undefined, trend },
   };
 }
+
+export async function getTcdbRanking(
+  id: string | number,
+): Promise<RankingRow | null> {
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId)) return null;
+  const row = await withDbRetry(() =>
+    sqlQueryOne<DbRankingRow>(
+      `
+        SELECT homie_id,
+               name,
+               card_count,
+               ranking,
+               ranking_at::text AS ranking_at,
+               difference,
+               rank_delta,
+               diff_delta,
+               trend_rank,
+               trend_overall,
+               diff_sign_changed
+        FROM ${TCDB_TABLE}
+        WHERE homie_id = $1
+        LIMIT 1
+      `,
+      [numericId],
+    ),
+  );
+  if (!row) return null;
+  const ranking_at = asDateString(row.ranking_at);
+  if (!ranking_at) {
+    throw new Error("Invalid ranking_at value from database");
+  }
+  return { ...row, ranking_at };
+}

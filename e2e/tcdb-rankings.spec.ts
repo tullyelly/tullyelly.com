@@ -25,12 +25,21 @@ async function getFirstVisibleTrigger(page: import("@playwright/test").Page) {
   return trigger;
 }
 
+async function getFirstTriggerHref(page: import("@playwright/test").Page) {
+  const trigger = await getFirstVisibleTrigger(page);
+  const href = await trigger.getAttribute("href");
+  expect(href).toBeTruthy();
+  return href as string;
+}
+
 test("ranking detail trigger is interactable and opens dialog", async ({
   page,
 }) => {
   await page.goto("/cardattack/tcdb-rankings");
   await waitForRankingsList(page);
   const trigger = await getFirstVisibleTrigger(page);
+  const href = await trigger.getAttribute("href");
+  expect(href).toMatch(/\/cardattack\/tcdb-rankings\/\d+$/);
 
   const hasCursorPointer = await trigger.evaluate((el) =>
     el.className.includes("cursor-pointer"),
@@ -38,6 +47,7 @@ test("ranking detail trigger is interactable and opens dialog", async ({
   expect(hasCursorPointer).toBeTruthy();
 
   await trigger.click();
+  await expect(page).toHaveURL(/\/cardattack\/tcdb-rankings\/\d+$/);
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
 
@@ -76,6 +86,34 @@ test("ranking detail dialog basic interactions still work", async ({
   await expect(page.locator("[data-testid='modal-overlay']")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL("/cardattack/tcdb-rankings");
+});
+
+test("deep link opens dialog for tcdb ranking", async ({ page }) => {
+  await page.goto("/cardattack/tcdb-rankings");
+  await waitForRankingsList(page);
+  const href = await getFirstTriggerHref(page);
+
+  await page.goto(href);
+  await expect(
+    page.getByRole("heading", { name: "TCDB Rankings" }),
+  ).toBeVisible();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
+test("closing a deep-linked tcdb dialog returns to list URL", async ({
+  page,
+}) => {
+  await page.goto("/cardattack/tcdb-rankings");
+  await waitForRankingsList(page);
+  const href = await getFirstTriggerHref(page);
+
+  await page.goto(href);
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await page.getByRole("button", { name: "Close dialog" }).click();
+  await expect(page).toHaveURL("/cardattack/tcdb-rankings");
+  await expect(dialog).toHaveCount(0);
 });
 
 test.describe("TCDB rankings snapshot dialog", () => {

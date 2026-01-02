@@ -8,7 +8,7 @@ type RowClientProps = {
   name: string;
   className?: string;
   children?: React.ReactNode;
-  onOpen?: (id: string | number, triggerEl: HTMLButtonElement) => void;
+  onOpen?: (id: string | number, triggerEl: HTMLAnchorElement) => void;
 };
 
 export default function TCDBRankingRowClient({
@@ -18,16 +18,20 @@ export default function TCDBRankingRowClient({
   children,
   onOpen,
 }: RowClientProps) {
-  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+  const triggerRef = React.useRef<HTMLAnchorElement | null>(null);
 
-  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+  const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (event) => {
+    if (event.metaKey || event.ctrlKey || event.button === 1) {
+      return;
+    }
+    event.preventDefault();
     triggerRef.current = event.currentTarget;
     onOpen?.(id, event.currentTarget);
   };
 
   return (
-    <button
-      type="button"
+    <a
+      href={`/cardattack/tcdb-rankings/${id}`}
       ref={triggerRef}
       data-testid="ranking-detail-trigger"
       aria-haspopup="dialog"
@@ -39,6 +43,6 @@ export default function TCDBRankingRowClient({
       onClick={handleClick}
     >
       {children ?? "View details"}
-    </button>
+    </a>
   );
 }
