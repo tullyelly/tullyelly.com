@@ -37,6 +37,7 @@ const RELEASE_TYPE_VARIANTS: Record<string, BadgeVariant> = {
   major: "major",
   planned: "planned",
   released: "released",
+  chore: "chore",
   classic: "classic",
   year: "year",
 };

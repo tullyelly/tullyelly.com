@@ -6,6 +6,7 @@ export const BADGE_VARIANTS = {
   archived: "bg-[#EEE1C6] text-[#1A1A1A] ring-[#1A1A1A]/20",
   minor: "bg-[#00471B] text-white ring-[#00471B]/40",
   major: "bg-[#EEE1C6] text-[#1A1A1A] ring-[#1A1A1A]/20",
+  chore: "bg-[#702F8A] text-white ring-[#702F8A]/40",
 
   // alias to planned
   classic: "bg-[#0077C0] text-white ring-[#0077C0]/40",

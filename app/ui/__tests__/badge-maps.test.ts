@@ -8,6 +8,7 @@ test("badge variants contain expected keys", () => {
     "archived",
     "minor",
     "major",
+    "chore",
     "classic",
     "year",
   ] as Array<keyof typeof BADGE_VARIANTS>) {
@@ -23,4 +24,11 @@ test("year badge uses Bucks green with Cream City Cream text", () => {
   const cls = getBadgeClass("year");
   expect(cls).toContain("bg-brand-bucksGreen");
   expect(cls).toContain("text-brand-creamCityCream");
+});
+
+test("chore badge uses Bucks purple with white text", () => {
+  const cls = getBadgeClass("chore");
+  expect(cls).toContain("bg-[#702F8A]");
+  expect(cls).toContain("text-white");
+  expect(cls).toContain("ring-[#702F8A]/40");
 });
