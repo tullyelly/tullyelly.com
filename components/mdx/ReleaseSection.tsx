@@ -204,16 +204,19 @@ export default async function ReleaseSection({
     borderWidth: "4px",
   };
   const resolvedReleaseColor = releaseColor ?? archivedReleaseColor;
+  const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
+  const hoverBackgroundColor = isCreamCity ? PILL_BLACK : "#FFFFFF";
+  const hoverForegroundColor = isCreamCity
+    ? PILL_CREAM_CITY
+    : resolvedReleaseColor;
   const tabStyle: CSSProperties = {
     outlineColor: resolvedReleaseColor,
     textDecoration: "none",
     ["--tab-bg" as string]: resolvedReleaseColor,
     ["--tab-fg" as string]:
       resolvedReleaseColor === PILL_CREAM_CITY ? PILL_BLACK : "#FFFFFF",
-    ["--tab-hover-bg" as string]:
-      resolvedReleaseColor === PILL_CREAM_CITY ? PILL_BLACK : "#FFFFFF",
-    ["--tab-hover-fg" as string]:
-      resolvedReleaseColor === PILL_CREAM_CITY ? PILL_CREAM_CITY : PILL_BLUE,
+    ["--tab-hover-bg" as string]: hoverBackgroundColor,
+    ["--tab-hover-fg" as string]: hoverForegroundColor,
     borderColor: resolvedReleaseColor,
     borderRightWidth: 0,
     borderTopRightRadius: 0,
