@@ -4,6 +4,7 @@ import type { MDXComponents } from "mdx/types";
 import LoopedGIF from "@/components/LoopedGIF";
 import SmartLink from "@/components/mdx/SmartLink";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
+import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ const headingBase = "font-semibold leading-snug text-ink";
 
 type CustomMDXComponents = MDXComponents & {
   ReleaseSection: typeof ReleaseSection;
+  ScrollAmendment: typeof ScrollAmendment;
 };
 
 const defaultComponents = {
@@ -126,6 +128,7 @@ export const mdxComponents: CustomMDXComponents = {
   XEmbed,
   LoopedGIF,
   ReleaseSection,
+  ScrollAmendment,
 };
 
 export function useMDXComponents(
