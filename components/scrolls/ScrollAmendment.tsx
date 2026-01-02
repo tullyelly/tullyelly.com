@@ -9,23 +9,24 @@ interface ScrollAmendmentProps {
 
 /**
  * Inline callout for editorial notes within scrolls content.
- * Always prefixes the provided copy with the "scroll amendment" label.
+ * Uses a release-style tab label with Cream City Cream + black text while keeping the body Great Lakes Blue with white text.
  */
 export function ScrollAmendment({ children, className }: ScrollAmendmentProps) {
   return (
     <span
       role="note"
       className={cn(
-        "inline-grid grid-cols-[auto_1fr] overflow-hidden rounded-full bg-[var(--blue)] text-[var(--text-on-blue)] text-sm leading-snug md:text-base",
+        "relative block w-full rounded-lg bg-[var(--blue)] px-4 py-4 text-[13px] font-medium leading-snug text-[var(--text-on-blue)] shadow-sm md:px-5 md:py-5 md:text-[15px] [&_ul>li]:marker:text-[color:var(--text-on-blue)]",
         className,
       )}
     >
-      <span className="flex items-center bg-[var(--cream)] px-3 py-1 text-[11px] font-semibold lowercase tracking-[0.18em] text-[var(--blue)]">
+      <span
+        className="absolute left-0 top-0 inline-flex items-center rounded-tl-lg rounded-tr-none px-4 py-1 text-sm font-semibold leading-none text-[color:var(--ink,_#0c1b0c)] shadow-sm md:px-5"
+        style={{ backgroundColor: "var(--cream)" }}
+      >
         scroll amendment
       </span>
-      <span className="flex items-center px-3 py-1 text-[13px] font-medium leading-snug md:text-[15px]">
-        {children}
-      </span>
+      <span className="block pt-1.5 md:pt-2">{children}</span>
     </span>
   );
 }
