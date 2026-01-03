@@ -4,6 +4,7 @@ export const ALTER_EGO_OPTIONS = [
   "theabbott",
   "unclejimmy",
   "tullyelly",
+  "george",
 ] as const;
 
 export const DEFAULT_ALTER_EGO = "tullyelly";

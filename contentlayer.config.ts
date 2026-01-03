@@ -59,7 +59,7 @@ const Post = defineDocumentType(() => ({
   name: "Post",
   filePathPattern: "chronicles/**/*.mdx",
   contentType: "mdx",
-  // Chronicles frontmatter; alterEgo is an optional persona key (mark2 | cardattack | theabbott | unclejimmy | tullyelly) and defaults via computedFields below.
+  // Chronicles frontmatter; alterEgo is an optional persona key (mark2 | cardattack | theabbott | unclejimmy | tullyelly | george) and defaults via computedFields below.
   fields: {
     title: { type: "string", required: true },
     date: { type: "date", required: true },

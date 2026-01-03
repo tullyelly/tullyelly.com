@@ -38,22 +38,12 @@ function capsHash(caps: Set<string>) {
 }
 
 const MENU_REVALIDATE_SECONDS = 300;
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
-let loggedCacheKeyParts = false;
 
 function shouldBypassFiltering(): boolean {
   const flag = process.env.NEXT_PUBLIC_MENU_SHOW_ALL;
   if (!flag) return false;
   const normalized = flag.toLowerCase();
   return normalized === "1" || normalized === "true" || normalized === "yes";
-}
-
-function logMenuCacheKey(persona: PersonaKey, hash: string) {
-  if (IS_PRODUCTION || loggedCacheKeyParts) return;
-  loggedCacheKeyParts = true;
-  console.debug(
-    `[menu] cache persona=${persona} capsHashLength=${hash.length}`,
-  );
 }
 
 type MenuIndexSerialized = {
@@ -458,7 +448,6 @@ export async function getMenuDataCached(
 ) {
   const bypass = shouldBypassFiltering();
   const hash = bypass ? "bypass" : capsHash(caps);
-  logMenuCacheKey(persona, hash);
   const key = ["menu", persona, hash];
   const cached = unstable_cache(async () => getMenuData(persona, caps), key, {
     tags: ["menu", `menu:${persona}`],

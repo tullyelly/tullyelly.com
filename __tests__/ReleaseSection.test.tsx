@@ -78,7 +78,7 @@ describe("ReleaseSection", () => {
     expect(tab.style.getPropertyValue("--tab-bg")).toBe("#00471B");
     expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
     expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
-    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#0077C0");
+    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#00471B");
 
     const content = wrapper.querySelector(
       "[data-release-name]",
@@ -88,6 +88,37 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-release-color", "#00471B");
 
     expect(container.querySelector("hr")).toBeNull();
+  });
+
+  it("uses Bucks purple for chore releases", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "41",
+      release_name: "Chore Cleanup",
+      release_type: "chore",
+      status: "planned",
+      release_date: null,
+      label: "Chore Cleanup",
+    });
+
+    const ui = await ReleaseSection({ ...baseProps, releaseId: "41" });
+    const { container } = render(ui);
+
+    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper).toHaveStyle({ borderColor: toRgb("#702F8A") });
+
+    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#702F8A");
+    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
+    expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
+    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#702F8A");
+
+    const content = wrapper.querySelector(
+      "[data-release-color]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-release-color", "#702F8A");
+    expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
   });
 
   it("falls back to the archived color when release_type is unknown and divider can be suppressed", async () => {
