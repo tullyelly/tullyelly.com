@@ -53,6 +53,66 @@ type PlaylistDetail =
       : never
     : never;
 
+export async function fetchYouTubeMusicPlaylistDetail(
+  playlistId: string,
+  maxRetries?: number,
+): Promise<PlaylistDetail | null> {
+  if (!playlistId) return null;
+
+  try {
+    const ytm = new YouTubeMusic();
+    const guest = await ytm.guest();
+    return await guest.getPlaylist(playlistId, maxRetries ?? 3);
+  } catch {
+    return null;
+  }
+}
+
+function coerceName(value: unknown): string | null {
+  if (!value) return null;
+  if (typeof value === "string") return value.trim() || null;
+  if (typeof value === "object") {
+    const candidate = (value as { name?: string; title?: string }).name;
+    const fallback = (value as { name?: string; title?: string }).title;
+    const resolved = candidate ?? fallback;
+    return typeof resolved === "string" && resolved.trim()
+      ? resolved.trim()
+      : null;
+  }
+  return null;
+}
+
+export function extractPlaylistAlbums(
+  detail: { tracks?: Array<Record<string, unknown>> } | null,
+): { album: string; artist: string }[] {
+  if (!detail?.tracks || !Array.isArray(detail.tracks)) return [];
+
+  const seen = new Set<string>();
+  const albums: { album: string; artist: string }[] = [];
+
+  for (const track of detail.tracks) {
+    if (!track || typeof track !== "object") continue;
+
+    const album =
+      coerceName((track as { album?: unknown }).album) ??
+      coerceName((track as { albums?: unknown[] }).albums?.[0]);
+
+    const artist =
+      coerceName((track as { artist?: unknown }).artist) ??
+      coerceName((track as { artists?: unknown[] }).artists?.[0]);
+
+    if (!album || !artist) continue;
+
+    const key = `${artist}__${album}`;
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    albums.push({ album, artist });
+  }
+
+  return albums;
+}
+
 export async function fetchYouTubeMusicPlaylistMeta(
   playlistId: string,
 ): Promise<{
@@ -63,9 +123,7 @@ export async function fetchYouTubeMusicPlaylistMeta(
   if (!playlistId) return null;
 
   try {
-    const ytm = new YouTubeMusic();
-    const guest = await ytm.guest();
-    const detail: PlaylistDetail = await guest.getPlaylist(playlistId, 3);
+    const detail = await fetchYouTubeMusicPlaylistDetail(playlistId, 3);
     if (!detail) return null;
 
     const thumbnails = (detail as PlaylistDetail & { thumbnails?: Thumbnail[] })
