@@ -16,7 +16,7 @@ export function ScrollAmendment({ children, className }: ScrollAmendmentProps) {
     <span
       role="note"
       className={cn(
-        "relative block w-full rounded-lg bg-[var(--blue)] px-4 py-4 text-[13px] font-medium leading-snug text-[var(--text-on-blue)] shadow-sm md:px-5 md:py-5 md:text-[15px] [&_ul>li]:marker:text-[color:var(--text-on-blue)]",
+        "relative block w-full rounded-lg bg-[var(--blue)] px-4 py-4 text-[13px] font-medium leading-snug text-[var(--text-on-blue)] shadow-sm md:px-5 md:py-5 md:text-[15px] [&_a]:rounded [&_a]:px-1 [&_a]:!text-white [&_a]:underline [&_a]:transition-colors [&_a]:duration-150 [&_a:hover]:bg-white [&_a:hover]:!text-[var(--blue)] [&_a:focus-visible]:outline [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-2 [&_a:focus-visible]:outline-white [&_ul>li]:marker:text-[color:var(--text-on-blue)]",
         className,
       )}
     >

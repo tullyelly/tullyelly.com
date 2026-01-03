@@ -40,6 +40,7 @@ const RELEASE_TYPE_VARIANTS: Record<string, BadgeVariant> = {
   chore: "chore",
   classic: "classic",
   year: "year",
+  tcdb: "tcdb",
 };
 
 const COLOR_OVERRIDES: Record<string, string> = {

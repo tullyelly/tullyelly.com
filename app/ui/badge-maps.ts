@@ -7,6 +7,7 @@ export const BADGE_VARIANTS = {
   minor: "bg-[#00471B] text-white ring-[#00471B]/40",
   major: "bg-[#EEE1C6] text-[#1A1A1A] ring-[#1A1A1A]/20",
   chore: "bg-[#702F8A] text-white ring-[#702F8A]/40",
+  tcdb: "bg-[#B65A36] text-[#F2E5D6] ring-[#B65A36]/40",
 
   // alias to planned
   classic: "bg-[#0077C0] text-white ring-[#0077C0]/40",
