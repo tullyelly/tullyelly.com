@@ -120,6 +120,7 @@
     "tailwindcss-animate": "1.0.7",
     "twemoji": "^14.0.2",
     "vaul": "1.1.2",
+    "youtube-music-ts-api": "^1.8.4",
     "zod": "^4.0.17"
   },
   "devDependencies": {
