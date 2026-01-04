@@ -1,8 +1,13 @@
+import type React from "react";
 import { render, screen } from "@testing-library/react";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
+import { mdxComponents } from "@/mdx-components";
 
 const getScrollMock = jest.fn();
 
+jest.mock("@/components/Tweet", () => ({
+  XEmbed: () => null,
+}));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
 }));
@@ -56,6 +61,7 @@ describe("ReleaseSection", () => {
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb("#00471B") });
+    expect(wrapper.className).toContain("mb-10");
 
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
@@ -88,6 +94,93 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-release-color", "#00471B");
 
     expect(container.querySelector("hr")).toBeNull();
+  });
+
+  it("colors nested dividers to match the release border when releaseId is present", async () => {
+    const Divider = mdxComponents.hr as React.ComponentType<
+      React.ComponentPropsWithoutRef<"hr">
+    >;
+    getScrollMock.mockResolvedValue({
+      id: "12",
+      release_name: "Minor Move",
+      release_type: "year",
+      status: "released",
+      release_date: "2024-01-01",
+      label: "Minor Move",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "12",
+      children: (
+        <>
+          <p>hello world</p>
+          <Divider />
+        </>
+      ),
+    });
+    const { container } = render(ui);
+
+    const content = container.querySelector(
+      "[data-release-color]",
+    ) as HTMLDivElement;
+    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe(
+      "#00471B",
+    );
+
+    const divider = content.querySelector("hr") as HTMLHRElement;
+    expect(divider).toBeInTheDocument();
+    expect(divider.style.backgroundColor).toBe(
+      "var(--mdx-divider-color, var(--blue))",
+    );
+  });
+
+  it("uses the release border color for bullets and tag pills when releaseId is present", async () => {
+    const List = mdxComponents.ul as React.ComponentType<
+      React.ComponentPropsWithoutRef<"ul">
+    >;
+    const ListItem = mdxComponents.li as React.ComponentType<
+      React.ComponentPropsWithoutRef<"li">
+    >;
+    getScrollMock.mockResolvedValue({
+      id: "12",
+      release_name: "Minor Move",
+      release_type: "year",
+      status: "released",
+      release_date: "2024-01-01",
+      label: "Minor Move",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "12",
+      children: (
+        <List>
+          <ListItem>alpha</ListItem>
+        </List>
+      ),
+    });
+    const { container } = render(ui);
+
+    const content = container.querySelector(
+      "[data-release-color]",
+    ) as HTMLDivElement;
+    expect(content.style.getPropertyValue("--mdx-marker-color")).toBe(
+      "#00471B",
+    );
+
+    const list = container.querySelector("ul") as HTMLUListElement;
+    expect(list.className).toContain(
+      "marker:text-[color:var(--mdx-marker-color,var(--blue))]",
+    );
+
+    const tagPill = screen
+      .getByText("#mark2")
+      .closest("a") as HTMLAnchorElement;
+    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe("#00471B");
+    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#EEE1C6");
+    expect(tagPill.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
+    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe("#00471B");
   });
 
   it("uses Bucks purple for chore releases", async () => {
@@ -141,6 +234,7 @@ describe("ReleaseSection", () => {
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb("#EEE1C6") });
+    expect(wrapper.className).not.toContain("mb-10");
 
     const content = wrapper.querySelector(
       "[data-release-color]",

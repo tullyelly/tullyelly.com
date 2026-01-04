@@ -4,6 +4,7 @@ import type { MDXComponents } from "mdx/types";
 import LoopedGIF from "@/components/LoopedGIF";
 import SmartLink from "@/components/mdx/SmartLink";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
+import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ const headingBase = "font-semibold leading-snug text-ink";
 type CustomMDXComponents = MDXComponents & {
   ReleaseSection: typeof ReleaseSection;
   ScrollAmendment: typeof ScrollAmendment;
+  YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
 };
 
 const defaultComponents = {
@@ -72,7 +74,7 @@ const defaultComponents = {
     <ul
       className={cn(
         bodyText,
-        "mt-4 list-disc list-outside space-y-2 pl-6 marker:text-[var(--blue)]",
+        "mt-4 list-disc list-outside space-y-2 pl-6 marker:text-[color:var(--mdx-marker-color,var(--blue))]",
         className,
       )}
       {...props}
@@ -92,7 +94,7 @@ const defaultComponents = {
     <ol
       className={cn(
         bodyText,
-        "mt-4 list-decimal space-y-2 pl-5 marker:text-[var(--blue)]",
+        "mt-4 list-decimal space-y-2 pl-5 marker:text-[color:var(--mdx-marker-color,var(--blue))]",
         className,
       )}
       {...props}
@@ -111,12 +113,17 @@ const defaultComponents = {
       {...props}
     />
   ),
-  hr: ({ className, ...props }: React.ComponentPropsWithoutRef<"hr">) => (
+  hr: ({
+    className,
+    style,
+    ...props
+  }: React.ComponentPropsWithoutRef<"hr">) => (
     <hr
-      className={cn(
-        "my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]",
-        className,
-      )}
+      className={cn("my-10 h-[4px] w-full rounded border-0", className)}
+      style={{
+        backgroundColor: "var(--mdx-divider-color, var(--blue))",
+        ...style,
+      }}
       {...props}
     />
   ),
@@ -129,6 +136,7 @@ export const mdxComponents: CustomMDXComponents = {
   LoopedGIF,
   ReleaseSection,
   ScrollAmendment,
+  YouTubeMusicPlaylist,
 };
 
 export function useMDXComponents(

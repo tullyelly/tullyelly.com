@@ -49,9 +49,9 @@ function PostContent({ slug }: { slug: string }) {
       <Card as="section" className="p-6 md:p-8 space-y-6">
         <header className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            {post.title}
+            {fmtDate(post.date)}
+            {`: ${post.title}`}
           </h1>
-          <p className="text-sm text-muted-foreground">{fmtDate(post.date)}</p>
         </header>
         <div className="space-y-4">
           <MdxRenderer code={post.body.code} />

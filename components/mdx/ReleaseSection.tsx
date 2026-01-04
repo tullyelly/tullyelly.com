@@ -158,6 +158,33 @@ export default async function ReleaseSection({
   const releaseTextColor = showReleaseDetails
     ? getReleaseTypeTextColor(releaseType)
     : undefined;
+  const resolvedReleaseColor = showReleaseDetails
+    ? (releaseColor ?? archivedReleaseColor)
+    : undefined;
+  const resolvedReleaseTextColor = showReleaseDetails
+    ? (releaseTextColor ?? archivedTextColor)
+    : undefined;
+  const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
+  const hoverBackgroundColor =
+    showReleaseDetails && resolvedReleaseColor
+      ? isCreamCity
+        ? PILL_BLACK
+        : "#FFFFFF"
+      : "#FFFFFF";
+  const hoverForegroundColor =
+    showReleaseDetails && resolvedReleaseColor
+      ? isCreamCity
+        ? PILL_CREAM_CITY
+        : resolvedReleaseColor
+      : PILL_BLUE;
+  const tagBackgroundColor =
+    showReleaseDetails && resolvedReleaseColor
+      ? resolvedReleaseColor
+      : PILL_BLUE;
+  const tagForegroundColor =
+    showReleaseDetails && resolvedReleaseTextColor
+      ? resolvedReleaseTextColor
+      : "#FFFFFF";
 
   const baseContent = (
     <div
@@ -166,6 +193,14 @@ export default async function ReleaseSection({
       data-release-type={releaseType ?? undefined}
       data-release-color={releaseColor}
       data-release-text-color={releaseTextColor}
+      style={
+        resolvedReleaseColor
+          ? ({
+              ["--mdx-divider-color" as string]: resolvedReleaseColor,
+              ["--mdx-marker-color" as string]: resolvedReleaseColor,
+            } satisfies CSSProperties)
+          : undefined
+      }
     >
       {children}
       <div className="flex justify-end">
@@ -177,10 +212,10 @@ export default async function ReleaseSection({
             pillInteractionClasses,
           ].join(" ")}
           style={{
-            ["--tab-bg" as string]: PILL_BLUE,
-            ["--tab-fg" as string]: "#FFFFFF",
-            ["--tab-hover-bg" as string]: "#FFFFFF",
-            ["--tab-hover-fg" as string]: PILL_BLUE,
+            ["--tab-bg" as string]: tagBackgroundColor,
+            ["--tab-fg" as string]: tagForegroundColor,
+            ["--tab-hover-bg" as string]: hoverBackgroundColor,
+            ["--tab-hover-fg" as string]: hoverForegroundColor,
             textDecoration: "none",
           }}
         >
@@ -205,12 +240,6 @@ export default async function ReleaseSection({
     borderColor: releaseColor ?? archivedReleaseColor,
     borderWidth: "4px",
   };
-  const resolvedReleaseColor = releaseColor ?? archivedReleaseColor;
-  const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
-  const hoverBackgroundColor = isCreamCity ? PILL_BLACK : "#FFFFFF";
-  const hoverForegroundColor = isCreamCity
-    ? PILL_CREAM_CITY
-    : resolvedReleaseColor;
   const tabStyle: CSSProperties = {
     outlineColor: resolvedReleaseColor,
     textDecoration: "none",
@@ -225,12 +254,16 @@ export default async function ReleaseSection({
     borderBottomRightRadius: 0,
   };
 
+  const releaseContainerClassName = [
+    "relative rounded-lg border-[4px] px-4 pt-8 pb-4",
+    divider ? "mb-10" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <>
-      <div
-        className="relative rounded-lg border-[4px] px-4 pt-8 pb-4"
-        style={borderStyle}
-      >
+      <div className={releaseContainerClassName} style={borderStyle}>
         {releaseName || releaseId ? (
           <Link
             href={`/mark2/shaolin-scrolls/${releaseId}`}
