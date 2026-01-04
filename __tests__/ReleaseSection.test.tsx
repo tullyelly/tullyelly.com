@@ -131,6 +131,50 @@ describe("ReleaseSection", () => {
     );
   });
 
+  it("uses the release border color for bullets and tag pills when releaseId is present", async () => {
+    const List = mdxComponents.ul;
+    const ListItem = mdxComponents.li;
+    getScrollMock.mockResolvedValue({
+      id: "12",
+      release_name: "Minor Move",
+      release_type: "year",
+      status: "released",
+      release_date: "2024-01-01",
+      label: "Minor Move",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "12",
+      children: (
+        <List>
+          <ListItem>alpha</ListItem>
+        </List>
+      ),
+    });
+    const { container } = render(ui);
+
+    const content = container.querySelector(
+      "[data-release-color]",
+    ) as HTMLDivElement;
+    expect(content.style.getPropertyValue("--mdx-marker-color")).toBe(
+      "#00471B",
+    );
+
+    const list = container.querySelector("ul") as HTMLUListElement;
+    expect(list.className).toContain(
+      "marker:text-[color:var(--mdx-marker-color,var(--blue))]",
+    );
+
+    const tagPill = screen
+      .getByText("#mark2")
+      .closest("a") as HTMLAnchorElement;
+    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe("#00471B");
+    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#EEE1C6");
+    expect(tagPill.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
+    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe("#00471B");
+  });
+
   it("uses Bucks purple for chore releases", async () => {
     getScrollMock.mockResolvedValue({
       id: "41",

@@ -74,7 +74,7 @@ const defaultComponents = {
     <ul
       className={cn(
         bodyText,
-        "mt-4 list-disc list-outside space-y-2 pl-6 marker:text-[var(--blue)]",
+        "mt-4 list-disc list-outside space-y-2 pl-6 marker:text-[color:var(--mdx-marker-color,var(--blue))]",
         className,
       )}
       {...props}
@@ -94,7 +94,7 @@ const defaultComponents = {
     <ol
       className={cn(
         bodyText,
-        "mt-4 list-decimal space-y-2 pl-5 marker:text-[var(--blue)]",
+        "mt-4 list-decimal space-y-2 pl-5 marker:text-[color:var(--mdx-marker-color,var(--blue))]",
         className,
       )}
       {...props}

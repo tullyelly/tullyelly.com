@@ -161,6 +161,30 @@ export default async function ReleaseSection({
   const resolvedReleaseColor = showReleaseDetails
     ? (releaseColor ?? archivedReleaseColor)
     : undefined;
+  const resolvedReleaseTextColor = showReleaseDetails
+    ? (releaseTextColor ?? archivedTextColor)
+    : undefined;
+  const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
+  const hoverBackgroundColor =
+    showReleaseDetails && resolvedReleaseColor
+      ? isCreamCity
+        ? PILL_BLACK
+        : "#FFFFFF"
+      : "#FFFFFF";
+  const hoverForegroundColor =
+    showReleaseDetails && resolvedReleaseColor
+      ? isCreamCity
+        ? PILL_CREAM_CITY
+        : resolvedReleaseColor
+      : PILL_BLUE;
+  const tagBackgroundColor =
+    showReleaseDetails && resolvedReleaseColor
+      ? resolvedReleaseColor
+      : PILL_BLUE;
+  const tagForegroundColor =
+    showReleaseDetails && resolvedReleaseTextColor
+      ? resolvedReleaseTextColor
+      : "#FFFFFF";
 
   const baseContent = (
     <div
@@ -173,6 +197,7 @@ export default async function ReleaseSection({
         resolvedReleaseColor
           ? ({
               ["--mdx-divider-color" as string]: resolvedReleaseColor,
+              ["--mdx-marker-color" as string]: resolvedReleaseColor,
             } satisfies CSSProperties)
           : undefined
       }
@@ -187,10 +212,10 @@ export default async function ReleaseSection({
             pillInteractionClasses,
           ].join(" ")}
           style={{
-            ["--tab-bg" as string]: PILL_BLUE,
-            ["--tab-fg" as string]: "#FFFFFF",
-            ["--tab-hover-bg" as string]: "#FFFFFF",
-            ["--tab-hover-fg" as string]: PILL_BLUE,
+            ["--tab-bg" as string]: tagBackgroundColor,
+            ["--tab-fg" as string]: tagForegroundColor,
+            ["--tab-hover-bg" as string]: hoverBackgroundColor,
+            ["--tab-hover-fg" as string]: hoverForegroundColor,
             textDecoration: "none",
           }}
         >
@@ -215,11 +240,6 @@ export default async function ReleaseSection({
     borderColor: releaseColor ?? archivedReleaseColor,
     borderWidth: "4px",
   };
-  const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
-  const hoverBackgroundColor = isCreamCity ? PILL_BLACK : "#FFFFFF";
-  const hoverForegroundColor = isCreamCity
-    ? PILL_CREAM_CITY
-    : resolvedReleaseColor;
   const tabStyle: CSSProperties = {
     outlineColor: resolvedReleaseColor,
     textDecoration: "none",
