@@ -1,3 +1,4 @@
+import type React from "react";
 import { render, screen } from "@testing-library/react";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import { mdxComponents } from "@/mdx-components";
@@ -96,7 +97,9 @@ describe("ReleaseSection", () => {
   });
 
   it("colors nested dividers to match the release border when releaseId is present", async () => {
-    const Divider = mdxComponents.hr;
+    const Divider = mdxComponents.hr as React.ComponentType<
+      React.ComponentPropsWithoutRef<"hr">
+    >;
     getScrollMock.mockResolvedValue({
       id: "12",
       release_name: "Minor Move",
@@ -133,8 +136,12 @@ describe("ReleaseSection", () => {
   });
 
   it("uses the release border color for bullets and tag pills when releaseId is present", async () => {
-    const List = mdxComponents.ul;
-    const ListItem = mdxComponents.li;
+    const List = mdxComponents.ul as React.ComponentType<
+      React.ComponentPropsWithoutRef<"ul">
+    >;
+    const ListItem = mdxComponents.li as React.ComponentType<
+      React.ComponentPropsWithoutRef<"li">
+    >;
     getScrollMock.mockResolvedValue({
       id: "12",
       release_name: "Minor Move",
