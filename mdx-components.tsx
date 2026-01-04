@@ -113,12 +113,17 @@ const defaultComponents = {
       {...props}
     />
   ),
-  hr: ({ className, ...props }: React.ComponentPropsWithoutRef<"hr">) => (
+  hr: ({
+    className,
+    style,
+    ...props
+  }: React.ComponentPropsWithoutRef<"hr">) => (
     <hr
-      className={cn(
-        "my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]",
-        className,
-      )}
+      className={cn("my-10 h-[4px] w-full rounded border-0", className)}
+      style={{
+        backgroundColor: "var(--mdx-divider-color, var(--blue))",
+        ...style,
+      }}
       {...props}
     />
   ),

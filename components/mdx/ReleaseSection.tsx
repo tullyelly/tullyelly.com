@@ -158,6 +158,9 @@ export default async function ReleaseSection({
   const releaseTextColor = showReleaseDetails
     ? getReleaseTypeTextColor(releaseType)
     : undefined;
+  const resolvedReleaseColor = showReleaseDetails
+    ? (releaseColor ?? archivedReleaseColor)
+    : undefined;
 
   const baseContent = (
     <div
@@ -166,6 +169,13 @@ export default async function ReleaseSection({
       data-release-type={releaseType ?? undefined}
       data-release-color={releaseColor}
       data-release-text-color={releaseTextColor}
+      style={
+        resolvedReleaseColor
+          ? ({
+              ["--mdx-divider-color" as string]: resolvedReleaseColor,
+            } satisfies CSSProperties)
+          : undefined
+      }
     >
       {children}
       <div className="flex justify-end">
@@ -205,7 +215,6 @@ export default async function ReleaseSection({
     borderColor: releaseColor ?? archivedReleaseColor,
     borderWidth: "4px",
   };
-  const resolvedReleaseColor = releaseColor ?? archivedReleaseColor;
   const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
   const hoverBackgroundColor = isCreamCity ? PILL_BLACK : "#FFFFFF";
   const hoverForegroundColor = isCreamCity

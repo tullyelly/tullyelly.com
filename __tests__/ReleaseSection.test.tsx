@@ -1,8 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
+import { mdxComponents } from "@/mdx-components";
 
 const getScrollMock = jest.fn();
 
+jest.mock("@/components/Tweet", () => ({
+  XEmbed: () => null,
+}));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
 }));
@@ -88,6 +92,43 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-release-color", "#00471B");
 
     expect(container.querySelector("hr")).toBeNull();
+  });
+
+  it("colors nested dividers to match the release border when releaseId is present", async () => {
+    const Divider = mdxComponents.hr;
+    getScrollMock.mockResolvedValue({
+      id: "12",
+      release_name: "Minor Move",
+      release_type: "year",
+      status: "released",
+      release_date: "2024-01-01",
+      label: "Minor Move",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "12",
+      children: (
+        <>
+          <p>hello world</p>
+          <Divider />
+        </>
+      ),
+    });
+    const { container } = render(ui);
+
+    const content = container.querySelector(
+      "[data-release-color]",
+    ) as HTMLDivElement;
+    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe(
+      "#00471B",
+    );
+
+    const divider = content.querySelector("hr") as HTMLHRElement;
+    expect(divider).toBeInTheDocument();
+    expect(divider.style.backgroundColor).toBe(
+      "var(--mdx-divider-color, var(--blue))",
+    );
   });
 
   it("uses Bucks purple for chore releases", async () => {
