@@ -60,6 +60,7 @@ describe("ReleaseSection", () => {
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb("#00471B") });
+    expect(wrapper.className).toContain("mb-10");
 
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
@@ -226,6 +227,7 @@ describe("ReleaseSection", () => {
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb("#EEE1C6") });
+    expect(wrapper.className).not.toContain("mb-10");
 
     const content = wrapper.querySelector(
       "[data-release-color]",

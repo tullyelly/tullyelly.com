@@ -254,12 +254,16 @@ export default async function ReleaseSection({
     borderBottomRightRadius: 0,
   };
 
+  const releaseContainerClassName = [
+    "relative rounded-lg border-[4px] px-4 pt-8 pb-4",
+    divider ? "mb-10" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <>
-      <div
-        className="relative rounded-lg border-[4px] px-4 pt-8 pb-4"
-        style={borderStyle}
-      >
+      <div className={releaseContainerClassName} style={borderStyle}>
         {releaseName || releaseId ? (
           <Link
             href={`/mark2/shaolin-scrolls/${releaseId}`}
