@@ -25,6 +25,22 @@
   --green: #00471b; /* Bucks Green */
   --header-focus: color-mix(in srgb, white 85%, var(--brand-chrome));
 
+  /* Topps Chrome Foil */
+  --tc-chrome-silver: #d6d9de;
+  --tc-chrome-hi: #f7f9fc;
+  --tc-chrome-mid: #d6d9de;
+  --tc-chrome-lo: #aeb4bd;
+  --tc-chrome-shadow: #7e8792;
+  --tc-chrome-foil: linear-gradient(
+    135deg,
+    var(--tc-chrome-hi) 0%,
+    var(--tc-chrome-mid) 18%,
+    var(--tc-chrome-lo) 42%,
+    var(--tc-chrome-shadow) 58%,
+    var(--tc-chrome-mid) 78%,
+    var(--tc-chrome-hi) 100%
+  );
+
   /* Neutrals for readability */
   --black: var(--ink);
 
@@ -450,6 +466,33 @@ p {
     @apply cursor-pointer;
   }
 
+  .chrome-foil-bg {
+    background: var(--tc-chrome-foil);
+  }
+
+  .chrome-foil-border {
+    border-color: var(--tc-chrome-lo);
+  }
+
+  .chrome-foil-shimmer {
+    background-image: var(--tc-chrome-foil);
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+    background-repeat: no-repeat;
+  }
+
+  .chrome-foil-shimmer:hover,
+  .chrome-foil-shimmer:focus-visible {
+    animation: tc-foil-shimmer 2.2s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chrome-foil-shimmer:hover,
+    .chrome-foil-shimmer:focus-visible {
+      animation: none;
+    }
+  }
+
   html.e2e .tcdb-trigger {
     opacity: 1 !important;
     pointer-events: auto !important;
@@ -495,6 +538,15 @@ p {
   }
   .crop-block-margins > :last-child {
     margin-bottom: 0 !important;
+  }
+}
+
+@keyframes tc-foil-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
   }
 }
 

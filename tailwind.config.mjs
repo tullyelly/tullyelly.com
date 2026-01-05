@@ -30,6 +30,11 @@ export default {
         surface: "var(--surface)",
         border: "var(--border)",
         fg: "var(--fg)",
+        "tc-chrome-silver": "var(--tc-chrome-silver)",
+        "tc-chrome-hi": "var(--tc-chrome-hi)",
+        "tc-chrome-mid": "var(--tc-chrome-mid)",
+        "tc-chrome-lo": "var(--tc-chrome-lo)",
+        "tc-chrome-shadow": "var(--tc-chrome-shadow)",
         brand: {
           bucksGreen: "#00471B",
           creamCityCream: "#EEE1C6",
