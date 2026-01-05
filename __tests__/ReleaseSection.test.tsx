@@ -82,7 +82,7 @@ describe("ReleaseSection", () => {
       "focus-visible:!text-[color:var(--tab-hover-fg",
     );
     expect(tab.style.getPropertyValue("--tab-bg")).toBe("#00471B");
-    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
+    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#EEE1C6");
     expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
     expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#00471B");
 
@@ -212,6 +212,44 @@ describe("ReleaseSection", () => {
     ) as HTMLDivElement;
     expect(content).toHaveAttribute("data-release-color", "#702F8A");
     expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
+  });
+
+  it("uses the chrome foil palette for wax releases", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "77",
+      release_name: "Foil Drop",
+      release_type: "wax",
+      status: "released",
+      release_date: "2024-05-01",
+      label: "Foil Drop",
+    });
+
+    const ui = await ReleaseSection({ ...baseProps, releaseId: "77" });
+    const { container } = render(ui);
+
+    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper.className).toContain("chrome-foil-border");
+    expect(wrapper).toHaveStyle({ borderColor: toRgb("#AEB4BD") });
+
+    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#AEB4BD");
+    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#0C1B0C");
+    expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#F7F9FC");
+    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#0C1B0C");
+    expect(tab.className).toContain("chrome-foil-shimmer");
+
+    const content = wrapper.querySelector(
+      "[data-release-color]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-release-color", "#AEB4BD");
+    expect(content).toHaveAttribute("data-release-text-color", "#0C1B0C");
+
+    const tagPill = screen
+      .getByText("#mark2")
+      .closest("a") as HTMLAnchorElement;
+    expect(tagPill.className).toContain("chrome-foil-shimmer");
   });
 
   it("falls back to the archived color when release_type is unknown and divider can be suppressed", async () => {

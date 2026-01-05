@@ -17,7 +17,7 @@ import { getScroll } from "@/lib/scrolls";
 
 /*
 Spike note (ReleaseSection styling)
-- release_type → border colors: we reuse badge maps (e.g., planned → Great Lakes Blue, wax → Cream City) and parse the badge bg classes into hex values, so the border and tab always align with badge semantics.
+- release_type → border colors: we reuse badge maps (e.g., planned → Great Lakes Blue, wax → Topps Chrome foil) and parse the badge bg classes into hex values, so the border and tab always align with badge semantics.
 - Source of truth: BADGE_VARIANTS already centralizes palette + tokens across the app; using it here prevents divergence between badges, tabs, and list/table views.
 - Tab integration: the tab sits inside the container with 4px borders; right border is removed and radii flattened on the right edge so it visually fuses with the parent border while still being a link.
 - Rejected: hard-coded color map for ReleaseSection (would drift from badges) and pseudo-element overlays for the tab (added complexity and layering issues).
@@ -41,12 +41,20 @@ const RELEASE_TYPE_VARIANTS: Record<string, BadgeVariant> = {
   classic: "classic",
   year: "year",
   tcdb: "tcdb",
+  wax: "wax",
 };
 
 const COLOR_OVERRIDES: Record<string, string> = {
   "brand-bucksGreen": "#00471B",
   "brand-creamCityCream": "#EEE1C6",
   "brand-greatLakesBlue": "#0077C0",
+  "var(--tc-chrome-foil)": "#AEB4BD",
+  "var(--tc-chrome-silver)": "#D6D9DE",
+  "var(--tc-chrome-hi)": "#F7F9FC",
+  "var(--tc-chrome-mid)": "#D6D9DE",
+  "var(--tc-chrome-lo)": "#AEB4BD",
+  "var(--tc-chrome-shadow)": "#7E8792",
+  "var(--ink)": "#0C1B0C",
   white: "#FFFFFF",
   black: "#000000",
 };
@@ -151,6 +159,7 @@ export default async function ReleaseSection({
     releaseType = release?.release_type;
   }
 
+  const normalizedReleaseType = releaseType?.toLowerCase();
   const showReleaseDetails = Boolean(releaseId);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)
@@ -165,17 +174,27 @@ export default async function ReleaseSection({
     ? (releaseTextColor ?? archivedTextColor)
     : undefined;
   const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
+  const isChromeFoil = normalizedReleaseType === "wax";
+  const chromeHoverBackground =
+    COLOR_OVERRIDES["var(--tc-chrome-hi)"] ?? "#F7F9FC";
+  const tabForegroundColor = isCreamCity
+    ? PILL_BLACK
+    : resolvedReleaseTextColor;
   const hoverBackgroundColor =
     showReleaseDetails && resolvedReleaseColor
       ? isCreamCity
         ? PILL_BLACK
-        : "#FFFFFF"
+        : isChromeFoil
+          ? chromeHoverBackground
+          : "#FFFFFF"
       : "#FFFFFF";
   const hoverForegroundColor =
     showReleaseDetails && resolvedReleaseColor
       ? isCreamCity
         ? PILL_CREAM_CITY
-        : resolvedReleaseColor
+        : isChromeFoil
+          ? resolvedReleaseTextColor
+          : resolvedReleaseColor
       : PILL_BLUE;
   const tagBackgroundColor =
     showReleaseDetails && resolvedReleaseColor
@@ -210,7 +229,10 @@ export default async function ReleaseSection({
           className={[
             "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
             pillInteractionClasses,
-          ].join(" ")}
+            isChromeFoil ? "chrome-foil-shimmer" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           style={{
             ["--tab-bg" as string]: tagBackgroundColor,
             ["--tab-fg" as string]: tagForegroundColor,
@@ -244,8 +266,7 @@ export default async function ReleaseSection({
     outlineColor: resolvedReleaseColor,
     textDecoration: "none",
     ["--tab-bg" as string]: resolvedReleaseColor,
-    ["--tab-fg" as string]:
-      resolvedReleaseColor === PILL_CREAM_CITY ? PILL_BLACK : "#FFFFFF",
+    ["--tab-fg" as string]: tabForegroundColor,
     ["--tab-hover-bg" as string]: hoverBackgroundColor,
     ["--tab-hover-fg" as string]: hoverForegroundColor,
     borderColor: resolvedReleaseColor,
@@ -256,6 +277,7 @@ export default async function ReleaseSection({
 
   const releaseContainerClassName = [
     "relative rounded-lg border-[4px] px-4 pt-8 pb-4",
+    isChromeFoil ? "chrome-foil-border" : "",
     divider ? "mb-10" : "",
   ]
     .filter(Boolean)
@@ -271,7 +293,10 @@ export default async function ReleaseSection({
             className={[
               "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
               pillInteractionClasses,
-            ].join(" ")}
+              isChromeFoil ? "chrome-foil-shimmer" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             style={tabStyle}
           >
             <span>{releaseName ?? releaseId}</span>
