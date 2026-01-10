@@ -75,7 +75,7 @@ if (failures.length) {
   console.error("\nImage optimization check failed:\n");
   for (const f of failures) console.error(` - ${f}`);
   console.error(
-    `\nFix: run "npm run images:optimize" locally and commit the updated files in ${outDir}/.\n`,
+    `\nFix: run "npm run images:optimize" or "npm run images:optimize -- \"<folder>\"" locally and commit the updated files in ${outDir}/. The optimizer clears ${inDir}/ on success.\n`,
   );
   process.exit(1);
 } else {

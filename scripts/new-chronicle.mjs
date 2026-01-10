@@ -6,7 +6,7 @@ const [, , ...titleParts] = process.argv;
 const hasHelpFlag = titleParts.includes("-h") || titleParts.includes("--help");
 
 const usage = () => {
-  console.log('Usage: npm run new-chronicle "Title"');
+  console.log('Usage: npm run new-chronicle -- "Title"');
   console.log("Creates content/chronicles/<slug>.mdx and public/images/optimized/<slug>/");
 };
 

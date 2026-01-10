@@ -77,14 +77,17 @@
    /components
      Hero.tsx
    /public/images
-     /[slug]            # optimized assets
+     /source
+       hero.jpg
+     /optimized
+       /[slug]          # optimized assets
    ```
 
 10. **Authoring UX: “Add a Page in 45 Seconds”**
     1. `npm run new-page` prompts for slug/title.
-    2. Drop source hero image into `/content/<slug>/hero.jpg`.
+    2. Drop source hero image into `/public/images/source/hero.jpg`.
     3. Edit frontmatter and write content in `/app/<slug>/page.mdx`.
-    4. `npm run images:optimize` generates `/public/images/<slug>/` WebP assets.
+    4. `npm run images:optimize -- "<slug>"` generates `/public/images/optimized/<slug>/` WebP assets; the source folder is cleared on success.
     5. `npm run dev` previews page and surfaces frontmatter violations.
     6. Commit, push, open PR.
 
