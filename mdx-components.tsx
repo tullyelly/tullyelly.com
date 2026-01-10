@@ -13,6 +13,25 @@ import { cn } from "@/lib/utils";
 const bodyText =
   "text-[16px] md:text-[18px] leading-relaxed text-muted-foreground";
 const headingBase = "font-semibold leading-snug text-ink";
+const languageClassName = /language-([a-z0-9-]+)/i;
+type CodeElementProps = {
+  className?: string;
+  children?: React.ReactNode;
+  title?: string;
+  "data-label"?: string;
+  "data-filename"?: string;
+};
+
+function extractCodeString(children: React.ReactNode): string | null {
+  if (typeof children === "string") {
+    return children;
+  }
+  if (Array.isArray(children)) {
+    const text = children.filter((child) => typeof child === "string").join("");
+    return text.length > 0 ? text : null;
+  }
+  return null;
+}
 
 type CustomMDXComponents = MDXComponents & {
   CodePanel: typeof CodePanel;
@@ -115,6 +134,47 @@ const defaultComponents = {
       {...props}
     />
   ),
+  pre: ({
+    className,
+    children,
+    ...props
+  }: React.ComponentPropsWithoutRef<"pre">) => {
+    const codeElement = React.isValidElement(children)
+      ? (children as React.ReactElement<CodeElementProps>)
+      : null;
+    const codeString = extractCodeString(codeElement?.props?.children);
+    if (!codeElement || !codeString) {
+      return (
+        <pre className={cn("overflow-x-auto", className)} {...props}>
+          {children}
+        </pre>
+      );
+    }
+
+    const codeClassName =
+      typeof codeElement.props?.className === "string"
+        ? codeElement.props.className
+        : "";
+    const match = codeClassName.match(languageClassName);
+    const language = match?.[1];
+    const label =
+      typeof codeElement.props?.["data-label"] === "string"
+        ? codeElement.props["data-label"]
+        : typeof codeElement.props?.["data-filename"] === "string"
+          ? codeElement.props["data-filename"]
+          : typeof codeElement.props?.title === "string"
+            ? codeElement.props.title
+            : undefined;
+
+    return (
+      <CodePanel
+        code={codeString.replace(/\n$/, "")}
+        language={language}
+        label={label}
+        className={className}
+      />
+    );
+  },
   hr: ({
     className,
     style,
