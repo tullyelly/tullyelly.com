@@ -85,7 +85,7 @@ export function CodePanel({
   return (
     <div
       className={cn(
-        "not-prose overflow-hidden rounded-lg border border-white/10 bg-ink text-white",
+        "not-prose overflow-hidden rounded-lg border border-white/10 bg-[var(--ink)] text-white",
         className,
       )}
     >
