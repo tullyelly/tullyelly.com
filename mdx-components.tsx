@@ -2,6 +2,7 @@ import * as React from "react";
 import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
 import LoopedGIF from "@/components/LoopedGIF";
+import { CodePanel } from "@/components/mdx/code-panel";
 import SmartLink from "@/components/mdx/SmartLink";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
@@ -14,6 +15,7 @@ const bodyText =
 const headingBase = "font-semibold leading-snug text-ink";
 
 type CustomMDXComponents = MDXComponents & {
+  CodePanel: typeof CodePanel;
   ReleaseSection: typeof ReleaseSection;
   ScrollAmendment: typeof ScrollAmendment;
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
@@ -134,6 +136,7 @@ export const mdxComponents: CustomMDXComponents = {
   a: SmartLink, // override default link
   XEmbed,
   LoopedGIF,
+  CodePanel,
   ReleaseSection,
   ScrollAmendment,
   YouTubeMusicPlaylist,

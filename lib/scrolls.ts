@@ -92,7 +92,7 @@ export async function getReleaseTypes(): Promise<ReleaseTypeRow[]> {
     ORDER BY id ASC;
   `;
   const res = await db.query<ReleaseTypeRow>(sql);
-  return res.rows.map((row) => ({
+  return res.rows.map((row: ReleaseTypeRow) => ({
     id: Number(row.id),
     code: row.code,
   }));
