@@ -6,6 +6,7 @@ import { CodePanel } from "@/components/mdx/code-panel";
 import SmartLink from "@/components/mdx/SmartLink";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
+import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ type CustomMDXComponents = MDXComponents & {
   ReleaseSection: typeof ReleaseSection;
   ScrollAmendment: typeof ScrollAmendment;
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
+  YouTubeVideo: typeof YouTubeVideo;
 };
 
 const defaultComponents = {
@@ -203,6 +205,7 @@ export const mdxComponents: CustomMDXComponents = {
   ReleaseSection,
   ScrollAmendment,
   YouTubeMusicPlaylist,
+  YouTubeVideo,
 };
 
 export function useMDXComponents(
