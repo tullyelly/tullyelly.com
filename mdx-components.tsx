@@ -139,9 +139,12 @@ const defaultComponents = {
     children,
     ...props
   }: React.ComponentPropsWithoutRef<"pre">) => {
-    const codeElement = React.isValidElement(children)
-      ? (children as React.ReactElement<CodeElementProps>)
-      : null;
+    const codeElement =
+      React.isValidElement(children) &&
+      typeof children.type === "string" &&
+      children.type === "code"
+        ? (children as React.ReactElement<CodeElementProps>)
+        : null;
     const codeString = extractCodeString(codeElement?.props?.children);
     if (!codeElement || !codeString) {
       return (
