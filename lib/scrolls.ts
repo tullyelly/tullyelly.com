@@ -65,6 +65,11 @@ export interface PageMeta {
   q?: string;
 }
 
+export interface ReleaseTypeRow {
+  id: number;
+  code: string;
+}
+
 export interface ScrollsPageParams {
   limit?: number;
   offset?: number;
@@ -75,6 +80,22 @@ export interface ScrollsPageParams {
 export interface ReleaseListResponse {
   items: ReleaseRow[];
   page: PageMeta;
+}
+
+export async function getReleaseTypes(): Promise<ReleaseTypeRow[]> {
+  noStore();
+  const db = getPool();
+  await db.query("SELECT 1");
+  const sql = `
+    SELECT id, code
+    FROM dojo.release_type
+    ORDER BY id ASC;
+  `;
+  const res = await db.query<ReleaseTypeRow>(sql);
+  return res.rows.map((row) => ({
+    id: Number(row.id),
+    code: row.code,
+  }));
 }
 
 function buildWhere(q?: string) {

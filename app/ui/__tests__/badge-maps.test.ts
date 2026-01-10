@@ -5,6 +5,7 @@ test("badge variants contain expected keys", () => {
     "planned",
     "released",
     "hotfix",
+    "patch",
     "archived",
     "minor",
     "major",
