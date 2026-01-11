@@ -20,6 +20,15 @@ function createE2EPool(): Queryable {
       label: "Test Scroll",
     },
   ];
+  const releaseTypes = [
+    { id: 1, code: "planned" },
+    { id: 2, code: "hotfix" },
+    { id: 3, code: "minor" },
+    { id: 4, code: "major" },
+    { id: 5, code: "chore" },
+    { id: 6, code: "wax" },
+    { id: 7, code: "tcdb" },
+  ];
 
   return {
     async query<T = any>(sql: any, values?: any[]): Promise<any> {
@@ -49,6 +58,13 @@ function createE2EPool(): Queryable {
         }
 
         return { rows: scrolls as unknown as T[], rowCount: scrolls.length };
+      }
+
+      if (/from\s+dojo\.release_type/i.test(text)) {
+        return {
+          rows: releaseTypes as unknown as T[],
+          rowCount: releaseTypes.length,
+        };
       }
 
       return { rows: [] as T[], rowCount: 0 };

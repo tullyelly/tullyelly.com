@@ -105,6 +105,13 @@ const config = [
   // Next's recommended rules (includes react + react-hooks)
   ...compat.extends("next/core-web-vitals"),
 
+  // Disable JSX entity escaping warnings globally
+  {
+    rules: {
+      "react/no-unescaped-entities": "off",
+    },
+  },
+
   // Allow console in server-ish files (optional)
   {
     files: ["app/api/**/*.{ts,tsx}", "app/error.tsx"],

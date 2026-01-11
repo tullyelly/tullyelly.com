@@ -1,20 +1,23 @@
 import * as React from "react";
 type TableProps = React.TableHTMLAttributes<HTMLTableElement> & {
   variant?: "default" | "bucks"; // controls outer frame styling
+  showOnMobile?: boolean;
 };
 
 export function Table({
   className,
   children,
   variant = "default",
+  showOnMobile = false,
   ...rest
 }: TableProps) {
   const frameClass =
     variant === "bucks"
       ? "overflow-x-auto rounded-2xl border-2 border-[var(--green)] shadow-sm ring-0 overflow-hidden"
       : "overflow-x-auto rounded-2xl shadow-sm ring-1 ring-black/5";
+  const displayClass = showOnMobile ? "block" : "hidden md:block";
   return (
-    <div className="hidden md:block" suppressHydrationWarning>
+    <div className={displayClass} suppressHydrationWarning>
       <div className={frameClass}>
         <table
           className={`w-full table-fixed border-collapse zebra-desktop text-sm leading-6${className ? ` ${className}` : ""}`}

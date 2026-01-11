@@ -1,0 +1,94 @@
+---
+title: "pale blue dot"
+date: "2026-01-10T12:00:00.000Z"
+summary: "Day 85, WAKE YOUR MIND UP."
+tags: ["carl-sagan"]
+draft: false
+infinityStone: false
+---
+
+<ReleaseSection alterEgo="tullyelly" releaseId="98">
+    My notes said: <i>Why are we here?</i> I think that's a bit above my pay grade previous version of me. lol
+
+    I created this release to eliminate some unwanted noise chirping at me from the Continuous Integration side of my CI/CD process. Turns out, I only needed to delete one file. Thought it might be more arduous than that.
+
+    What follow's is how I prepared to delete that singular file.
+
+    ---
+
+    I added a Legend to the [shaolin scrolls](/mark2/shaolin-scrolls) app to help me quickly find what I need to generate a new release. I almost did this 2 weeks ago, thought to myself, well self, why don't we just create a better way to generate a new release and skip the legend. That'll be super easy.
+
+    Well, yeah. That never happened. Back to baby steps gentlemen, baby steps.
+
+    Check it out!
+
+    ---
+
+    Next on the docket......creating a new chronicle blog post is pretty annoying too. It's not super time consuming, but there was a 10 step process that could easily be trimmed to 2 or 3. Enter:
+    <CodePanel
+        label="Terminal"
+        language="bash"
+        code={`npm run new-chronicle "pale blue dot"`}
+    />
+
+    Running that inside of my repo will generate the day's skeletal page, and create a folder for any images that are needed. I'm not super thrilled with how images are handled right now, but bigger fish and all.
+
+    In this example, I passed in the name for today's page.
+
+    All that to save 36.2 seconds times infinity.
+
+    ---
+
+    Like that dark code panel from above? Well, me too. That component was just created so I can drop commands, scripts, or other code into here, there, or everywhere over the long run.
+
+    Me likey. Let's play with it again in the next block.
+
+    ---
+
+    More 🚨 nerd alert 🚨, we also made some changes to the images optimization command to automagically place the newly optimized images into the right folder. The folder that was already created when we invented the new-chronicle command.
+
+    Example:
+
+    <CodePanel
+        label="Terminal"
+        language="bash"
+        code={`npm run images:optimize -- "pale-blue-dot"`}
+    />
+
+    ---
+
+    Let's keep cooking. I turned this command:
+
+    <CodePanel
+        label="Terminal"
+        language="bash"
+        code={`ffmpeg -i "obsidian.mp4" -vcodec libwebp -loop 0 -preset default -an -vsync 0 \ -q:v 60 -compression_level 6 -lossless 0 -vf "fps=12,scale=480:-1:flags=lanczos" obsidian.webp`}
+    />
+
+    Into this command:
+
+    <CodePanel
+        label="Terminal"
+        language="bash"
+        code={`npm run images:animated -- "pale-blue-dot"`}
+    />
+
+    We want easier to remember commands (duh), and this one has the temerity to come with a bunch of additional automations. The next GIF file you see was optimized/compressed/generated, and automagically placed into the right folder, with this command extension.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="tullyelly">
+    <LoopedGIF src="/images/optimized/pale-blue-dot/whats-that.webp" alt="what's that" />
+
+    I'm receiving reports that [my request to leave Earth](/shaolin/saturn) has been denied by <i>carl sagan</i>. I'll never get tired of him explaining why:
+
+    <YouTubeVideo id="wupToqz1e2g" orientation="landscape" />
+
+</ReleaseSection>
+    
+<ReleaseSection alterEgo="theabbott" divider={false}>
+    Today's content was brought to you by the following vibes.
+
+    <YouTubeMusicPlaylist url="https://music.youtube.com/playlist?list=PL5EzJFCOGZdAkTKzZHCsiBKmV88oBlaUz&si=o35NoBjXYQY6_DsU" />
+
+</ReleaseSection>
