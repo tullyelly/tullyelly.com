@@ -12,12 +12,14 @@ jest.mock("@radix-ui/react-dropdown-menu", () => {
   });
 
   function Root({ open: controlledOpen, onOpenChange, modal, children }) {
-    const [open, setInternalOpen] = React.useState(
-      typeof controlledOpen === "boolean" ? controlledOpen : false,
-    );
+    const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
+    const isControlled = typeof controlledOpen === "boolean";
+    const open = isControlled ? controlledOpen : uncontrolledOpen;
 
     const setOpen = (v) => {
-      setInternalOpen(v);
+      if (!isControlled) {
+        setUncontrolledOpen(v);
+      }
       onOpenChange?.(v);
     };
 
@@ -408,7 +410,7 @@ describe("NestableMenu pointer modality", () => {
   it("opens on mouse hover", async () => {
     const { trigger } = await renderMenu("mouse");
 
-    fireEvent.pointerOver(trigger, { pointerType: "mouse" });
+    fireEvent.pointerEnter(trigger, { pointerType: "mouse" });
 
     const menu = await screen.findByRole("menu", {}, { timeout: 800 });
     expect(menu).toHaveAttribute("data-state", "open");
@@ -418,6 +420,7 @@ describe("NestableMenu pointer modality", () => {
   it("locks open on mouse click until dismissed", async () => {
     const { trigger } = await renderMenu("mouse");
 
+    fireEvent.pointerEnter(trigger, { pointerType: "mouse" });
     fireEvent.click(trigger);
 
     const menu = await screen.findByRole("menu", {}, { timeout: 800 });
