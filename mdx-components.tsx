@@ -7,6 +7,7 @@ import SmartLink from "@/components/mdx/SmartLink";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
 import YouTubeVideo from "@/components/mdx/YouTubeVideo";
+import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ type CustomMDXComponents = MDXComponents & {
   ScrollAmendment: typeof ScrollAmendment;
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
   YouTubeVideo: typeof YouTubeVideo;
+  FolderImageCarousel: typeof FolderImageCarousel;
 };
 
 const defaultComponents = {
@@ -206,6 +208,7 @@ export const mdxComponents: CustomMDXComponents = {
   ScrollAmendment,
   YouTubeMusicPlaylist,
   YouTubeVideo,
+  FolderImageCarousel,
 };
 
 export function useMDXComponents(

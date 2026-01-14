@@ -7,3 +7,7 @@
 5. Validate metadata and images: `npm run validate-frontmatter && npm run validate-seo && npm run images:check`.
 6. Preview locally with `npm run dev`.
 7. Commit, push, and open a PR when ready.
+
+Notes
+
+- Use `<FolderImageCarousel folder="..."/>` in `app/<slug>/page.mdx`; the folder is relative to `public/images/optimized`.
