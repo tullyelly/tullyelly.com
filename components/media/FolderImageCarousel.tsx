@@ -84,6 +84,7 @@ export default function FolderImageCarousel({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open image carousel"
+        data-testid="folder-carousel-thumbnail"
         className="group relative w-full overflow-hidden rounded-2xl border-2 border-[var(--cream)] bg-white shadow-sm transition hover:border-[var(--blue)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)]"
       >
         <div className="relative aspect-[16/9] w-full">
@@ -97,6 +98,7 @@ export default function FolderImageCarousel({
         </div>
         <span
           aria-hidden="true"
+          data-testid="folder-carousel-play-overlay"
           className="absolute inset-0 flex items-center justify-center bg-ink/30"
         >
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-ink shadow-lg ring-2 ring-[var(--blue)] transition-transform duration-300 group-hover:scale-105">
@@ -110,7 +112,10 @@ export default function FolderImageCarousel({
         onClose={() => setOpen(false)}
         className="w-[min(92vw,960px)] max-w-[960px] sm:w-[min(92vw,960px)] overflow-hidden"
       >
-        <div className="flex min-h-0 w-full flex-1 flex-col">
+        <div
+          className="flex min-h-0 w-full flex-1 flex-col"
+          data-testid="folder-carousel-modal"
+        >
           <div
             data-dialog-handle
             className="flex items-center justify-between gap-3 rounded-t-2xl bg-[var(--blue)] px-5 py-3 text-white"
@@ -153,52 +158,39 @@ export default function FolderImageCarousel({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div
+              className="mt-3 grid w-full grid-cols-[auto_1fr_auto] items-center gap-3"
+              data-testid="carousel-nav"
+            >
               <button
                 type="button"
                 onClick={() => emblaApi?.scrollPrev()}
                 disabled={!canScrollPrev}
-                aria-label="Previous slide"
+                aria-label="Previous image"
+                data-testid="carousel-prev"
                 className={cn(
-                  "inline-flex h-9 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-ink shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)] disabled:cursor-not-allowed disabled:opacity-40",
+                  "inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-ink shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)] disabled:cursor-not-allowed disabled:opacity-40",
                 )}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Prev
               </button>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-ink/70 tabular-nums">
-                  {currentSlide} / {totalSlides}
-                </span>
-                {totalSlides > 1 ? (
-                  <div className="flex items-center gap-1.5">
-                    {slides.map((slide, index) => (
-                      <button
-                        key={slide.src}
-                        type="button"
-                        onClick={() => emblaApi?.scrollTo(index)}
-                        aria-label={`Go to slide ${index + 1}`}
-                        className={cn(
-                          "h-2.5 w-2.5 rounded-full border border-ink/30 transition",
-                          index === selectedIndex
-                            ? "bg-[var(--blue)] border-[var(--blue)]"
-                            : "bg-white hover:border-[var(--blue)]",
-                        )}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+              <span
+                className="text-center text-sm font-medium text-ink/70 tabular-nums"
+                data-testid="carousel-counter"
+                aria-live="polite"
+              >
+                {currentSlide} / {totalSlides}
+              </span>
               <button
                 type="button"
                 onClick={() => emblaApi?.scrollNext()}
                 disabled={!canScrollNext}
-                aria-label="Next slide"
+                aria-label="Next image"
+                data-testid="carousel-next"
                 className={cn(
-                  "inline-flex h-9 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-medium text-ink shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)] disabled:cursor-not-allowed disabled:opacity-40",
+                  "inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-ink shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cream)] disabled:cursor-not-allowed disabled:opacity-40",
                 )}
               >
-                Next
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
