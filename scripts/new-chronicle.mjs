@@ -71,10 +71,18 @@ const getNextDay = async () => {
   return maxDay + 1;
 };
 
-// Align with existing chronicles: noon UTC ISO timestamps.
-const date = new Date();
-date.setUTCHours(12, 0, 0, 0);
-const isoDate = date.toISOString();
+const pad2 = (value) => String(value).padStart(2, "0");
+const now = new Date();
+const localDate = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(
+  now.getDate(),
+)}`;
+// Guard against accidental regressions to non date-only strings.
+if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate)) {
+  console.error(
+    `Error: expected local date in YYYY-MM-DD format, got "${localDate}".`,
+  );
+  process.exit(1);
+}
 const nextDay = await getNextDay();
 
 const chroniclePath = path.join("content", "chronicles", `${slug}.mdx`);
@@ -94,7 +102,7 @@ try {
 // Keep frontmatter minimal to satisfy validate-frontmatter.
 const content = `---
 title: "${title}"
-date: "${isoDate}"
+date: "${localDate}"
 summary: "Day ${nextDay}, "
 tags: []
 draft: false
