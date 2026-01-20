@@ -8,7 +8,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "predev": "npm run prepare:content",
+    "dev:full": "npm run prepare:content && npm run dev",
+    "dev:turbo": "next dev --turbo",
     "postinstall": "prisma generate && patch-package",
     "prebuild": "npm run gen:build-info",
     "build": "prisma generate && next build",
@@ -72,8 +73,9 @@
     "sanity:db": "node scripts/db_sanity.mjs",
     "check:use-server": "bash scripts/check-use-server.sh",
     "gen:build-info": "node scripts/gen-build-info.mjs",
+    "content:build": "contentlayer2 build",
     "contentlayer:build": "contentlayer2 build",
-    "prepare:content": "npm run gen:build-info && npm run contentlayer:build",
+    "prepare:content": "npm run gen:build-info && npm run content:build",
     "prepare": "husky",
     "check:emdash": "node scripts/check-emdash.mjs",
     "analyze": "ANALYZE=true next build"

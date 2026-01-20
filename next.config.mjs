@@ -45,7 +45,7 @@ const nextConfig = {
       remarkPlugins,
     },
   },
-  webpack: (config) => {
+  webpack: (config, { dev }) => {
     config.ignoreWarnings = [
       ...(config.ignoreWarnings || []),
       (warning) => {
@@ -64,8 +64,30 @@ const nextConfig = {
         return fromContentlayer && isCacheWarning;
       },
     ];
+    if (dev) {
+      const extraIgnored = ["**/.contentlayer/**", "**/.next/**"];
+      const currentIgnored = config.watchOptions?.ignored;
+      const ignoredList = Array.isArray(currentIgnored)
+        ? currentIgnored
+        : currentIgnored
+        ? [currentIgnored]
+        : [];
+      config.watchOptions = {
+        ...(config.watchOptions || {}),
+        ignored: [...ignoredList, ...extraIgnored],
+      };
+    }
     return config;
   },
 };
 
-export default withContentlayer(createMDX()(withBundleAnalyzer(nextConfig)));
+const configWithPlugins = withContentlayer(createMDX()(withBundleAnalyzer(nextConfig)));
+
+if (
+  configWithPlugins.turbopack &&
+  typeof configWithPlugins.turbopack === "object"
+) {
+  delete configWithPlugins.turbopack.conditions;
+}
+
+export default configWithPlugins;
