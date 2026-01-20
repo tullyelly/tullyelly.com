@@ -65,6 +65,9 @@ const nextConfig = {
       },
     ];
     if (dev) {
+      if (process.env.NEXT_DISABLE_FS_CACHE === "1") {
+        config.cache = false;
+      }
       const extraIgnored = ["**/.contentlayer/**", "**/.next/**"];
       const currentIgnored = config.watchOptions?.ignored;
       const ignoredList = Array.isArray(currentIgnored)

@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:full": "npm run prepare:content && npm run dev",
+    "dev:poll": "cross-env WATCHPACK_POLLING=true WATCHPACK_POLLING_INTERVAL=1000 next dev",
+    "dev:stable": "cross-env WATCHPACK_POLLING=true WATCHPACK_POLLING_INTERVAL=1000 NEXT_DISABLE_FS_CACHE=1 next dev",
     "dev:turbo": "next dev --turbo",
     "postinstall": "prisma generate && patch-package",
     "prebuild": "npm run gen:build-info",
