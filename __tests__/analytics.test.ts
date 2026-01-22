@@ -1,12 +1,3 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from "@jest/globals";
-
 describe("analytics", () => {
   const originalEnabled = process.env.NEXT_PUBLIC_ANALYTICS_ENABLED;
 

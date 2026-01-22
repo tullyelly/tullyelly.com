@@ -10,9 +10,9 @@ export async function POST(request: Request) {
 
   const persona = url.searchParams.get("persona");
   if (persona) {
-    revalidateTag(`menu:${persona}`);
+    revalidateTag(`menu:${persona}`, "max");
   } else {
-    revalidateTag("menu");
+    revalidateTag("menu", "max");
   }
   return NextResponse.json({
     ok: true,

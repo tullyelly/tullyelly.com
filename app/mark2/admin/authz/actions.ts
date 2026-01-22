@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { must } from "@/lib/authz";
 import { ensureAuthzInvalidationListener } from "@/lib/authz/invalidation";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -90,7 +90,7 @@ export async function grantRole(rawInput: MutationInput): Promise<void> {
   await sql`
     SELECT dojo.authz_grant_role(${actor.id}::uuid, ${userId}::uuid, ${role}, ${appSlug})
   `;
-  revalidateTag(`auth:user:${userId}`);
+  updateTag(`auth:user:${userId}`);
 }
 
 export async function revokeRole(rawInput: MutationInput): Promise<void> {
@@ -102,5 +102,5 @@ export async function revokeRole(rawInput: MutationInput): Promise<void> {
   await sql`
     SELECT dojo.authz_revoke_role(${actor.id}::uuid, ${userId}::uuid, ${role}, ${appSlug})
   `;
-  revalidateTag(`auth:user:${userId}`);
+  updateTag(`auth:user:${userId}`);
 }

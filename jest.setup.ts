@@ -11,7 +11,6 @@ import {
   WritableStream,
 } from "node:stream/web";
 import { TextDecoder, TextEncoder } from "node:util";
-import { expect } from "@jest/globals";
 import { cleanup } from "@testing-library/react";
 import { act } from "react";
 
