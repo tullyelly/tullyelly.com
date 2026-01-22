@@ -46,6 +46,11 @@ const nextConfig = {
       remarkPlugins: isTurbopack ? [] : remarkPlugins,
     },
   },
+  turbopack: {
+    resolveAlias: {
+      "contentlayer/generated": "./.contentlayer/generated",
+    },
+  },
   webpack: (config, { dev }) => {
     config.ignoreWarnings = [
       ...(config.ignoreWarnings || []),
