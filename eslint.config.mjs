@@ -246,6 +246,7 @@ const config = [
       "no-restricted-imports": "off",
     },
   },
+
 ];
 
 export default config;

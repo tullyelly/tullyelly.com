@@ -95,22 +95,18 @@ export default function TCDBRankingTableClient({
   const router = useRouter();
   const pathname = usePathname();
   const basePath = "/cardattack/tcdb-rankings";
+  const baseSegmentsCount = 2;
   const currentPath = pathname ?? basePath;
   const search = useSearchParams();
   const searchSnapshot = search?.toString() ?? "";
   const [isPending, startTransition] = useTransition();
 
-  const [q, setQ] = useState<string>(() => search?.get("q") ?? "");
-  const [trend, setTrend] = useState<string>(() => search?.get("trend") ?? "");
-  const [detailId, setDetailId] = useState<string | number | null>(null);
-  const [detailRow, setDetailRow] = useState<Row | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState(false);
-
-  useEffect(() => {
-    setQ(search?.get("q") ?? "");
-    setTrend(search?.get("trend") ?? "");
-  }, [searchSnapshot, search]);
+  const searchQ = search?.get("q") ?? "";
+  const searchTrend = search?.get("trend") ?? "";
+  const [detailRowOverride, setDetailRowOverride] = useState<Row | null>(null);
+  const [detailErrorId, setDetailErrorId] = useState<string | number | null>(
+    null,
+  );
 
   const rows = useMemo(
     () => [...serverData.data].sort((a, b) => b.card_count - a.card_count),
@@ -118,6 +114,60 @@ export default function TCDBRankingTableClient({
   );
 
   const lastTriggerRef = useRef<HTMLAnchorElement | null>(null);
+
+  const normalizedPath = useMemo(() => {
+    if (currentPath.endsWith("/") && currentPath !== "/") {
+      return currentPath.slice(0, -1);
+    }
+    return currentPath;
+  }, [currentPath]);
+
+  const { detailId, shouldRedirect } = useMemo(() => {
+    if (normalizedPath === basePath) {
+      return { detailId: null, shouldRedirect: false };
+    }
+    if (!normalizedPath.startsWith(basePath)) {
+      return { detailId: null, shouldRedirect: false };
+    }
+    const segments = normalizedPath.split("/").filter(Boolean);
+    const lastSegment = segments[segments.length - 1];
+    const isNumericId = lastSegment && /^\d+$/.test(lastSegment);
+    if (!isNumericId) {
+      return {
+        detailId: null,
+        shouldRedirect: segments.length > baseSegmentsCount,
+      };
+    }
+    return { detailId: lastSegment, shouldRedirect: false };
+  }, [basePath, baseSegmentsCount, normalizedPath]);
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.replace(basePath as Route);
+    }
+  }, [basePath, router, shouldRedirect]);
+
+  const inlineDetailRow = useMemo(() => {
+    if (!detailId) return null;
+    return (
+      rows.find((row) => String(row.homie_id) === String(detailId)) ?? null
+    );
+  }, [detailId, rows]);
+
+  const detailRow =
+    inlineDetailRow && String(inlineDetailRow.homie_id) === String(detailId)
+      ? inlineDetailRow
+      : detailRowOverride &&
+          String(detailRowOverride.homie_id) === String(detailId)
+        ? detailRowOverride
+        : null;
+
+  const detailError =
+    detailErrorId !== null &&
+    detailId !== null &&
+    String(detailErrorId) === String(detailId);
+
+  const detailLoading = detailId !== null && !detailRow && !detailError;
 
   const updateQuery = useCallback(
     (
@@ -147,14 +197,16 @@ export default function TCDBRankingTableClient({
   const onSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      updateQuery({ q: q || undefined }, { resetPage: true });
+      const formData = new FormData(event.currentTarget);
+      const nextQ = String(formData.get("q") ?? "");
+      updateQuery({ q: nextQ || undefined }, { resetPage: true });
     },
-    [q, updateQuery],
+    [updateQuery],
   );
 
   const onTrendChange = useCallback(
-    (value: string) => {
-      setTrend(value);
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = event.target.value;
       updateQuery({ trend: value || undefined }, { resetPage: true });
     },
     [updateQuery],
@@ -163,72 +215,22 @@ export default function TCDBRankingTableClient({
   const handleOpenDetail = useCallback(
     (row: Row, trigger: HTMLAnchorElement) => {
       lastTriggerRef.current = trigger;
-      setDetailRow(row);
-      setDetailId(row.homie_id);
-      setDetailError(false);
-      setDetailLoading(false);
+      setDetailRowOverride(row);
+      setDetailErrorId(null);
       router.push(`${basePath}/${row.homie_id}` as Route);
     },
     [router, basePath],
   );
 
   const handleCloseDetail = useCallback(() => {
-    setDetailId(null);
-    setDetailRow(null);
-    setDetailError(false);
-    setDetailLoading(false);
+    setDetailRowOverride(null);
+    setDetailErrorId(null);
     router.replace(basePath as Route);
   }, [router, basePath]);
 
   useEffect(() => {
-    const normalized =
-      currentPath.endsWith("/") && currentPath !== "/"
-        ? currentPath.slice(0, -1)
-        : currentPath;
-    const baseSegmentsCount = 2; // "cardattack", "tcdb-rankings"
-    if (normalized === basePath) {
-      setDetailId(null);
-      setDetailRow(null);
-      setDetailError(false);
-      setDetailLoading(false);
-      return;
-    }
-    if (!normalized.startsWith(basePath)) return;
-    const segments = normalized.split("/").filter(Boolean);
-    const lastSegment = segments[segments.length - 1];
-    const isNumericId = lastSegment && /^\d+$/.test(lastSegment);
-    if (!isNumericId) {
-      if (segments.length > baseSegmentsCount) {
-        router.replace(basePath as Route);
-      }
-      return;
-    }
-    if (detailId !== lastSegment) {
-      setDetailId(lastSegment);
-      setDetailError(false);
-      setDetailLoading(false);
-    }
-    const inlineRow = rows.find(
-      (row) => String(row.homie_id) === String(lastSegment),
-    );
-    if (inlineRow) {
-      setDetailRow(inlineRow);
-    } else if (
-      detailRow &&
-      String(detailRow.homie_id) !== String(lastSegment)
-    ) {
-      setDetailRow(null);
-    }
-  }, [basePath, currentPath, detailId, detailRow, rows, router]);
-
-  useEffect(() => {
-    if (!detailId) return;
-    if (detailRow && String(detailRow.homie_id) === String(detailId)) {
-      return;
-    }
+    if (!detailId || detailRow) return;
     let active = true;
-    setDetailLoading(true);
-    setDetailError(false);
     fetch(`/api/tcdb-rankings/${detailId}`)
       .then((res) => {
         if (!res.ok) throw new Error(String(res.status));
@@ -236,14 +238,12 @@ export default function TCDBRankingTableClient({
       })
       .then((data: Row) => {
         if (!active) return;
-        setDetailRow(data);
+        setDetailRowOverride(data);
+        setDetailErrorId(null);
       })
       .catch(() => {
         if (!active) return;
-        setDetailError(true);
-      })
-      .finally(() => {
-        if (active) setDetailLoading(false);
+        setDetailErrorId(detailId);
       });
     return () => {
       active = false;
@@ -279,6 +279,7 @@ export default function TCDBRankingTableClient({
       >
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <form
+            key={searchSnapshot}
             onSubmit={onSubmit}
             className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center"
             role="search"
@@ -286,8 +287,8 @@ export default function TCDBRankingTableClient({
           >
             <div className="flex w-full items-center gap-2">
               <input
-                value={q}
-                onChange={(event) => setQ(event.target.value)}
+                name="q"
+                defaultValue={searchQ}
                 placeholder="Search homies"
                 className="form-input h-9 w-full md:w-64"
                 aria-label="Search homies"
@@ -308,8 +309,9 @@ export default function TCDBRankingTableClient({
           </form>
           <div className="md:min-w-[12rem]">
             <select
-              value={trend}
-              onChange={(event) => onTrendChange(event.target.value)}
+              name="trend"
+              defaultValue={searchTrend}
+              onChange={onTrendChange}
               className="form-input h-9 w-full"
               aria-label="Filter by trend"
             >

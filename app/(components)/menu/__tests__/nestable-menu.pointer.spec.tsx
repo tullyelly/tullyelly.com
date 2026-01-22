@@ -31,25 +31,25 @@ jest.mock("@radix-ui/react-dropdown-menu", () => {
   }
 
   function Trigger({ __dmOpen, __dmSetOpen, children, asChild, ...rest }) {
-    const ref = React.useRef(null);
     const { open: ctxOpen, setOpen: ctxSetOpen } =
       React.useContext(MenuContext);
     const open = __dmOpen ?? ctxOpen;
     const setOpen = __dmSetOpen ?? ctxSetOpen;
-    const skipNextClickRef = React.useRef(false);
+    const [skipNextClick, setSkipNextClick] = React.useState(false);
     const {
       onClick,
       onPointerOver,
       onPointerUp,
       onPointerLeave,
       onMouseLeave,
+      ref: _ignoredRef,
       ...other
     } = rest;
 
     const handleClick = (event) => {
       onClick?.(event);
-      if (skipNextClickRef.current) {
-        skipNextClickRef.current = false;
+      if (skipNextClick) {
+        setSkipNextClick(false);
         return;
       }
       setOpen(!open);
@@ -66,7 +66,7 @@ jest.mock("@radix-ui/react-dropdown-menu", () => {
     const handlePointerUp = (event) => {
       onPointerUp?.(event);
       if (event.pointerType === "touch" || event.pointerType === "pen") {
-        skipNextClickRef.current = true;
+        setSkipNextClick(true);
         setOpen(true);
       }
     };
@@ -127,7 +127,7 @@ jest.mock("@radix-ui/react-dropdown-menu", () => {
       });
     }
 
-    return React.createElement("button", { ref, ...props }, children);
+    return React.createElement("button", props, children);
   }
 
   function Portal({ __dmOpen, __dmSetOpen, children }) {

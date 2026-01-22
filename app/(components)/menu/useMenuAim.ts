@@ -123,10 +123,8 @@ export function useMenuAim(options: UseMenuAimOptions = {}): UseMenuAimResult {
 
   const delayGroup = useDelayGroup(floating.context, { id });
 
-  const mergedDelay = React.useMemo(() => {
-    const groupDelay = delayGroup.delay as DelayValue | undefined;
-    return resolveDelay(groupDelay, openDelay, closeDelay);
-  }, [closeDelay, delayGroup.delay, openDelay]);
+  const groupDelay = delayGroup.delay as DelayValue | undefined;
+  const mergedDelay = resolveDelay(groupDelay, openDelay, closeDelay);
 
   const hover = useHover(floating.context, {
     enabled,

@@ -11,6 +11,7 @@ const remarkPlugins = [
   remarkMdxFrontmatter,
   remarkSemicolons,
 ];
+const isTurbopack = Boolean(process.env.TURBOPACK);
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -42,7 +43,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["vaul", "cmdk", "lucide-react"],
     mdxRs: {
-      remarkPlugins,
+      remarkPlugins: isTurbopack ? [] : remarkPlugins,
     },
   },
   webpack: (config, { dev }) => {
@@ -144,6 +145,9 @@ if (
   typeof configWithPlugins.turbopack === "object"
 ) {
   delete configWithPlugins.turbopack.conditions;
+  if (Object.keys(configWithPlugins.turbopack).length === 0) {
+    delete configWithPlugins.turbopack;
+  }
 }
 
 export default configWithPlugins;

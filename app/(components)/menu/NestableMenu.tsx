@@ -371,17 +371,19 @@ function NestableMenuInner({
     }
   }, [headerRef]);
 
+  const [suppressReopen, setSuppressReopen] = React.useState(false);
+
   const aim = useMenuAim({
     id: persona.id,
     open: isOpen,
     onOpenChange: React.useCallback(
       (next: boolean) => {
-        if (next && suppressReopenRef.current) {
+        if (next && suppressReopen) {
           return;
         }
         onOpenChange(persona.id, next);
       },
-      [onOpenChange, persona.id],
+      [onOpenChange, persona.id, suppressReopen],
     ),
     openDelay: prefersReducedMotion ? 0 : aimOpenDelay,
     closeDelay: prefersReducedMotion ? 0 : aimCloseDelay,
@@ -417,7 +419,6 @@ function NestableMenuInner({
     null,
   );
   const skipFocusOpenRef = React.useRef(false);
-  const suppressReopenRef = React.useRef(false);
 
   const cancelPendingClose = React.useCallback(() => {
     if (closeTimerRef.current !== null) {
@@ -446,9 +447,9 @@ function NestableMenuInner({
         return;
       }
       cancelPendingClose();
-      suppressReopenRef.current = true;
+      setSuppressReopen(true);
       closeTimerRef.current = setTimeout(() => {
-        suppressReopenRef.current = true;
+        setSuppressReopen(true);
         aim.setOpen(false);
         setHoverSuspended(true);
         skipFocusOpenRef.current = true;
@@ -461,6 +462,7 @@ function NestableMenuInner({
       getLastPointerKind,
       isOpen,
       isTargetWithinInteractiveArea,
+      setSuppressReopen,
       setHoverSuspended,
       lockedByPointer,
     ],
@@ -476,10 +478,17 @@ function NestableMenuInner({
     skipNextClickRef.current = false;
     setHoverSuspended(false);
     setLockedByPointer(false);
-    suppressReopenRef.current = false;
+    setSuppressReopen(false);
     skipFocusOpenRef.current = true;
     aim.setOpen(false);
-  }, [aim, cancelPendingClose, isOpen, setHoverSuspended, setLockedByPointer]);
+  }, [
+    aim,
+    cancelPendingClose,
+    isOpen,
+    setHoverSuspended,
+    setLockedByPointer,
+    setSuppressReopen,
+  ]);
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -730,270 +739,244 @@ function NestableMenuInner({
     previousIsOpenRef.current = isOpen;
   }, [isOpen, lockedByPointer, scheduleRunPending]);
 
-  const menuItems = React.useMemo(
-    () =>
-      links.map((linkNode) => {
-        const href = linkNode.href;
-        const active = isActiveHref(pathname, href);
-        const hotkey = readHotkey(linkNode);
-        const badge = linkNode.badge?.text;
-        const isExternalLink = linkNode.kind === "external";
-        const target = isExternalLink
-          ? (linkNode.target ?? "_blank")
-          : undefined;
-        const rel =
-          isExternalLink && target === "_blank"
-            ? "noreferrer noopener"
-            : undefined;
-        const prefetchable =
-          !isExternalLink &&
-          linkNode.kind === "link" &&
-          typeof href === "string";
-        const overviewMatch =
-          linkNode.id === "overview" ||
-          linkNode.label?.toLowerCase() === "overview" ||
-          (linkNode.featureKey?.endsWith(".overview") ?? false);
-        const menuItemTestId = overviewMatch
-          ? `nav-menu-${persona.persona}-overview`
-          : linkNode.featureKey
-            ? `menu-item-${linkNode.featureKey}`
-            : `menu-item-${linkNode.id}`;
-        const isKeyboardPressed = keyboardPressedId === linkNode.id;
+  const menuItems = links.map((linkNode) => {
+    const href = linkNode.href;
+    const active = isActiveHref(pathname, href);
+    const hotkey = readHotkey(linkNode);
+    const badge = linkNode.badge?.text;
+    const isExternalLink = linkNode.kind === "external";
+    const target = isExternalLink ? (linkNode.target ?? "_blank") : undefined;
+    const rel =
+      isExternalLink && target === "_blank" ? "noreferrer noopener" : undefined;
+    const prefetchable =
+      !isExternalLink && linkNode.kind === "link" && typeof href === "string";
+    const overviewMatch =
+      linkNode.id === "overview" ||
+      linkNode.label?.toLowerCase() === "overview" ||
+      (linkNode.featureKey?.endsWith(".overview") ?? false);
+    const menuItemTestId = overviewMatch
+      ? `nav-menu-${persona.persona}-overview`
+      : linkNode.featureKey
+        ? `menu-item-${linkNode.featureKey}`
+        : `menu-item-${linkNode.id}`;
+    const isKeyboardPressed = keyboardPressedId === linkNode.id;
 
-        const metaItems: React.ReactNode[] = [];
-        if (badge) {
-          metaItems.push(
-            <span
-              className="badge"
-              data-tone={linkNode.badge?.tone || "new"}
-              key="badge"
-            >
-              {badge}
-            </span>,
-          );
-        }
-        if (hotkey) {
-          metaItems.push(
-            <span className="hotkey" key="hotkey">
-              {hotkey}
-            </span>,
-          );
-        }
+    const metaItems: React.ReactNode[] = [];
+    if (badge) {
+      metaItems.push(
+        <span
+          className="badge"
+          data-tone={linkNode.badge?.tone || "new"}
+          key="badge"
+        >
+          {badge}
+        </span>,
+      );
+    }
+    if (hotkey) {
+      metaItems.push(
+        <span className="hotkey" key="hotkey">
+          {hotkey}
+        </span>,
+      );
+    }
 
-        const linkContent = (
-          <>
-            <span className="icon" aria-hidden="true">
-              <Icon name={linkNode.icon} className="pm-icon" />
-            </span>
-            <span className="label">{linkNode.label}</span>
-            {metaItems.length ? (
-              <span className="meta">{metaItems}</span>
-            ) : null}
-            {longestLinkId === linkNode.id ? (
-              <span className="pm-spacer" aria-hidden="true" />
-            ) : null}
-          </>
+    const linkContent = (
+      <>
+        <span className="icon" aria-hidden="true">
+          <Icon name={linkNode.icon} className="pm-icon" />
+        </span>
+        <span className="label">{linkNode.label}</span>
+        {metaItems.length ? <span className="meta">{metaItems}</span> : null}
+        {longestLinkId === linkNode.id ? (
+          <span className="pm-spacer" aria-hidden="true" />
+        ) : null}
+      </>
+    );
+
+    const handlePrefetch = () => {
+      if (!prefetchable || !href) {
+        return;
+      }
+      if (prefetchedRoutesRef.current.has(href)) {
+        return;
+      }
+      prefetchedRoutesRef.current.add(href);
+      try {
+        router.prefetch(href as Route);
+      } catch {
+        prefetchedRoutesRef.current.delete(href);
+      }
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+      if (
+        !event.defaultPrevented &&
+        (event.key === " " || event.key === "Enter")
+      ) {
+        setKeyboardPressedId(linkNode.id);
+      }
+    };
+
+    const handleKeyUp = (event: React.KeyboardEvent<HTMLElement>) => {
+      if (event.key === " " || event.key === "Enter") {
+        setKeyboardPressedId((current) =>
+          current === linkNode.id ? null : current,
         );
+      }
+    };
 
-        const handlePrefetch = () => {
-          if (!prefetchable || !href) {
-            return;
-          }
-          if (prefetchedRoutesRef.current.has(href)) {
-            return;
-          }
-          prefetchedRoutesRef.current.add(href);
-          try {
-            router.prefetch(href as Route);
-          } catch {
-            prefetchedRoutesRef.current.delete(href);
-          }
-        };
+    const handleBlur = () => {
+      setKeyboardPressedId((current) =>
+        current === linkNode.id ? null : current,
+      );
+    };
 
-        const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-          if (
-            !event.defaultPrevented &&
-            (event.key === " " || event.key === "Enter")
-          ) {
-            setKeyboardPressedId(linkNode.id);
-          }
-        };
+    const setPendingAction = () => {
+      let action: PendingAction | null = null;
 
-        const handleKeyUp = (event: React.KeyboardEvent<HTMLElement>) => {
-          if (event.key === " " || event.key === "Enter") {
-            setKeyboardPressedId((current) =>
-              current === linkNode.id ? null : current,
-            );
-          }
-        };
+      if (href) {
+        if (isExternalLink) {
+          action = {
+            type: "external",
+            href,
+            newTab: target === "_blank",
+          };
+        } else {
+          action = { type: "internal", href };
+        }
+      }
 
-        const handleBlur = () => {
-          setKeyboardPressedId((current) =>
-            current === linkNode.id ? null : current,
-          );
-        };
+      if (!action) {
+        return false;
+      }
 
-        const setPendingAction = () => {
-          let action: PendingAction | null = null;
+      const current = pendingRef.current;
+      const sameAction =
+        current?.type === action.type &&
+        ((action.type === "internal" &&
+          current.type === "internal" &&
+          current.href === action.href) ||
+          (action.type === "external" &&
+            current.type === "external" &&
+            current.href === action.href &&
+            current.newTab === action.newTab));
 
-          if (href) {
-            if (isExternalLink) {
-              action = {
-                type: "external",
-                href,
-                newTab: target === "_blank",
-              };
-            } else {
-              action = { type: "internal", href };
-            }
-          }
+      if (!sameAction) {
+        pendingRef.current = action;
+      }
+      return true;
+    };
 
-          if (!action) {
-            return false;
-          }
+    const handleSelect = (event: DropdownMenuSelectEvent) => {
+      const originalEvent = getOriginalSelectEvent(event);
+      const syntheticEvent = createSyntheticClickEvent(event, originalEvent);
+      onLinkClick(syntheticEvent, persona, linkNode);
 
-          const current = pendingRef.current;
-          const sameAction =
-            current?.type === action.type &&
-            ((action.type === "internal" &&
-              current.type === "internal" &&
-              current.href === action.href) ||
-              (action.type === "external" &&
-                current.type === "external" &&
-                current.href === action.href &&
-                current.newTab === action.newTab));
-
-          if (!sameAction) {
-            pendingRef.current = action;
-          }
-          return true;
-        };
-
-        const handleSelect = (event: DropdownMenuSelectEvent) => {
-          const originalEvent = getOriginalSelectEvent(event);
-          const syntheticEvent = createSyntheticClickEvent(
-            event,
-            originalEvent,
-          );
-          onLinkClick(syntheticEvent, persona, linkNode);
-
-          if (TEST_MODE) {
-            const scope = globalThis as unknown as {
-              document?: Document;
-              __navTest?: {
-                lastSelect?: {
-                  id: string;
-                  href?: string;
-                  prevented?: boolean;
-                  kind?: string;
-                  navigated?: boolean;
-                };
-              };
+      if (TEST_MODE) {
+        const scope = globalThis as unknown as {
+          document?: Document;
+          __navTest?: {
+            lastSelect?: {
+              id: string;
+              href?: string;
+              prevented?: boolean;
+              kind?: string;
+              navigated?: boolean;
             };
-            if (scope.document) {
-              scope.__navTest = scope.__navTest ?? {};
-              scope.__navTest.lastSelect = {
-                id: linkNode.id,
-                href,
-                prevented: syntheticEvent.defaultPrevented,
-                kind: linkNode.kind,
-                navigated: scope.__navTest.lastSelect?.navigated ?? false,
-              };
-            }
-          }
-
-          if (syntheticEvent.defaultPrevented) {
-            event.preventDefault();
-            return;
-          }
-
-          if (
-            isModifiedActivation(originalEvent) ||
-            isAuxiliaryActivation(originalEvent)
-          ) {
-            return;
-          }
-
-          event.preventDefault();
-          syntheticEvent.preventDefault();
-
-          if (!href) {
-            aim.setOpen(false);
-            onOpenChange(persona.id, false);
-            return;
-          }
-
-          setPendingAction();
-
-          aim.setOpen(false);
-          onOpenChange(persona.id, false);
+          };
         };
+        if (scope.document) {
+          scope.__navTest = scope.__navTest ?? {};
+          scope.__navTest.lastSelect = {
+            id: linkNode.id,
+            href,
+            prevented: syntheticEvent.defaultPrevented,
+            kind: linkNode.kind,
+            navigated: scope.__navTest.lastSelect?.navigated ?? false,
+          };
+        }
+      }
 
-        const sharedProps = {
-          className: "item",
-          "data-testid": menuItemTestId,
-          "data-longest": longestLinkId === linkNode.id ? "true" : undefined,
-          "data-pressed": isKeyboardPressed ? "true" : undefined,
-          "data-active": active ? "true" : undefined,
-          onPointerEnter: handlePrefetch,
-          onFocus: handlePrefetch,
-          onKeyDown: handleKeyDown,
-          onKeyUp: handleKeyUp,
-          onBlur: handleBlur,
-        };
+      if (syntheticEvent.defaultPrevented) {
+        event.preventDefault();
+        return;
+      }
 
-        const fallbackPendingHandler = () => {
-          setPendingAction();
-        };
+      if (
+        isModifiedActivation(originalEvent) ||
+        isAuxiliaryActivation(originalEvent)
+      ) {
+        return;
+      }
 
-        const child = isExternalLink ? (
-          <a
-            href={href}
-            target={target}
-            rel={rel}
-            {...sharedProps}
-            onPointerUpCapture={fallbackPendingHandler}
-            onClickCapture={fallbackPendingHandler}
-            onTouchEndCapture={fallbackPendingHandler}
-          >
-            {linkContent}
-          </a>
-        ) : (
-          <button
-            type="button"
-            {...sharedProps}
-            onPointerUpCapture={fallbackPendingHandler}
-            onClickCapture={fallbackPendingHandler}
-            onTouchEndCapture={fallbackPendingHandler}
-          >
-            {linkContent}
-          </button>
-        );
+      event.preventDefault();
+      syntheticEvent.preventDefault();
 
-        return (
-          <DropdownMenu.Item
-            key={linkNode.id}
-            asChild
-            data-active={active ? "true" : undefined}
-            onSelect={handleSelect}
-          >
-            {child}
-          </DropdownMenu.Item>
-        );
-      }),
-    [
-      aim,
-      keyboardPressedId,
-      links,
-      onLinkClick,
-      onOpenChange,
-      pathname,
-      persona,
-      pendingRef,
-      longestLinkId,
-      router,
-    ],
-  );
+      if (!href) {
+        aim.setOpen(false);
+        onOpenChange(persona.id, false);
+        return;
+      }
+
+      setPendingAction();
+
+      aim.setOpen(false);
+      onOpenChange(persona.id, false);
+    };
+
+    const sharedProps = {
+      className: "item",
+      "data-testid": menuItemTestId,
+      "data-longest": longestLinkId === linkNode.id ? "true" : undefined,
+      "data-pressed": isKeyboardPressed ? "true" : undefined,
+      "data-active": active ? "true" : undefined,
+      onPointerEnter: handlePrefetch,
+      onFocus: handlePrefetch,
+      onKeyDown: handleKeyDown,
+      onKeyUp: handleKeyUp,
+      onBlur: handleBlur,
+    };
+
+    const fallbackPendingHandler = () => {
+      setPendingAction();
+    };
+
+    const child = isExternalLink ? (
+      <a
+        href={href}
+        target={target}
+        rel={rel}
+        {...sharedProps}
+        onPointerUpCapture={fallbackPendingHandler}
+        onClickCapture={fallbackPendingHandler}
+        onTouchEndCapture={fallbackPendingHandler}
+      >
+        {linkContent}
+      </a>
+    ) : (
+      <button
+        type="button"
+        {...sharedProps}
+        onPointerUpCapture={fallbackPendingHandler}
+        onClickCapture={fallbackPendingHandler}
+        onTouchEndCapture={fallbackPendingHandler}
+      >
+        {linkContent}
+      </button>
+    );
+
+    return (
+      <DropdownMenu.Item
+        key={linkNode.id}
+        asChild
+        data-active={active ? "true" : undefined}
+        onSelect={handleSelect}
+      >
+        {child}
+      </DropdownMenu.Item>
+    );
+  });
 
   const referenceProps = React.useMemo(
     () => aim.getReferenceProps<Record<string, unknown>>({}),
@@ -1005,7 +988,7 @@ function NestableMenuInner({
       setFromPointerEvent(event);
       cancelPendingClose();
       skipFocusOpenRef.current = false;
-      suppressReopenRef.current = false;
+      setSuppressReopen(false);
       const pointerType = event.pointerType;
       const supportsHover = isHoverCapablePointer(pointerType);
 
@@ -1038,7 +1021,12 @@ function NestableMenuInner({
         | undefined;
       handler?.(event);
     },
-    [cancelPendingClose, referenceProps, setFromPointerEvent],
+    [
+      cancelPendingClose,
+      referenceProps,
+      setFromPointerEvent,
+      setSuppressReopen,
+    ],
   );
 
   const handlePointerUp = React.useCallback(
@@ -1046,7 +1034,7 @@ function NestableMenuInner({
       setFromPointerEvent(event);
       cancelPendingClose();
       skipFocusOpenRef.current = false;
-      suppressReopenRef.current = false;
+      setSuppressReopen(false);
       const toggleKind = pointerToggleKindRef.current;
 
       if (awaitingPointerUpRef.current && toggleKind) {
@@ -1099,6 +1087,7 @@ function NestableMenuInner({
       setHoverSuspended,
       setKeyboard,
       setLockedByPointer,
+      setSuppressReopen,
     ],
   );
 
@@ -1111,7 +1100,7 @@ function NestableMenuInner({
       }
       setHoverSuspended(false);
       skipFocusOpenRef.current = false;
-      suppressReopenRef.current = false;
+      setSuppressReopen(false);
       if (lockedByPointer) {
         return;
       }
@@ -1129,6 +1118,7 @@ function NestableMenuInner({
       lockedByPointer,
       referenceProps,
       setFromPointerEvent,
+      setSuppressReopen,
       setHoverSuspended,
     ],
   );
@@ -1196,7 +1186,7 @@ function NestableMenuInner({
       cancelPendingClose();
       setHoverSuspended(false);
       skipFocusOpenRef.current = false;
-      suppressReopenRef.current = false;
+      setSuppressReopen(false);
       if (lockedByPointer) {
         return;
       }
@@ -1214,6 +1204,7 @@ function NestableMenuInner({
       lockedByPointer,
       referenceProps,
       setFromPointerEvent,
+      setSuppressReopen,
       setHoverSuspended,
     ],
   );
@@ -1253,7 +1244,7 @@ function NestableMenuInner({
     (event: React.MouseEvent<HTMLButtonElement>) => {
       cancelPendingClose();
       skipFocusOpenRef.current = false;
-      suppressReopenRef.current = false;
+      setSuppressReopen(false);
       if (skipNextClickRef.current) {
         skipNextClickRef.current = false;
         return;
@@ -1308,6 +1299,7 @@ function NestableMenuInner({
       isOpen,
       lockedByPointer,
       referenceProps,
+      setSuppressReopen,
       setHoverSuspended,
       setKeyboard,
     ],
@@ -1339,7 +1331,7 @@ function NestableMenuInner({
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       setKeyboard();
       skipFocusOpenRef.current = false;
-      suppressReopenRef.current = false;
+      setSuppressReopen(false);
       const handler = referenceProps.onKeyDown as
         | ((ev: React.KeyboardEvent<HTMLButtonElement>) => void)
         | undefined;
@@ -1356,6 +1348,7 @@ function NestableMenuInner({
       onTriggerKeyDown,
       persona.id,
       referenceProps,
+      setSuppressReopen,
       setHoverSuspended,
       setKeyboard,
     ],

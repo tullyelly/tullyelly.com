@@ -1,6 +1,7 @@
 // app/api/_diag/db/route.ts  (TEMP)
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import { normalizeDatabaseUrl } from "@/lib/db-url";
 
 function sanitize(url?: string) {
   if (!url) return null;
@@ -20,7 +21,10 @@ export async function GET() {
       { status: 503 },
     );
   }
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const connectionString = process.env.DATABASE_URL
+    ? normalizeDatabaseUrl(process.env.DATABASE_URL)
+    : undefined;
+  const pool = new Pool({ connectionString });
   const meta = await pool.query(`
     SELECT
       current_database()               AS database,
