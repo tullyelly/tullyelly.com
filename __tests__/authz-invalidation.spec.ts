@@ -69,7 +69,7 @@ describe("ensureAuthzInvalidationListener", () => {
 
     const { revalidateTag } = require("next/cache");
     notificationHandler?.({ channel: "authz_changed", payload: "abc" });
-    expect(revalidateTag).toHaveBeenCalledWith("auth:user:abc");
+    expect(revalidateTag).toHaveBeenCalledWith("auth:user:abc", "max");
 
     errorHandler?.(new Error("boom"));
 
