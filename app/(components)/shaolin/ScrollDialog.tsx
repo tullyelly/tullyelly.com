@@ -40,8 +40,7 @@ export default function ScrollDialog({
 }: ScrollDialogProps) {
   const router = useRouter();
   const [row, setRow] = useState<ShaolinScroll | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [errorId, setErrorId] = useState<string | number | null>(null);
   const handleChange = (nextOpen: boolean) => {
     onOpenChange(nextOpen);
     if (!nextOpen) {
@@ -49,12 +48,21 @@ export default function ScrollDialog({
     }
   };
 
+  const rowForId =
+    row && id != null && String((row as { id?: unknown }).id) === String(id)
+      ? row
+      : null;
+  const errorForId =
+    errorId != null && id != null && String(errorId) === String(id);
+  const loading = open && id != null && !rowForId && !errorForId;
+
   useEffect(() => {
-    if (!open || id == null) return;
+    if (!open || id == null || rowForId) return;
     let active = true;
-    setLoading(true);
-    setError(false);
-    setRow(null);
+    const currentId = id;
+    Promise.resolve().then(() => {
+      if (active) setErrorId(null);
+    });
     fetch(`/api/shaolin-scrolls/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error(String(res.status));
@@ -63,18 +71,16 @@ export default function ScrollDialog({
       .then((data) => {
         if (!active) return;
         setRow(data as ShaolinScroll);
+        setErrorId(null);
       })
       .catch(() => {
         if (!active) return;
-        setError(true);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
+        setErrorId(currentId);
       });
     return () => {
       active = false;
     };
-  }, [open, id]);
+  }, [id, open, rowForId]);
 
   return (
     <DialogPanel open={open} onClose={() => handleChange(false)}>
@@ -102,8 +108,8 @@ export default function ScrollDialog({
             Details for this scroll
           </DialogPanelDescription>
           {loading && <p>Loading…</p>}
-          {error && <p>Error loading scroll.</p>}
-          {!loading && !error && row && (
+          {errorForId && <p>Error loading scroll.</p>}
+          {!loading && !errorForId && rowForId && (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:[grid-template-columns:repeat(2,minmax(0,1fr))] xl:grid-cols-3 xl:[grid-template-columns:repeat(3,minmax(0,1fr))]">
               {(() => {
                 const order: Array<{ key: string; label: string }> = [
@@ -128,7 +134,7 @@ export default function ScrollDialog({
                   { key: "month", label: "Month" },
                 ];
 
-                const r = row as Record<string, unknown>;
+                const r = rowForId as Record<string, unknown>;
 
                 const renderValue = (
                   key: string,

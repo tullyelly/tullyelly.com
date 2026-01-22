@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { getPool } from "@/db/pool";
 
 function normalizeLabel(label: string) {
@@ -11,7 +11,7 @@ async function revalidateScrollPaths() {
   // Revalidate common pages that list scrolls
   revalidatePath("/");
   revalidatePath("/mark2/shaolin-scrolls");
-  revalidateTag("scrolls");
+  updateTag("scrolls");
 }
 
 export async function createPatch(label: string) {

@@ -23,21 +23,27 @@ export default function InitialScrollGuard() {
     const origFocus: typeof HTMLElement.prototype.focus =
       HTMLElement.prototype.focus;
     let guardActive = true;
+    let handlingFocus = false;
 
-    (
-      HTMLElement.prototype as typeof HTMLElement.prototype & {
-        focus: typeof origFocus;
-      }
-    ).focus = function focusPatched(this: HTMLElement, ...args) {
-      if (guardActive) {
+    const handleFocusIn = (event: FocusEvent) => {
+      if (!guardActive || handlingFocus) return;
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      handlingFocus = true;
+      try {
+        origFocus.call(target, { preventScroll: true } as FocusOptions);
+      } catch {
         try {
-          return origFocus.call(this, { preventScroll: true } as any);
+          origFocus.call(target);
         } catch {
-          return origFocus.apply(this, args);
+          // ignore focus failures
         }
+      } finally {
+        handlingFocus = false;
       }
-      return origFocus.apply(this, args);
     };
+
+    document.addEventListener("focusin", handleFocusIn, true);
 
     if (!window.location.hash) {
       window.scrollTo(0, 0);
@@ -50,7 +56,7 @@ export default function InitialScrollGuard() {
       } catch {
         // ignore unsupported browsers
       }
-      HTMLElement.prototype.focus = origFocus;
+      document.removeEventListener("focusin", handleFocusIn, true);
     };
 
     requestAnimationFrame(release);

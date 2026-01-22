@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useMemo, type ReactNode } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
@@ -30,11 +24,6 @@ export function SignInGate({
   className,
 }: SignInGateProps) {
   const { status } = useSession();
-  const [callbackUrl, setCallbackUrl] = useState("/");
-
-  useEffect(() => {
-    setCallbackUrl(window.location.href);
-  }, []);
 
   const wrapperClass = useMemo(
     () => cn("flex", ALIGN_CLASS[align], className),
@@ -42,8 +31,9 @@ export function SignInGate({
   );
 
   const handleSignIn = useCallback(() => {
-    void signIn("google", { callbackUrl });
-  }, [callbackUrl]);
+    const href = globalThis.location?.href ?? "/";
+    void signIn("google", { callbackUrl: href });
+  }, []);
 
   if (status === "authenticated") {
     return <>{children}</>;

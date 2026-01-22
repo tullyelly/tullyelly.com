@@ -143,7 +143,7 @@ export async function POST(req: Request) {
     client.release();
   }
 
-  revalidateTag("tcdb-rankings");
+  revalidateTag("tcdb-rankings", "max");
 
   try {
     await writeAudit({

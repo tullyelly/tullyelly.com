@@ -11,6 +11,7 @@ const remarkPlugins = [
   remarkMdxFrontmatter,
   remarkSemicolons,
 ];
+const isTurbopack = Boolean(process.env.TURBOPACK);
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -42,10 +43,10 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["vaul", "cmdk", "lucide-react"],
     mdxRs: {
-      remarkPlugins,
+      remarkPlugins: isTurbopack ? [] : remarkPlugins,
     },
   },
-  webpack: (config) => {
+  webpack: (config, { dev }) => {
     config.ignoreWarnings = [
       ...(config.ignoreWarnings || []),
       (warning) => {
@@ -64,8 +65,89 @@ const nextConfig = {
         return fromContentlayer && isCacheWarning;
       },
     ];
+    if (dev) {
+      if (process.env.NEXT_DISABLE_FS_CACHE === "1") {
+        config.cache = false;
+      }
+      const extraIgnored = ["**/.contentlayer/**", "**/.next/**"];
+      const extraIgnoredRegexSource =
+        "[\\\\/]\\.contentlayer[\\\\/]|[\\\\/]\\.next[\\\\/]";
+      const currentIgnored = config.watchOptions?.ignored;
+      if (currentIgnored instanceof RegExp) {
+        const combinedIgnored = new RegExp(
+          `${currentIgnored.source}|${extraIgnoredRegexSource}`,
+          currentIgnored.flags,
+        );
+        config.watchOptions = {
+          ...(config.watchOptions || {}),
+          ignored: combinedIgnored,
+        };
+      } else if (Array.isArray(currentIgnored)) {
+        const regexEntries = currentIgnored.filter(
+          (entry) => entry instanceof RegExp,
+        );
+        if (regexEntries.length > 0) {
+          const stringEntries = currentIgnored.filter(
+            (entry) => typeof entry === "string" && entry.trim().length > 0,
+          );
+          const globToRegexSource = (value) =>
+            value
+              .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+              .replace(/\\\*\\\*/g, ".*")
+              .replace(/\\\*/g, "[^/]*")
+              .replace(/\\\?/g, ".");
+          const stringSources = stringEntries.map(globToRegexSource);
+          const regexSources = regexEntries.map((entry) => entry.source);
+          const combinedIgnored = new RegExp(
+            [...regexSources, ...stringSources, extraIgnoredRegexSource]
+              .filter(Boolean)
+              .join("|"),
+            regexEntries[0].flags,
+          );
+          config.watchOptions = {
+            ...(config.watchOptions || {}),
+            ignored: combinedIgnored,
+          };
+        } else {
+          const ignoredList = currentIgnored.filter(
+            (entry) => typeof entry === "string" && entry.trim().length > 0,
+          );
+          config.watchOptions = {
+            ...(config.watchOptions || {}),
+            ignored: [...ignoredList, ...extraIgnored],
+          };
+        }
+      } else {
+        const ignoredList =
+          typeof currentIgnored === "string" && currentIgnored.trim().length > 0
+            ? [currentIgnored]
+            : [];
+        config.watchOptions = {
+          ...(config.watchOptions || {}),
+          ignored: [...ignoredList, ...extraIgnored],
+        };
+      }
+    }
     return config;
   },
 };
 
-export default withContentlayer(createMDX()(withBundleAnalyzer(nextConfig)));
+const enableContentlayer =
+  process.env.NEXT_PUBLIC_ENABLE_CONTENTLAYER === "1" ||
+  process.env.ENABLE_CONTENTLAYER === "1";
+const isDev = process.env.NODE_ENV !== "production";
+const baseConfig = createMDX()(withBundleAnalyzer(nextConfig));
+const configWithPlugins =
+  !isDev || enableContentlayer ? withContentlayer(baseConfig) : baseConfig;
+
+if (
+  configWithPlugins.turbopack &&
+  typeof configWithPlugins.turbopack === "object"
+) {
+  delete configWithPlugins.turbopack.conditions;
+  if (Object.keys(configWithPlugins.turbopack).length === 0) {
+    delete configWithPlugins.turbopack;
+  }
+}
+
+export default configWithPlugins;

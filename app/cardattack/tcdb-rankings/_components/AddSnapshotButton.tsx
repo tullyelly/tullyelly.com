@@ -11,7 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -135,7 +135,10 @@ export default function AddSnapshotButton({
     [homieOptions],
   );
 
-  const homieFieldValue = form.watch("homie_id");
+  const homieFieldValue = useWatch({
+    control: form.control,
+    name: "homie_id",
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [isListOpen, setIsListOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -149,36 +152,52 @@ export default function AddSnapshotButton({
   }, [options, searchTerm]);
 
   useEffect(() => {
-    if (!options.length) {
-      setSearchTerm("");
-      setHighlightedIndex(0);
-      if (homieFieldValue) {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (!active) return;
+      if (!options.length) {
+        setSearchTerm("");
+        setHighlightedIndex(0);
+        if (homieFieldValue) {
+          form.setValue("homie_id", "", {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+        }
+        return;
+      }
+
+      if (!homieFieldValue) return;
+      const selected = options.find(
+        (option) => option.value === homieFieldValue,
+      );
+      if (selected) {
+        setSearchTerm(selected.label);
+      } else {
         form.setValue("homie_id", "", {
           shouldDirty: true,
           shouldValidate: true,
         });
+        setSearchTerm("");
       }
-      return;
-    }
-
-    if (!homieFieldValue) return;
-    const selected = options.find((option) => option.value === homieFieldValue);
-    if (selected) {
-      setSearchTerm(selected.label);
-    } else {
-      form.setValue("homie_id", "", {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      setSearchTerm("");
-    }
+    });
+    return () => {
+      active = false;
+    };
   }, [options, homieFieldValue, form]);
 
   useEffect(() => {
-    const matchIndex = filteredOptions.findIndex(
-      (option) => option.value === homieFieldValue,
-    );
-    setHighlightedIndex(matchIndex >= 0 ? matchIndex : 0);
+    let active = true;
+    Promise.resolve().then(() => {
+      if (!active) return;
+      const matchIndex = filteredOptions.findIndex(
+        (option) => option.value === homieFieldValue,
+      );
+      setHighlightedIndex(matchIndex >= 0 ? matchIndex : 0);
+    });
+    return () => {
+      active = false;
+    };
   }, [filteredOptions, homieFieldValue]);
 
   useEffect(() => {
@@ -254,12 +273,6 @@ export default function AddSnapshotButton({
       resetForm(defaultRankingDate);
     }
   };
-
-  useEffect(() => {
-    if (!open) {
-      resetForm(defaultRankingDate);
-    }
-  }, [defaultRankingDate, open, resetForm]);
 
   const isSubmitting = form.formState.isSubmitting;
 

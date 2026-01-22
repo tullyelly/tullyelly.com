@@ -11,6 +11,6 @@ export async function POST(req: Request) {
   ) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
-  revalidateTag("tcdb-rankings");
+  revalidateTag("tcdb-rankings", "max");
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { DATABASE_URL, isNextBuild } from "@/lib/env";
 import { assertValidDatabaseUrl } from "@/db/assert-database-url";
+import { normalizeDatabaseUrl } from "@/lib/db-url";
 
 interface Queryable {
   query<T = any>(sql: any, values?: any[]): Promise<any>;
@@ -93,10 +94,11 @@ export function getPool(): Queryable {
     );
   }
 
-  const connectionString = DATABASE_URL ?? null;
-  if (!connectionString)
+  const rawConnectionString = DATABASE_URL ?? null;
+  if (!rawConnectionString)
     throw new Error("Missing DATABASE_URL. Set it in .env.local");
-  assertValidDatabaseUrl(connectionString);
+  assertValidDatabaseUrl(rawConnectionString);
+  const connectionString = normalizeDatabaseUrl(rawConnectionString);
   pool = new Pool({
     connectionString,
     ssl: { rejectUnauthorized: false },

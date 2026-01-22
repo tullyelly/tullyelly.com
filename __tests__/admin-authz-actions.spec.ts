@@ -6,7 +6,7 @@ process.env.DATABASE_URL =
   "postgres://tester:secret@localhost:5432/tullyelly_test";
 
 jest.mock("next/cache", () => ({
-  revalidateTag: jest.fn(),
+  updateTag: jest.fn(),
 }));
 jest.mock("@/lib/authz", () => ({
   must: jest.fn(),
@@ -18,7 +18,7 @@ jest.mock("@/lib/auth/session", () => ({
   getCurrentUser: jest.fn(),
 }));
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { must } from "@/lib/authz";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -28,9 +28,7 @@ import {
   revokeRole,
 } from "@/app/mark2/admin/authz/actions";
 
-const revalidateTagMock = revalidateTag as jest.MockedFunction<
-  typeof revalidateTag
->;
+const updateTagMock = updateTag as jest.MockedFunction<typeof updateTag>;
 const mustMock = must as jest.MockedFunction<typeof must>;
 const sqlMock = sql as unknown as jest.MockedFunction<typeof sql>;
 const getCurrentUserMock = getCurrentUser as jest.MockedFunction<
@@ -102,7 +100,7 @@ describe("grantRole", () => {
     expect(call[2]).toBe("user-2");
     expect(call[3]).toBe("admin");
     expect(call[4]).toBe("admin");
-    expect(revalidateTagMock).toHaveBeenCalledWith("auth:user:user-2");
+    expect(updateTagMock).toHaveBeenCalledWith("auth:user:user-2");
   });
 
   test("throws when user id missing", async () => {
@@ -127,7 +125,7 @@ describe("revokeRole", () => {
     ).rejects.toThrow(/Refusing to remove the last admin/);
 
     expect(sqlMock).toHaveBeenCalledTimes(1);
-    expect(revalidateTagMock).not.toHaveBeenCalled();
+    expect(updateTagMock).not.toHaveBeenCalled();
   });
 
   test("revokes role and revalidates when guard passes", async () => {
@@ -147,6 +145,6 @@ describe("revokeRole", () => {
     expect(revokeCall[2]).toBe("user-4");
     expect(revokeCall[3]).toBe("admin");
     expect(revokeCall[4]).toBe("admin");
-    expect(revalidateTagMock).toHaveBeenCalledWith("auth:user:user-4");
+    expect(updateTagMock).toHaveBeenCalledWith("auth:user:user-4");
   });
 });

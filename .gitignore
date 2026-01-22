@@ -66,5 +66,5 @@ cipher/
 coverage/
 dist/
 build/
-.contentlayer
+.contentlayer/
 .turbo/

@@ -1,8 +1,7 @@
 import type { CodePanel } from "@/components/mdx/code-panel";
 import type ReleaseSection from "@/components/mdx/ReleaseSection";
-import type YouTubeMusicPlaylist, {
-  YouTubeMusicPlaylistProps,
-} from "@/components/mdx/YouTubeMusicPlaylist";
+import type YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
+import type { YouTubeMusicPlaylistProps } from "@/components/mdx/YouTubeMusicPlaylist";
 import type YouTubeVideo from "@/components/mdx/YouTubeVideo";
 
 declare module "mdx/types" {

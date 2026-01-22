@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -41,16 +41,18 @@ function buildInitials(displayName: string): string {
 function useSafeCallbackUrl(): string {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [safe, setSafe] = useState<string>("/");
   const searchKey = searchParams?.toString() ?? "";
 
-  useEffect(() => {
-    const href = window.location.href;
-    const origin = window.location.origin;
-    setSafe(sanitizeCallback(href, origin));
+  return useMemo(() => {
+    const origin =
+      globalThis.location?.origin ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
+    const href =
+      globalThis.location?.href ??
+      (origin
+        ? `${origin}${pathname ?? ""}${searchKey ? `?${searchKey}` : ""}`
+        : "/");
+    return sanitizeCallback(href, origin || undefined);
   }, [pathname, searchKey]);
-
-  return safe;
 }
 
 function LoadingPlaceholder() {

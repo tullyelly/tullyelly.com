@@ -17,6 +17,7 @@ export default function MenuTestbed({
   const headerRef = React.useRef<HTMLElement | null>(null);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
   const pointerGuardRef = React.useRef<(() => boolean) | null>(null);
+  const [hasPointerGuard, setHasPointerGuard] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -38,6 +39,7 @@ export default function MenuTestbed({
     (id: string, guard: (() => boolean) | null) => {
       if (id !== persona.id) return;
       pointerGuardRef.current = guard ?? null;
+      setHasPointerGuard(Boolean(guard));
     },
     [persona.id],
   );
@@ -134,7 +136,7 @@ export default function MenuTestbed({
         <p className="text-sm text-muted-foreground">
           Tap a persona item to navigate to the target page.
         </p>
-        {pointerGuardRef.current ? (
+        {hasPointerGuard ? (
           <span className="sr-only">pointer shield active</span>
         ) : null}
       </div>

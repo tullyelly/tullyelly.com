@@ -32,7 +32,7 @@ export function ensureAuthzInvalidationListener(): void {
 
     client.on("notification", (msg: { channel: string; payload?: string }) => {
       if (msg.channel === "authz_changed" && msg.payload) {
-        revalidateTag(`auth:user:${msg.payload}`);
+        revalidateTag(`auth:user:${msg.payload}`, "max");
       }
     });
 

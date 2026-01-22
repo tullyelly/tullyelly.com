@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -19,13 +19,32 @@ export default function SquadMemberPosts({
   pageSize = 10,
 }: SquadMemberPostsProps) {
   const safeSize = Number.isFinite(pageSize) ? Math.max(1, pageSize) : 10;
+  const resetKey = `${tag}-${safeSize}-${posts?.length ?? 0}`;
+
+  return (
+    <SquadMemberPostsInner
+      key={resetKey}
+      tag={tag}
+      posts={posts}
+      safeSize={safeSize}
+    />
+  );
+}
+
+type SquadMemberPostsInnerProps = {
+  tag: string;
+  posts: TaggedPost[];
+  safeSize: number;
+};
+
+function SquadMemberPostsInner({
+  tag,
+  posts,
+  safeSize,
+}: SquadMemberPostsInnerProps) {
   const totalPages = Math.max(1, Math.ceil((posts?.length ?? 0) / safeSize));
   const [page, setPage] = useState(1);
   const hasPosts = Array.isArray(posts) && posts.length > 0;
-
-  useEffect(() => {
-    setPage(1);
-  }, [tag, safeSize, posts]);
 
   const pageItems = useMemo(() => {
     if (!Array.isArray(posts) || posts.length === 0) return [];
