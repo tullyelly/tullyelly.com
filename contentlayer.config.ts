@@ -199,6 +199,7 @@ const Post = defineDocumentType(() => ({
 export default makeSource({
   contentDirPath,
   documentTypes: [Post],
+  date: { timezone: "America/Chicago" },
   mdx: {
     remarkPlugins: [remarkInferReleaseSectionAlterEgo],
     rehypePlugins: [],
