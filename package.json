@@ -35,6 +35,7 @@
     "lint": "eslint . --cache --cache-location .cache/eslint/.eslintcache",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint:metadata": "node scripts/ensure-metadata.js",
+    "james": "npm run lint && npm run typecheck && npm test",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:animated": "node scripts/optimize-animated-webp.mjs",
     "images:check": "node scripts/check-images.mjs",
