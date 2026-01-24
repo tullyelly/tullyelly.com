@@ -256,6 +256,10 @@ export default async function ReleaseSection({
   const resolvedReleaseName = tcdbTradeId
     ? tabLabel
     : (releaseName ?? undefined);
+  const showTradePartner = Boolean(tcdbTradeId && tcdbTradePartner);
+  const footerClassName = showTradePartner
+    ? "flex justify-between items-center"
+    : "flex justify-end";
 
   const baseContent = (
     <div
@@ -274,7 +278,15 @@ export default async function ReleaseSection({
       }
     >
       {children}
-      <div className="flex justify-end">
+      <div className={footerClassName}>
+        {showTradePartner && tradePartnerUrl ? (
+          <div className="text-sm">
+            <span>Trade Partner: </span>
+            <Link href={tradePartnerUrl} className="link-blue">
+              {tcdbTradePartner}
+            </Link>
+          </div>
+        ) : null}
         <Link
           href={`/shaolin/tags/${encodeURIComponent(alterEgo.toLowerCase())}`}
           prefetch={false}
