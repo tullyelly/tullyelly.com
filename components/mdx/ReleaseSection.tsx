@@ -208,6 +208,7 @@ export default async function ReleaseSection({
 
   const normalizedReleaseType = releaseType?.toLowerCase();
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
+  const isTcdbTrade = Boolean(tcdbTradeId);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)
     : undefined;
@@ -341,6 +342,8 @@ export default async function ReleaseSection({
           <Link
             href={tabHref}
             prefetch={false}
+            target={isTcdbTrade ? "_blank" : undefined}
+            rel={isTcdbTrade ? "noreferrer noopener" : undefined}
             className={[
               "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
               pillInteractionClasses,
