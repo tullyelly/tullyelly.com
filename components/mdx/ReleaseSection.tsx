@@ -323,7 +323,9 @@ export default async function ReleaseSection({
   }
 
   const borderStyle = {
-    borderColor: releaseColor ?? archivedReleaseColor,
+    borderColor: isTcdbTrade
+      ? "transparent"
+      : (releaseColor ?? archivedReleaseColor),
     borderWidth: "4px",
   };
   const tabStyle: CSSProperties = {
@@ -342,6 +344,7 @@ export default async function ReleaseSection({
   const releaseContainerClassName = [
     "relative rounded-lg border-[4px] px-4 pt-8 pb-4",
     isChromeFoil ? "chrome-foil-border" : "",
+    isTcdbTrade ? "tcdb-border" : "",
     divider ? "mb-10" : "",
   ]
     .filter(Boolean)
