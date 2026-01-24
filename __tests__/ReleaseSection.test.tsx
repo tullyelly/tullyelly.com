@@ -96,6 +96,61 @@ describe("ReleaseSection", () => {
     expect(container.querySelector("hr")).toBeNull();
   });
 
+  it("does not call getScroll and renders tcdb trade tab + partner link", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: "359632",
+      tcdbTradePartner: "collect-a-set",
+    });
+    const { container } = render(ui);
+
+    expect(getScrollMock).not.toHaveBeenCalled();
+
+    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper.className).toContain("tcdb-border");
+
+    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab.getAttribute("href")).toBe(
+      "https://www.tcdb.com/Transactions.cfm?MODE=VIEW&TransactionID=359632&PageIndex=1",
+    );
+    expect(tab).toHaveTextContent("TCDb Trade: 359632; Partner collect-a-set");
+
+    expect(screen.getByText("Trade Partner:")).toBeInTheDocument();
+    const partnerLink = screen.getByText("collect-a-set").closest("a");
+    expect(partnerLink).toBeInTheDocument();
+    expect(partnerLink).toHaveAttribute(
+      "href",
+      "https://www.tcdb.com/Profile.cfm/collect-a-set",
+    );
+    expect(partnerLink).toHaveClass("link-blue");
+  });
+
+  it("throws when both releaseId and tcdbTradeId are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({ ...baseProps, releaseId: "12", tcdbTradeId: "359632" }),
+    ).rejects.toThrow("either releaseId or tcdbTradeId");
+  });
+
+  it("tcdb trade without partner renders tab without partner suffix and no bottom partner row", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: "359632",
+    });
+    const { container } = render(ui);
+
+    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+
+    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab).toHaveTextContent("TCDb Trade: 359632");
+
+    expect(screen.queryByText("Trade Partner:")).toBeNull();
+  });
+
   it("colors nested dividers to match the release border when releaseId is present", async () => {
     const Divider = mdxComponents.hr as React.ComponentType<
       React.ComponentPropsWithoutRef<"hr">
