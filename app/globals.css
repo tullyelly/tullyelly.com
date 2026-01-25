@@ -41,6 +41,17 @@
     var(--tc-chrome-hi) 100%
   );
 
+  /* TCDB parquet */
+  --tcdb-wood-base: #b65a36;
+  --tcdb-wood-dark: color-mix(in srgb, var(--tcdb-wood-base) 72%, var(--ink));
+  --tcdb-wood-shadow: color-mix(in srgb, var(--tcdb-wood-base) 62%, var(--ink));
+  --tcdb-wood-mid: color-mix(in srgb, var(--tcdb-wood-base) 74%, var(--cream));
+  --tcdb-wood-light: color-mix(
+    in srgb,
+    var(--tcdb-wood-base) 58%,
+    var(--cream)
+  );
+
   /* Neutrals for readability */
   --black: var(--ink);
 
@@ -472,6 +483,20 @@ p {
 
   .chrome-foil-border {
     border-color: var(--tc-chrome-lo);
+  }
+
+  .tcdb-border {
+    border: 4px solid transparent;
+    border-image-source: repeating-linear-gradient(
+      45deg,
+      var(--tcdb-wood-dark) 0 6px,
+      var(--tcdb-wood-base) 6px 12px,
+      var(--tcdb-wood-mid) 12px 18px,
+      var(--tcdb-wood-light) 18px 24px
+    );
+    border-image-slice: 8;
+    border-image-width: 4px;
+    border-image-repeat: round;
   }
 
   .chrome-foil-shimmer {

@@ -23,12 +23,34 @@ Spike note (ReleaseSection styling)
 - Rejected: hard-coded color map for ReleaseSection (would drift from badges) and pseudo-element overlays for the tab (added complexity and layering issues).
 */
 
-type Props = {
+type ReleaseSectionBaseProps = {
   alterEgo: string;
   children: ReactNode;
   divider?: boolean;
-  releaseId?: string;
 };
+
+type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
+  releaseId: string;
+  tcdbTradeId?: never;
+  tcdbTradePartner?: never;
+};
+
+type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
+  tcdbTradeId: string;
+  tcdbTradePartner?: string;
+  releaseId?: never;
+};
+
+type ReleaseSectionWithoutRelease = ReleaseSectionBaseProps & {
+  releaseId?: undefined;
+  tcdbTradeId?: undefined;
+  tcdbTradePartner?: undefined;
+};
+
+type ReleaseSectionProps =
+  | ReleaseSectionWithReleaseId
+  | ReleaseSectionWithTcdbTrade
+  | ReleaseSectionWithoutRelease;
 
 const RELEASE_TYPE_VARIANTS: Record<string, BadgeVariant> = {
   hotfix: "hotfix",
@@ -135,6 +157,8 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  *
  * - alterEgo: required persona tag rendered as a pill.
  * - releaseId: optional scroll ID; when present, the section renders a release-colored border and a linked tab to `/mark2/shaolin-scrolls/{releaseId}` with hover inversion.
+ * - tcdbTradeId: optional trade ID; when present, the section renders a release-colored border with a linked tab to the TCDB transaction.
+ * - tcdbTradePartner: optional trade partner for TCDB trades.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -149,18 +173,42 @@ export default async function ReleaseSection({
   children,
   divider = true,
   releaseId,
-}: Props) {
+  tcdbTradeId,
+  tcdbTradePartner,
+}: ReleaseSectionProps) {
   let releaseName: string | undefined;
   let releaseType: string | undefined;
+  let tradeUrl: string | undefined;
+  let tradePartnerUrl: string | undefined;
+  let tabLabel: string | undefined;
 
-  if (releaseId) {
+  if (releaseId && tcdbTradeId) {
+    throw new Error(
+      "ReleaseSection: pass either releaseId or tcdbTradeId, not both.",
+    );
+  }
+
+  if (tcdbTradeId) {
+    releaseType = "tcdb";
+    tradeUrl = `https://www.tcdb.com/Transactions.cfm?MODE=VIEW&TransactionID=${tcdbTradeId}&PageIndex=1`;
+    tradePartnerUrl = tcdbTradePartner
+      ? `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(
+          tcdbTradePartner,
+        )}`
+      : undefined;
+    tabLabel = `TCDb Trade: ${tcdbTradeId}${
+      tradePartnerUrl ? `; Partner ${tcdbTradePartner}` : ""
+    }`;
+  } else if (releaseId) {
     const release = await getScroll(releaseId);
     releaseName = release?.release_name;
     releaseType = release?.release_type;
+    tabLabel = releaseName ?? releaseId;
   }
 
   const normalizedReleaseType = releaseType?.toLowerCase();
-  const showReleaseDetails = Boolean(releaseId);
+  const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
+  const isTcdbTrade = Boolean(tcdbTradeId);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)
     : undefined;
@@ -204,11 +252,19 @@ export default async function ReleaseSection({
     showReleaseDetails && resolvedReleaseTextColor
       ? resolvedReleaseTextColor
       : "#FFFFFF";
+  const tabHref = releaseId ? `/mark2/shaolin-scrolls/${releaseId}` : tradeUrl;
+  const resolvedReleaseName = tcdbTradeId
+    ? tabLabel
+    : (releaseName ?? undefined);
+  const showTradePartner = Boolean(tcdbTradeId && tcdbTradePartner);
+  const footerClassName = showTradePartner
+    ? "flex justify-between items-center"
+    : "flex justify-end";
 
   const baseContent = (
     <div
       className="space-y-3"
-      data-release-name={releaseName ?? undefined}
+      data-release-name={resolvedReleaseName ?? undefined}
       data-release-type={releaseType ?? undefined}
       data-release-color={releaseColor}
       data-release-text-color={releaseTextColor}
@@ -222,7 +278,15 @@ export default async function ReleaseSection({
       }
     >
       {children}
-      <div className="flex justify-end">
+      <div className={footerClassName}>
+        {showTradePartner && tradePartnerUrl ? (
+          <div className="text-sm">
+            <span>Trade Partner: </span>
+            <Link href={tradePartnerUrl} className="link-blue">
+              {tcdbTradePartner}
+            </Link>
+          </div>
+        ) : null}
         <Link
           href={`/shaolin/tags/${encodeURIComponent(alterEgo.toLowerCase())}`}
           prefetch={false}
@@ -259,7 +323,9 @@ export default async function ReleaseSection({
   }
 
   const borderStyle = {
-    borderColor: releaseColor ?? archivedReleaseColor,
+    borderColor: isTcdbTrade
+      ? "transparent"
+      : (releaseColor ?? archivedReleaseColor),
     borderWidth: "4px",
   };
   const tabStyle: CSSProperties = {
@@ -278,6 +344,7 @@ export default async function ReleaseSection({
   const releaseContainerClassName = [
     "relative rounded-lg border-[4px] px-4 pt-8 pb-4",
     isChromeFoil ? "chrome-foil-border" : "",
+    isTcdbTrade ? "tcdb-border" : "",
     divider ? "mb-10" : "",
   ]
     .filter(Boolean)
@@ -286,10 +353,12 @@ export default async function ReleaseSection({
   return (
     <>
       <div className={releaseContainerClassName} style={borderStyle}>
-        {releaseName || releaseId ? (
+        {tabLabel && tabHref ? (
           <Link
-            href={`/mark2/shaolin-scrolls/${releaseId}`}
+            href={tabHref}
             prefetch={false}
+            target={isTcdbTrade ? "_blank" : undefined}
+            rel={isTcdbTrade ? "noreferrer noopener" : undefined}
             className={[
               "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
               pillInteractionClasses,
@@ -299,7 +368,7 @@ export default async function ReleaseSection({
               .join(" ")}
             style={tabStyle}
           >
-            <span>{releaseName ?? releaseId}</span>
+            <span>{tabLabel}</span>
             <span aria-hidden="true">{"\u203a"}</span>
           </Link>
         ) : null}
