@@ -10,6 +10,7 @@ import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
+import RedditEmbed from "@/components/unclejimmy/RedditEmbed";
 import { cn } from "@/lib/utils";
 
 const bodyText =
@@ -42,6 +43,7 @@ type CustomMDXComponents = MDXComponents & {
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
   YouTubeVideo: typeof YouTubeVideo;
   FolderImageCarousel: typeof FolderImageCarousel;
+  RedditEmbed: typeof RedditEmbed;
 };
 
 const defaultComponents = {
@@ -209,6 +211,7 @@ export const mdxComponents: CustomMDXComponents = {
   YouTubeMusicPlaylist,
   YouTubeVideo,
   FolderImageCarousel,
+  RedditEmbed,
 };
 
 export function useMDXComponents(
