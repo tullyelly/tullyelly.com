@@ -10,6 +10,7 @@ const customJestConfig = {
   ],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
+    "^contentlayer/generated$": "<rootDir>/.contentlayer/generated/index.mjs",
     "\\.(css|less|sass|scss)$": "identity-obj-proxy",
   },
   testPathIgnorePatterns: [
