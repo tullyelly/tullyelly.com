@@ -13,7 +13,10 @@ jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
 }));
 jest.mock("contentlayer/generated", () => ({
-  allPosts: allPostsMock,
+  __esModule: true,
+  get allPosts() {
+    return allPostsMock;
+  },
 }));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
