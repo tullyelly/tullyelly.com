@@ -1,16 +1,26 @@
 import type React from "react";
 import { render, screen } from "@testing-library/react";
-import ReleaseSection from "@/components/mdx/ReleaseSection";
-import { mdxComponents } from "@/mdx-components";
 
 const getScrollMock = jest.fn();
+const allPostsMock: Array<{
+  body: { raw: string };
+  slug: string;
+  url: string;
+  date: string;
+}> = [];
 
 jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
 }));
+jest.mock("contentlayer/generated", () => ({
+  allPosts: allPostsMock,
+}));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
 }));
+
+import ReleaseSection from "@/components/mdx/ReleaseSection";
+import { mdxComponents } from "@/mdx-components";
 
 const toRgb = (hex: string) => {
   const normalized = hex.replace("#", "");
@@ -29,6 +39,7 @@ const baseProps = {
 describe("ReleaseSection", () => {
   beforeEach(() => {
     getScrollMock.mockReset();
+    allPostsMock.length = 0;
   });
 
   it("renders the default layout when releaseId is missing", async () => {
@@ -125,6 +136,41 @@ describe("ReleaseSection", () => {
       "https://www.tcdb.com/Profile.cfm/collect-a-set",
     );
     expect(partnerLink).toHaveClass("link-blue");
+  });
+
+  it("renders a completed link to the original trade post", async () => {
+    const tradeId = "359632";
+    allPostsMock.push(
+      {
+        slug: "followup-trade",
+        url: "/shaolin/followup-trade",
+        date: "2024-02-01",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+        },
+      },
+      {
+        slug: "original-trade",
+        url: "/shaolin/original-trade",
+        date: "2024-01-01",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+        },
+      },
+    );
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: tradeId,
+      completed: true,
+    });
+    render(ui);
+
+    const completionLink = screen
+      .getByText(`${tradeId}: completed`)
+      .closest("a");
+    expect(completionLink).toBeInTheDocument();
+    expect(completionLink).toHaveAttribute("href", "/shaolin/original-trade");
   });
 
   it("throws when both releaseId and tcdbTradeId are passed", async () => {

@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
+import { allPosts } from "contentlayer/generated";
 
 import { Badge } from "@/app/ui/Badge";
 import {
@@ -33,11 +34,13 @@ type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
   releaseId: string;
   tcdbTradeId?: never;
   tcdbTradePartner?: never;
+  completed?: never;
 };
 
 type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
   tcdbTradeId: string;
   tcdbTradePartner?: string;
+  completed?: boolean;
   releaseId?: never;
 };
 
@@ -45,6 +48,7 @@ type ReleaseSectionWithoutRelease = ReleaseSectionBaseProps & {
   releaseId?: undefined;
   tcdbTradeId?: undefined;
   tcdbTradePartner?: undefined;
+  completed?: never;
 };
 
 type ReleaseSectionProps =
@@ -80,6 +84,21 @@ const COLOR_OVERRIDES: Record<string, string> = {
   white: "#FFFFFF",
   black: "#000000",
 };
+
+function findOriginalTradePost(tradeId: string) {
+  const matches = allPosts
+    .filter((p) => p.body.raw.includes(`tcdbTradeId="${tradeId}"`))
+    .sort((a, b) =>
+      a.date === b.date
+        ? a.slug.localeCompare(b.slug)
+        : a.date < b.date
+          ? -1
+          : 1,
+    );
+
+  const original = matches[0];
+  return original ? { slug: original.slug, url: original.url } : undefined;
+}
 
 function parseBadgeBackgroundColor(badgeClass: string): string | null {
   const bgMatch = badgeClass.match(/bg-((?:\[[^\]]+])|[^\s]+)/);
@@ -159,6 +178,7 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - releaseId: optional scroll ID; when present, the section renders a release-colored border and a linked tab to `/mark2/shaolin-scrolls/{releaseId}` with hover inversion.
  * - tcdbTradeId: optional trade ID; when present, the section renders a release-colored border with a linked tab to the TCDB transaction.
  * - tcdbTradePartner: optional trade partner for TCDB trades.
+ * - completed: optional completion link; only valid with tcdbTradeId and links back to the original trade post.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -175,6 +195,7 @@ export default async function ReleaseSection({
   releaseId,
   tcdbTradeId,
   tcdbTradePartner,
+  completed,
 }: ReleaseSectionProps) {
   let releaseName: string | undefined;
   let releaseType: string | undefined;
@@ -186,6 +207,14 @@ export default async function ReleaseSection({
     throw new Error(
       "ReleaseSection: pass either releaseId or tcdbTradeId, not both.",
     );
+  }
+
+  if (completed && releaseId) {
+    throw new Error("ReleaseSection: completed is not valid with releaseId.");
+  }
+
+  if (completed && !tcdbTradeId) {
+    throw new Error("ReleaseSection: completed requires tcdbTradeId.");
   }
 
   if (tcdbTradeId) {
@@ -204,6 +233,18 @@ export default async function ReleaseSection({
     releaseName = release?.release_name;
     releaseType = release?.release_type;
     tabLabel = releaseName ?? releaseId;
+  }
+
+  let completedLabel: string | undefined;
+  let completedHref: string | undefined;
+
+  if (completed && tcdbTradeId) {
+    const original = findOriginalTradePost(tcdbTradeId);
+
+    if (original) {
+      completedLabel = `${tcdbTradeId}: completed`;
+      completedHref = original.url;
+    }
   }
 
   const normalizedReleaseType = releaseType?.toLowerCase();
@@ -257,9 +298,13 @@ export default async function ReleaseSection({
     ? tabLabel
     : (releaseName ?? undefined);
   const showTradePartner = Boolean(tcdbTradeId && tcdbTradePartner);
-  const footerClassName = showTradePartner
-    ? "flex justify-between items-center"
-    : "flex justify-end";
+  const showCompletionLink = Boolean(completedLabel && completedHref);
+  const footerClassName =
+    showTradePartner && showCompletionLink
+      ? "flex justify-between items-center gap-2"
+      : showTradePartner
+        ? "flex justify-between items-center"
+        : "flex justify-end";
 
   const baseContent = (
     <div
@@ -286,6 +331,11 @@ export default async function ReleaseSection({
               {tcdbTradePartner}
             </Link>
           </div>
+        ) : null}
+        {completedLabel && completedHref ? (
+          <Link href={completedHref} className="link-blue text-sm">
+            {completedLabel}
+          </Link>
         ) : null}
         <Link
           href={`/shaolin/tags/${encodeURIComponent(alterEgo.toLowerCase())}`}
