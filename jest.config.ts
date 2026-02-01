@@ -9,6 +9,7 @@ const customJestConfig = {
     "^@ui$": "<rootDir>/components/ui",
     "^@ui/(.*)$": "<rootDir>/components/ui/$1",
     "^@/(.*)$": "<rootDir>/$1",
+    "^contentlayer/generated$": "<rootDir>/.contentlayer/generated/index.mjs",
     "\\.(css|less|sass|scss)$": "identity-obj-proxy",
   },
   testPathIgnorePatterns: [
