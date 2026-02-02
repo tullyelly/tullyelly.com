@@ -149,7 +149,7 @@ describe("ReleaseSection", () => {
         url: "/shaolin/followup-trade",
         date: "2024-02-01",
         body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>`,
         },
       },
       {
@@ -174,6 +174,55 @@ describe("ReleaseSection", () => {
       .closest("a");
     expect(completionLink).toBeInTheDocument();
     expect(completionLink).toHaveAttribute("href", "/shaolin/original-trade");
+  });
+
+  it("propagates completed links to all tcdb sections sharing a tradeId", async () => {
+    const tradeId = "812345";
+    allPostsMock.push(
+      {
+        slug: "original-trade",
+        url: "/shaolin/original-trade",
+        date: "2024-01-01",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+        },
+      },
+      {
+        slug: "completed-trade",
+        url: "/shaolin/completed-trade",
+        date: "2024-02-01",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>`,
+        },
+      },
+    );
+
+    const incompleteSection = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: tradeId,
+    });
+    const completedSection = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: tradeId,
+      completed: true,
+    });
+
+    render(
+      <>
+        {incompleteSection}
+        {completedSection}
+      </>,
+    );
+
+    const completionLinks = screen
+      .getAllByText(`${tradeId}: completed`)
+      .map((node) => node.closest("a"))
+      .filter((link): link is HTMLAnchorElement => Boolean(link));
+
+    expect(completionLinks).toHaveLength(2);
+    const hrefs = completionLinks.map((link) => link.getAttribute("href"));
+    expect(hrefs).toContain("/shaolin/original-trade");
+    expect(hrefs).toContain("/shaolin/completed-trade");
   });
 
   it("throws when both releaseId and tcdbTradeId are passed", async () => {

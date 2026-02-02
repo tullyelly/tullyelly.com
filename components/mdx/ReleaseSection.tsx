@@ -87,7 +87,7 @@ const COLOR_OVERRIDES: Record<string, string> = {
 
 function findOriginalTradePost(tradeId: string) {
   const matches = allPosts
-    .filter((p) => p.body.raw.includes(`tcdbTradeId="${tradeId}"`))
+    .filter((post) => post.body.raw.includes(`tcdbTradeId="${tradeId}"`))
     .sort((a, b) =>
       a.date === b.date
         ? a.slug.localeCompare(b.slug)
@@ -98,6 +98,50 @@ function findOriginalTradePost(tradeId: string) {
 
   const original = matches[0];
   return original ? { slug: original.slug, url: original.url } : undefined;
+}
+
+function findCompletedTradePost(tradeId: string) {
+  const matches = allPosts
+    .filter(
+      (post) =>
+        post.body.raw.includes(`tcdbTradeId="${tradeId}"`) &&
+        post.body.raw.includes("completed"),
+    )
+    .sort((a, b) =>
+      a.date === b.date
+        ? a.slug.localeCompare(b.slug)
+        : a.date < b.date
+          ? -1
+          : 1,
+    );
+
+  const completedPost = matches[matches.length - 1];
+  return completedPost
+    ? { slug: completedPost.slug, url: completedPost.url }
+    : undefined;
+}
+
+function hasCompletedTrade(tradeId: string): boolean {
+  const tradeAttr = `tcdbTradeId="${tradeId}"`;
+  return allPosts.some(
+    (post) =>
+      post.body.raw.includes(tradeAttr) && post.body.raw.includes("completed"),
+  );
+}
+
+function countTradeSections(tradeId: string): number {
+  const tradeAttr = `tcdbTradeId="${tradeId}"`;
+  let count = 0;
+
+  for (const post of allPosts) {
+    let index = post.body.raw.indexOf(tradeAttr);
+    while (index !== -1) {
+      count += 1;
+      index = post.body.raw.indexOf(tradeAttr, index + tradeAttr.length);
+    }
+  }
+
+  return count;
 }
 
 function parseBadgeBackgroundColor(badgeClass: string): string | null {
@@ -178,7 +222,7 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - releaseId: optional scroll ID; when present, the section renders a release-colored border and a linked tab to `/mark2/shaolin-scrolls/{releaseId}` with hover inversion.
  * - tcdbTradeId: optional trade ID; when present, the section renders a release-colored border with a linked tab to the TCDB transaction.
  * - tcdbTradePartner: optional trade partner for TCDB trades.
- * - completed: optional completion link; only valid with tcdbTradeId and links back to the original trade post.
+ * - completed: optional completion link; only valid with tcdbTradeId; completed sections link back to the original trade post and earlier sections link to the completion post when present.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -238,12 +282,23 @@ export default async function ReleaseSection({
   let completedLabel: string | undefined;
   let completedHref: string | undefined;
 
-  if (completed && tcdbTradeId) {
-    const original = findOriginalTradePost(tcdbTradeId);
+  if (tcdbTradeId) {
+    const tradeSectionCount = countTradeSections(tcdbTradeId);
+    const hasCompletion = hasCompletedTrade(tcdbTradeId);
+    const shouldShowCompletion =
+      tradeSectionCount > 1 && (completed || hasCompletion);
 
-    if (original) {
-      completedLabel = `${tcdbTradeId}: completed`;
-      completedHref = original.url;
+    if (shouldShowCompletion) {
+      const original = findOriginalTradePost(tcdbTradeId);
+      const completedPost = findCompletedTradePost(tcdbTradeId);
+
+      if (completed && original) {
+        completedLabel = `${tcdbTradeId}: completed`;
+        completedHref = original.url;
+      } else if (!completed && completedPost) {
+        completedLabel = `${tcdbTradeId}: completed`;
+        completedHref = completedPost.url;
+      }
     }
   }
 
