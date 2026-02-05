@@ -86,9 +86,65 @@ describe("getTcdbTradeSections", () => {
 
     expect(sections.map((section) => section.kind)).toEqual([
       "original",
+      "original",
+      "completed",
       "completed",
     ]);
     expect(sections[0]?.postSlug).toBe("earlier-original");
-    expect(sections[1]?.postSlug).toBe("completed-late");
+    expect(sections[1]?.postSlug).toBe("later-original");
+    expect(sections[2]?.postSlug).toBe("completed-late");
+    expect(sections[3]?.postSlug).toBe("completed-early");
+  });
+
+  it("renders multiple sections for the same tradeId in a single post", () => {
+    const tradeId = "555";
+    const post = {
+      slug: "double-trade",
+      url: "/shaolin/double-trade",
+      date: "2024-01-10",
+      body: {
+        raw: [
+          `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+          "  First block",
+          "</ReleaseSection>",
+          "",
+          `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+          "  Second block",
+          "</ReleaseSection>",
+        ].join("\n"),
+      },
+    };
+
+    const sections = getTcdbTradeSections(tradeId, [post]);
+
+    expect(sections).toHaveLength(2);
+    expect(sections[0]?.mdx).toContain("First block");
+    expect(sections[1]?.mdx).toContain("Second block");
+  });
+
+  it("preserves in-post order for multiple completed blocks", () => {
+    const tradeId = "666";
+    const post = {
+      slug: "completed-trade",
+      url: "/shaolin/completed-trade",
+      date: "2024-02-10",
+      body: {
+        raw: [
+          `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>`,
+          "  First complete",
+          "</ReleaseSection>",
+          "",
+          `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>`,
+          "  Second complete",
+          "</ReleaseSection>",
+        ].join("\n"),
+      },
+    };
+
+    const sections = getTcdbTradeSections(tradeId, [post]);
+
+    expect(sections).toHaveLength(2);
+    expect(sections[0]?.mdx).toContain("First complete");
+    expect(sections[1]?.mdx).toContain("Second complete");
   });
 });

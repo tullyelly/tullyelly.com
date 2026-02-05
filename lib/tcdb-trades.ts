@@ -27,7 +27,11 @@ type ExtractedSection = {
 const RELEASE_SECTION_OPEN = "<ReleaseSection";
 const RELEASE_SECTION_CLOSE = "</ReleaseSection>";
 const COMPLETED_ATTR = /(^|\s)completed(\s|=|>|\/)/;
-const TRADE_ID_ATTR = /tcdbTradeId="([^"]+)"/;
+const TRADE_ID_ATTR_NAME = "tcdbTradeId";
+const TRADE_ID_ATTR = new RegExp(`${TRADE_ID_ATTR_NAME}="([^"]+)"`);
+
+export const getTradeIdAttribute = (tradeId: string): string =>
+  `${TRADE_ID_ATTR_NAME}="${tradeId}"`;
 
 const toTimestamp = (value: string): number => {
   const ts = new Date(value).getTime();
@@ -53,7 +57,7 @@ const compareByDateDesc = (
   if (diff !== 0) return diff;
   const slugDiff = a.postSlug.localeCompare(b.postSlug);
   if (slugDiff !== 0) return slugDiff;
-  return b.offset - a.offset;
+  return a.offset - b.offset;
 };
 
 const hasCompletedAttr = (openingTag: string): boolean =>
@@ -125,7 +129,7 @@ export const getTcdbTradeSections = (
 ): TradeSection[] => {
   if (!tradeId) return [];
 
-  const tradeAttr = `tcdbTradeId="${tradeId}"`;
+  const tradeAttr = getTradeIdAttribute(tradeId);
   const extracted: Array<TradeSection & ExtractedSection> = [];
 
   for (const post of posts) {
@@ -151,15 +155,7 @@ export const getTcdbTradeSections = (
     .filter((section) => section.kind === "completed")
     .sort(compareByDateDesc);
 
-  const result: TradeSection[] = [];
-  if (originals[0]) {
-    const { offset: _offset, ...original } = originals[0];
-    result.push(original);
-  }
-  if (completeds[0]) {
-    const { offset: _offset, ...completed } = completeds[0];
-    result.push(completed);
-  }
-
-  return result;
+  return [...originals, ...completeds].map(
+    ({ offset: _offset, ...rest }) => rest,
+  );
 };
