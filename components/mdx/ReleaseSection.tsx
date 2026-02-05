@@ -15,6 +15,7 @@ import {
   pillInteractionClasses,
 } from "@/components/ui/pillStyles";
 import { getScroll } from "@/lib/scrolls";
+import { getTradeIdAttribute } from "@/lib/tcdb-trades";
 
 /*
 Spike note (ReleaseSection styling)
@@ -87,7 +88,7 @@ const COLOR_OVERRIDES: Record<string, string> = {
 
 function findOriginalTradePost(tradeId: string) {
   const matches = allPosts
-    .filter((post) => post.body.raw.includes(`tcdbTradeId="${tradeId}"`))
+    .filter((post) => post.body.raw.includes(getTradeIdAttribute(tradeId)))
     .sort((a, b) =>
       a.date === b.date
         ? a.slug.localeCompare(b.slug)
@@ -104,7 +105,7 @@ function findCompletedTradePost(tradeId: string) {
   const matches = allPosts
     .filter(
       (post) =>
-        post.body.raw.includes(`tcdbTradeId="${tradeId}"`) &&
+        post.body.raw.includes(getTradeIdAttribute(tradeId)) &&
         post.body.raw.includes("completed"),
     )
     .sort((a, b) =>
@@ -122,7 +123,7 @@ function findCompletedTradePost(tradeId: string) {
 }
 
 function hasCompletedTrade(tradeId: string): boolean {
-  const tradeAttr = `tcdbTradeId="${tradeId}"`;
+  const tradeAttr = getTradeIdAttribute(tradeId);
   return allPosts.some(
     (post) =>
       post.body.raw.includes(tradeAttr) && post.body.raw.includes("completed"),
@@ -130,7 +131,7 @@ function hasCompletedTrade(tradeId: string): boolean {
 }
 
 function countTradeSections(tradeId: string): number {
-  const tradeAttr = `tcdbTradeId="${tradeId}"`;
+  const tradeAttr = getTradeIdAttribute(tradeId);
   let count = 0;
 
   for (const post of allPosts) {

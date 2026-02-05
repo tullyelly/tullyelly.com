@@ -12,6 +12,7 @@ const allPostsMock: Array<{
 jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
 }));
+jest.mock("server-only", () => ({}));
 jest.mock("contentlayer/generated", () => ({
   __esModule: true,
   get allPosts() {
