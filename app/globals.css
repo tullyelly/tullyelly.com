@@ -499,6 +499,30 @@ p {
     border-image-repeat: round;
   }
 
+  @media (max-width: 767px) {
+    .tcdb-frame {
+      background: repeating-linear-gradient(
+        45deg,
+        var(--tcdb-wood-dark) 0 6px,
+        var(--tcdb-wood-base) 6px 12px,
+        var(--tcdb-wood-mid) 12px 18px,
+        var(--tcdb-wood-light) 18px 24px
+      );
+      padding: 4px;
+      border-radius: 0.5rem;
+    }
+
+    .tcdb-frame .tcdb-border {
+      border: 0 !important;
+      border-image: none !important;
+    }
+
+    .tcdb-frame-inner {
+      background: var(--surface-card);
+      border-radius: calc(0.5rem - 4px);
+    }
+  }
+
   .chrome-foil-shimmer {
     background-image: var(--tc-chrome-foil);
     background-size: 200% 200%;
