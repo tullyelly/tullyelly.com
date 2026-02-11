@@ -448,38 +448,48 @@ export default async function ReleaseSection({
   };
 
   const releaseContainerClassName = [
-    "relative rounded-lg border-[4px] px-4 pt-8 pb-4",
+    "relative rounded-lg border-[4px] px-4 pt-10 pb-4 md:pt-8",
     isChromeFoil ? "chrome-foil-border" : "",
-    isTcdbTrade ? "tcdb-border" : "",
-    divider ? "mb-10" : "",
+    isTcdbTrade ? "tcdb-border tcdb-frame-inner" : "",
+    !isTcdbTrade && divider ? "mb-10" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
+  const releaseContainer = (
+    <div className={releaseContainerClassName} style={borderStyle}>
+      {tabLabel && tabHref ? (
+        <Link
+          href={tabHref}
+          prefetch={false}
+          target={isTcdbTrade ? "_blank" : undefined}
+          rel={isTcdbTrade ? "noreferrer noopener" : undefined}
+          className={[
+            "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
+            pillInteractionClasses,
+            isChromeFoil ? "chrome-foil-shimmer" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          style={tabStyle}
+        >
+          <span>{tabLabel}</span>
+          <span aria-hidden="true">{"\u203a"}</span>
+        </Link>
+      ) : null}
+      {baseContent}
+    </div>
+  );
+
   return (
     <>
-      <div className={releaseContainerClassName} style={borderStyle}>
-        {tabLabel && tabHref ? (
-          <Link
-            href={tabHref}
-            prefetch={false}
-            target={isTcdbTrade ? "_blank" : undefined}
-            rel={isTcdbTrade ? "noreferrer noopener" : undefined}
-            className={[
-              "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
-              pillInteractionClasses,
-              isChromeFoil ? "chrome-foil-shimmer" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={tabStyle}
-          >
-            <span>{tabLabel}</span>
-            <span aria-hidden="true">{"\u203a"}</span>
-          </Link>
-        ) : null}
-        {baseContent}
-      </div>
+      {isTcdbTrade ? (
+        <div className={divider ? "tcdb-frame mb-10" : "tcdb-frame"}>
+          {releaseContainer}
+        </div>
+      ) : (
+        releaseContainer
+      )}
     </>
   );
 }
