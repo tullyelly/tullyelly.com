@@ -29,6 +29,8 @@ type ReleaseSectionBaseProps = {
   alterEgo: string;
   children: ReactNode;
   divider?: boolean;
+  tournamentName?: string;
+  tournamentRecord?: string;
 };
 
 type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
@@ -224,6 +226,8 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - tcdbTradeId: optional trade ID; when present, the section renders a release-colored border with a linked tab to the TCDB transaction.
  * - tcdbTradePartner: optional trade partner for TCDB trades.
  * - completed: optional completion link; only valid with tcdbTradeId; completed sections link back to the original trade post and earlier sections link to the completion post when present.
+ * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
+ * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -241,6 +245,8 @@ export default async function ReleaseSection({
   tcdbTradeId,
   tcdbTradePartner,
   completed,
+  tournamentName,
+  tournamentRecord,
 }: ReleaseSectionProps) {
   let releaseName: string | undefined;
   let releaseType: string | undefined;
@@ -304,7 +310,9 @@ export default async function ReleaseSection({
   }
 
   const normalizedReleaseType = releaseType?.toLowerCase();
+  const showTournament = Boolean(tournamentName && tournamentRecord);
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
+  const showTournamentVisuals = showTournament && !showReleaseDetails;
   const isTcdbTrade = Boolean(tcdbTradeId);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)
@@ -379,6 +387,9 @@ export default async function ReleaseSection({
       }
     >
       {children}
+      {showTournamentVisuals ? (
+        <div className="text-sm">{`${tournamentName}: ${tournamentRecord}`}</div>
+      ) : null}
       <div className={footerClassName}>
         {showTradePartner && tradePartnerUrl ? (
           <div className="text-sm">
@@ -418,9 +429,20 @@ export default async function ReleaseSection({
   );
 
   if (!showReleaseDetails) {
+    const plainContent = showTournamentVisuals ? (
+      <div
+        className="rounded-lg border-[4px] border-dashed border-[var(--blue)] px-4 py-4"
+        style={{ boxShadow: "inset 0 0 0 1px var(--tcdb-wood-base)" }}
+      >
+        {baseContent}
+      </div>
+    ) : (
+      baseContent
+    );
+
     return (
       <>
-        {baseContent}
+        {plainContent}
         {divider ? (
           <hr className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]" />
         ) : null}
