@@ -58,6 +58,31 @@ describe("ReleaseSection", () => {
     expect(container.querySelector(".relative")).toBeNull();
   });
 
+  it("renders lcs details with optional rating when lcs props are provided", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      lcsName: "Noblesville Sports Cards",
+      lcsUrl: "https://noblesvillesportscards.example.com",
+      lcsRating: "9.2/10",
+    });
+    const { container } = render(ui);
+
+    expect(screen.getByText("Card Shop:")).toBeInTheDocument();
+    const shopLink = screen.getByText("Noblesville Sports Cards").closest("a");
+    expect(shopLink).toBeInTheDocument();
+    expect(shopLink).toHaveAttribute(
+      "href",
+      "https://noblesvillesportscards.example.com",
+    );
+    expect(shopLink).toHaveAttribute("target", "_blank");
+    expect(shopLink).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.getByText("(9.2/10)")).toBeInTheDocument();
+
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
+    expect(wrapper.className).toContain("border-double");
+    expect(wrapper.className).toContain("border-[var(--tcdb-wood-dark)]");
+  });
+
   it("wraps content with a release container and link tab when releaseId is provided", async () => {
     getScrollMock.mockResolvedValue({
       id: "12",
