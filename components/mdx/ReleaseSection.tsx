@@ -31,6 +31,9 @@ type ReleaseSectionBaseProps = {
   divider?: boolean;
   tournamentName?: string;
   tournamentRecord?: string;
+  lcsName?: string;
+  lcsUrl?: string;
+  lcsRating?: string | number;
 };
 
 type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
@@ -228,6 +231,9 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - completed: optional completion link; only valid with tcdbTradeId; completed sections link back to the original trade post and earlier sections link to the completion post when present.
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
+ * - lcsName: optional local card shop label; rendered only when paired with lcsUrl and no releaseId/tcdbTradeId is present.
+ * - lcsUrl: optional local card shop URL; rendered only when paired with lcsName and no releaseId/tcdbTradeId is present.
+ * - lcsRating: optional local card shop rating; rendered with lcsName/lcsUrl when provided.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -247,6 +253,9 @@ export default async function ReleaseSection({
   completed,
   tournamentName,
   tournamentRecord,
+  lcsName,
+  lcsUrl,
+  lcsRating,
 }: ReleaseSectionProps) {
   let releaseName: string | undefined;
   let releaseType: string | undefined;
@@ -311,8 +320,11 @@ export default async function ReleaseSection({
 
   const normalizedReleaseType = releaseType?.toLowerCase();
   const showTournament = Boolean(tournamentName && tournamentRecord);
+  const showLcs = Boolean(lcsName && lcsUrl);
+  const showLcsRating = lcsRating !== undefined && `${lcsRating}`.trim() !== "";
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
   const showTournamentVisuals = showTournament && !showReleaseDetails;
+  const showLcsVisuals = showLcs && !showReleaseDetails;
   const isTcdbTrade = Boolean(tcdbTradeId);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)
@@ -390,6 +402,20 @@ export default async function ReleaseSection({
       {showTournamentVisuals ? (
         <div className="text-sm">{`${tournamentName}: ${tournamentRecord}`}</div>
       ) : null}
+      {showLcsVisuals && lcsName && lcsUrl ? (
+        <div className="text-sm">
+          <span>Card Shop: </span>
+          <Link
+            href={lcsUrl}
+            className="link-blue"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {lcsName}
+          </Link>
+          {showLcsRating ? <span>{` (${lcsRating})`}</span> : null}
+        </div>
+      ) : null}
       <div className={footerClassName}>
         {showTradePartner && tradePartnerUrl ? (
           <div className="text-sm">
@@ -434,6 +460,10 @@ export default async function ReleaseSection({
         className="rounded-lg border-[4px] border-dashed border-[var(--blue)] px-4 py-4"
         style={{ boxShadow: "inset 0 0 0 1px var(--tcdb-wood-base)" }}
       >
+        {baseContent}
+      </div>
+    ) : showLcsVisuals ? (
+      <div className="rounded-lg border-[4px] border-double border-[var(--tcdb-wood-dark)] px-4 py-4">
         {baseContent}
       </div>
     ) : (
