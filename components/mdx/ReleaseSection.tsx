@@ -31,6 +31,7 @@ type ReleaseSectionBaseProps = {
   divider?: boolean;
   tournamentName?: string;
   tournamentRecord?: string;
+  tournamentId?: string | number;
   lcsName?: string;
   lcsUrl?: string;
   lcsRating?: string | number;
@@ -231,6 +232,7 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - completed: optional completion link; only valid with tcdbTradeId; completed sections link back to the original trade post and earlier sections link to the completion post when present.
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
+ * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
  * - lcsName: optional local card shop label; rendered only when paired with lcsUrl and no releaseId/tcdbTradeId is present.
  * - lcsUrl: optional local card shop URL; rendered only when paired with lcsName and no releaseId/tcdbTradeId is present.
  * - lcsRating: optional local card shop rating; rendered with lcsName/lcsUrl when provided.
@@ -253,6 +255,7 @@ export default async function ReleaseSection({
   completed,
   tournamentName,
   tournamentRecord,
+  tournamentId,
   lcsName,
   lcsUrl,
   lcsRating,
@@ -389,6 +392,9 @@ export default async function ReleaseSection({
       data-release-type={releaseType ?? undefined}
       data-release-color={releaseColor}
       data-release-text-color={releaseTextColor}
+      data-tournament-id={
+        tournamentId !== undefined ? String(tournamentId) : undefined
+      }
       style={
         resolvedReleaseColor
           ? ({
