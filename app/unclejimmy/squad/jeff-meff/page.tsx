@@ -4,6 +4,7 @@ import Image from "next/image";
 import { SectionDivider } from "@/components/SectionDivider";
 import RedditEmbed from "@/components/unclejimmy/RedditEmbed";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
+import VolleyballTournamentDirectory from "@/components/unclejimmy/VolleyballTournamentDirectory";
 import { getTaggedPosts } from "@/lib/blog";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
@@ -52,6 +53,8 @@ export default function UncleJimmySquadJeffMeffPage() {
           </Link>
         </p>
       </div>
+      <SectionDivider className="my-6" />
+      <VolleyballTournamentDirectory />
       <SectionDivider className="my-6" />
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">

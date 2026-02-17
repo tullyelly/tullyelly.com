@@ -2,6 +2,7 @@ import "server-only";
 import { allPosts } from "contentlayer/generated";
 
 export type TournamentSection = {
+  tournamentId: string;
   postSlug: string;
   postUrl: string;
   postDate: string;
@@ -18,6 +19,22 @@ export type TournamentSummary = {
   overallRecord: string;
 };
 
+export type VolleyballTournamentSummary = {
+  tournamentId: string;
+  tournamentName: string;
+  overallWins: number;
+  overallLosses: number;
+  overallRecord: string;
+  latestPostDate: string;
+};
+
+export type VolleyballTournamentPageData = {
+  tournamentId: string;
+  tournamentName: string;
+  summary: TournamentSummary;
+  sections: TournamentSection[];
+};
+
 type PostSource = {
   body: { raw: string };
   slug: string;
@@ -29,9 +46,12 @@ type PostSource = {
 type ExtractedSection = {
   mdx: string;
   offset: number;
+  tournamentId: string;
   tournamentName?: string;
   tournamentRecord?: string;
 };
+
+type TournamentSectionWithOffset = TournamentSection & { offset: number };
 
 const RELEASE_SECTION_OPEN = "<ReleaseSection";
 const RELEASE_SECTION_CLOSE = "</ReleaseSection>";
@@ -122,8 +142,8 @@ const toTimestamp = (value: string): number => {
 };
 
 const compareByDateAsc = (
-  a: ExtractedSection & TournamentSection,
-  b: ExtractedSection & TournamentSection,
+  a: TournamentSectionWithOffset,
+  b: TournamentSectionWithOffset,
 ) => {
   const diff = toTimestamp(a.postDate) - toTimestamp(b.postDate);
   if (diff !== 0) return diff;
@@ -132,9 +152,26 @@ const compareByDateAsc = (
   return a.offset - b.offset;
 };
 
+const compareTournamentIds = (a: string, b: string): number => {
+  const aAsNumber = Number(a);
+  const bAsNumber = Number(b);
+  const bothNumeric = !Number.isNaN(aAsNumber) && !Number.isNaN(bAsNumber);
+  if (bothNumeric) return aAsNumber - bAsNumber;
+  return a.localeCompare(b);
+};
+
+const compareTournamentSummaryDesc = (
+  a: VolleyballTournamentSummary,
+  b: VolleyballTournamentSummary,
+): number => {
+  const dateDiff = toTimestamp(b.latestPostDate) - toTimestamp(a.latestPostDate);
+  if (dateDiff !== 0) return dateDiff;
+  return compareTournamentIds(b.tournamentId, a.tournamentId);
+};
+
 const extractTournamentSectionsWithOffsets = (
   raw: string,
-  tournamentId: string,
+  tournamentId?: string,
 ): ExtractedSection[] => {
   const results: ExtractedSection[] = [];
   if (!raw) return results;
@@ -154,7 +191,12 @@ const extractTournamentSectionsWithOffsets = (
     const tournamentRecord = extractTournamentRecord(openingTag);
     const isSelfClosing = /\/\s*>$/.test(openingTag);
 
-    if (matchingTournamentId !== tournamentId) {
+    if (!matchingTournamentId) {
+      index = tagEnd + 1;
+      continue;
+    }
+
+    if (tournamentId && matchingTournamentId !== tournamentId) {
       index = tagEnd + 1;
       continue;
     }
@@ -163,6 +205,7 @@ const extractTournamentSectionsWithOffsets = (
       results.push({
         mdx: openingTag,
         offset: openIndex,
+        tournamentId: matchingTournamentId,
         tournamentName,
         tournamentRecord,
       });
@@ -177,6 +220,7 @@ const extractTournamentSectionsWithOffsets = (
     results.push({
       mdx: raw.slice(openIndex, endIndex),
       offset: openIndex,
+      tournamentId: matchingTournamentId,
       tournamentName,
       tournamentRecord,
     });
@@ -205,7 +249,7 @@ export const getVolleyballTournamentSections = (
   const normalizedTournamentId = normalizeTournamentId(tournamentId);
   if (!normalizedTournamentId) return [];
 
-  const extracted: Array<TournamentSection & ExtractedSection> = [];
+  const extracted: TournamentSectionWithOffset[] = [];
 
   for (const post of posts) {
     const raw = post.body?.raw ?? "";
@@ -217,6 +261,7 @@ export const getVolleyballTournamentSections = (
     for (const section of sections) {
       extracted.push({
         ...section,
+        tournamentId: section.tournamentId,
         postSlug: post.slug,
         postUrl: post.url,
         postDate: post.date,
@@ -230,6 +275,73 @@ export const getVolleyballTournamentSections = (
   return extracted
     .sort(compareByDateAsc)
     .map(({ offset: _offset, ...rest }) => rest);
+};
+
+export const getAllVolleyballTournamentSummaries = (
+  posts: PostSource[] = allPosts,
+): VolleyballTournamentSummary[] => {
+  const byTournament = new Map<string, TournamentSectionWithOffset[]>();
+
+  for (const post of posts) {
+    const raw = post.body?.raw ?? "";
+    const sections = extractTournamentSectionsWithOffsets(raw);
+
+    for (const section of sections) {
+      const tournamentSections = byTournament.get(section.tournamentId) ?? [];
+      tournamentSections.push({
+        ...section,
+        tournamentId: section.tournamentId,
+        postSlug: post.slug,
+        postUrl: post.url,
+        postDate: post.date,
+        postTitle: post.title ?? post.slug,
+      });
+      byTournament.set(section.tournamentId, tournamentSections);
+    }
+  }
+
+  if (byTournament.size === 0) return [];
+
+  const summaries: VolleyballTournamentSummary[] = [];
+  for (const [tournamentId, sections] of byTournament.entries()) {
+    const orderedSections = [...sections].sort(compareByDateAsc);
+    const summary = summarizeTournamentSections(orderedSections);
+    const latestPostDate =
+      orderedSections[orderedSections.length - 1]?.postDate ?? "";
+
+    summaries.push({
+      tournamentId,
+      tournamentName:
+        summary.tournamentName ?? `Volleyball Tournament ${tournamentId}`,
+      overallWins: summary.overallWins,
+      overallLosses: summary.overallLosses,
+      overallRecord: summary.overallRecord,
+      latestPostDate,
+    });
+  }
+
+  return summaries.sort(compareTournamentSummaryDesc);
+};
+
+export const getVolleyballTournamentPageData = (
+  tournamentId: string | number,
+  posts: PostSource[] = allPosts,
+): VolleyballTournamentPageData | null => {
+  const normalizedTournamentId = normalizeTournamentId(tournamentId);
+  if (!normalizedTournamentId) return null;
+
+  const sections = getVolleyballTournamentSections(normalizedTournamentId, posts);
+  if (sections.length === 0) return null;
+
+  const summary = summarizeTournamentSections(sections);
+
+  return {
+    tournamentId: normalizedTournamentId,
+    tournamentName:
+      summary.tournamentName ?? `Volleyball Tournament ${normalizedTournamentId}`,
+    summary,
+    sections,
+  };
 };
 
 export const summarizeTournamentSections = (

@@ -5,8 +5,7 @@ import { Card } from "@ui";
 import VolleyballTournamentSections from "@/components/unclejimmy/VolleyballTournamentSections";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
-  getVolleyballTournamentSections,
-  summarizeTournamentSections,
+  getVolleyballTournamentPageData,
 } from "@/lib/volleyball-tournaments";
 
 type Params = { id: string };
@@ -20,11 +19,11 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const sections = getVolleyballTournamentSections(id);
-  const summary = summarizeTournamentSections(sections);
-  const tournamentName = summary.tournamentName ?? `Volleyball Tournament ${id}`;
+  const tournamentData = getVolleyballTournamentPageData(id);
+  const tournamentName =
+    tournamentData?.tournamentName ?? `Volleyball Tournament ${id}`;
   const pageTitle = `${tournamentName} | 🎙unclejimmy squad`;
-  const pageDescription = `Team overall record: ${summary.overallRecord}.`;
+  const pageDescription = `Team overall record: ${tournamentData?.summary.overallRecord ?? "0-0"}.`;
 
   return {
     title: pageTitle,
@@ -50,14 +49,12 @@ export default async function UncleJimmyVolleyballTournamentPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const sections = getVolleyballTournamentSections(id);
-
-  if (sections.length === 0) {
+  const tournamentData = getVolleyballTournamentPageData(id);
+  if (!tournamentData) {
     notFound();
   }
 
-  const summary = summarizeTournamentSections(sections);
-  const tournamentName = summary.tournamentName ?? `Volleyball Tournament ${id}`;
+  const { sections, summary, tournamentName } = tournamentData;
 
   return (
     <article className="max-w-3xl mx-auto space-y-10 mt-8 md:mt-10">

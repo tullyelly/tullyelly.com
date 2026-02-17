@@ -6,6 +6,8 @@ jest.mock("contentlayer/generated", () => ({
 
 import {
   extractTournamentSectionsFromRaw,
+  getAllVolleyballTournamentSummaries,
+  getVolleyballTournamentPageData,
   getVolleyballTournamentSections,
   summarizeTournamentSections,
 } from "@/lib/volleyball-tournaments";
@@ -137,5 +139,78 @@ describe("getVolleyballTournamentSections", () => {
     expect(summary.overallWins).toBe(2);
     expect(summary.overallLosses).toBe(3);
     expect(summary.overallRecord).toBe("2-3");
+  });
+});
+
+describe("getAllVolleyballTournamentSummaries", () => {
+  it("aggregates sections by tournament and sorts by latest post date", () => {
+    const posts = [
+      {
+        slug: "day-one",
+        title: "Day One",
+        url: "/shaolin/day-one",
+        date: "2026-02-14",
+        body: {
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="2-1">Day 1</ReleaseSection>`,
+        },
+      },
+      {
+        slug: "day-two",
+        title: "Day Two",
+        url: "/shaolin/day-two",
+        date: "2026-02-16",
+        body: {
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={2} tournamentName="Club Tune Up" tournamentRecord="1-2">Day 1</ReleaseSection>`,
+        },
+      },
+      {
+        slug: "day-three",
+        title: "Day Three",
+        url: "/shaolin/day-three",
+        date: "2026-02-15",
+        body: {
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="0-2">Day 2</ReleaseSection>`,
+        },
+      },
+    ];
+
+    const summaries = getAllVolleyballTournamentSummaries(posts);
+
+    expect(summaries).toHaveLength(2);
+    expect(summaries[0]?.tournamentId).toBe("2");
+    expect(summaries[0]?.tournamentName).toBe("Club Tune Up");
+    expect(summaries[0]?.overallRecord).toBe("1-2");
+    expect(summaries[1]?.tournamentId).toBe("1");
+    expect(summaries[1]?.overallRecord).toBe("2-3");
+    expect(summaries[1]?.latestPostDate).toBe("2026-02-15");
+  });
+});
+
+describe("getVolleyballTournamentPageData", () => {
+  it("returns normalized data for existing tournaments", () => {
+    const posts = [
+      {
+        slug: "day-one",
+        title: "Day One",
+        url: "/shaolin/day-one",
+        date: "2026-02-14",
+        body: {
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="2-1">Day 1</ReleaseSection>`,
+        },
+      },
+    ];
+
+    const data = getVolleyballTournamentPageData("1", posts);
+
+    expect(data).not.toBeNull();
+    expect(data?.tournamentId).toBe("1");
+    expect(data?.tournamentName).toBe("Midwest Boys Point Series");
+    expect(data?.summary.overallRecord).toBe("2-1");
+    expect(data?.sections).toHaveLength(1);
+  });
+
+  it("returns null for missing tournaments", () => {
+    const data = getVolleyballTournamentPageData("404", []);
+    expect(data).toBeNull();
   });
 });
