@@ -32,7 +32,6 @@ export const squadMembers: SquadMember[] = [
     label: "jeff-meff",
     blurb: "Placeholder blurb for jeff-meff; tales will land here later.",
     kind: "person",
-    href: "/shaolin/tags/jeff-meff",
   },
   {
     slug: "eeeeeeeemma",
