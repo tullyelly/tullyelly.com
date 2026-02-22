@@ -410,7 +410,9 @@ export default async function ReleaseSection({
     >
       {guestMageStamp && (
         <div className="flex items-start">
-          <Badge className={getBadgeClass("classic")}>{guestMageStamp}</Badge>
+          <Badge className={getBadgeClass("chore")}>
+            {`Guest Mage: ${guestMageStamp}`}
+          </Badge>
         </div>
       )}
       {children}
