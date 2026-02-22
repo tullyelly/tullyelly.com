@@ -32,6 +32,7 @@ type ReleaseSectionBaseProps = {
   tournamentName?: string;
   tournamentRecord?: string;
   tournamentId?: string | number;
+  guestMage?: string;
   lcsName?: string;
   lcsUrl?: string;
   lcsRating?: string | number;
@@ -233,6 +234,7 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
+ * - guestMage: optional guest writer label rendered as a stamp.
  * - lcsName: optional local card shop label; rendered only when paired with lcsUrl and no releaseId/tcdbTradeId is present.
  * - lcsUrl: optional local card shop URL; rendered only when paired with lcsName and no releaseId/tcdbTradeId is present.
  * - lcsRating: optional local card shop rating; rendered with lcsName/lcsUrl when provided.
@@ -256,6 +258,7 @@ export default async function ReleaseSection({
   tournamentName,
   tournamentRecord,
   tournamentId,
+  guestMage,
   lcsName,
   lcsUrl,
   lcsRating,
@@ -376,6 +379,7 @@ export default async function ReleaseSection({
   const resolvedReleaseName = tcdbTradeId
     ? tabLabel
     : (releaseName ?? undefined);
+  const guestMageStamp = guestMage?.trim();
   const showTradePartner = Boolean(tcdbTradeId && tcdbTradePartner);
   const showCompletionLink = Boolean(completedLabel && completedHref);
   const footerClassName =
@@ -404,6 +408,11 @@ export default async function ReleaseSection({
           : undefined
       }
     >
+      {guestMageStamp && (
+        <div className="flex items-start">
+          <Badge className={getBadgeClass("classic")}>{guestMageStamp}</Badge>
+        </div>
+      )}
       {children}
       {showTournamentVisuals ? (
         <div className="text-sm">{`${tournamentName}: ${tournamentRecord}`}</div>
