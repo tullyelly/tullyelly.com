@@ -83,6 +83,29 @@ describe("ReleaseSection", () => {
     expect(wrapper.className).toContain("border-[var(--tcdb-wood-dark)]");
   });
 
+  it("renders table schema details without release visuals and without loading scroll data", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      tableSchemaId: "table-schema-42",
+      tableSchemaName: "Pizza Shack",
+      tableSchemaRating: "9/10",
+    });
+    const { container } = render(ui);
+
+    expect(screen.getByText("Pizza Shack: 9/10")).toBeInTheDocument();
+    expect(getScrollMock).not.toHaveBeenCalled();
+    expect(container.querySelector("div.relative")).toBeNull();
+    expect(container.querySelector(".tcdb-frame")).toBeNull();
+
+    const content = container.querySelector(
+      "[data-table-schema-name]",
+    ) as HTMLDivElement;
+    expect(content).toBeInTheDocument();
+    expect(content).toHaveAttribute("data-table-schema-id", "table-schema-42");
+    expect(content).toHaveAttribute("data-table-schema-name", "Pizza Shack");
+    expect(content).toHaveAttribute("data-table-schema-rating", "9/10");
+  });
+
   it("wraps content with a release container and link tab when releaseId is provided", async () => {
     getScrollMock.mockResolvedValue({
       id: "12",
@@ -256,6 +279,28 @@ describe("ReleaseSection", () => {
       // @ts-expect-error - runtime guard should reject mutually exclusive props.
       ReleaseSection({ ...baseProps, releaseId: "12", tcdbTradeId: "359632" }),
     ).rejects.toThrow("either releaseId or tcdbTradeId");
+  });
+
+  it("throws when both releaseId and tableSchemaId are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        releaseId: "12",
+        tableSchemaId: "table-schema-42",
+      }),
+    ).rejects.toThrow("either releaseId or tableSchemaId");
+  });
+
+  it("throws when both tcdbTradeId and tableSchemaId are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        tcdbTradeId: "359632",
+        tableSchemaId: "table-schema-42",
+      }),
+    ).rejects.toThrow("either tcdbTradeId or tableSchemaId");
   });
 
   it("tcdb trade without partner renders tab without partner suffix and no bottom partner row", async () => {
