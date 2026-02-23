@@ -60,6 +60,21 @@ export default function UncleJimmySquadPage() {
       </section>
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
+          trackers
+        </h2>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          Follow active logs and summaries:
+        </p>
+        <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
+          <li>
+            <Link href="/unclejimmy/table-schema" className="link-blue">
+              Table Schema
+            </Link>
+          </li>
+        </ul>
+      </section>
+      <section className="space-y-4">
+        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           coming soon....
         </h2>
         <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
