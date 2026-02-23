@@ -89,13 +89,28 @@ describe("ReleaseSection", () => {
       tableSchemaId: "table-schema-42",
       tableSchemaName: "Pizza Shack",
       tableSchemaRating: "9/10",
+      tableSchemaUrl: "https://pizzashack.example.com",
     });
     const { container } = render(ui);
 
-    expect(screen.getByText("Pizza Shack: 9/10")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, node) => node?.textContent === "Pizza Shack: 9/10"),
+    ).toBeInTheDocument();
+    const restaurantLink = screen.getByText("Pizza Shack").closest("a");
+    expect(restaurantLink).toBeInTheDocument();
+    expect(restaurantLink).toHaveAttribute(
+      "href",
+      "https://pizzashack.example.com",
+    );
+    expect(restaurantLink).toHaveAttribute("target", "_blank");
+    expect(restaurantLink).toHaveAttribute("rel", "noopener noreferrer");
     expect(getScrollMock).not.toHaveBeenCalled();
     expect(container.querySelector("div.relative")).toBeNull();
     expect(container.querySelector(".tcdb-frame")).toBeNull();
+
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
+    expect(wrapper.className).toContain("border-solid");
+    expect(wrapper.className).toContain("border-[var(--table-schema-spice)]");
 
     const content = container.querySelector(
       "[data-table-schema-name]",
@@ -104,6 +119,10 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-table-schema-id", "table-schema-42");
     expect(content).toHaveAttribute("data-table-schema-name", "Pizza Shack");
     expect(content).toHaveAttribute("data-table-schema-rating", "9/10");
+    expect(content).toHaveAttribute(
+      "data-table-schema-url",
+      "https://pizzashack.example.com",
+    );
   });
 
   it("wraps content with a release container and link tab when releaseId is provided", async () => {

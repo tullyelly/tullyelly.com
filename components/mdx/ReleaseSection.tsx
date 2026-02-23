@@ -39,6 +39,7 @@ type ReleaseSectionBaseProps = {
   tableSchemaId?: string | number;
   tableSchemaName?: string;
   tableSchemaRating?: string | number;
+  tableSchemaUrl?: string;
 };
 
 type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
@@ -246,6 +247,7 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - tableSchemaId: optional table schema identifier for restaurant visit tracking; must not be combined with releaseId or tcdbTradeId.
  * - tableSchemaName: optional restaurant label; rendered only when paired with tableSchemaRating and no releaseId/tcdbTradeId is present.
  * - tableSchemaRating: optional restaurant rating; rendered with tableSchemaName when provided.
+ * - tableSchemaUrl: optional restaurant website; when provided, tableSchemaName renders as an external link.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -273,6 +275,7 @@ export default async function ReleaseSection({
   tableSchemaId,
   tableSchemaName,
   tableSchemaRating,
+  tableSchemaUrl,
 }: ReleaseSectionProps) {
   let releaseName: string | undefined;
   let releaseType: string | undefined;
@@ -352,6 +355,8 @@ export default async function ReleaseSection({
   const showLcs = Boolean(lcsName && lcsUrl);
   const showLcsRating = lcsRating !== undefined && `${lcsRating}`.trim() !== "";
   const showTableSchema = Boolean(tableSchemaName && tableSchemaRating);
+  const showTableSchemaUrl =
+    tableSchemaUrl !== undefined && tableSchemaUrl.trim() !== "";
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
   const showTournamentVisuals = showTournament && !showReleaseDetails;
   const showLcsVisuals = showLcs && !showReleaseDetails;
@@ -431,6 +436,7 @@ export default async function ReleaseSection({
       data-table-schema-rating={
         tableSchemaRating !== undefined ? String(tableSchemaRating) : undefined
       }
+      data-table-schema-url={showTableSchemaUrl ? tableSchemaUrl : undefined}
       style={
         resolvedReleaseColor
           ? ({
@@ -466,7 +472,21 @@ export default async function ReleaseSection({
         </div>
       ) : null}
       {showTableSchemaVisuals ? (
-        <div className="text-sm">{`${tableSchemaName}: ${tableSchemaRating}`}</div>
+        <div className="text-sm">
+          {showTableSchemaUrl && tableSchemaUrl ? (
+            <Link
+              href={tableSchemaUrl}
+              className="link-blue"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {tableSchemaName}
+            </Link>
+          ) : (
+            <span>{tableSchemaName}</span>
+          )}
+          <span>{`: ${tableSchemaRating}`}</span>
+        </div>
       ) : null}
       <div className={footerClassName}>
         {showTradePartner && tradePartnerUrl ? (
@@ -516,6 +536,10 @@ export default async function ReleaseSection({
       </div>
     ) : showLcsVisuals ? (
       <div className="rounded-lg border-[4px] border-double border-[var(--tcdb-wood-dark)] px-4 py-4">
+        {baseContent}
+      </div>
+    ) : showTableSchemaVisuals ? (
+      <div className="rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4">
         {baseContent}
       </div>
     ) : (
