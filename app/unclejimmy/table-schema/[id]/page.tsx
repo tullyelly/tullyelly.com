@@ -4,19 +4,28 @@ import { Card } from "@ui";
 
 import TableSchemaSections from "@/components/unclejimmy/TableSchemaSections";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
-import { getTableSchemaPageData } from "@/lib/table-schema";
+import {
+  getAllTableSchemaSummaries,
+  getTableSchemaPageData,
+} from "@/lib/table-schema";
 
 type Params = { id: string };
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const dynamic = "force-static";
+export const dynamicParams = false;
+export const revalidate = 3600;
+
+export function generateStaticParams(): Params[] {
+  const summaries = getAllTableSchemaSummaries();
+  return summaries.map((summary) => ({ id: summary.tableSchemaId }));
+}
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<Params>;
+  params: Params;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { id } = params;
   const tableSchemaData = getTableSchemaPageData(id);
   const tableSchemaName =
     tableSchemaData?.tableSchemaName ?? `Table Schema ${id}`;
@@ -47,9 +56,9 @@ export async function generateMetadata({
 export default async function UncleJimmyTableSchemaIdPage({
   params,
 }: {
-  params: Promise<Params>;
+  params: Params;
 }) {
-  const { id } = await params;
+  const { id } = params;
   const tableSchemaData = getTableSchemaPageData(id);
 
   if (!tableSchemaData) {
