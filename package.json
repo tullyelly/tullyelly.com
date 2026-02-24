@@ -85,10 +85,11 @@
     "sanity:db": "node scripts/db_sanity.mjs",
     "check:use-server": "bash scripts/check-use-server.sh",
     "gen:build-info": "node scripts/gen-build-info.mjs",
+    "gen:images-manifest": "node scripts/gen-optimized-images-manifest.mjs",
     "content:build": "contentlayer2 build",
     "content:dev": "contentlayer2 dev --clearCache",
     "contentlayer:build": "contentlayer2 build",
-    "prepare:content": "npm run gen:build-info && npm run content:build",
+    "prepare:content": "npm run gen:build-info && npm run gen:images-manifest && npm run content:build",
     "prepare": "husky",
     "check:emdash": "node scripts/check-emdash.mjs",
     "analyze": "ANALYZE=true next build"
