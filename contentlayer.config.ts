@@ -4,6 +4,7 @@ import { defineDocumentType, makeSource } from "contentlayer2/source-files";
 
 const contentDirPath = "content";
 const inferredAlterEgos = new Map<string, string[]>();
+const inferredPersonTags = new Map<string, string[]>();
 
 const ALTER_EGO_OPTIONS = [
   "mark2",
@@ -92,40 +93,95 @@ function inferAlterEgosFromTree(
   return Array.from(new Set(foundAlterEgos));
 }
 
-function mergeTagsWithAlterEgo(
-  tags: string[] | undefined,
-  alterEgo: string | string[] | undefined,
+function inferPersonTagsFromTree(
+  tree: MdxNode,
+  { errorPrefix = "Chronicle" }: InferOptions = {},
 ): string[] {
-  const alterEgos = Array.isArray(alterEgo)
-    ? alterEgo
-    : alterEgo
-      ? [alterEgo]
-      : [];
-  const merged = [...(tags ?? []), ...alterEgos];
+  const foundTags: string[] = [];
+
+  const visitNode = (node: MdxNode | undefined) => {
+    if (!node) return;
+    const isPersonTag =
+      (node.type === "mdxJsxFlowElement" ||
+        node.type === "mdxJsxTextElement") &&
+      node.name === "PersonTag";
+
+    if (isPersonTag) {
+      const tagAttrs = (node.attributes ?? []).filter(
+        (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "tag",
+      );
+
+      if (tagAttrs.length === 0) {
+        throw new Error(
+          `${errorPrefix}: PersonTag is missing the required tag prop.`,
+        );
+      }
+
+      if (tagAttrs.length > 1) {
+        throw new Error(
+          `${errorPrefix}: PersonTag should declare exactly one tag prop.`,
+        );
+      }
+
+      const tagAttr = tagAttrs[0];
+
+      if (typeof tagAttr.value !== "string") {
+        throw new Error(
+          `${errorPrefix}: PersonTag tag must be a string literal.`,
+        );
+      }
+
+      foundTags.push(tagAttr.value);
+    }
+
+    if (node.children) {
+      for (const child of node.children) {
+        visitNode(child);
+      }
+    }
+  };
+
+  visitNode(tree);
+  return Array.from(new Set(foundTags));
+}
+
+function mergeChronicleTags(
+  tags: string[] | undefined,
+  ...inferredGroups: Array<string | string[] | undefined>
+): string[] {
+  const merged = [...(tags ?? [])];
+
+  for (const group of inferredGroups) {
+    if (Array.isArray(group)) {
+      merged.push(...group);
+    } else if (group) {
+      merged.push(group);
+    }
+  }
+
   return Array.from(new Set(merged));
 }
 
+function resolveInferenceSourceFilePath(file: any): string | undefined {
+  const rawDocPath = file?.data?.rawDocumentData?.sourceFilePath;
+  if (typeof rawDocPath === "string") return rawDocPath;
+
+  const historyPath =
+    Array.isArray(file?.history) && file.history.length > 0
+      ? (file.history.find((entry: string) => entry.endsWith(".mdx")) ??
+        file.history[file.history.length - 1])
+      : undefined;
+
+  const absolutePath = typeof file?.path === "string" ? file.path : historyPath;
+
+  return absolutePath
+    ? path.relative(path.join(process.cwd(), contentDirPath), absolutePath)
+    : undefined;
+}
+
 function remarkInferReleaseSectionAlterEgo() {
-  return (tree: any, file: any) => {
-    const resolveSourcePath = (): string | undefined => {
-      const rawDocPath = file?.data?.rawDocumentData?.sourceFilePath;
-      if (typeof rawDocPath === "string") return rawDocPath;
-
-      const historyPath =
-        Array.isArray(file?.history) && file.history.length > 0
-          ? (file.history.find((entry: string) => entry.endsWith(".mdx")) ??
-            file.history[file.history.length - 1])
-          : undefined;
-
-      const absolutePath =
-        typeof file?.path === "string" ? file.path : historyPath;
-
-      return absolutePath
-        ? path.relative(path.join(process.cwd(), contentDirPath), absolutePath)
-        : undefined;
-    };
-
-    const sourceFilePath = resolveSourcePath();
+  return (tree: MdxNode, file: any) => {
+    const sourceFilePath = resolveInferenceSourceFilePath(file);
 
     if (!sourceFilePath || sourceFilePath.startsWith("..")) {
       throw new Error(
@@ -144,6 +200,29 @@ function remarkInferReleaseSectionAlterEgo() {
       inferredAlterEgos.set(sourceFilePath, foundAlterEgos);
     } else {
       inferredAlterEgos.delete(sourceFilePath);
+    }
+  };
+}
+
+function remarkInferPersonTags() {
+  return (tree: MdxNode, file: any) => {
+    const sourceFilePath = resolveInferenceSourceFilePath(file);
+
+    if (!sourceFilePath || sourceFilePath.startsWith("..")) {
+      throw new Error(
+        "PersonTag inference failed because the source file path could not be resolved.",
+      );
+    }
+
+    const errorPrefix = `Chronicle ${sourceFilePath}`;
+
+    // PersonTag enables inline authoring of people and concepts while feeding the shared tag system.
+    const foundTags = inferPersonTagsFromTree(tree, { errorPrefix });
+
+    if (foundTags.length > 0) {
+      inferredPersonTags.set(sourceFilePath, foundTags);
+    } else {
+      inferredPersonTags.delete(sourceFilePath);
     }
   };
 }
@@ -182,8 +261,17 @@ const Post = defineDocumentType(() => ({
       type: "list",
       of: { type: "string" },
       resolve: (doc) => {
-        const inferred = inferredAlterEgos.get(doc._raw.sourceFilePath);
-        return mergeTagsWithAlterEgo(doc.tags, inferred ?? []);
+        const inferredAlterEgoTags = inferredAlterEgos.get(doc._raw.sourceFilePath);
+        const inferredInlinePersonTags = inferredPersonTags.get(
+          doc._raw.sourceFilePath,
+        );
+
+        // PersonTag lets authors tag people or concepts inline without changing tag page UI behavior.
+        return mergeChronicleTags(
+          doc.tags,
+          inferredAlterEgoTags ?? [],
+          inferredInlinePersonTags ?? [],
+        );
       },
     },
     resolvedAlterEgo: {
@@ -201,7 +289,7 @@ export default makeSource({
   documentTypes: [Post],
   date: { timezone: "America/Chicago" },
   mdx: {
-    remarkPlugins: [remarkInferReleaseSectionAlterEgo],
+    remarkPlugins: [remarkInferReleaseSectionAlterEgo, remarkInferPersonTags],
     rehypePlugins: [],
   },
 });
