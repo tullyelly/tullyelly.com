@@ -100,7 +100,7 @@ export default function UncleJimmyPage() {
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Remember, above all else, do NOT take yourself,{" "}
           <a
-            href="https://www.youtube.com/embed/4zWeI5dDDyY"
+            href="https://www.youtube.com/watch?v=4zWeI5dDDyY"
             className="underline hover:no-underline"
             target="_blank"
             rel="noopener noreferrer"
