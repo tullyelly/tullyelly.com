@@ -11,15 +11,15 @@ export const DEFAULT_ALTER_EGO = "tullyelly";
 
 export type AlterEgo = (typeof ALTER_EGO_OPTIONS)[number];
 
-type MdxJsxAttribute = { type?: string; name?: string; value?: unknown };
-type MdxNode = {
+export type MdxJsxAttribute = { type?: string; name?: string; value?: unknown };
+export type MdxNode = {
   type?: string;
   name?: string;
   attributes?: MdxJsxAttribute[];
   children?: MdxNode[];
 };
 
-type InferOptions = {
+export type InferOptions = {
   errorPrefix?: string;
   allowedAlterEgos?: readonly string[];
 };
@@ -85,15 +85,78 @@ export function inferAlterEgosFromTree(
   return Array.from(new Set(foundAlterEgos));
 }
 
+export function inferPersonTagsFromTree(
+  tree: MdxNode,
+  { errorPrefix = "Chronicle" }: InferOptions = {},
+): string[] {
+  const foundTags: string[] = [];
+
+  const visitNode = (node: MdxNode | undefined) => {
+    if (!node) return;
+    const isPersonTag =
+      (node.type === "mdxJsxFlowElement" ||
+        node.type === "mdxJsxTextElement") &&
+      node.name === "PersonTag";
+
+    if (isPersonTag) {
+      const tagAttrs = (node.attributes ?? []).filter(
+        (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "tag",
+      );
+
+      if (tagAttrs.length === 0) {
+        throw new Error(
+          `${errorPrefix}: PersonTag is missing the required tag prop.`,
+        );
+      }
+
+      if (tagAttrs.length > 1) {
+        throw new Error(
+          `${errorPrefix}: PersonTag should declare exactly one tag prop.`,
+        );
+      }
+
+      const tagAttr = tagAttrs[0];
+
+      if (typeof tagAttr.value !== "string") {
+        throw new Error(
+          `${errorPrefix}: PersonTag tag must be a string literal.`,
+        );
+      }
+
+      foundTags.push(tagAttr.value);
+    }
+
+    if (node.children) {
+      for (const child of node.children) {
+        visitNode(child);
+      }
+    }
+  };
+
+  visitNode(tree);
+  return Array.from(new Set(foundTags));
+}
+
+export function mergeChronicleTags(
+  tags: string[] | undefined,
+  ...inferredGroups: Array<string | string[] | undefined>
+): string[] {
+  const merged = [...(tags ?? [])];
+
+  for (const group of inferredGroups) {
+    if (Array.isArray(group)) {
+      merged.push(...group);
+    } else if (group) {
+      merged.push(group);
+    }
+  }
+
+  return Array.from(new Set(merged));
+}
+
 export function mergeTagsWithAlterEgo(
   tags: string[] | undefined,
   alterEgo: string | string[] | undefined,
 ): string[] {
-  const alterEgos = Array.isArray(alterEgo)
-    ? alterEgo
-    : alterEgo
-      ? [alterEgo]
-      : [];
-  const merged = [...(tags ?? []), ...alterEgos];
-  return Array.from(new Set(merged));
+  return mergeChronicleTags(tags, alterEgo);
 }

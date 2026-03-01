@@ -1,131 +1,39 @@
 import path from "node:path";
 
 import { defineDocumentType, makeSource } from "contentlayer2/source-files";
+import {
+  ALTER_EGO_OPTIONS,
+  DEFAULT_ALTER_EGO,
+  inferAlterEgosFromTree,
+  inferPersonTagsFromTree,
+  mergeChronicleTags,
+  type MdxNode,
+} from "./lib/alterEgo";
 
 const contentDirPath = "content";
 const inferredAlterEgos = new Map<string, string[]>();
+const inferredPersonTags = new Map<string, string[]>();
 
-const ALTER_EGO_OPTIONS = [
-  "mark2",
-  "cardattack",
-  "theabbott",
-  "unclejimmy",
-  "tullyelly",
-  "george",
-] as const;
+function resolveInferenceSourceFilePath(file: any): string | undefined {
+  const rawDocPath = file?.data?.rawDocumentData?.sourceFilePath;
+  if (typeof rawDocPath === "string") return rawDocPath;
 
-const DEFAULT_ALTER_EGO = "tullyelly";
+  const historyPath =
+    Array.isArray(file?.history) && file.history.length > 0
+      ? (file.history.find((entry: string) => entry.endsWith(".mdx")) ??
+        file.history[file.history.length - 1])
+      : undefined;
 
-type AlterEgo = (typeof ALTER_EGO_OPTIONS)[number];
+  const absolutePath = typeof file?.path === "string" ? file.path : historyPath;
 
-type MdxJsxAttribute = { type?: string; name?: string; value?: unknown };
-type MdxNode = {
-  type?: string;
-  name?: string;
-  attributes?: MdxJsxAttribute[];
-  children?: MdxNode[];
-};
-
-type InferOptions = {
-  errorPrefix?: string;
-  allowedAlterEgos?: readonly string[];
-};
-
-function inferAlterEgosFromTree(
-  tree: MdxNode,
-  {
-    errorPrefix = "Chronicle",
-    allowedAlterEgos = ALTER_EGO_OPTIONS,
-  }: InferOptions = {},
-): AlterEgo[] {
-  const foundAlterEgos: AlterEgo[] = [];
-
-  const visitNode = (node: MdxNode | undefined) => {
-    if (!node) return;
-    const isReleaseSection =
-      (node.type === "mdxJsxFlowElement" ||
-        node.type === "mdxJsxTextElement") &&
-      node.name === "ReleaseSection";
-
-    if (isReleaseSection) {
-      const alterEgoAttrs = (node.attributes ?? []).filter(
-        (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "alterEgo",
-      );
-
-      if (alterEgoAttrs.length === 0) {
-        throw new Error(
-          `${errorPrefix}: ReleaseSection is missing the required alterEgo prop.`,
-        );
-      }
-
-      if (alterEgoAttrs.length > 1) {
-        throw new Error(
-          `${errorPrefix}: ReleaseSection should declare exactly one alterEgo prop.`,
-        );
-      }
-
-      const alterEgoAttr = alterEgoAttrs[0];
-
-      if (typeof alterEgoAttr.value !== "string") {
-        throw new Error(
-          `${errorPrefix}: ReleaseSection alterEgo must be a string literal.`,
-        );
-      }
-
-      if (!allowedAlterEgos.includes(alterEgoAttr.value)) {
-        throw new Error(
-          `${errorPrefix}: alterEgo must be one of ${allowedAlterEgos.join(", ")}.`,
-        );
-      }
-
-      foundAlterEgos.push(alterEgoAttr.value as AlterEgo);
-    }
-
-    if (node.children) {
-      for (const child of node.children) {
-        visitNode(child);
-      }
-    }
-  };
-
-  visitNode(tree);
-  return Array.from(new Set(foundAlterEgos));
-}
-
-function mergeTagsWithAlterEgo(
-  tags: string[] | undefined,
-  alterEgo: string | string[] | undefined,
-): string[] {
-  const alterEgos = Array.isArray(alterEgo)
-    ? alterEgo
-    : alterEgo
-      ? [alterEgo]
-      : [];
-  const merged = [...(tags ?? []), ...alterEgos];
-  return Array.from(new Set(merged));
+  return absolutePath
+    ? path.relative(path.join(process.cwd(), contentDirPath), absolutePath)
+    : undefined;
 }
 
 function remarkInferReleaseSectionAlterEgo() {
-  return (tree: any, file: any) => {
-    const resolveSourcePath = (): string | undefined => {
-      const rawDocPath = file?.data?.rawDocumentData?.sourceFilePath;
-      if (typeof rawDocPath === "string") return rawDocPath;
-
-      const historyPath =
-        Array.isArray(file?.history) && file.history.length > 0
-          ? (file.history.find((entry: string) => entry.endsWith(".mdx")) ??
-            file.history[file.history.length - 1])
-          : undefined;
-
-      const absolutePath =
-        typeof file?.path === "string" ? file.path : historyPath;
-
-      return absolutePath
-        ? path.relative(path.join(process.cwd(), contentDirPath), absolutePath)
-        : undefined;
-    };
-
-    const sourceFilePath = resolveSourcePath();
+  return (tree: MdxNode, file: any) => {
+    const sourceFilePath = resolveInferenceSourceFilePath(file);
 
     if (!sourceFilePath || sourceFilePath.startsWith("..")) {
       throw new Error(
@@ -144,6 +52,29 @@ function remarkInferReleaseSectionAlterEgo() {
       inferredAlterEgos.set(sourceFilePath, foundAlterEgos);
     } else {
       inferredAlterEgos.delete(sourceFilePath);
+    }
+  };
+}
+
+function remarkInferPersonTags() {
+  return (tree: MdxNode, file: any) => {
+    const sourceFilePath = resolveInferenceSourceFilePath(file);
+
+    if (!sourceFilePath || sourceFilePath.startsWith("..")) {
+      throw new Error(
+        "PersonTag inference failed because the source file path could not be resolved.",
+      );
+    }
+
+    const errorPrefix = `Chronicle ${sourceFilePath}`;
+
+    // PersonTag enables inline authoring of people and concepts while feeding the shared tag system.
+    const foundTags = inferPersonTagsFromTree(tree, { errorPrefix });
+
+    if (foundTags.length > 0) {
+      inferredPersonTags.set(sourceFilePath, foundTags);
+    } else {
+      inferredPersonTags.delete(sourceFilePath);
     }
   };
 }
@@ -182,8 +113,17 @@ const Post = defineDocumentType(() => ({
       type: "list",
       of: { type: "string" },
       resolve: (doc) => {
-        const inferred = inferredAlterEgos.get(doc._raw.sourceFilePath);
-        return mergeTagsWithAlterEgo(doc.tags, inferred ?? []);
+        const inferredAlterEgoTags = inferredAlterEgos.get(doc._raw.sourceFilePath);
+        const inferredInlinePersonTags = inferredPersonTags.get(
+          doc._raw.sourceFilePath,
+        );
+
+        // PersonTag lets authors tag people or concepts inline without changing tag page UI behavior.
+        return mergeChronicleTags(
+          doc.tags,
+          inferredAlterEgoTags ?? [],
+          inferredInlinePersonTags ?? [],
+        );
       },
     },
     resolvedAlterEgo: {
@@ -201,7 +141,7 @@ export default makeSource({
   documentTypes: [Post],
   date: { timezone: "America/Chicago" },
   mdx: {
-    remarkPlugins: [remarkInferReleaseSectionAlterEgo],
+    remarkPlugins: [remarkInferReleaseSectionAlterEgo, remarkInferPersonTags],
     rehypePlugins: [],
   },
 });

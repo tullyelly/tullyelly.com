@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
 import LoopedGIF from "@/components/LoopedGIF";
 import { CodePanel } from "@/components/mdx/code-panel";
+import PersonTag from "@/components/mdx/PersonTag";
 import SmartLink from "@/components/mdx/SmartLink";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
@@ -38,6 +39,7 @@ function extractCodeString(children: React.ReactNode): string | null {
 
 type CustomMDXComponents = MDXComponents & {
   CodePanel: typeof CodePanel;
+  PersonTag: typeof PersonTag;
   ReleaseSection: typeof ReleaseSection;
   ScrollAmendment: typeof ScrollAmendment;
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
@@ -206,6 +208,7 @@ export const mdxComponents: CustomMDXComponents = {
   XEmbed,
   LoopedGIF,
   CodePanel,
+  PersonTag,
   ReleaseSection,
   ScrollAmendment,
   YouTubeMusicPlaylist,
