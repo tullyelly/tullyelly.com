@@ -17,7 +17,7 @@ export default async function HomePage() {
         known as, engagement farming.
       </p>
       <p className="text-base text-muted-foreground">
-        Hover over or click on the information icon to experience a deeper level
+        Hover over or touch on the information icon ℹ️ on each card below to experience a deeper level
         of comtemplation.
       </p>
       <p className="text-base text-muted-foreground">
