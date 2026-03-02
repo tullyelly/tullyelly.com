@@ -1,3 +1,4 @@
+import PersonTag from "@/components/mdx/PersonTag";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 const pageTitle = "🃏cardattack vault | tullyelly";
@@ -110,7 +111,9 @@ export default function CardattackPage() {
           <li>Boxes</li>
           <li>Bags</li>
           <li>Bags inside boxes</li>
-          <li>nikkigirl 🤯</li>
+          <li>
+            <PersonTag displayName="nikkigirl" tag="nikkigirl" /> 🤯
+          </li>
         </ul>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Just when you think everything has found the right place in the vault,
@@ -122,8 +125,8 @@ export default function CardattackPage() {
           🃏cardattack
         </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Full credit to nikkigirl for the 🃏cardattack name. While I&apos;m
-          ⚒️tullyelly on{" "}
+          Full credit to <PersonTag displayName="nikkigirl" tag="nikkigirl" />{" "}
+          for the 🃏cardattack name. While I&apos;m ⚒️tullyelly on{" "}
           <a
             href="https://www.tcdb.com/Profile.cfm/tullyelly"
             className="underline hover:no-underline"

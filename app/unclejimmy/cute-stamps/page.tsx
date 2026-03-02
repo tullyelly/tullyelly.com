@@ -1,5 +1,6 @@
 import Image from "next/image";
 import FlowersInline from "@/components/flowers/FlowersInline";
+import PersonTag from "@/components/mdx/PersonTag";
 import { buildPageMetadata } from "@/lib/page-metadata";
 import type { PageFrontmatter } from "@/types/frontmatter";
 
@@ -29,7 +30,8 @@ export default function Page() {
 
       <section className="space-y-4">
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
-          As you may or may not have heard, our little lulu is getting married!
+          As you may or may not have heard, our little{" "}
+          <PersonTag displayName="lulu" tag="lulu" /> is getting married!
           Thankfully, I am in charge of very little up until now. That said,
           this week I was tasked with finding &quot;cute stamps&quot; for her
           save the date letters and this is the adventure that ensued.
@@ -91,8 +93,9 @@ export default function Page() {
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           Speaking of our father, I walked out of there with a toothpick because
-          I was raised right. Plus, nikkigirl gets a little randy when
-          unclejimmy shows up with a toothpick in his mouth.
+          I was raised right. Plus,{" "}
+          <PersonTag displayName="nikkigirl" tag="nikkigirl" /> gets a little
+          randy when unclejimmy shows up with a toothpick in his mouth.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
@@ -157,7 +160,8 @@ export default function Page() {
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           My plan was to walk up to one of the associates behind the counter
           that would recognize me and have some fun with them, asking for some
-          cute stamps and a selfie so I could show lulu. Instead, it was someone
+          cute stamps and a selfie so I could show{" "}
+          <PersonTag displayName="lulu" tag="lulu" />. Instead, it was someone
           I do not interact with much, and when I tell you she was dead inside,
           I mean she was really dead inside. There was no fun to be had. USPS
           workers are the real MVP - they hate their job regardless of the
@@ -168,8 +172,9 @@ export default function Page() {
           I also forgot to take a selfie of the Post Office, but guess what? A
           truck stopped on the street on my way home. I was very excited for the
           help, as per usual. You can see the middle school the little two went
-          too behind us. Middle school is for suckers. So says lulu and my
-          teacher friends - I do not make up the rules.
+          too behind us. Middle school is for suckers. So says{" "}
+          <PersonTag displayName="lulu" tag="lulu" /> and my teacher friends -
+          I do not make up the rules.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
@@ -204,10 +209,10 @@ export default function Page() {
           except of course they did? That was me and Walgreens.
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
-          Oops!…I Did It Again. Somehow I bought cards for me and legos for
-          nikkigirl. Both were on sale, so bingo bango. Walgreens is the best
-          place to find discounted NBA cards in all of the land. Good job,
-          Walgreens.
+          Oops!…I Did It Again. Somehow I bought cards for me and legos for{" "}
+          <PersonTag displayName="nikkigirl" tag="nikkigirl" />. Both were on
+          sale, so bingo bango. Walgreens is the best place to find discounted
+          NBA cards in all of the land. Good job, Walgreens.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
@@ -296,8 +301,9 @@ export default function Page() {
       <section className="space-y-4">
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           Finally, we arrive at the cute stamps. Here is what I came home with.
-          I THINK SPONGEBOB STAMPS ARE CUTE.......and lulu does not. She chose
-          the baby wild animals. Coming soon to an inbox near you.
+          I THINK SPONGEBOB STAMPS ARE CUTE.......and{" "}
+          <PersonTag displayName="lulu" tag="lulu" /> does not. She chose the
+          baby wild animals. Coming soon to an inbox near you.
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           That is cool though, more SpongeBob for me an my trading partners.
@@ -359,10 +365,12 @@ export default function Page() {
         </p>
         <p className="text-sm text-muted-foreground">
           <FlowersInline>
-            lulu, uw-stevens point, giannis, little diner xpress, pete&apos;s
-            auto, george webb, the brew crew, dad, nikkigirl, breakfast,
-            toothpicks, usps, walgreens, lego, f1, prisons, conrad, spongebob,
-            tcdb, shin, & wyoming
+            <PersonTag displayName="lulu" tag="lulu" />
+            {", "}uw-stevens point, giannis, little diner xpress, pete&apos;s
+            auto, george webb, the brew crew, dad,{" "}
+            <PersonTag displayName="nikkigirl" tag="nikkigirl" />
+            {", "}breakfast, toothpicks, usps, walgreens, lego, f1, prisons,
+            conrad, spongebob, tcdb, shin, & wyoming
           </FlowersInline>
         </p>
       </section>
