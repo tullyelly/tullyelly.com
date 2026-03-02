@@ -1,4 +1,5 @@
 import FlowersInline from "@/components/flowers/FlowersInline";
+import PersonTag from "@/components/mdx/PersonTag";
 
 type Props = { date?: string };
 
@@ -41,7 +42,7 @@ export function MothersDaySection({ date }: Props) {
         </figure>
         <p className="mt-3 text-[16px] md:text-[18px] text-muted-foreground">
           <FlowersInline>
-            nikkigirl, Big Ter,{" "}
+            <PersonTag displayName="nikkigirl" tag="nikkigirl" />, Big Ter,{" "}
             <a
               className="underline hover:no-underline"
               href="https://www.youtube.com/"
