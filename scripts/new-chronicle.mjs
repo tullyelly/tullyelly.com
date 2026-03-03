@@ -130,7 +130,6 @@ const content = `---
 title: "${title}"
 date: "${date}"
 summary: "${SUMMARY_PREFIX}Day ${nextDay}, "
-tags: []
 draft: false
 infinityStone: false
 ---
