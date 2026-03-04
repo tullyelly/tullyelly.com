@@ -90,7 +90,7 @@ describe("TableSchemaSections", () => {
         postTitle: "Visit One",
         tableSchemaName: "Pizza Shack",
         tableSchemaRating: "9/10",
-        mdx: `<ReleaseSection alterEgo="unclejimmy" divider={true} tableSchemaId={1}>Visit one</ReleaseSection>`,
+        mdx: `<ReleaseSection alterEgo="unclejimmy" divider={true} review={{ type: "table-schema", id: 1, name: "Pizza Shack", rating: "9/10" }}>Visit one</ReleaseSection>`,
       },
       {
         tableSchemaId: "1",
@@ -100,7 +100,7 @@ describe("TableSchemaSections", () => {
         postTitle: "Visit Two",
         tableSchemaName: "Pizza Shack",
         tableSchemaRating: "8.5/10",
-        mdx: `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={1}>Visit two</ReleaseSection>`,
+        mdx: `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: 1, name: "Pizza Shack", rating: "8.5/10" }}>Visit two</ReleaseSection>`,
       },
     ];
 

@@ -25,6 +25,16 @@ Spike note (ReleaseSection styling)
 - Rejected: hard-coded color map for ReleaseSection (would drift from badges) and pseudo-element overlays for the tab (added complexity and layering issues).
 */
 
+export type ReviewType = "lcs" | "table-schema" | "save-point";
+
+export type ReviewProps = {
+  type: ReviewType;
+  id: string | number;
+  name: string;
+  url?: string;
+  rating?: string | number;
+};
+
 type ReleaseSectionBaseProps = {
   alterEgo: string;
   children: ReactNode;
@@ -33,13 +43,6 @@ type ReleaseSectionBaseProps = {
   tournamentRecord?: string;
   tournamentId?: string | number;
   guestMage?: string;
-  lcsName?: string;
-  lcsUrl?: string;
-  lcsRating?: string | number;
-  tableSchemaId?: string | number;
-  tableSchemaName?: string;
-  tableSchemaRating?: string | number;
-  tableSchemaUrl?: string;
 };
 
 type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
@@ -47,7 +50,7 @@ type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
   tcdbTradeId?: never;
   tcdbTradePartner?: never;
   completed?: never;
-  tableSchemaId?: never;
+  review?: never;
 };
 
 type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
@@ -55,10 +58,19 @@ type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
   tcdbTradePartner?: string;
   completed?: boolean;
   releaseId?: never;
-  tableSchemaId?: never;
+  review?: never;
 };
 
-type ReleaseSectionWithoutRelease = ReleaseSectionBaseProps & {
+type ReleaseSectionWithReview = ReleaseSectionBaseProps & {
+  review: ReviewProps;
+  releaseId?: never;
+  tcdbTradeId?: never;
+  tcdbTradePartner?: never;
+  completed?: never;
+};
+
+type ReleaseSectionWithoutReleaseOrReview = ReleaseSectionBaseProps & {
+  review?: undefined;
   releaseId?: undefined;
   tcdbTradeId?: undefined;
   tcdbTradePartner?: undefined;
@@ -68,7 +80,8 @@ type ReleaseSectionWithoutRelease = ReleaseSectionBaseProps & {
 type ReleaseSectionProps =
   | ReleaseSectionWithReleaseId
   | ReleaseSectionWithTcdbTrade
-  | ReleaseSectionWithoutRelease;
+  | ReleaseSectionWithReview
+  | ReleaseSectionWithoutReleaseOrReview;
 
 const RELEASE_TYPE_VARIANTS: Record<string, BadgeVariant> = {
   hotfix: "hotfix",
@@ -227,6 +240,22 @@ function getReleaseTypeTextColor(releaseType?: string): string {
   return getBadgeTextColor(variant);
 }
 
+function getReviewLabel(type: ReviewType): string {
+  if (type === "lcs") {
+    return "Card Shop";
+  }
+
+  if (type === "table-schema") {
+    return "Table Schema";
+  }
+
+  if (type === "save-point") {
+    return "Save Point";
+  }
+
+  return type;
+}
+
 // ReleaseSection acts as a no-op wrapper for MDX content and optionally renders a
 // divider after the block (Great Lakes blue hr from global MDX styles).
 /**
@@ -241,13 +270,7 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
  * - guestMage: optional guest writer label rendered as a stamp.
- * - lcsName: optional local card shop label; rendered only when paired with lcsUrl and no releaseId/tcdbTradeId is present.
- * - lcsUrl: optional local card shop URL; rendered only when paired with lcsName and no releaseId/tcdbTradeId is present.
- * - lcsRating: optional local card shop rating; rendered with lcsName/lcsUrl when provided.
- * - tableSchemaId: optional table schema identifier for restaurant visit tracking; must not be combined with releaseId or tcdbTradeId.
- * - tableSchemaName: optional restaurant label; rendered only when paired with tableSchemaRating and no releaseId/tcdbTradeId is present.
- * - tableSchemaRating: optional restaurant rating; rendered with tableSchemaName when provided.
- * - tableSchemaUrl: optional restaurant website; when provided, tableSchemaName renders as an external link.
+ * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -257,26 +280,21 @@ function getReleaseTypeTextColor(releaseType?: string): string {
  * </ReleaseSection>
  * ```
  */
-export default async function ReleaseSection({
-  alterEgo,
-  children,
-  divider = true,
-  releaseId,
-  tcdbTradeId,
-  tcdbTradePartner,
-  completed,
-  tournamentName,
-  tournamentRecord,
-  tournamentId,
-  guestMage,
-  lcsName,
-  lcsUrl,
-  lcsRating,
-  tableSchemaId,
-  tableSchemaName,
-  tableSchemaRating,
-  tableSchemaUrl,
-}: ReleaseSectionProps) {
+export default async function ReleaseSection(props: ReleaseSectionProps) {
+  const { review } = props;
+  const {
+    alterEgo,
+    children,
+    divider = true,
+    releaseId,
+    tcdbTradeId,
+    tcdbTradePartner,
+    completed,
+    tournamentName,
+    tournamentRecord,
+    tournamentId,
+    guestMage,
+  } = props;
   let releaseName: string | undefined;
   let releaseType: string | undefined;
   let tradeUrl: string | undefined;
@@ -289,15 +307,15 @@ export default async function ReleaseSection({
     );
   }
 
-  if (releaseId && tableSchemaId) {
+  if (releaseId && review) {
     throw new Error(
-      "ReleaseSection: pass either releaseId or tableSchemaId, not both.",
+      "ReleaseSection: pass either releaseId or review, not both.",
     );
   }
 
-  if (tcdbTradeId && tableSchemaId) {
+  if (tcdbTradeId && review) {
     throw new Error(
-      "ReleaseSection: pass either tcdbTradeId or tableSchemaId, not both.",
+      "ReleaseSection: pass either tcdbTradeId or review, not both.",
     );
   }
 
@@ -352,15 +370,15 @@ export default async function ReleaseSection({
 
   const normalizedReleaseType = releaseType?.toLowerCase();
   const showTournament = Boolean(tournamentName && tournamentRecord);
-  const showLcs = Boolean(lcsName && lcsUrl);
-  const showLcsRating = lcsRating !== undefined && `${lcsRating}`.trim() !== "";
-  const showTableSchema = Boolean(tableSchemaName && tableSchemaRating);
-  const showTableSchemaUrl =
-    tableSchemaUrl !== undefined && tableSchemaUrl.trim() !== "";
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
   const showTournamentVisuals = showTournament && !showReleaseDetails;
-  const showLcsVisuals = showLcs && !showReleaseDetails;
-  const showTableSchemaVisuals = showTableSchema && !releaseId && !tcdbTradeId;
+  const showReviewVisuals = Boolean(review);
+  const shouldRenderReview = showReviewVisuals && !showReleaseDetails;
+  const showReviewUrl =
+    review?.url !== undefined && review.url.trim() !== "";
+  const showReviewRating =
+    review?.rating !== undefined && `${review.rating}`.trim() !== "";
+  const reviewLabel = review ? getReviewLabel(review.type) : undefined;
   const isTcdbTrade = Boolean(tcdbTradeId);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)
@@ -429,14 +447,12 @@ export default async function ReleaseSection({
       data-tournament-id={
         tournamentId !== undefined ? String(tournamentId) : undefined
       }
-      data-table-schema-id={
-        tableSchemaId !== undefined ? String(tableSchemaId) : undefined
+      data-review-type={review?.type ?? undefined}
+      data-review-id={review !== undefined ? String(review.id) : undefined}
+      data-review-name={review?.name ?? undefined}
+      data-review-rating={
+        showReviewRating ? String(review?.rating) : undefined
       }
-      data-table-schema-name={tableSchemaName ?? undefined}
-      data-table-schema-rating={
-        tableSchemaRating !== undefined ? String(tableSchemaRating) : undefined
-      }
-      data-table-schema-url={showTableSchemaUrl ? tableSchemaUrl : undefined}
       style={
         resolvedReleaseColor
           ? ({
@@ -457,35 +473,58 @@ export default async function ReleaseSection({
       {showTournamentVisuals ? (
         <div className="text-sm">{`${tournamentName}: ${tournamentRecord}`}</div>
       ) : null}
-      {showLcsVisuals && lcsName && lcsUrl ? (
+      {shouldRenderReview && review?.type === "lcs" && reviewLabel ? (
         <div className="text-sm">
-          <span>Card Shop: </span>
-          <Link
-            href={lcsUrl}
-            className="link-blue"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {lcsName}
-          </Link>
-          {showLcsRating ? <span>{` (${lcsRating})`}</span> : null}
-        </div>
-      ) : null}
-      {showTableSchemaVisuals ? (
-        <div className="text-sm">
-          {showTableSchemaUrl && tableSchemaUrl ? (
+          <span>{`${reviewLabel}: `}</span>
+          {showReviewUrl && review.url ? (
             <Link
-              href={tableSchemaUrl}
+              href={review.url}
               className="link-blue"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {tableSchemaName}
+              {review.name}
             </Link>
           ) : (
-            <span>{tableSchemaName}</span>
+            <span>{review.name}</span>
           )}
-          <span>{`: ${tableSchemaRating}`}</span>
+          {showReviewRating ? <span>{` (${review.rating})`}</span> : null}
+        </div>
+      ) : null}
+      {shouldRenderReview && review?.type === "table-schema" && reviewLabel ? (
+        <div className="text-sm">
+          <span>{`${reviewLabel}: `}</span>
+          {showReviewUrl && review.url ? (
+            <Link
+              href={review.url}
+              className="link-blue"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {review.name}
+            </Link>
+          ) : (
+            <span>{review.name}</span>
+          )}
+          {showReviewRating ? <span>{` (${review.rating})`}</span> : null}
+        </div>
+      ) : null}
+      {shouldRenderReview && review?.type === "save-point" && reviewLabel ? (
+        <div className="text-sm">
+          <span>{`${reviewLabel}: `}</span>
+          {showReviewUrl && review.url ? (
+            <Link
+              href={review.url}
+              className="link-blue"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {review.name}
+            </Link>
+          ) : (
+            <span>{review.name}</span>
+          )}
+          {showReviewRating ? <span>{` (${review.rating})`}</span> : null}
         </div>
       ) : null}
       <div className={footerClassName}>
@@ -534,12 +573,19 @@ export default async function ReleaseSection({
       >
         {baseContent}
       </div>
-    ) : showLcsVisuals ? (
+    ) : review?.type === "lcs" && showReviewVisuals ? (
       <div className="rounded-lg border-[4px] border-double border-[var(--tcdb-wood-dark)] px-4 py-4">
         {baseContent}
       </div>
-    ) : showTableSchemaVisuals ? (
+    ) : review?.type === "table-schema" && showReviewVisuals ? (
       <div className="rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4">
+        {baseContent}
+      </div>
+    ) : review?.type === "save-point" && showReviewVisuals ? (
+      <div
+        className="rounded-lg px-4 py-4"
+        style={{ border: "2px solid var(--save-point-color, #7c3aed)" }}
+      >
         {baseContent}
       </div>
     ) : (
