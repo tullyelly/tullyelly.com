@@ -48,32 +48,10 @@ type TableSchemaSectionWithOffset = TableSchemaSection & { offset: number };
 
 const RELEASE_SECTION_OPEN = "<ReleaseSection";
 const RELEASE_SECTION_CLOSE = "</ReleaseSection>";
-const TABLE_SCHEMA_ID_ATTR_NAME = "tableSchemaId";
-const TABLE_SCHEMA_ID_BRACED_ATTR = new RegExp(
-  `${TABLE_SCHEMA_ID_ATTR_NAME}\\s*=\\s*\\{\\s*["']?([^"'\\s}]+)["']?\\s*\\}`,
+const REVIEW_ATTR_NAME = "review";
+const REVIEW_OBJECT_ATTR = new RegExp(
+  `${REVIEW_ATTR_NAME}\\s*=\\s*\\{\\s*\\{([\\s\\S]*?)\\}\\s*\\}`,
 );
-const TABLE_SCHEMA_ID_DOUBLE_QUOTED_ATTR = new RegExp(
-  `${TABLE_SCHEMA_ID_ATTR_NAME}\\s*=\\s*"([^"]+)"`,
-);
-const TABLE_SCHEMA_ID_SINGLE_QUOTED_ATTR = new RegExp(
-  `${TABLE_SCHEMA_ID_ATTR_NAME}\\s*=\\s*'([^']+)'`,
-);
-const TABLE_SCHEMA_NAME_DOUBLE_QUOTED_ATTR =
-  /tableSchemaName\s*=\s*"([^"]+)"/;
-const TABLE_SCHEMA_NAME_SINGLE_QUOTED_ATTR =
-  /tableSchemaName\s*=\s*'([^']+)'/;
-const TABLE_SCHEMA_NAME_BRACED_QUOTED_ATTR =
-  /tableSchemaName\s*=\s*\{\s*["']([^"']+)["']\s*\}/;
-const TABLE_SCHEMA_NAME_BRACED_ATTR =
-  /tableSchemaName\s*=\s*\{\s*([^}"'\s][^}]*)\s*\}/;
-const TABLE_SCHEMA_RATING_DOUBLE_QUOTED_ATTR =
-  /tableSchemaRating\s*=\s*"([^"]+)"/;
-const TABLE_SCHEMA_RATING_SINGLE_QUOTED_ATTR =
-  /tableSchemaRating\s*=\s*'([^']+)'/;
-const TABLE_SCHEMA_RATING_BRACED_QUOTED_ATTR =
-  /tableSchemaRating\s*=\s*\{\s*["']([^"']+)["']\s*\}/;
-const TABLE_SCHEMA_RATING_BRACED_ATTR =
-  /tableSchemaRating\s*=\s*\{\s*([^}"'\s][^}]*)\s*\}/;
 const TABLE_SCHEMA_RATING_PATTERN =
   /^\s*(\d+(?:\.\d+)?)\s*(?:\/\s*\d+(?:\.\d+)?)?\s*$/;
 
@@ -81,57 +59,57 @@ const normalizeTableSchemaId = (value: string | number): string =>
   String(value).trim();
 
 export const getTableSchemaIdAttribute = (tableSchemaId: string | number) =>
-  `${TABLE_SCHEMA_ID_ATTR_NAME}={${normalizeTableSchemaId(tableSchemaId)}}`;
+  `review={{ type: "table-schema", id: "${normalizeTableSchemaId(tableSchemaId)}" }}`;
 
-const extractTableSchemaId = (openingTag: string): string | undefined => {
-  const braced = openingTag.match(TABLE_SCHEMA_ID_BRACED_ATTR)?.[1];
-  if (braced) return normalizeTableSchemaId(braced);
+const extractReviewObject = (openingTag: string): string | undefined =>
+  openingTag.match(REVIEW_OBJECT_ATTR)?.[1];
 
-  const doubleQuoted = openingTag.match(TABLE_SCHEMA_ID_DOUBLE_QUOTED_ATTR)?.[1];
-  if (doubleQuoted) return normalizeTableSchemaId(doubleQuoted);
+const extractReviewField = (
+  reviewObject: string,
+  fieldName: string,
+): string | undefined => {
+  const doubleQuoted = reviewObject.match(
+    new RegExp(`${fieldName}\\s*:\\s*"([^"]+)"`),
+  )?.[1];
+  if (doubleQuoted?.trim()) return doubleQuoted.trim();
 
-  const singleQuoted = openingTag.match(TABLE_SCHEMA_ID_SINGLE_QUOTED_ATTR)?.[1];
-  if (singleQuoted) return normalizeTableSchemaId(singleQuoted);
+  const singleQuoted = reviewObject.match(
+    new RegExp(`${fieldName}\\s*:\\s*'([^']+)'`),
+  )?.[1];
+  if (singleQuoted?.trim()) return singleQuoted.trim();
+
+  const numeric = reviewObject.match(
+    new RegExp(`${fieldName}\\s*:\\s*(-?\\d+(?:\\.\\d+)?)`),
+  )?.[1];
+  if (numeric?.trim()) return numeric.trim();
 
   return undefined;
 };
 
-const extractTableSchemaName = (openingTag: string): string | undefined => {
-  const bracedQuoted = openingTag.match(TABLE_SCHEMA_NAME_BRACED_QUOTED_ATTR)?.[1];
-  if (bracedQuoted?.trim()) return bracedQuoted.trim();
+const extractTableSchemaReview = (
+  openingTag: string,
+): {
+  tableSchemaId: string;
+  tableSchemaName?: string;
+  tableSchemaRating?: string;
+} | null => {
+  const reviewObject = extractReviewObject(openingTag);
+  if (!reviewObject) return null;
 
-  const doubleQuoted = openingTag.match(TABLE_SCHEMA_NAME_DOUBLE_QUOTED_ATTR)?.[1];
-  if (doubleQuoted?.trim()) return doubleQuoted.trim();
+  const reviewType = extractReviewField(reviewObject, "type");
+  if (reviewType !== "table-schema") return null;
 
-  const singleQuoted = openingTag.match(TABLE_SCHEMA_NAME_SINGLE_QUOTED_ATTR)?.[1];
-  if (singleQuoted?.trim()) return singleQuoted.trim();
+  const reviewId = extractReviewField(reviewObject, "id");
+  if (!reviewId) return null;
 
-  const braced = openingTag.match(TABLE_SCHEMA_NAME_BRACED_ATTR)?.[1];
-  if (braced?.trim()) return braced.trim();
+  const reviewName = extractReviewField(reviewObject, "name");
+  const reviewRating = extractReviewField(reviewObject, "rating");
 
-  return undefined;
-};
-
-const extractTableSchemaRating = (openingTag: string): string | undefined => {
-  const bracedQuoted = openingTag.match(
-    TABLE_SCHEMA_RATING_BRACED_QUOTED_ATTR,
-  )?.[1];
-  if (bracedQuoted?.trim()) return bracedQuoted.trim();
-
-  const doubleQuoted = openingTag.match(
-    TABLE_SCHEMA_RATING_DOUBLE_QUOTED_ATTR,
-  )?.[1];
-  if (doubleQuoted?.trim()) return doubleQuoted.trim();
-
-  const singleQuoted = openingTag.match(
-    TABLE_SCHEMA_RATING_SINGLE_QUOTED_ATTR,
-  )?.[1];
-  if (singleQuoted?.trim()) return singleQuoted.trim();
-
-  const braced = openingTag.match(TABLE_SCHEMA_RATING_BRACED_ATTR)?.[1];
-  if (braced?.trim()) return braced.trim();
-
-  return undefined;
+  return {
+    tableSchemaId: normalizeTableSchemaId(reviewId),
+    tableSchemaName: reviewName,
+    tableSchemaRating: reviewRating,
+  };
 };
 
 const parseTableSchemaRating = (value: string | undefined): number | undefined => {
@@ -195,9 +173,10 @@ export const extractTableSchemaSectionsWithOffsets = (
     if (tagEnd === -1) break;
 
     const openingTag = raw.slice(openIndex, tagEnd + 1);
-    const matchingTableSchemaId = extractTableSchemaId(openingTag);
-    const tableSchemaName = extractTableSchemaName(openingTag);
-    const tableSchemaRating = extractTableSchemaRating(openingTag);
+    const tableSchemaReview = extractTableSchemaReview(openingTag);
+    const matchingTableSchemaId = tableSchemaReview?.tableSchemaId;
+    const tableSchemaName = tableSchemaReview?.tableSchemaName;
+    const tableSchemaRating = tableSchemaReview?.tableSchemaRating;
     const isSelfClosing = /\/\s*>$/.test(openingTag);
 
     if (!matchingTableSchemaId) {

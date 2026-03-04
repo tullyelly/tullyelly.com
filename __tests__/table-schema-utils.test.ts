@@ -15,16 +15,19 @@ import {
 
 describe("getTableSchemaIdAttribute", () => {
   it("returns the normalized tableSchemaId attribute format", () => {
-    expect(getTableSchemaIdAttribute(" 42 ")).toBe("tableSchemaId={42}");
+    expect(getTableSchemaIdAttribute(" 42 ")).toBe(
+      'review={{ type: "table-schema", id: "42" }}',
+    );
   });
 });
 
 describe("extractTableSchemaSectionsWithOffsets", () => {
-  it("extracts sections with braced, double-quoted, and single-quoted ids", () => {
-    const blockA = `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={1} tableSchemaName={"Pizza Shack"} tableSchemaRating={"8.5/10"}>\n  Day one\n</ReleaseSection>`;
-    const blockB = `<ReleaseSection alterEgo="unclejimmy" tableSchemaId="2" tableSchemaName="Burger Barn" tableSchemaRating="7.0">\n  Day two\n</ReleaseSection>`;
-    const blockC = `<ReleaseSection alterEgo="unclejimmy" tableSchemaId='1' tableSchemaName='Pizza Shack' tableSchemaRating='9/10'>\n  Day three\n</ReleaseSection>`;
-    const raw = `${blockA}\n\n${blockB}\n\n${blockC}`;
+  it("extracts sections with review objects and ignores non table-schema reviews", () => {
+    const blockA = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: 1, name: "Pizza Shack", rating: "8.5/10" }}>\n  Day one\n</ReleaseSection>`;
+    const blockB = `<ReleaseSection alterEgo="unclejimmy" review={{ type: 'table-schema', id: "2", name: 'Burger Barn', rating: '7.0' }}>\n  Day two\n</ReleaseSection>`;
+    const blockC = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: "1", name: "Pizza Shack", rating: "9/10" }}>\n  Day three\n</ReleaseSection>`;
+    const blockD = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "lcs", id: "not-a-restaurant", name: "Card Shop", rating: "9.9" }}>\n  Skip\n</ReleaseSection>`;
+    const raw = `${blockA}\n\n${blockB}\n\n${blockC}\n\n${blockD}`;
 
     const sections = extractTableSchemaSectionsWithOffsets(raw, "1");
 
@@ -46,7 +49,7 @@ describe("getTableSchemaSections", () => {
         url: "/shaolin/later-visit",
         date: "2026-02-16",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={1} tableSchemaName="Pizza Shack" tableSchemaRating="9/10">Later</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: "1", name: "Pizza Shack", rating: "9/10" }}>Later</ReleaseSection>`,
         },
       },
       {
@@ -55,7 +58,7 @@ describe("getTableSchemaSections", () => {
         url: "/shaolin/earlier-visit",
         date: "2026-02-15",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={1} tableSchemaName="Pizza Shack" tableSchemaRating="8.5/10">Earlier</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: "1", name: "Pizza Shack", rating: "8.5/10" }}>Earlier</ReleaseSection>`,
         },
       },
     ];
@@ -129,7 +132,7 @@ describe("getAllTableSchemaSummaries", () => {
         url: "/shaolin/pizza-early",
         date: "2026-02-14",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={1} tableSchemaRating="8.0">Visit</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: 1, rating: "8.0" }}>Visit</ReleaseSection>`,
         },
       },
       {
@@ -138,7 +141,7 @@ describe("getAllTableSchemaSummaries", () => {
         url: "/shaolin/burger-late",
         date: "2026-02-17",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={2} tableSchemaName="Burger Barn" tableSchemaRating="7.5/10">Visit</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: 2, name: "Burger Barn", rating: "7.5/10" }}>Visit</ReleaseSection>`,
         },
       },
       {
@@ -147,7 +150,7 @@ describe("getAllTableSchemaSummaries", () => {
         url: "/shaolin/pizza-late",
         date: "2026-02-16",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={1} tableSchemaName="Pizza Shack" tableSchemaRating="9/10">Visit</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: 1, name: "Pizza Shack", rating: "9/10" }}>Visit</ReleaseSection>`,
         },
       },
     ];
@@ -174,7 +177,7 @@ describe("getTableSchemaPageData", () => {
         url: "/shaolin/pizza",
         date: "2026-02-14",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tableSchemaId={1} tableSchemaName="Pizza Shack" tableSchemaRating="9/10">Visit</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: 1, name: "Pizza Shack", rating: "9/10" }}>Visit</ReleaseSection>`,
         },
       },
     ];

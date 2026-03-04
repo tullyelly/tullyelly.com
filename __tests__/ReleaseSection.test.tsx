@@ -58,52 +58,79 @@ describe("ReleaseSection", () => {
     expect(container.querySelector(".relative")).toBeNull();
   });
 
-  it("renders lcs details with optional rating when lcs props are provided", async () => {
+  it("renders lcs details from the unified review prop", async () => {
     const ui = await ReleaseSection({
       ...baseProps,
-      lcsName: "Noblesville Sports Cards",
-      lcsUrl: "https://noblesvillesportscards.example.com",
-      lcsRating: "9.2/10",
+      review: {
+        type: "lcs",
+        id: "noblesville-sports-cards",
+        name: "Noblesville Sports Cards",
+        url: "https://noblesvillesportscards.example.com",
+        rating: "9.2/10",
+      },
     });
     const { container } = render(ui);
 
-    expect(screen.getByText("Card Shop:")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent ===
+          "Card Shop: Noblesville Sports Cards (9.2/10)",
+      ),
+    ).toBeInTheDocument();
     const shopLink = screen.getByText("Noblesville Sports Cards").closest("a");
     expect(shopLink).toBeInTheDocument();
     expect(shopLink).toHaveAttribute(
       "href",
       "https://noblesvillesportscards.example.com",
     );
-    expect(shopLink).toHaveAttribute("target", "_blank");
-    expect(shopLink).toHaveAttribute("rel", "noopener noreferrer");
-    expect(screen.getByText("(9.2/10)")).toBeInTheDocument();
+    expect(screen.queryByText("Legacy Shop")).toBeNull();
 
     const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper.className).toContain("border-double");
     expect(wrapper.className).toContain("border-[var(--tcdb-wood-dark)]");
+
+    const content = container.querySelector(
+      "[data-review-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-review-type", "lcs");
+    expect(content).toHaveAttribute(
+      "data-review-id",
+      "noblesville-sports-cards",
+    );
+    expect(content).toHaveAttribute(
+      "data-review-name",
+      "Noblesville Sports Cards",
+    );
+    expect(content).toHaveAttribute("data-review-rating", "9.2/10");
   });
 
   it("renders table schema details without release visuals and without loading scroll data", async () => {
     const ui = await ReleaseSection({
       ...baseProps,
-      tableSchemaId: "table-schema-42",
-      tableSchemaName: "Pizza Shack",
-      tableSchemaRating: "9/10",
-      tableSchemaUrl: "https://pizzashack.example.com",
+      review: {
+        type: "table-schema",
+        id: "table-schema-42",
+        name: "Pizza Shack",
+        url: "https://pizzashack.example.com",
+        rating: "9/10",
+      },
     });
     const { container } = render(ui);
 
     expect(
-      screen.getByText((_, node) => node?.textContent === "Pizza Shack: 9/10"),
+      screen.getByText(
+        (_, node) => node?.textContent === "Table Schema: Pizza Shack (9/10)",
+      ),
     ).toBeInTheDocument();
-    const restaurantLink = screen.getByText("Pizza Shack").closest("a");
-    expect(restaurantLink).toBeInTheDocument();
-    expect(restaurantLink).toHaveAttribute(
+    const tableSchemaLink = screen.getByText("Pizza Shack").closest("a");
+    expect(tableSchemaLink).toBeInTheDocument();
+    expect(tableSchemaLink).toHaveAttribute(
       "href",
       "https://pizzashack.example.com",
     );
-    expect(restaurantLink).toHaveAttribute("target", "_blank");
-    expect(restaurantLink).toHaveAttribute("rel", "noopener noreferrer");
+    expect(tableSchemaLink).toHaveAttribute("target", "_blank");
+    expect(tableSchemaLink).toHaveAttribute("rel", "noopener noreferrer");
     expect(getScrollMock).not.toHaveBeenCalled();
     expect(container.querySelector("div.relative")).toBeNull();
     expect(container.querySelector(".tcdb-frame")).toBeNull();
@@ -113,16 +140,53 @@ describe("ReleaseSection", () => {
     expect(wrapper.className).toContain("border-[var(--table-schema-spice)]");
 
     const content = container.querySelector(
-      "[data-table-schema-name]",
+      "[data-review-name]",
     ) as HTMLDivElement;
     expect(content).toBeInTheDocument();
-    expect(content).toHaveAttribute("data-table-schema-id", "table-schema-42");
-    expect(content).toHaveAttribute("data-table-schema-name", "Pizza Shack");
-    expect(content).toHaveAttribute("data-table-schema-rating", "9/10");
-    expect(content).toHaveAttribute(
-      "data-table-schema-url",
-      "https://pizzashack.example.com",
+    expect(content).toHaveAttribute("data-review-type", "table-schema");
+    expect(content).toHaveAttribute("data-review-id", "table-schema-42");
+    expect(content).toHaveAttribute("data-review-name", "Pizza Shack");
+    expect(content).toHaveAttribute("data-review-rating", "9/10");
+  });
+
+  it("renders save point details from the unified review prop", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      review: {
+        type: "save-point",
+        id: "chrono-trigger",
+        name: "Chrono Trigger",
+        url: "https://example.com/chrono-trigger",
+        rating: "10/10",
+      },
+    });
+    const { container } = render(ui);
+
+    expect(
+      screen.getByText(
+        (_, node) => node?.textContent === "Save Point: Chrono Trigger (10/10)",
+      ),
+    ).toBeInTheDocument();
+    const savePointLink = screen.getByText("Chrono Trigger").closest("a");
+    expect(savePointLink).toBeInTheDocument();
+    expect(savePointLink).toHaveAttribute(
+      "href",
+      "https://example.com/chrono-trigger",
     );
+
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper).toHaveStyle({
+      border: "2px solid var(--save-point-color, #7c3aed)",
+    });
+
+    const content = container.querySelector(
+      "[data-review-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-review-type", "save-point");
+    expect(content).toHaveAttribute("data-review-id", "chrono-trigger");
+    expect(content).toHaveAttribute("data-review-name", "Chrono Trigger");
+    expect(content).toHaveAttribute("data-review-rating", "10/10");
   });
 
   it("wraps content with a release container and link tab when releaseId is provided", async () => {
@@ -300,26 +364,36 @@ describe("ReleaseSection", () => {
     ).rejects.toThrow("either releaseId or tcdbTradeId");
   });
 
-  it("throws when both releaseId and tableSchemaId are passed", async () => {
+  it("throws when both releaseId and review are passed", async () => {
     await expect(
       // @ts-expect-error - runtime guard should reject mutually exclusive props.
       ReleaseSection({
         ...baseProps,
         releaseId: "12",
-        tableSchemaId: "table-schema-42",
+        review: {
+          type: "table-schema" as const,
+          id: "table-schema-42",
+          name: "Pizza Shack",
+          rating: "9/10",
+        },
       }),
-    ).rejects.toThrow("either releaseId or tableSchemaId");
+    ).rejects.toThrow("either releaseId or review");
   });
 
-  it("throws when both tcdbTradeId and tableSchemaId are passed", async () => {
+  it("throws when both tcdbTradeId and review are passed", async () => {
     await expect(
       // @ts-expect-error - runtime guard should reject mutually exclusive props.
       ReleaseSection({
         ...baseProps,
         tcdbTradeId: "359632",
-        tableSchemaId: "table-schema-42",
+        review: {
+          type: "table-schema" as const,
+          id: "table-schema-42",
+          name: "Pizza Shack",
+          rating: "9/10",
+        },
       }),
-    ).rejects.toThrow("either tcdbTradeId or tableSchemaId");
+    ).rejects.toThrow("either tcdbTradeId or review");
   });
 
   it("tcdb trade without partner renders tab without partner suffix and no bottom partner row", async () => {
