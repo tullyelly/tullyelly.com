@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
 
+import FullBleedPage from "@/components/layout/FullBleedPage";
 import TableSchemaSections from "@/components/unclejimmy/TableSchemaSections";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
@@ -68,8 +69,11 @@ export default async function UncleJimmyTableSchemaIdPage({
   const { sections, summary, tableSchemaName } = tableSchemaData;
 
   return (
-    <article className="max-w-3xl mx-auto space-y-10 mt-8 md:mt-10">
-      <Card as="section" className="space-y-8 p-6 md:p-8">
+    <FullBleedPage>
+      <Card
+        as="section"
+        className="space-y-8 border-0 shadow-none px-1 py-6 md:p-8"
+      >
         <header className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
             {tableSchemaName}
@@ -80,6 +84,6 @@ export default async function UncleJimmyTableSchemaIdPage({
         </header>
         <TableSchemaSections sections={sections} />
       </Card>
-    </article>
+    </FullBleedPage>
   );
 }
