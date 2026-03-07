@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import FullBleedPage from "@/components/layout/FullBleedPage";
+import ReleaseSection from "@/components/mdx/ReleaseSection";
 import { MdxRenderer } from "@/components/mdx-renderer";
+import {
+  ReleaseSectionColoursProvider,
+  useNextRainbowColour,
+} from "@/components/providers/ReleaseSectionColoursProvider";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
 import { getTcdbTradeSections, type TradeSection } from "@/lib/tcdb-trades";
@@ -11,9 +17,20 @@ import { getTcdbTradeSections, type TradeSection } from "@/lib/tcdb-trades";
 type Params = { tradeId: string };
 
 type RenderableSection = TradeSection & { code: string };
+type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+const RELEASE_SECTION_PATTERN = /<ReleaseSection\b/g;
+
+const countReleaseSections = (source: string): number =>
+  source.match(RELEASE_SECTION_PATTERN)?.length ?? 0;
+
+function RainbowReleaseSection(props: ReleaseSectionProps) {
+  const rainbowColour = useNextRainbowColour();
+  return <ReleaseSection {...props} rainbowColour={rainbowColour} />;
+}
 
 export async function generateMetadata({
   params,
@@ -52,6 +69,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const hasOriginal = originals.length > 0;
   const hasCompleted = completeds.length > 0;
   const hasBoth = hasOriginal && hasCompleted;
+  const totalReleaseSections = compiledSections.reduce(
+    (total, section) => total + countReleaseSections(section.mdx),
+    0,
+  );
 
   const renderSection = (section: RenderableSection, index: number) => {
     const label =
@@ -68,7 +89,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             {label}
           </Link>
         </h2>
-        <MdxRenderer code={section.code} />
+        <MdxRenderer
+          code={section.code}
+          components={{ ReleaseSection: RainbowReleaseSection }}
+        />
         <Link href={section.postUrl} className="link-blue text-sm">
           View chronicle post
         </Link>
@@ -87,34 +111,36 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             {`TCDB Trade ${tradeId}`}
           </h1>
         </header>
-        <div className="space-y-10">
-          {hasBoth ? (
-            <div className="flex flex-wrap gap-3 text-sm">
-              <Link href="#original" className="link-blue">
-                Jump to Package Sent
-              </Link>
-              <Link href="#completed" className="link-blue">
-                Jump to Package Received
-              </Link>
-            </div>
-          ) : null}
-          {hasOriginal ? (
-            <div className="space-y-10">{originals.map(renderSection)}</div>
-          ) : null}
-          {hasCompleted ? (
-            <div className="space-y-10">{completeds.map(renderSection)}</div>
-          ) : null}
-          {!hasOriginal ? (
-            <p className="text-sm text-muted-foreground">
-              Original trade section not found.
-            </p>
-          ) : null}
-          {!hasCompleted ? (
-            <p className="text-sm text-muted-foreground">
-              Completed trade section not found.
-            </p>
-          ) : null}
-        </div>
+        <ReleaseSectionColoursProvider totalSections={totalReleaseSections}>
+          <div className="space-y-10">
+            {hasBoth ? (
+              <div className="flex flex-wrap gap-3 text-sm">
+                <Link href="#original" className="link-blue">
+                  Jump to Package Sent
+                </Link>
+                <Link href="#completed" className="link-blue">
+                  Jump to Package Received
+                </Link>
+              </div>
+            ) : null}
+            {hasOriginal ? (
+              <div className="space-y-10">{originals.map(renderSection)}</div>
+            ) : null}
+            {hasCompleted ? (
+              <div className="space-y-10">{completeds.map(renderSection)}</div>
+            ) : null}
+            {!hasOriginal ? (
+              <p className="text-sm text-muted-foreground">
+                Original trade section not found.
+              </p>
+            ) : null}
+            {!hasCompleted ? (
+              <p className="text-sm text-muted-foreground">
+                Completed trade section not found.
+              </p>
+            ) : null}
+          </div>
+        </ReleaseSectionColoursProvider>
       </Card>
     </FullBleedPage>
   );

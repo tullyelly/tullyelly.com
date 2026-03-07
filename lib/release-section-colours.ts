@@ -8,8 +8,8 @@ export const RAINBOW_COLOURS = [
   "#8F00FF", // violet
 ] as const;
 
-const RAINBOW_ORDER = new Map(
-  RAINBOW_COLOURS.map((colour, index) => [colour, index] as const),
+const RAINBOW_ORDER = new Map<string, number>(
+  RAINBOW_COLOURS.map((colour, index) => [colour, index]),
 );
 
 const toSafeTotal = (total: number): number => {

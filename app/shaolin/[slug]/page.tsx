@@ -7,7 +7,7 @@ import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
 import { ChroniclePostTailCards } from "@/components/chronicles/ChroniclePostTailCards";
 import { ChroniclePrevNextNav } from "@/components/chronicles/ChroniclePrevNextNav";
 import { CommentsSection } from "@/components/chronicles/CommentsSection";
-import { MdxRenderer } from "@/components/mdx-renderer";
+import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
 
@@ -58,7 +58,7 @@ function PostContent({ slug }: { slug: string }) {
             </h1>
           </header>
           <div className="space-y-4">
-            <MdxRenderer code={post.body.code} />
+            <ChronicleMdxRenderer code={post.body.code} source={post.body.raw} />
             <ChronicleSignature
               title={post.title}
               date={post.date}
