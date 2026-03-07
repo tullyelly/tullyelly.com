@@ -61,3 +61,20 @@ export function buildRainbowColourList(total: number): string[] {
   const selected = pickRandomUniqueColours(safeTotal);
   return sortByRainbowOrder(selected);
 }
+
+/**
+ * Creates a sequential colour getter for one page/render pass.
+ * Consumers should create one getter and share it across all eligible
+ * ReleaseSection renders in that tree.
+ */
+export function createNextRainbowColour(total: number): () => string | undefined {
+  const colours = buildRainbowColourList(total);
+  let index = 0;
+
+  return () => {
+    if (colours.length === 0) return undefined;
+    const next = colours[index % colours.length];
+    index += 1;
+    return next;
+  };
+}

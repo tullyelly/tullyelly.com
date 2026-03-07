@@ -176,9 +176,7 @@ describe("ReleaseSection", () => {
 
     const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
-    expect(wrapper).toHaveStyle({
-      border: "2px solid var(--save-point-color, #7c3aed)",
-    });
+    expect(wrapper).toHaveStyle({ borderColor: toRgb("#0077C0") });
 
     const content = container.querySelector(
       "[data-review-name]",
@@ -240,14 +238,19 @@ describe("ReleaseSection", () => {
       label: "Minor Move",
     });
 
-    const ui = await ReleaseSection({ ...baseProps, releaseId: "12" });
+    const rainbowColour = "#FF0000";
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "12",
+      rainbowColour,
+    });
     const { container } = render(ui);
 
     expect(getScrollMock).toHaveBeenCalledWith("12");
 
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
-    expect(wrapper).toHaveStyle({ borderColor: toRgb("#00471B") });
+    expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
     expect(wrapper.className).toContain("mb-10");
 
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
@@ -268,26 +271,29 @@ describe("ReleaseSection", () => {
     expect(tab.className).toContain(
       "focus-visible:!text-[color:var(--tab-hover-fg",
     );
-    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#00471B");
-    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#EEE1C6");
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
+    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
     expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
-    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#00471B");
+    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe(rainbowColour);
 
     const content = wrapper.querySelector(
       "[data-release-name]",
     ) as HTMLDivElement;
     expect(content).toHaveAttribute("data-release-name", "Minor Move");
     expect(content).toHaveAttribute("data-release-type", "year");
-    expect(content).toHaveAttribute("data-release-color", "#00471B");
+    expect(content).toHaveAttribute("data-release-color", rainbowColour);
+    expect(content).toHaveAttribute("data-rainbow-colour", rainbowColour);
 
     expect(container.querySelector("hr")).toBeNull();
   });
 
   it("does not call getScroll and renders tcdb trade tab + partner link", async () => {
+    const rainbowColour = "#00FF00";
     const ui = await ReleaseSection({
       ...baseProps,
       tcdbTradeId: "359632",
       tcdbTradePartner: "collect-a-set",
+      rainbowColour,
     });
     const { container } = render(ui);
 
@@ -295,7 +301,8 @@ describe("ReleaseSection", () => {
 
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
-    expect(wrapper.className).toContain("tcdb-border");
+    expect(wrapper.className).not.toContain("tcdb-border");
+    expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
 
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
@@ -437,7 +444,7 @@ describe("ReleaseSection", () => {
     ).rejects.toThrow("either tcdbTradeId or review");
   });
 
-  it("ignores rainbowColour when releaseId is present", async () => {
+  it("applies rainbowColour when releaseId is present", async () => {
     getScrollMock.mockResolvedValue({
       id: "12",
       release_name: "Minor Move",
@@ -457,19 +464,19 @@ describe("ReleaseSection", () => {
     const content = container.querySelector(
       "[data-release-color]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-release-color", "#00471B");
-    expect(content).toHaveAttribute("data-release-text-color", "#EEE1C6");
-    expect(content).not.toHaveAttribute("data-rainbow-colour");
-    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe("#00471B");
+    expect(content).toHaveAttribute("data-release-color", "#FF0000");
+    expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
+    expect(content).toHaveAttribute("data-rainbow-colour", "#FF0000");
+    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe("#FF0000");
 
     const tagPill = screen
       .getByText("#mark2")
       .closest("a") as HTMLAnchorElement;
-    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe("#00471B");
-    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#EEE1C6");
+    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe("#FF0000");
+    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
   });
 
-  it("ignores rainbowColour when tcdbTradeId is present", async () => {
+  it("applies rainbowColour when tcdbTradeId is present", async () => {
     const ui = await ReleaseSection({
       ...baseProps,
       tcdbTradeId: "359632",
@@ -480,16 +487,16 @@ describe("ReleaseSection", () => {
     const content = container.querySelector(
       "[data-release-color]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-release-color", "#B65A36");
-    expect(content).toHaveAttribute("data-release-text-color", "#F2E5D6");
-    expect(content).not.toHaveAttribute("data-rainbow-colour");
-    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe("#B65A36");
+    expect(content).toHaveAttribute("data-release-color", "#FF0000");
+    expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
+    expect(content).toHaveAttribute("data-rainbow-colour", "#FF0000");
+    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe("#FF0000");
 
     const tagPill = screen
       .getByText("#mark2")
       .closest("a") as HTMLAnchorElement;
-    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe("#B65A36");
-    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#F2E5D6");
+    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe("#FF0000");
+    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
   });
 
   it("tcdb trade without partner renders tab without partner suffix and no bottom partner row", async () => {
@@ -522,9 +529,11 @@ describe("ReleaseSection", () => {
       label: "Minor Move",
     });
 
+    const rainbowColour = "#EC008C";
     const ui = await ReleaseSection({
       ...baseProps,
       releaseId: "12",
+      rainbowColour,
       children: (
         <>
           <p>hello world</p>
@@ -538,7 +547,7 @@ describe("ReleaseSection", () => {
       "[data-release-color]",
     ) as HTMLDivElement;
     expect(content.style.getPropertyValue("--mdx-divider-color")).toBe(
-      "#00471B",
+      rainbowColour,
     );
 
     const divider = content.querySelector("hr") as HTMLHRElement;
@@ -564,9 +573,11 @@ describe("ReleaseSection", () => {
       label: "Minor Move",
     });
 
+    const rainbowColour = "#EC008C";
     const ui = await ReleaseSection({
       ...baseProps,
       releaseId: "12",
+      rainbowColour,
       children: (
         <List>
           <ListItem>alpha</ListItem>
@@ -579,7 +590,7 @@ describe("ReleaseSection", () => {
       "[data-release-color]",
     ) as HTMLDivElement;
     expect(content.style.getPropertyValue("--mdx-marker-color")).toBe(
-      "#00471B",
+      rainbowColour,
     );
 
     const list = container.querySelector("ul") as HTMLUListElement;
@@ -590,13 +601,13 @@ describe("ReleaseSection", () => {
     const tagPill = screen
       .getByText("#mark2")
       .closest("a") as HTMLAnchorElement;
-    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe("#00471B");
-    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#EEE1C6");
+    expect(tagPill.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
+    expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
     expect(tagPill.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
-    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe("#00471B");
+    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe(rainbowColour);
   });
 
-  it("uses Bucks purple for chore releases", async () => {
+  it("uses rainbow colour for chore releases", async () => {
     getScrollMock.mockResolvedValue({
       id: "41",
       release_name: "Chore Cleanup",
@@ -606,28 +617,33 @@ describe("ReleaseSection", () => {
       label: "Chore Cleanup",
     });
 
-    const ui = await ReleaseSection({ ...baseProps, releaseId: "41" });
+    const rainbowColour = "#123456";
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "41",
+      rainbowColour,
+    });
     const { container } = render(ui);
 
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
-    expect(wrapper).toHaveStyle({ borderColor: toRgb("#702F8A") });
+    expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
 
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
-    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#702F8A");
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
     expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
     expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
-    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#702F8A");
+    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe(rainbowColour);
 
     const content = wrapper.querySelector(
       "[data-release-color]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-release-color", "#702F8A");
+    expect(content).toHaveAttribute("data-release-color", rainbowColour);
     expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
   });
 
-  it("uses the chrome foil palette for wax releases", async () => {
+  it("does not apply wax-specific chrome classes when rainbow is provided", async () => {
     getScrollMock.mockResolvedValue({
       id: "77",
       release_name: "Foil Drop",
@@ -637,35 +653,40 @@ describe("ReleaseSection", () => {
       label: "Foil Drop",
     });
 
-    const ui = await ReleaseSection({ ...baseProps, releaseId: "77" });
+    const rainbowColour = "#008000";
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "77",
+      rainbowColour,
+    });
     const { container } = render(ui);
 
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
-    expect(wrapper.className).toContain("chrome-foil-border");
-    expect(wrapper).toHaveStyle({ borderColor: toRgb("#AEB4BD") });
+    expect(wrapper.className).not.toContain("chrome-foil-border");
+    expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
 
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
-    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#AEB4BD");
-    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#0C1B0C");
-    expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#F7F9FC");
-    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#0C1B0C");
-    expect(tab.className).toContain("chrome-foil-shimmer");
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
+    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
+    expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
+    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe(rainbowColour);
+    expect(tab.className).not.toContain("chrome-foil-shimmer");
 
     const content = wrapper.querySelector(
       "[data-release-color]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-release-color", "#AEB4BD");
-    expect(content).toHaveAttribute("data-release-text-color", "#0C1B0C");
+    expect(content).toHaveAttribute("data-release-color", rainbowColour);
+    expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
 
     const tagPill = screen
       .getByText("#mark2")
       .closest("a") as HTMLAnchorElement;
-    expect(tagPill.className).toContain("chrome-foil-shimmer");
+    expect(tagPill.className).not.toContain("chrome-foil-shimmer");
   });
 
-  it("falls back to the archived color when release_type is unknown and divider can be suppressed", async () => {
+  it("falls back to the base rainbow default when release_type is unknown", async () => {
     getScrollMock.mockResolvedValue({
       id: "99",
       release_name: "Mystery",
@@ -684,18 +705,18 @@ describe("ReleaseSection", () => {
 
     const wrapper = container.querySelector("div.relative") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
-    expect(wrapper).toHaveStyle({ borderColor: toRgb("#EEE1C6") });
+    expect(wrapper).toHaveStyle({ borderColor: toRgb("#0077C0") });
     expect(wrapper.className).not.toContain("mb-10");
 
     const content = wrapper.querySelector(
       "[data-release-color]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-release-color", "#EEE1C6");
+    expect(content).toHaveAttribute("data-release-color", "#0077C0");
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
-    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#EEE1C6");
-    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#000000");
-    expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#000000");
-    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#EEE1C6");
+    expect(tab.style.getPropertyValue("--tab-bg")).toBe("#0077C0");
+    expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
+    expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
+    expect(tab.style.getPropertyValue("--tab-hover-fg")).toBe("#0077C0");
     expect(tab.className).toContain("!text-[color:var(--tab-fg");
     expect(tab.className).toContain("hover:!text-[color:var(--tab-hover-fg");
 

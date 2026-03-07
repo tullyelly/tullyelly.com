@@ -1,6 +1,7 @@
 import {
   RAINBOW_COLOURS,
   buildRainbowColourList,
+  createNextRainbowColour,
 } from "@/lib/release-section-colours";
 
 const rainbowIndexByColour = new Map<string, number>(
@@ -106,5 +107,25 @@ describe("release-section-colours", () => {
     const colours = buildRainbowColourList(6);
     expect(colours).toHaveLength(6);
     expect(new Set(colours).size).toBe(6);
+  });
+
+  it("returns sequential colours and wraps using createNextRainbowColour", () => {
+    const next = createNextRainbowColour(8);
+
+    expect(next()).toBe("#FF0000");
+    expect(next()).toBe("#FF7F00");
+    expect(next()).toBe("#FFFF00");
+    expect(next()).toBe("#00FF00");
+    expect(next()).toBe("#0000FF");
+    expect(next()).toBe("#4B0082");
+    expect(next()).toBe("#8F00FF");
+    expect(next()).toBe("#FF0000");
+    expect(next()).toBe("#FF0000");
+  });
+
+  it("returns undefined from createNextRainbowColour when total is 0 or below", () => {
+    const next = createNextRainbowColour(0);
+    expect(next()).toBeUndefined();
+    expect(next()).toBeUndefined();
   });
 });

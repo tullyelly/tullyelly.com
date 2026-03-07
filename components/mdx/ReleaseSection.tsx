@@ -3,11 +3,7 @@ import Link from "next/link";
 import { allPosts } from "contentlayer/generated";
 
 import { Badge } from "@/app/ui/Badge";
-import {
-  BADGE_VARIANTS,
-  getBadgeClass,
-  type BadgeVariant,
-} from "@/app/ui/badge-maps";
+import { getBadgeClass } from "@/app/ui/badge-maps";
 import {
   PILL_BLUE,
   PILL_BLACK,
@@ -19,10 +15,10 @@ import { getTradeIdAttribute } from "@/lib/tcdb-trades";
 
 /*
 Spike note (ReleaseSection styling)
-- release_type → border colors: we reuse badge maps (e.g., planned → Great Lakes Blue, wax → Topps Chrome foil) and parse the badge bg classes into hex values, so the border and tab always align with badge semantics.
-- Source of truth: BADGE_VARIANTS already centralizes palette + tokens across the app; using it here prevents divergence between badges, tabs, and list/table views.
+- Color source: border, tab, divider, bullets, and pills all resolve from the
+  rainbow assignment value passed to `rainbowColour`.
 - Tab integration: the tab sits inside the container with 4px borders; right border is removed and radii flattened on the right edge so it visually fuses with the parent border while still being a link.
-- Rejected: hard-coded color map for ReleaseSection (would drift from badges) and pseudo-element overlays for the tab (added complexity and layering issues).
+- Rejected: release-type palette branching and ad hoc per-section color maps.
 */
 
 export type ReviewType = "lcs" | "table-schema" | "save-point";
@@ -84,35 +80,6 @@ type ReleaseSectionProps =
   | ReleaseSectionWithReview
   | ReleaseSectionWithoutReleaseOrReview;
 
-const RELEASE_TYPE_VARIANTS: Record<string, BadgeVariant> = {
-  hotfix: "hotfix",
-  patch: "hotfix",
-  minor: "minor",
-  major: "major",
-  planned: "planned",
-  released: "released",
-  chore: "chore",
-  classic: "classic",
-  year: "year",
-  tcdb: "tcdb",
-  wax: "wax",
-};
-
-const COLOR_OVERRIDES: Record<string, string> = {
-  "brand-bucksGreen": "#00471B",
-  "brand-creamCityCream": "#EEE1C6",
-  "brand-greatLakesBlue": "#0077C0",
-  "var(--tc-chrome-foil)": "#AEB4BD",
-  "var(--tc-chrome-silver)": "#D6D9DE",
-  "var(--tc-chrome-hi)": "#F7F9FC",
-  "var(--tc-chrome-mid)": "#D6D9DE",
-  "var(--tc-chrome-lo)": "#AEB4BD",
-  "var(--tc-chrome-shadow)": "#7E8792",
-  "var(--ink)": "#0C1B0C",
-  white: "#FFFFFF",
-  black: "#000000",
-};
-
 function findOriginalTradePost(tradeId: string) {
   const matches = allPosts
     .filter((post) => post.body.raw.includes(getTradeIdAttribute(tradeId)))
@@ -172,75 +139,6 @@ function countTradeSections(tradeId: string): number {
   return count;
 }
 
-function parseBadgeBackgroundColor(badgeClass: string): string | null {
-  const bgMatch = badgeClass.match(/bg-((?:\[[^\]]+])|[^\s]+)/);
-  if (!bgMatch) return null;
-
-  const token =
-    bgMatch[1].startsWith("[") && bgMatch[1].endsWith("]")
-      ? bgMatch[1].slice(1, -1)
-      : bgMatch[1];
-
-  if (token in COLOR_OVERRIDES) return COLOR_OVERRIDES[token];
-  if (token.startsWith("#")) return token;
-  return null;
-}
-
-function parseBadgeTextColor(badgeClass: string): string | null {
-  const textMatch = badgeClass.match(/text-((?:\[[^\]]+])|[^\s]+)/);
-  if (!textMatch) return null;
-
-  const token =
-    textMatch[1].startsWith("[") && textMatch[1].endsWith("]")
-      ? textMatch[1].slice(1, -1)
-      : textMatch[1];
-
-  if (token in COLOR_OVERRIDES) return COLOR_OVERRIDES[token];
-  if (token.startsWith("#")) return token;
-  return null;
-}
-
-const archivedReleaseColor =
-  parseBadgeBackgroundColor(BADGE_VARIANTS.archived) ?? "#EEE1C6";
-const archivedTextColor =
-  parseBadgeTextColor(BADGE_VARIANTS.archived) ?? "#1A1A1A";
-
-function getBadgeBackgroundColor(variant: BadgeVariant): string {
-  return (
-    parseBadgeBackgroundColor(BADGE_VARIANTS[variant]) ?? archivedReleaseColor
-  );
-}
-
-function getBadgeTextColor(variant: BadgeVariant): string {
-  return parseBadgeTextColor(BADGE_VARIANTS[variant]) ?? archivedTextColor;
-}
-
-function getReleaseTypeColor(releaseType?: string): string {
-  if (!releaseType) return archivedReleaseColor;
-
-  const normalized = releaseType.toLowerCase();
-  const variant =
-    RELEASE_TYPE_VARIANTS[normalized] ||
-    (Object.prototype.hasOwnProperty.call(BADGE_VARIANTS, normalized)
-      ? (normalized as BadgeVariant)
-      : "archived");
-
-  return getBadgeBackgroundColor(variant);
-}
-
-function getReleaseTypeTextColor(releaseType?: string): string {
-  if (!releaseType) return archivedTextColor;
-
-  const normalized = releaseType.toLowerCase();
-  const variant =
-    RELEASE_TYPE_VARIANTS[normalized] ||
-    (Object.prototype.hasOwnProperty.call(BADGE_VARIANTS, normalized)
-      ? (normalized as BadgeVariant)
-      : "archived");
-
-  return getBadgeTextColor(variant);
-}
-
 function getReadableTextColor(backgroundColor: string): string {
   const normalized = backgroundColor.replace(/^#/, "");
   const fullHex =
@@ -288,8 +186,8 @@ function getReviewLabel(type: ReviewType): string {
  * ReleaseSection wraps MDX content with alter-ego tagging and optional release metadata.
  *
  * - alterEgo: required persona tag rendered as a pill.
- * - releaseId: optional scroll ID; when present, the section renders a release-colored border and a linked tab to `/mark2/shaolin-scrolls/{releaseId}` with hover inversion.
- * - tcdbTradeId: optional trade ID; when present, the section renders a release-colored border with a linked tab to the TCDB transaction.
+ * - releaseId: optional scroll ID; when present, the section renders a linked tab to `/mark2/shaolin-scrolls/{releaseId}`.
+ * - tcdbTradeId: optional trade ID; when present, the section renders a linked tab to the TCDB transaction.
  * - tcdbTradePartner: optional trade partner for TCDB trades.
  * - completed: optional completion link; only valid with tcdbTradeId; completed sections link back to the original trade post and earlier sections link to the completion post when present.
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
@@ -297,8 +195,8 @@ function getReviewLabel(type: ReviewType): string {
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
  * - guestMage: optional guest writer label rendered as a stamp.
  * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
- * - rainbowColour: optional non-release colour override from shared rainbow assignment; only applied when neither releaseId nor tcdbTradeId is present.
- * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
+ * - rainbowColour: optional rainbow assignment colour; when present, it is the only colour source for section accents, including release-linked sections.
+ * - Visual: default is plain content; with releaseId/tcdbTradeId, a bordered container and tab appear using the rainbow assignment colour.
  *
  * @example
  * ```mdx
@@ -396,7 +294,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     }
   }
 
-  const normalizedReleaseType = releaseType?.toLowerCase();
   const showTournament = Boolean(tournamentName && tournamentRecord);
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
   const showTournamentVisuals = showTournament && !showReleaseDetails;
@@ -408,57 +305,28 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     review?.rating !== undefined && `${review.rating}`.trim() !== "";
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
   const isTcdbTrade = Boolean(tcdbTradeId);
-  const normalizedRainbowColour = rainbowColour?.trim();
-  // Release-linked sections always use release-type colours; rainbow is only for
-  // metadata-style sections that do not declare releaseId or tcdbTradeId.
-  const hasRainbowOverride = Boolean(normalizedRainbowColour && !showReleaseDetails);
-  const releaseColor = showReleaseDetails
-    ? getReleaseTypeColor(releaseType)
-    : undefined;
-  const releaseTextColor = showReleaseDetails
-    ? getReleaseTypeTextColor(releaseType)
-    : undefined;
-  const resolvedSectionColor = showReleaseDetails
-    ? (releaseColor ?? archivedReleaseColor)
-    : hasRainbowOverride
-      ? normalizedRainbowColour
-      : undefined;
-  const resolvedSectionTextColor = showReleaseDetails
-    ? (releaseTextColor ?? archivedTextColor)
-    : normalizedRainbowColour
-      ? getReadableTextColor(normalizedRainbowColour)
-    : undefined;
+  // Rainbow assignment is the only accent colour source for ReleaseSection.
+  const normalizedRainbowColour = rainbowColour?.trim() || PILL_BLUE;
+  const resolvedSectionColor = normalizedRainbowColour;
+  const resolvedSectionTextColor = getReadableTextColor(resolvedSectionColor);
   const isCreamCity = resolvedSectionColor === PILL_CREAM_CITY;
-  const isChromeFoil = normalizedReleaseType === "wax";
-  const chromeHoverBackground =
-    COLOR_OVERRIDES["var(--tc-chrome-hi)"] ?? "#F7F9FC";
   const tabForegroundColor = isCreamCity
     ? PILL_BLACK
-    : (resolvedSectionTextColor ??
-      (resolvedSectionColor ? getReadableTextColor(resolvedSectionColor) : "#FFFFFF"));
+    : resolvedSectionTextColor;
   const hoverBackgroundColor =
     resolvedSectionColor
       ? isCreamCity
         ? PILL_BLACK
-        : isChromeFoil
-          ? chromeHoverBackground
-          : "#FFFFFF"
+        : "#FFFFFF"
       : "#FFFFFF";
   const hoverForegroundColor =
     resolvedSectionColor
       ? isCreamCity
         ? PILL_CREAM_CITY
-        : isChromeFoil
-          ? (resolvedSectionTextColor ?? getReadableTextColor(resolvedSectionColor))
-          : resolvedSectionColor
+        : resolvedSectionColor
       : PILL_BLUE;
-  const tagBackgroundColor =
-    resolvedSectionColor
-      ? resolvedSectionColor
-      : PILL_BLUE;
-  const tagForegroundColor =
-    resolvedSectionTextColor ??
-    (resolvedSectionColor ? getReadableTextColor(resolvedSectionColor) : "#FFFFFF");
+  const tagBackgroundColor = resolvedSectionColor;
+  const tagForegroundColor = resolvedSectionTextColor;
   const tabHref = releaseId ? `/mark2/shaolin-scrolls/${releaseId}` : tradeUrl;
   const resolvedReleaseName = tcdbTradeId
     ? tabLabel
@@ -478,9 +346,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       className="space-y-3"
       data-release-name={resolvedReleaseName ?? undefined}
       data-release-type={releaseType ?? undefined}
-      data-release-color={releaseColor}
-      data-release-text-color={releaseTextColor}
-      data-rainbow-colour={!showReleaseDetails ? normalizedRainbowColour : undefined}
+      data-release-color={resolvedSectionColor}
+      data-release-text-color={resolvedSectionTextColor}
+      data-rainbow-colour={normalizedRainbowColour}
       data-tournament-id={
         tournamentId !== undefined ? String(tournamentId) : undefined
       }
@@ -584,7 +452,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
           className={[
             "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
             pillInteractionClasses,
-            isChromeFoil ? "chrome-foil-shimmer" : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -660,9 +527,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   }
 
   const borderStyle = {
-    borderColor: isTcdbTrade
-      ? "transparent"
-      : (releaseColor ?? archivedReleaseColor),
+    borderColor: resolvedSectionColor,
     borderWidth: "4px",
   };
   const tabStyle: CSSProperties = {
@@ -680,9 +545,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
   const releaseContainerClassName = [
     "relative rounded-lg border-[4px] px-4 pt-10 pb-4 md:pt-8",
-    isChromeFoil ? "chrome-foil-border" : "",
-    isTcdbTrade ? "tcdb-border tcdb-frame-inner" : "",
-    !isTcdbTrade && divider ? "mb-10" : "",
+    divider ? "mb-10" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -698,7 +561,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
           className={[
             "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
             pillInteractionClasses,
-            isChromeFoil ? "chrome-foil-shimmer" : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -712,15 +574,5 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     </div>
   );
 
-  return (
-    <>
-      {isTcdbTrade ? (
-        <div className={divider ? "tcdb-frame mb-10" : "tcdb-frame"}>
-          {releaseContainer}
-        </div>
-      ) : (
-        releaseContainer
-      )}
-    </>
-  );
+  return <>{releaseContainer}</>;
 }

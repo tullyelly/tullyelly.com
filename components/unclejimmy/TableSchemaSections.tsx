@@ -3,12 +3,9 @@ import type { ComponentProps } from "react";
 
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import { MdxRenderer } from "@/components/mdx-renderer";
-import {
-  ReleaseSectionColoursProvider,
-  useNextRainbowColour,
-} from "@/components/providers/ReleaseSectionColoursProvider";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
+import { createNextRainbowColour } from "@/lib/release-section-colours";
 import type { TableSchemaSection } from "@/lib/table-schema";
 
 type TableSchemaSectionsProps = {
@@ -38,11 +35,6 @@ type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
 
 const countReleaseSections = (source: string): number =>
   source.match(RELEASE_SECTION_PATTERN)?.length ?? 0;
-
-function RainbowReleaseSection(props: ReleaseSectionProps) {
-  const rainbowColour = useNextRainbowColour();
-  return <ReleaseSection {...props} rainbowColour={rainbowColour} />;
-}
 
 export default async function TableSchemaSections({
   sections,
@@ -74,39 +66,42 @@ export default async function TableSchemaSections({
     (total, section) => total + countReleaseSections(section.mdx),
     0,
   );
+  const nextRainbowColour = createNextRainbowColour(totalReleaseSections);
+
+  function RainbowReleaseSection(props: ReleaseSectionProps) {
+    return <ReleaseSection {...props} rainbowColour={nextRainbowColour()} />;
+  }
 
   return (
-    <ReleaseSectionColoursProvider totalSections={totalReleaseSections}>
-      <div className="space-y-10">
-        {hasMultipleSections ? (
-          <div className="flex flex-wrap gap-3 text-sm">
-            {sectionEntries.map(({ anchorId, key }, index) => (
-              <Link
-                key={`${key}-jump`}
-                href={`#${anchorId}`}
-                className="link-blue"
-              >
-                {`Jump to Visit ${index + 1}`}
-              </Link>
-            ))}
-          </div>
-        ) : null}
+    <div className="space-y-10">
+      {hasMultipleSections ? (
+        <div className="flex flex-wrap gap-3 text-sm">
+          {sectionEntries.map(({ anchorId, key }, index) => (
+            <Link
+              key={`${key}-jump`}
+              href={`#${anchorId}`}
+              className="link-blue"
+            >
+              {`Jump to Visit ${index + 1}`}
+            </Link>
+          ))}
+        </div>
+      ) : null}
 
-        {sectionEntries.map(({ section, anchorId, key }, index) => (
-          <section key={key} id={anchorId} className="space-y-4">
-            <h2 className="text-xl md:text-2xl font-semibold leading-tight">
-              {fmtDate(section.postDate)}: Visit {index + 1}{" "}
-              <Link href={section.postUrl} className="link-blue text-base">
-                (original post)
-              </Link>
-            </h2>
-            <MdxRenderer
-              code={section.code}
-              components={{ ReleaseSection: RainbowReleaseSection }}
-            />
-          </section>
-        ))}
-      </div>
-    </ReleaseSectionColoursProvider>
+      {sectionEntries.map(({ section, anchorId, key }, index) => (
+        <section key={key} id={anchorId} className="space-y-4">
+          <h2 className="text-xl md:text-2xl font-semibold leading-tight">
+            {fmtDate(section.postDate)}: Visit {index + 1}{" "}
+            <Link href={section.postUrl} className="link-blue text-base">
+              (original post)
+            </Link>
+          </h2>
+          <MdxRenderer
+            code={section.code}
+            components={{ ReleaseSection: RainbowReleaseSection }}
+          />
+        </section>
+      ))}
+    </div>
   );
 }

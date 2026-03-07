@@ -35,8 +35,8 @@ Environment basics:
 - Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimize -- "<folder>"` (or `npm run images:optimize` for all sources) and `npm run images:check` to keep assets within budget.
 - Reference docs: `docs/authoring.md`, `docs/static-page-template-v2.md`, and `docs/hydration*.md` for SSR to client hydration contracts.
 - ReleaseSection colour rules:
-- Sections with `releaseId` or `tcdbTradeId` keep release-type colours.
-- Multi-section renderers assign rainbow colours only to non-release-linked sections via `ReleaseSectionColoursProvider` and `useNextRainbowColour`.
+- ReleaseSection accents use rainbow assignment colours from `lib/release-section-colours`; release metadata props do not select colours.
+- Multi-section renderers assign rainbow colours sequentially via shared sequencing from `lib/release-section-colours`.
 - `7+` sections use straight rainbow order with wrap; `6 or fewer` sections use a random unique subset sorted back to rainbow order.
 - Do not add ad hoc per-section border colours in these multi-section views.
 
