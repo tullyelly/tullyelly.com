@@ -1,19 +1,28 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import FullBleedPage from "@/components/layout/FullBleedPage";
+import ReleaseSection from "@/components/mdx/ReleaseSection";
 import { MdxRenderer } from "@/components/mdx-renderer";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
+import { createNextRainbowColour } from "@/lib/release-section-colours";
 import { getTcdbTradeSections, type TradeSection } from "@/lib/tcdb-trades";
 
 type Params = { tradeId: string };
 
 type RenderableSection = TradeSection & { code: string };
+type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+const RELEASE_SECTION_PATTERN = /<ReleaseSection\b/g;
+
+const countReleaseSections = (source: string): number =>
+  source.match(RELEASE_SECTION_PATTERN)?.length ?? 0;
 
 export async function generateMetadata({
   params,
@@ -52,6 +61,15 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const hasOriginal = originals.length > 0;
   const hasCompleted = completeds.length > 0;
   const hasBoth = hasOriginal && hasCompleted;
+  const totalReleaseSections = compiledSections.reduce(
+    (total, section) => total + countReleaseSections(section.mdx),
+    0,
+  );
+  const nextRainbowColour = createNextRainbowColour(totalReleaseSections);
+
+  function RainbowReleaseSection(props: ReleaseSectionProps) {
+    return <ReleaseSection {...props} rainbowColour={nextRainbowColour()} />;
+  }
 
   const renderSection = (section: RenderableSection, index: number) => {
     const label =
@@ -68,7 +86,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             {label}
           </Link>
         </h2>
-        <MdxRenderer code={section.code} />
+        <MdxRenderer
+          code={section.code}
+          components={{ ReleaseSection: RainbowReleaseSection }}
+        />
         <Link href={section.postUrl} className="link-blue text-sm">
           View chronicle post
         </Link>

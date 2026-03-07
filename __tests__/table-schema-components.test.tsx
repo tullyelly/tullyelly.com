@@ -1,7 +1,13 @@
 import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 
 const getAllTableSchemaSummariesMock = jest.fn();
 const compileMdxToCodeMock = jest.fn();
+const mdxRendererMock = jest.fn(
+  ({ code }: { code: string; components?: unknown }) => (
+    <div data-testid="mdx-renderer">{code}</div>
+  ),
+);
 
 jest.mock("@/lib/table-schema", () => ({
   getAllTableSchemaSummaries: (...args: unknown[]) =>
@@ -13,13 +19,19 @@ jest.mock("@/lib/mdx/compile", () => ({
 }));
 
 jest.mock("@/components/mdx-renderer", () => ({
-  MdxRenderer: ({ code }: { code: string }) => (
-    <div data-testid="mdx-renderer">{code}</div>
-  ),
+  MdxRenderer: (props: { code: string; components?: unknown }) =>
+    mdxRendererMock(props),
 }));
 
 jest.mock("@/lib/datetime", () => ({
   fmtDate: (value: string) => value,
+}));
+
+jest.mock("@/components/mdx/ReleaseSection", () => ({
+  __esModule: true,
+  default: ({ children }: { children?: ReactNode }) => (
+    <div data-testid="release-section">{children}</div>
+  ),
 }));
 
 import TableSchemaDirectory from "@/components/unclejimmy/TableSchemaDirectory";
@@ -75,6 +87,7 @@ describe("TableSchemaDirectory", () => {
 describe("TableSchemaSections", () => {
   beforeEach(() => {
     compileMdxToCodeMock.mockReset();
+    mdxRendererMock.mockClear();
     compileMdxToCodeMock.mockImplementation(async (source: string) => {
       return `compiled:${source}`;
     });
@@ -135,5 +148,10 @@ describe("TableSchemaSections", () => {
     expect(mdxRendered).toHaveLength(2);
     expect(mdxRendered[0]).toHaveTextContent("compiled:");
     expect(mdxRendered[1]).toHaveTextContent("compiled:");
+
+    const firstMdxProps = mdxRendererMock.mock.calls[0]?.[0] as
+      | { components?: { ReleaseSection?: unknown } }
+      | undefined;
+    expect(firstMdxProps?.components?.ReleaseSection).toBeDefined();
   });
 });

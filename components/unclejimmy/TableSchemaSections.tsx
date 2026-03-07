@@ -1,8 +1,11 @@
 import Link from "next/link";
+import type { ComponentProps } from "react";
 
+import ReleaseSection from "@/components/mdx/ReleaseSection";
 import { MdxRenderer } from "@/components/mdx-renderer";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
+import { createNextRainbowColour } from "@/lib/release-section-colours";
 import type { TableSchemaSection } from "@/lib/table-schema";
 
 type TableSchemaSectionsProps = {
@@ -17,6 +20,7 @@ type RenderableSectionEntry = {
 };
 
 const DIVIDER_PROP_PATTERN = /\sdivider\s*=\s*(\{[^}]*\}|"[^"]*"|'[^']*')/;
+const RELEASE_SECTION_PATTERN = /<ReleaseSection\b/g;
 
 const forceReleaseSectionDividerOff = (source: string): string =>
   source.replace(/<ReleaseSection\b([^>]*)>/g, (_match, attrs: string) => {
@@ -26,6 +30,11 @@ const forceReleaseSectionDividerOff = (source: string): string =>
 
     return `<ReleaseSection${updatedAttrs}>`;
   });
+
+type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
+
+const countReleaseSections = (source: string): number =>
+  source.match(RELEASE_SECTION_PATTERN)?.length ?? 0;
 
 export default async function TableSchemaSections({
   sections,
@@ -53,6 +62,15 @@ export default async function TableSchemaSections({
   }
 
   const hasMultipleSections = compiledSections.length > 1;
+  const totalReleaseSections = sections.reduce(
+    (total, section) => total + countReleaseSections(section.mdx),
+    0,
+  );
+  const nextRainbowColour = createNextRainbowColour(totalReleaseSections);
+
+  function RainbowReleaseSection(props: ReleaseSectionProps) {
+    return <ReleaseSection {...props} rainbowColour={nextRainbowColour()} />;
+  }
 
   return (
     <div className="space-y-10">
@@ -78,7 +96,10 @@ export default async function TableSchemaSections({
               (original post)
             </Link>
           </h2>
-          <MdxRenderer code={section.code} />
+          <MdxRenderer
+            code={section.code}
+            components={{ ReleaseSection: RainbowReleaseSection }}
+          />
         </section>
       ))}
     </div>

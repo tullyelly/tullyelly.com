@@ -5,11 +5,11 @@ export const revalidate = 0;
 // no local Suspense usage; kept within child sections
 import Link from "next/link";
 
+import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
 import { ChronicleSignature } from "@/components/chronicles/ChronicleSignature";
 import { ChroniclePostTailCards } from "@/components/chronicles/ChroniclePostTailCards";
 import { ChroniclesSection } from "@/components/ChroniclesSection";
 import { FirstOffTheLineSection } from "@/components/FirstOffTheLineSection";
-import { MdxRenderer } from "@/components/mdx-renderer";
 import { MothersDaySection } from "@/components/MothersDaySection";
 import { MusicalGuestsSection } from "@/components/MusicalGuestsSection";
 import { SectionDivider } from "@/components/SectionDivider";
@@ -51,7 +51,7 @@ function LatestPost({ post }: { post: Post }) {
         <p className="text-sm opacity-70">{fmtDate(post.date)}</p>
       </header>
       <div className="space-y-4">
-        <MdxRenderer code={post.body.code} />
+        <ChronicleMdxRenderer code={post.body.code} source={post.body.raw} />
         <ChronicleSignature
           title={post.title}
           date={post.date}

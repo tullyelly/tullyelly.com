@@ -34,6 +34,11 @@ Environment basics:
 - Scaffold a static MDX page with `npm run new-page <slug> "Title"`. It writes `app/<slug>/page.mdx` with frontmatter and expects a hero at `public/images/optimized/<slug>/hero.webp` (drop sources in `public/images/source/` first).
 - Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimize -- "<folder>"` (or `npm run images:optimize` for all sources) and `npm run images:check` to keep assets within budget.
 - Reference docs: `docs/authoring.md`, `docs/static-page-template-v2.md`, and `docs/hydration*.md` for SSR to client hydration contracts.
+- ReleaseSection colour rules:
+- ReleaseSection accents use rainbow assignment colours from `lib/release-section-colours`; release metadata props do not select colours.
+- Multi-section renderers assign rainbow colours sequentially via shared sequencing from `lib/release-section-colours`.
+- `7+` sections use straight rainbow order with wrap; `6 or fewer` sections use a random unique subset sorted back to rainbow order.
+- Do not add ad hoc per-section border colours in these multi-section views.
 
 ---
 
