@@ -12,6 +12,11 @@ function ColourProbe({ testId }: { testId: string }) {
   return <span data-testid={testId}>{colour ?? "none"}</span>;
 }
 
+function RainbowReleaseSectionProbe({ testId }: { testId: string }) {
+  const rainbowColour = useNextRainbowColour();
+  return <span data-testid={testId}>{rainbowColour ?? "none"}</span>;
+}
+
 describe("ReleaseSectionColoursProvider", () => {
   it("returns undefined safely when used outside provider", () => {
     render(<ColourProbe testId="probe" />);
@@ -30,6 +35,26 @@ describe("ReleaseSectionColoursProvider", () => {
     expect(screen.getByTestId("one")).toHaveTextContent(RAINBOW_COLOURS[0]);
     expect(screen.getByTestId("two")).toHaveTextContent(RAINBOW_COLOURS[1]);
     expect(screen.getByTestId("three")).toHaveTextContent(RAINBOW_COLOURS[2]);
+  });
+
+  it("assigns colours in sequence for multiple ReleaseSection-style consumers", () => {
+    render(
+      <ReleaseSectionColoursProvider totalSections={7}>
+        <RainbowReleaseSectionProbe testId="section-a" />
+        <RainbowReleaseSectionProbe testId="section-b" />
+        <RainbowReleaseSectionProbe testId="section-c" />
+      </ReleaseSectionColoursProvider>,
+    );
+
+    expect(screen.getByTestId("section-a")).toHaveTextContent(
+      RAINBOW_COLOURS[0],
+    );
+    expect(screen.getByTestId("section-b")).toHaveTextContent(
+      RAINBOW_COLOURS[1],
+    );
+    expect(screen.getByTestId("section-c")).toHaveTextContent(
+      RAINBOW_COLOURS[2],
+    );
   });
 
   it("wraps safely when calls exceed the precomputed list length", () => {
