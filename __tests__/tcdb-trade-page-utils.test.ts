@@ -4,10 +4,25 @@ jest.mock("contentlayer/generated", () => ({
   allPosts: [],
 }));
 
+import { allPosts } from "contentlayer/generated";
 import {
   extractTradeSectionsFromRaw,
   getTcdbTradeSections,
+  listTcdbTrades,
 } from "@/lib/tcdb-trades";
+
+type MockPost = {
+  slug: string;
+  url: string;
+  date: string;
+  body: { raw: string };
+};
+
+const mockedAllPosts = allPosts as unknown as MockPost[];
+
+beforeEach(() => {
+  mockedAllPosts.length = 0;
+});
 
 describe("extractTradeSectionsFromRaw", () => {
   it("extracts a single ReleaseSection block from raw MDX", () => {
@@ -146,5 +161,76 @@ describe("getTcdbTradeSections", () => {
     expect(sections).toHaveLength(2);
     expect(sections[0]?.mdx).toContain("First complete");
     expect(sections[1]?.mdx).toContain("Second complete");
+  });
+});
+
+describe("listTcdbTrades", () => {
+  it("aggregates start/end dates, first partner, and sorts by trade id desc", () => {
+    mockedAllPosts.push(
+      {
+        slug: "alpha-original",
+        url: "/shaolin/alpha-original",
+        date: "2024-01-10",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="first-partner">Open</ReleaseSection>`,
+        },
+      },
+      {
+        slug: "alpha-completed",
+        url: "/shaolin/alpha-completed",
+        date: "2024-01-20",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed>Closed</ReleaseSection>`,
+        },
+      },
+      {
+        slug: "beta-original",
+        url: "/shaolin/beta-original",
+        date: "2024-03-05",
+        body: {
+          raw: [
+            "<ReleaseSection",
+            '  alterEgo="cardattack"',
+            '  tcdbTradeId="222222"',
+            '  tcdbTradePartner="beta-partner"',
+            ">",
+            "  Beta",
+            "</ReleaseSection>",
+          ].join("\n"),
+        },
+      },
+      {
+        slug: "alpha-original-earlier",
+        url: "/shaolin/alpha-original-earlier",
+        date: "2024-01-01",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="ignored-later">Earlier open</ReleaseSection>`,
+        },
+      },
+      {
+        slug: "alpha-completed-later",
+        url: "/shaolin/alpha-completed-later",
+        date: "2024-02-10",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed />`,
+        },
+      },
+    );
+
+    expect(listTcdbTrades()).toEqual([
+      {
+        tradeId: "222222",
+        startDate: "2024-03-05",
+        partner: "beta-partner",
+        status: "Open",
+      },
+      {
+        tradeId: "111111",
+        startDate: "2024-01-01",
+        endDate: "2024-02-10",
+        partner: "first-partner",
+        status: "Completed",
+      },
+    ]);
   });
 });
