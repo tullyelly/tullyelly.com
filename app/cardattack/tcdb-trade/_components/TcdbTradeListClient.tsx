@@ -64,7 +64,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                 </div>
                 <Badge
                   className={getBadgeClass(
-                    row.status === "Completed" ? "chore" : "spike",
+                    row.status === "Open" ? "chore" : "spike",
                   )}
                 >
                   {row.status}
@@ -157,7 +157,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                 <td className="whitespace-nowrap">
                   <Badge
                     className={getBadgeClass(
-                      row.status === "Completed" ? "chore" : "spike",
+                      row.status === "Open" ? "chore" : "spike",
                     )}
                   >
                     {row.status}

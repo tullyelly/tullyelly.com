@@ -21,6 +21,10 @@ export default function Page() {
           </h1>
         </header>
 
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          Thank you to all of my trade partners. A wonderful community. 
+        </p>
+
         <TcdbTradeListClient rows={trades} />
       </Card>
     </FullBleedPage>
