@@ -19,7 +19,9 @@ type Props = {
 };
 
 function renderPartner(partner?: string) {
-  if (!partner) return "Not listed";
+  if (!partner) {
+    return <span className="text-muted-foreground">Unknown</span>;
+  }
   return (
     <a
       href={`https://www.tcdb.com/Profile.cfm/${encodeURIComponent(partner)}`}
@@ -42,7 +44,12 @@ export default function TcdbTradeListClient({ rows }: Props) {
       <ul className="space-y-3 md:hidden">
         {sortedRows.length > 0 ? (
           sortedRows.map((row) => (
-            <Card as="li" key={`mobile-${row.tradeId}`} className="p-3">
+            <Card
+              as="li"
+              key={`mobile-${row.tradeId}`}
+              className="p-3"
+              data-testid="tcdb-trade-card"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-ink/60">
@@ -80,7 +87,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                     {row.endDate ? (
                       <time dateTime={row.endDate}>{fmtDate(row.endDate)}</time>
                     ) : (
-                      "Not completed"
+                      "Open"
                     )}
                   </dd>
                 </div>
@@ -123,10 +130,11 @@ export default function TcdbTradeListClient({ rows }: Props) {
         <TBody>
           {sortedRows.length > 0 ? (
             sortedRows.map((row) => (
-              <tr
-                key={row.tradeId}
-                className="border-b border-black/5 last:border-0"
-              >
+            <tr
+              key={row.tradeId}
+              className="border-b border-black/5 last:border-0"
+              data-testid="tcdb-trade-row"
+            >
                 <td className="font-medium tabular-nums">
                   <Link
                     href={`/cardattack/tcdb-trade/${row.tradeId}`}
@@ -142,7 +150,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                   {row.endDate ? (
                     <time dateTime={row.endDate}>{fmtDate(row.endDate)}</time>
                   ) : (
-                    "Not completed"
+                    "Open"
                   )}
                 </td>
                 <td>{renderPartner(row.partner)}</td>
