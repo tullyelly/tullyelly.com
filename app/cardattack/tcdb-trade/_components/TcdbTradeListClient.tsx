@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { Table, TBody, THead } from "@/components/ui/Table";
@@ -32,11 +33,15 @@ function renderPartner(partner?: string) {
 }
 
 export default function TcdbTradeListClient({ rows }: Props) {
+  const sortedRows = useMemo(() => {
+    return [...rows].sort((a, b) => Number(b.tradeId) - Number(a.tradeId));
+  }, [rows]);
+
   return (
     <>
       <ul className="space-y-3 md:hidden">
-        {rows.length > 0 ? (
-          rows.map((row) => (
+        {sortedRows.length > 0 ? (
+          sortedRows.map((row) => (
             <Card as="li" key={`mobile-${row.tradeId}`} className="p-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -116,8 +121,8 @@ export default function TcdbTradeListClient({ rows }: Props) {
           </th>
         </THead>
         <TBody>
-          {rows.length > 0 ? (
-            rows.map((row) => (
+          {sortedRows.length > 0 ? (
+            sortedRows.map((row) => (
               <tr
                 key={row.tradeId}
                 className="border-b border-black/5 last:border-0"
