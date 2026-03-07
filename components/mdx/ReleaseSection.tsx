@@ -39,6 +39,7 @@ type ReleaseSectionBaseProps = {
   alterEgo: string;
   children: ReactNode;
   divider?: boolean;
+  rainbowColour?: string;
   tournamentName?: string;
   tournamentRecord?: string;
   tournamentId?: string | number;
@@ -240,6 +241,31 @@ function getReleaseTypeTextColor(releaseType?: string): string {
   return getBadgeTextColor(variant);
 }
 
+function getReadableTextColor(backgroundColor: string): string {
+  const normalized = backgroundColor.replace(/^#/, "");
+  const fullHex =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((char) => `${char}${char}`)
+          .join("")
+      : normalized;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(fullHex)) {
+    return "#000000";
+  }
+
+  const value = Number.parseInt(fullHex, 16);
+  if (Number.isNaN(value)) return "#000000";
+
+  const red = (value >> 16) & 255;
+  const green = (value >> 8) & 255;
+  const blue = value & 255;
+  const yiq = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return yiq >= 140 ? "#000000" : "#FFFFFF";
+}
+
 function getReviewLabel(type: ReviewType): string {
   if (type === "lcs") {
     return "Card Shop";
@@ -271,6 +297,7 @@ function getReviewLabel(type: ReviewType): string {
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
  * - guestMage: optional guest writer label rendered as a stamp.
  * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
+ * - rainbowColour: optional non-release colour override for shared multi-section rainbow assignment.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -294,6 +321,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     tournamentRecord,
     tournamentId,
     guestMage,
+    rainbowColour,
   } = props;
   let releaseName: string | undefined;
   let releaseType: string | undefined;
@@ -380,27 +408,34 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     review?.rating !== undefined && `${review.rating}`.trim() !== "";
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
   const isTcdbTrade = Boolean(tcdbTradeId);
+  const normalizedRainbowColour = rainbowColour?.trim();
+  const hasRainbowOverride = Boolean(normalizedRainbowColour && !showReleaseDetails);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)
     : undefined;
   const releaseTextColor = showReleaseDetails
     ? getReleaseTypeTextColor(releaseType)
     : undefined;
-  const resolvedReleaseColor = showReleaseDetails
+  const resolvedSectionColor = showReleaseDetails
     ? (releaseColor ?? archivedReleaseColor)
-    : undefined;
-  const resolvedReleaseTextColor = showReleaseDetails
+    : hasRainbowOverride
+      ? normalizedRainbowColour
+      : undefined;
+  const resolvedSectionTextColor = showReleaseDetails
     ? (releaseTextColor ?? archivedTextColor)
+    : normalizedRainbowColour
+      ? getReadableTextColor(normalizedRainbowColour)
     : undefined;
-  const isCreamCity = resolvedReleaseColor === PILL_CREAM_CITY;
+  const isCreamCity = resolvedSectionColor === PILL_CREAM_CITY;
   const isChromeFoil = normalizedReleaseType === "wax";
   const chromeHoverBackground =
     COLOR_OVERRIDES["var(--tc-chrome-hi)"] ?? "#F7F9FC";
   const tabForegroundColor = isCreamCity
     ? PILL_BLACK
-    : resolvedReleaseTextColor;
+    : (resolvedSectionTextColor ??
+      (resolvedSectionColor ? getReadableTextColor(resolvedSectionColor) : "#FFFFFF"));
   const hoverBackgroundColor =
-    showReleaseDetails && resolvedReleaseColor
+    resolvedSectionColor
       ? isCreamCity
         ? PILL_BLACK
         : isChromeFoil
@@ -408,21 +443,20 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
           : "#FFFFFF"
       : "#FFFFFF";
   const hoverForegroundColor =
-    showReleaseDetails && resolvedReleaseColor
+    resolvedSectionColor
       ? isCreamCity
         ? PILL_CREAM_CITY
         : isChromeFoil
-          ? resolvedReleaseTextColor
-          : resolvedReleaseColor
+          ? (resolvedSectionTextColor ?? getReadableTextColor(resolvedSectionColor))
+          : resolvedSectionColor
       : PILL_BLUE;
   const tagBackgroundColor =
-    showReleaseDetails && resolvedReleaseColor
-      ? resolvedReleaseColor
+    resolvedSectionColor
+      ? resolvedSectionColor
       : PILL_BLUE;
   const tagForegroundColor =
-    showReleaseDetails && resolvedReleaseTextColor
-      ? resolvedReleaseTextColor
-      : "#FFFFFF";
+    resolvedSectionTextColor ??
+    (resolvedSectionColor ? getReadableTextColor(resolvedSectionColor) : "#FFFFFF");
   const tabHref = releaseId ? `/mark2/shaolin-scrolls/${releaseId}` : tradeUrl;
   const resolvedReleaseName = tcdbTradeId
     ? tabLabel
@@ -444,6 +478,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-release-type={releaseType ?? undefined}
       data-release-color={releaseColor}
       data-release-text-color={releaseTextColor}
+      data-rainbow-colour={!showReleaseDetails ? normalizedRainbowColour : undefined}
       data-tournament-id={
         tournamentId !== undefined ? String(tournamentId) : undefined
       }
@@ -454,10 +489,10 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
         showReviewRating ? String(review?.rating) : undefined
       }
       style={
-        resolvedReleaseColor
+        resolvedSectionColor
           ? ({
-              ["--mdx-divider-color" as string]: resolvedReleaseColor,
-              ["--mdx-marker-color" as string]: resolvedReleaseColor,
+              ["--mdx-divider-color" as string]: resolvedSectionColor,
+              ["--mdx-marker-color" as string]: resolvedSectionColor,
             } satisfies CSSProperties)
           : undefined
       }
@@ -569,22 +604,35 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     const plainContent = showTournamentVisuals ? (
       <div
         className="rounded-lg border-[4px] border-dashed border-[var(--blue)] px-4 py-4"
-        style={{ boxShadow: "inset 0 0 0 1px var(--tcdb-wood-base)" }}
+        style={{
+          boxShadow: "inset 0 0 0 1px var(--tcdb-wood-base)",
+          borderColor: resolvedSectionColor,
+        }}
       >
         {baseContent}
       </div>
     ) : review?.type === "lcs" && showReviewVisuals ? (
-      <div className="rounded-lg border-[4px] border-double border-[var(--tcdb-wood-dark)] px-4 py-4">
+      <div
+        className="rounded-lg border-[4px] border-double border-[var(--tcdb-wood-dark)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
+      >
         {baseContent}
       </div>
     ) : review?.type === "table-schema" && showReviewVisuals ? (
-      <div className="rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4">
+      <div
+        className="rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
+      >
         {baseContent}
       </div>
     ) : review?.type === "save-point" && showReviewVisuals ? (
       <div
         className="rounded-lg px-4 py-4"
-        style={{ border: "2px solid var(--save-point-color, #7c3aed)" }}
+        style={{
+          border: resolvedSectionColor
+            ? `2px solid ${resolvedSectionColor}`
+            : "2px solid var(--save-point-color, #7c3aed)",
+        }}
       >
         {baseContent}
       </div>
@@ -596,7 +644,14 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       <>
         {plainContent}
         {divider ? (
-          <hr className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]" />
+          <hr
+            className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]"
+            style={
+              resolvedSectionColor
+                ? ({ backgroundColor: resolvedSectionColor } satisfies CSSProperties)
+                : undefined
+            }
+          />
         ) : null}
       </>
     );
@@ -609,13 +664,13 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     borderWidth: "4px",
   };
   const tabStyle: CSSProperties = {
-    outlineColor: resolvedReleaseColor,
+    outlineColor: resolvedSectionColor,
     textDecoration: "none",
-    ["--tab-bg" as string]: resolvedReleaseColor,
+    ["--tab-bg" as string]: resolvedSectionColor,
     ["--tab-fg" as string]: tabForegroundColor,
     ["--tab-hover-bg" as string]: hoverBackgroundColor,
     ["--tab-hover-fg" as string]: hoverForegroundColor,
-    borderColor: resolvedReleaseColor,
+    borderColor: resolvedSectionColor,
     borderRightWidth: 0,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
