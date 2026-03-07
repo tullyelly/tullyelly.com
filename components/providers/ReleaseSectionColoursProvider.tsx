@@ -36,8 +36,8 @@ const getOrAssignConsumerIndex = (
 
 /**
  * Provides a per-render rainbow sequence for ReleaseSection-like consumers.
- * Intended usage: wrap a page/section that renders multiple ReleaseSection nodes;
- * each call to useNextRainbowColour() consumes the next slot in this render tree.
+ * Use this around a tree that can render multiple ReleaseSection blocks so they
+ * share one precomputed colour list for the page render.
  */
 export function ReleaseSectionColoursProvider({
   totalSections,
@@ -58,6 +58,7 @@ export function ReleaseSectionColoursProvider({
 
 /**
  * Returns the next rainbow colour from the nearest provider sequence.
+ * Intended for MDX ReleaseSection overrides that consume one colour per node.
  * - Outside provider: returns undefined safely.
  * - Overflow: wraps to the beginning of the provider's colour list.
  */

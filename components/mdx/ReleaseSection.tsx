@@ -297,7 +297,7 @@ function getReviewLabel(type: ReviewType): string {
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
  * - guestMage: optional guest writer label rendered as a stamp.
  * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
- * - rainbowColour: optional non-release colour override for shared multi-section rainbow assignment.
+ * - rainbowColour: optional non-release colour override from shared rainbow assignment; only applied when neither releaseId nor tcdbTradeId is present.
  * - Visual: default is plain content; with releaseId, a colored container and tab appear while the inner pill stays Great Lakes Blue.
  *
  * @example
@@ -409,6 +409,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
   const isTcdbTrade = Boolean(tcdbTradeId);
   const normalizedRainbowColour = rainbowColour?.trim();
+  // Release-linked sections always use release-type colours; rainbow is only for
+  // metadata-style sections that do not declare releaseId or tcdbTradeId.
   const hasRainbowOverride = Boolean(normalizedRainbowColour && !showReleaseDetails);
   const releaseColor = showReleaseDetails
     ? getReleaseTypeColor(releaseType)

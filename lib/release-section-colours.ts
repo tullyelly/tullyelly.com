@@ -1,3 +1,7 @@
+/**
+ * Canonical rainbow palette used by ReleaseSection multi-section assignment.
+ * Order is fixed and must stay spectrum-ordered for deterministic sorting.
+ */
 export const RAINBOW_COLOURS = [
   "#FF0000", // red
   "#FF7F00", // orange
@@ -37,6 +41,12 @@ const pickRandomUniqueColours = (count: number): string[] => {
   return selected;
 };
 
+/**
+ * Builds the per-page rainbow list for non-release-linked ReleaseSection blocks.
+ * - total <= 0: empty list.
+ * - total >= 7: full spectrum order, repeated as needed.
+ * - total <= 6: random unique subset, then re-sorted to spectrum order.
+ */
 export function buildRainbowColourList(total: number): string[] {
   const safeTotal = toSafeTotal(total);
   if (safeTotal <= 0) return [];
