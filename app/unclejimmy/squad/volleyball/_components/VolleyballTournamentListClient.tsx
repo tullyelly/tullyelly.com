@@ -55,7 +55,7 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
                 </div>
                 <div>
                   <dt className="text-xs uppercase tracking-wide text-ink/60">
-                    Latest Day
+                    Date
                   </dt>
                   <dd>
                     <time dateTime={row.latestPostDate}>
@@ -93,7 +93,7 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
             Days
           </th>
           <th scope="col" className="w-[180px] whitespace-nowrap">
-            Latest Day
+            Date
           </th>
         </THead>
         <TBody>
