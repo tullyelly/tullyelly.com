@@ -87,8 +87,8 @@ describe("ReleaseSection", () => {
     expect(screen.queryByText("Legacy Shop")).toBeNull();
 
     const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
-    expect(wrapper.className).toContain("border-double");
-    expect(wrapper.className).toContain("border-[var(--tcdb-wood-dark)]");
+    expect(wrapper.className).toContain("border-solid");
+    expect(wrapper.className).toContain("border-[var(--blue)]");
 
     const content = container.querySelector(
       "[data-review-name]",

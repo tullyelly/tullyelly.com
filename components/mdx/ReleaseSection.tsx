@@ -434,7 +434,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       </div>
     ) : review?.type === "lcs" && showReviewVisuals ? (
       <div
-        className="rounded-lg border-[4px] border-double border-[var(--tcdb-wood-dark)] px-4 py-4"
+        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
         style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}
