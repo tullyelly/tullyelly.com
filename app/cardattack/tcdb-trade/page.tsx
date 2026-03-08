@@ -17,7 +17,7 @@ export default function Page() {
       >
         <header>
           <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            TCDB Trades
+            TCDb Trades
           </h1>
         </header>
 

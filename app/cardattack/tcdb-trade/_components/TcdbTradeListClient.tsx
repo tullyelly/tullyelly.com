@@ -102,7 +102,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
           ))
         ) : (
           <Card as="li" className="p-3 text-sm text-ink/70">
-            No TCDB trades have been referenced in chronicles yet.
+            No TCDb trades have been referenced in chronicles yet.
           </Card>
         )}
       </ul>

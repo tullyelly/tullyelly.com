@@ -307,7 +307,7 @@ describe("ReleaseSection", () => {
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab.getAttribute("href")).toBe(
-      "https://www.tcdb.com/Transactions.cfm?MODE=VIEW&TransactionID=359632&PageIndex=1",
+      "/cardattack/tcdb-trade/359632",
     );
     expect(tab).toHaveTextContent("TCDb Trade: 359632; Partner collect-a-set");
 
@@ -321,7 +321,7 @@ describe("ReleaseSection", () => {
     expect(partnerLink).toHaveClass("link-blue");
   });
 
-  it("renders a completed link to the original trade post", async () => {
+  it("renders a completed link to the internal tcdb trade route", async () => {
     const tradeId = "359632";
     allPostsMock.push(
       {
@@ -353,7 +353,10 @@ describe("ReleaseSection", () => {
       .getByText(`${tradeId}: completed`)
       .closest("a");
     expect(completionLink).toBeInTheDocument();
-    expect(completionLink).toHaveAttribute("href", "/shaolin/original-trade");
+    expect(completionLink).toHaveAttribute(
+      "href",
+      `/cardattack/tcdb-trade/${tradeId}`,
+    );
   });
 
   it("propagates completed links to all tcdb sections sharing a tradeId", async () => {
@@ -401,8 +404,10 @@ describe("ReleaseSection", () => {
 
     expect(completionLinks).toHaveLength(2);
     const hrefs = completionLinks.map((link) => link.getAttribute("href"));
-    expect(hrefs).toContain("/shaolin/original-trade");
-    expect(hrefs).toContain("/shaolin/completed-trade");
+    expect(hrefs).toEqual([
+      `/cardattack/tcdb-trade/${tradeId}`,
+      `/cardattack/tcdb-trade/${tradeId}`,
+    ]);
   });
 
   it("throws when both releaseId and tcdbTradeId are passed", async () => {

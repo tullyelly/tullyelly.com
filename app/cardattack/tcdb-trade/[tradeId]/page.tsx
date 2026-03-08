@@ -31,7 +31,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { tradeId } = await params;
   return {
-    title: `TCDB Trade ${tradeId}`,
+    title: `TCDb Trade ${tradeId}`,
     description: "Original + completed trade log pulled from chronicles.",
     robots: { index: true },
   };
@@ -90,9 +90,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           code={section.code}
           components={{ ReleaseSection: RainbowReleaseSection }}
         />
-        <Link href={section.postUrl} className="link-blue text-sm">
-          View chronicle post
-        </Link>
       </div>
     );
   };
@@ -105,10 +102,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       >
         <header className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            {`TCDB Trade ${tradeId}`}
+            {`TCDb Trade ${tradeId}`}
           </h1>
         </header>
-        <div className="space-y-10">
+        <div className="space-y-4">
+          <Link href="/cardattack/tcdb-trade" className="link-blue">
+            ← Back to TCDb trades
+          </Link>
           {hasBoth ? (
             <div className="flex flex-wrap gap-3 text-sm">
               <Link href="#original" className="link-blue">
@@ -119,6 +119,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </Link>
             </div>
           ) : null}
+        </div>
+        <div className="space-y-10">
           {hasOriginal ? (
             <div className="space-y-10">{originals.map(renderSection)}</div>
           ) : null}
