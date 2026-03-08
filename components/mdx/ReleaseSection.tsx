@@ -448,12 +448,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       </div>
     ) : review?.type === "save-point" && showReviewVisuals ? (
       <div
-        className="rounded-lg px-4 py-4"
-        style={{
-          border: resolvedSectionColor
-            ? `2px solid ${resolvedSectionColor}`
-            : "2px solid var(--save-point-color, #7c3aed)",
-        }}
+        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}
       </div>
