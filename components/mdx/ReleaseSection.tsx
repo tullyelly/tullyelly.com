@@ -427,11 +427,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   if (!showReleaseDetails) {
     const plainContent = showTournamentVisuals ? (
       <div
-        className="rounded-lg border-[4px] border-dashed border-[var(--blue)] px-4 py-4"
-        style={{
-          boxShadow: "inset 0 0 0 1px var(--tcdb-wood-base)",
-          borderColor: resolvedSectionColor,
-        }}
+        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}
       </div>
