@@ -71,6 +71,11 @@ export default function UncleJimmySquadPage() {
               Table Schema
             </Link>
           </li>
+          <li>
+            <Link href="/unclejimmy/squad/volleyball" className="link-blue">
+              Volleyball Tournaments
+            </Link>
+          </li>
         </ul>
       </section>
       <section className="space-y-4">

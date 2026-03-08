@@ -11,6 +11,14 @@ export type TradeSection = {
   mdx: string;
 };
 
+export type TcdbTradeSummary = {
+  tradeId: string;
+  startDate: string;
+  endDate?: string;
+  partner?: string;
+  status: "Open" | "Completed";
+};
+
 type PostSource = {
   body: { raw: string };
   slug: string;
@@ -29,6 +37,19 @@ const RELEASE_SECTION_CLOSE = "</ReleaseSection>";
 const COMPLETED_ATTR = /(^|\s)completed(\s|=|>|\/)/;
 const TRADE_ID_ATTR_NAME = "tcdbTradeId";
 const TRADE_ID_ATTR = new RegExp(`${TRADE_ID_ATTR_NAME}="([^"]+)"`);
+const TRADE_PARTNER_ATTR = /tcdbTradePartner="([^"]+)"/;
+
+type TradeSummaryAccumulator = {
+  startDate?: string;
+  endDate?: string;
+  partner?: string;
+};
+
+type ExtractedTradeTag = {
+  tradeId: string;
+  partner?: string;
+  completed: boolean;
+};
 
 export const getTradeIdAttribute = (tradeId: string): string =>
   `${TRADE_ID_ATTR_NAME}="${tradeId}"`;
@@ -62,6 +83,53 @@ const compareByDateDesc = (
 
 const hasCompletedAttr = (openingTag: string): boolean =>
   COMPLETED_ATTR.test(openingTag);
+
+const isEarlierDate = (candidate: string, existing?: string): boolean => {
+  if (!existing) return true;
+
+  const diff = toTimestamp(candidate) - toTimestamp(existing);
+  if (diff !== 0) return diff < 0;
+  return candidate < existing;
+};
+
+const isLaterDate = (candidate: string, existing?: string): boolean => {
+  if (!existing) return true;
+
+  const diff = toTimestamp(candidate) - toTimestamp(existing);
+  if (diff !== 0) return diff > 0;
+  return candidate > existing;
+};
+
+const extractTradeTags = (raw: string): ExtractedTradeTag[] => {
+  const tags: ExtractedTradeTag[] = [];
+  if (!raw) return tags;
+
+  let index = 0;
+
+  while (index < raw.length) {
+    const openIndex = raw.indexOf(RELEASE_SECTION_OPEN, index);
+    if (openIndex === -1) break;
+
+    const tagEnd = raw.indexOf(">", openIndex + RELEASE_SECTION_OPEN.length);
+    if (tagEnd === -1) break;
+
+    const openingTag = raw.slice(openIndex, tagEnd + 1);
+    const tradeId = openingTag.match(TRADE_ID_ATTR)?.[1];
+
+    if (tradeId) {
+      const partner = openingTag.match(TRADE_PARTNER_ATTR)?.[1];
+      tags.push({
+        tradeId,
+        partner,
+        completed: hasCompletedAttr(openingTag),
+      });
+    }
+
+    index = tagEnd + 1;
+  }
+
+  return tags;
+};
 
 const extractTradeSectionsWithOffsets = (
   raw: string,
@@ -159,3 +227,46 @@ export const getTcdbTradeSections = (
     ({ offset: _offset, ...rest }) => rest,
   );
 };
+
+export function listTcdbTrades(): TcdbTradeSummary[] {
+  const trades = new Map<string, TradeSummaryAccumulator>();
+
+  for (const post of allPosts) {
+    const raw = post.body?.raw;
+    if (!raw?.includes(TRADE_ID_ATTR_NAME)) continue;
+
+    const tradeTags = extractTradeTags(raw);
+    for (const tag of tradeTags) {
+      const current = trades.get(tag.tradeId) ?? {};
+
+      if (!current.partner && tag.partner) {
+        current.partner = tag.partner;
+      }
+
+      if (tag.completed) {
+        if (isLaterDate(post.date, current.endDate)) {
+          current.endDate = post.date;
+        }
+      } else if (isEarlierDate(post.date, current.startDate)) {
+        current.startDate = post.date;
+      }
+
+      trades.set(tag.tradeId, current);
+    }
+  }
+
+  return Array.from(trades.entries())
+    .map(([tradeId, trade]) => {
+      const summary: TcdbTradeSummary = {
+        tradeId,
+        startDate: trade.startDate ?? trade.endDate ?? "",
+        status: trade.endDate ? "Completed" : "Open",
+      };
+
+      if (trade.endDate) summary.endDate = trade.endDate;
+      if (trade.partner) summary.partner = trade.partner;
+
+      return summary;
+    })
+    .sort((a, b) => Number(b.tradeId) - Number(a.tradeId));
+}

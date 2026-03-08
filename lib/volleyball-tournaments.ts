@@ -25,6 +25,7 @@ export type VolleyballTournamentSummary = {
   overallWins: number;
   overallLosses: number;
   overallRecord: string;
+  tournamentDays: number;
   latestPostDate: string;
 };
 
@@ -308,6 +309,9 @@ export const getAllVolleyballTournamentSummaries = (
     const summary = summarizeTournamentSections(orderedSections);
     const latestPostDate =
       orderedSections[orderedSections.length - 1]?.postDate ?? "";
+    const tournamentDays = new Set(
+      orderedSections.map((section) => section.postDate),
+    ).size;
 
     summaries.push({
       tournamentId,
@@ -316,6 +320,7 @@ export const getAllVolleyballTournamentSummaries = (
       overallWins: summary.overallWins,
       overallLosses: summary.overallLosses,
       overallRecord: summary.overallRecord,
+      tournamentDays,
       latestPostDate,
     });
   }

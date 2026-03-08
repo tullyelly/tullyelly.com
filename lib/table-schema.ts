@@ -8,6 +8,7 @@ export type TableSchemaSection = {
   postDate: string;
   postTitle: string;
   tableSchemaName?: string;
+  tableSchemaUrl?: string;
   tableSchemaRating?: string;
   mdx: string;
 };
@@ -15,15 +16,19 @@ export type TableSchemaSection = {
 export type TableSchemaSummary = {
   tableSchemaId: string;
   tableSchemaName: string;
+  tableSchemaUrl?: string;
   averageRating: number;
+  visitCount: number;
   latestPostDate: string;
 };
 
 export type TableSchemaPageData = {
   tableSchemaId: string;
   tableSchemaName: string;
+  tableSchemaUrl?: string;
   summary: {
     averageRating: number;
+    visitCount: number;
   };
   sections: TableSchemaSection[];
 };
@@ -41,6 +46,7 @@ type ExtractedTableSchemaSection = {
   offset: number;
   tableSchemaId: string;
   tableSchemaName?: string;
+  tableSchemaUrl?: string;
   tableSchemaRating?: string;
 };
 
@@ -91,6 +97,7 @@ const extractTableSchemaReview = (
 ): {
   tableSchemaId: string;
   tableSchemaName?: string;
+  tableSchemaUrl?: string;
   tableSchemaRating?: string;
 } | null => {
   const reviewObject = extractReviewObject(openingTag);
@@ -103,11 +110,13 @@ const extractTableSchemaReview = (
   if (!reviewId) return null;
 
   const reviewName = extractReviewField(reviewObject, "name");
+  const reviewUrl = extractReviewField(reviewObject, "url");
   const reviewRating = extractReviewField(reviewObject, "rating");
 
   return {
     tableSchemaId: normalizeTableSchemaId(reviewId),
     tableSchemaName: reviewName,
+    tableSchemaUrl: reviewUrl,
     tableSchemaRating: reviewRating,
   };
 };
@@ -176,6 +185,7 @@ export const extractTableSchemaSectionsWithOffsets = (
     const tableSchemaReview = extractTableSchemaReview(openingTag);
     const matchingTableSchemaId = tableSchemaReview?.tableSchemaId;
     const tableSchemaName = tableSchemaReview?.tableSchemaName;
+    const tableSchemaUrl = tableSchemaReview?.tableSchemaUrl;
     const tableSchemaRating = tableSchemaReview?.tableSchemaRating;
     const isSelfClosing = /\/\s*>$/.test(openingTag);
 
@@ -195,6 +205,7 @@ export const extractTableSchemaSectionsWithOffsets = (
         offset: openIndex,
         tableSchemaId: matchingTableSchemaId,
         tableSchemaName,
+        tableSchemaUrl,
         tableSchemaRating,
       });
       index = tagEnd + 1;
@@ -210,6 +221,7 @@ export const extractTableSchemaSectionsWithOffsets = (
       offset: openIndex,
       tableSchemaId: matchingTableSchemaId,
       tableSchemaName,
+      tableSchemaUrl,
       tableSchemaRating,
     });
     index = endIndex;
@@ -255,10 +267,19 @@ export const getTableSchemaSections = (
 
 export const summarizeTableSchemaSections = (
   sections: TableSchemaSection[],
-): { tableSchemaName?: string; averageRating: number } => {
+): {
+  tableSchemaName?: string;
+  tableSchemaUrl?: string;
+  averageRating: number;
+  visitCount: number;
+} => {
   const tableSchemaName = sections
     .map((section) => section.tableSchemaName?.trim())
     .find((name): name is string => Boolean(name));
+
+  const tableSchemaUrl = sections
+    .map((section) => section.tableSchemaUrl?.trim())
+    .find((url): url is string => Boolean(url));
 
   let total = 0;
   let count = 0;
@@ -276,7 +297,9 @@ export const summarizeTableSchemaSections = (
 
   return {
     tableSchemaName,
+    tableSchemaUrl,
     averageRating,
+    visitCount: sections.length,
   };
 };
 
@@ -316,7 +339,9 @@ export const getAllTableSchemaSummaries = (
       tableSchemaId,
       tableSchemaName:
         summary.tableSchemaName ?? `Table Schema ${tableSchemaId}`,
+      tableSchemaUrl: summary.tableSchemaUrl,
       averageRating: summary.averageRating,
+      visitCount: summary.visitCount,
       latestPostDate,
     });
   }
@@ -340,8 +365,10 @@ export const getTableSchemaPageData = (
     tableSchemaId: normalizedTableSchemaId,
     tableSchemaName:
       summary.tableSchemaName ?? `Table Schema ${normalizedTableSchemaId}`,
+    tableSchemaUrl: summary.tableSchemaUrl,
     summary: {
       averageRating: summary.averageRating,
+      visitCount: summary.visitCount,
     },
     sections,
   };

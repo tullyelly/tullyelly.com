@@ -1,18 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 
-const getAllTableSchemaSummariesMock = jest.fn();
 const compileMdxToCodeMock = jest.fn();
 const mdxRendererMock = jest.fn(
   ({ code }: { code: string; components?: unknown }) => (
     <div data-testid="mdx-renderer">{code}</div>
   ),
 );
-
-jest.mock("@/lib/table-schema", () => ({
-  getAllTableSchemaSummaries: (...args: unknown[]) =>
-    getAllTableSchemaSummariesMock(...args),
-}));
 
 jest.mock("@/lib/mdx/compile", () => ({
   compileMdxToCode: (...args: unknown[]) => compileMdxToCodeMock(...args),
@@ -34,53 +28,42 @@ jest.mock("@/components/mdx/ReleaseSection", () => ({
   ),
 }));
 
-import TableSchemaDirectory from "@/components/unclejimmy/TableSchemaDirectory";
 import TableSchemaSections from "@/components/unclejimmy/TableSchemaSections";
+import TableSchemaListClient from "@/app/unclejimmy/table-schema/_components/TableSchemaListClient";
 
-describe("TableSchemaDirectory", () => {
-  beforeEach(() => {
-    getAllTableSchemaSummariesMock.mockReset();
-  });
+describe("TableSchemaListClient", () => {
+  it("renders an empty state when no rows are available", () => {
+    render(<TableSchemaListClient rows={[]} />);
 
-  it("renders an empty state when no summaries are available", () => {
-    getAllTableSchemaSummariesMock.mockReturnValue([]);
-
-    render(<TableSchemaDirectory />);
-
-    expect(screen.getByRole("heading", { name: "Table Schema" })).toBeInTheDocument();
     expect(
-      screen.getByText("No Table Schema visits are published yet."),
-    ).toBeInTheDocument();
+      screen.getAllByText(
+        "No table schema reviews have been referenced in chronicles yet.",
+      ),
+    ).toHaveLength(2);
   });
 
-  it("renders summary rows with ratings and links", () => {
-    getAllTableSchemaSummariesMock.mockReturnValue([
-      {
-        tableSchemaId: "pizza-shack",
-        tableSchemaName: "Pizza Shack",
-        averageRating: 8.7,
-        latestPostDate: "2026-02-14",
-      },
-      {
-        tableSchemaId: "burger-barn",
-        tableSchemaName: "Burger Barn",
-        averageRating: 9.2,
-        latestPostDate: "2026-02-15",
-      },
-    ]);
-
-    render(<TableSchemaDirectory />);
-
-    expect(screen.getByText("Pizza Shack")).toBeInTheDocument();
-    expect(screen.getByText("Burger Barn")).toBeInTheDocument();
-    expect(screen.getByText("Average rating: 8.7/10")).toBeInTheDocument();
-    expect(screen.getByText("Average rating: 9.2/10")).toBeInTheDocument();
-    const visitLinks = screen.getAllByRole("link", { name: "view visits" });
-    expect(visitLinks).toHaveLength(2);
-    expect(visitLinks[0]).toHaveAttribute(
-      "href",
-      "/unclejimmy/table-schema/pizza-shack",
+  it("renders rows with detail links and average ratings", () => {
+    render(
+      <TableSchemaListClient
+        rows={[
+          {
+            tableSchemaId: "pizza-shack",
+            tableSchemaName: "Pizza Shack",
+            tableSchemaUrl: "https://pizza-shack.example.com/",
+            averageRating: 8.7,
+            visitCount: 2,
+            latestPostDate: "2026-03-01",
+          },
+        ]}
+      />,
     );
+
+    expect(screen.getAllByText("Pizza Shack").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("8.7/10").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole("link", { name: "Pizza Shack" })[0],
+    ).toHaveAttribute("href", "/unclejimmy/table-schema/pizza-shack");
+    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
   });
 });
 

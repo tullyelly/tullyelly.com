@@ -1,9 +1,12 @@
 import { Card } from "@ui";
 
-import TableSchemaDirectory from "@/components/unclejimmy/TableSchemaDirectory";
+import FullBleedPage from "@/components/layout/FullBleedPage";
+import { getAllTableSchemaSummaries } from "@/lib/table-schema";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
-const pageTitle = "table schema | 🎙unclejimmy";
+import TableSchemaListClient from "./_components/TableSchemaListClient";
+
+const pageTitle = "Table Schema | 🎙unclejimmy";
 const pageDescription =
   "Table Schema tracks restaurant visits from chronicles and summarizes average ratings.";
 
@@ -24,12 +27,28 @@ export const metadata = {
   },
 };
 
+export const dynamic = "force-static";
+export const revalidate = 3600;
+
 export default function UncleJimmyTableSchemaPage() {
+  const tableSchemas = getAllTableSchemaSummaries();
+
   return (
-    <article className="max-w-3xl mx-auto space-y-10 mt-8 md:mt-10">
-      <Card as="section" className="space-y-8 p-6 md:p-8">
-        <TableSchemaDirectory />
+    <FullBleedPage>
+      <Card
+        as="section"
+        className="space-y-8 border-0 shadow-none px-1 py-6 md:p-8"
+      >
+        <header>
+          <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
+            Table Schema
+          </h1>
+        </header>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          Running list of restaurants we have been visiting.
+        </p>
+        <TableSchemaListClient rows={tableSchemas} />
       </Card>
-    </article>
+    </FullBleedPage>
   );
 }

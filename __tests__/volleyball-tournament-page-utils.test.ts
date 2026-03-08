@@ -180,8 +180,10 @@ describe("getAllVolleyballTournamentSummaries", () => {
     expect(summaries[0]?.tournamentId).toBe("2");
     expect(summaries[0]?.tournamentName).toBe("Club Tune Up");
     expect(summaries[0]?.overallRecord).toBe("1-2");
+    expect(summaries[0]?.tournamentDays).toBe(1);
     expect(summaries[1]?.tournamentId).toBe("1");
     expect(summaries[1]?.overallRecord).toBe("2-3");
+    expect(summaries[1]?.tournamentDays).toBe(2);
     expect(summaries[1]?.latestPostDate).toBe("2026-02-15");
   });
 });

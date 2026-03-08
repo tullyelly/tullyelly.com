@@ -80,42 +80,6 @@ type ReleaseSectionProps =
   | ReleaseSectionWithReview
   | ReleaseSectionWithoutReleaseOrReview;
 
-function findOriginalTradePost(tradeId: string) {
-  const matches = allPosts
-    .filter((post) => post.body.raw.includes(getTradeIdAttribute(tradeId)))
-    .sort((a, b) =>
-      a.date === b.date
-        ? a.slug.localeCompare(b.slug)
-        : a.date < b.date
-          ? -1
-          : 1,
-    );
-
-  const original = matches[0];
-  return original ? { slug: original.slug, url: original.url } : undefined;
-}
-
-function findCompletedTradePost(tradeId: string) {
-  const matches = allPosts
-    .filter(
-      (post) =>
-        post.body.raw.includes(getTradeIdAttribute(tradeId)) &&
-        post.body.raw.includes("completed"),
-    )
-    .sort((a, b) =>
-      a.date === b.date
-        ? a.slug.localeCompare(b.slug)
-        : a.date < b.date
-          ? -1
-          : 1,
-    );
-
-  const completedPost = matches[matches.length - 1];
-  return completedPost
-    ? { slug: completedPost.slug, url: completedPost.url }
-    : undefined;
-}
-
 function hasCompletedTrade(tradeId: string): boolean {
   const tradeAttr = getTradeIdAttribute(tradeId);
   return allPosts.some(
@@ -187,9 +151,9 @@ function getReviewLabel(type: ReviewType): string {
  *
  * - alterEgo: required persona tag rendered as a pill.
  * - releaseId: optional scroll ID; when present, the section renders a linked tab to `/mark2/shaolin-scrolls/{releaseId}`.
- * - tcdbTradeId: optional trade ID; when present, the section renders a linked tab to the TCDB transaction.
- * - tcdbTradePartner: optional trade partner for TCDB trades.
- * - completed: optional completion link; only valid with tcdbTradeId; completed sections link back to the original trade post and earlier sections link to the completion post when present.
+ * - tcdbTradeId: optional trade ID; when present, the section renders a linked tab to `/cardattack/tcdb-trade/{tcdbTradeId}`.
+ * - tcdbTradePartner: optional trade partner for TCDb trades.
+ * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trade/{tcdbTradeId}` when companion sections exist.
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
@@ -255,7 +219,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
   if (tcdbTradeId) {
     releaseType = "tcdb";
-    tradeUrl = `https://www.tcdb.com/Transactions.cfm?MODE=VIEW&TransactionID=${tcdbTradeId}&PageIndex=1`;
+    tradeUrl = `/cardattack/tcdb-trade/${tcdbTradeId}`;
     tradePartnerUrl = tcdbTradePartner
       ? `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(
           tcdbTradePartner,
@@ -281,16 +245,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       tradeSectionCount > 1 && (completed || hasCompletion);
 
     if (shouldShowCompletion) {
-      const original = findOriginalTradePost(tcdbTradeId);
-      const completedPost = findCompletedTradePost(tcdbTradeId);
-
-      if (completed && original) {
-        completedLabel = `${tcdbTradeId}: completed`;
-        completedHref = original.url;
-      } else if (!completed && completedPost) {
-        completedLabel = `${tcdbTradeId}: completed`;
-        completedHref = completedPost.url;
-      }
+      completedLabel = `${tcdbTradeId}: completed`;
+      completedHref = `/cardattack/tcdb-trade/${tcdbTradeId}`;
     }
   }
 
@@ -304,7 +260,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const showReviewRating =
     review?.rating !== undefined && `${review.rating}`.trim() !== "";
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
-  const isTcdbTrade = Boolean(tcdbTradeId);
   // Rainbow assignment is the only accent colour source for ReleaseSection.
   const normalizedRainbowColour = rainbowColour?.trim() || PILL_BLUE;
   const resolvedSectionColor = normalizedRainbowColour;
@@ -472,17 +427,14 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   if (!showReleaseDetails) {
     const plainContent = showTournamentVisuals ? (
       <div
-        className="rounded-lg border-[4px] border-dashed border-[var(--blue)] px-4 py-4"
-        style={{
-          boxShadow: "inset 0 0 0 1px var(--tcdb-wood-base)",
-          borderColor: resolvedSectionColor,
-        }}
+        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}
       </div>
     ) : review?.type === "lcs" && showReviewVisuals ? (
       <div
-        className="rounded-lg border-[4px] border-double border-[var(--tcdb-wood-dark)] px-4 py-4"
+        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
         style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}
@@ -496,12 +448,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       </div>
     ) : review?.type === "save-point" && showReviewVisuals ? (
       <div
-        className="rounded-lg px-4 py-4"
-        style={{
-          border: resolvedSectionColor
-            ? `2px solid ${resolvedSectionColor}`
-            : "2px solid var(--save-point-color, #7c3aed)",
-        }}
+        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}
       </div>
@@ -556,8 +504,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
         <Link
           href={tabHref}
           prefetch={false}
-          target={isTcdbTrade ? "_blank" : undefined}
-          rel={isTcdbTrade ? "noreferrer noopener" : undefined}
           className={[
             "absolute -top-[4px] left-[-4px] inline-flex items-center gap-1 rounded-tl-lg rounded-tr-md border-[4px] border-b-0 px-3 py-1 text-sm font-semibold leading-none",
             pillInteractionClasses,
