@@ -1,4 +1,4 @@
--- 028_create_tags_and_secret_identity.sql
+-- 028_create_tags_table.sql
 -- Introduce canonical site tags and link auth users to a tag-backed secret identity.
 
 SET search_path = dojo, auth, public;
@@ -34,14 +34,14 @@ $$;
 -- Canonical source for site tags used across content, users, and UI surfaces.
 CREATE TABLE IF NOT EXISTS dojo.tags (
   id SERIAL PRIMARY KEY,
-  slug TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT now(),
-  updated_at TIMESTAMP NOT NULL DEFAULT now()
+  slug TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 COMMENT ON TABLE dojo.tags IS
-  'Canonical source for site tags used across content, users, and other site surfaces.';
+  'Canonical source for site tags; tags represent canonical identities across the site.';
 
 CREATE INDEX IF NOT EXISTS idx_tags_slug ON dojo.tags (slug);
 
