@@ -2,7 +2,10 @@ import Link from "next/link";
 import type { Route } from "next";
 
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import { sql } from "@/lib/db";
 import { squadMembers } from "@/lib/unclejimmy/squadMembers";
+
+import SquadCommentaryChart from "./_components/SquadCommentaryChart";
 
 const pageTitle = "🎙unclejimmy squad | tullyelly";
 const pageDescription =
@@ -25,7 +28,26 @@ export const metadata = {
   },
 };
 
-export default function UncleJimmySquadPage() {
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+type SecretIdentityCommentSummaryRow = {
+  tag_slug: string | null;
+  tag_name: string | null;
+  comment_count: number | string;
+};
+
+export default async function UncleJimmySquadPage() {
+  const commentaryRows = await sql<SecretIdentityCommentSummaryRow>`
+    SELECT *
+    FROM dojo.v_secret_identity_comment_summary;
+  `;
+
+  const commentaryData = commentaryRows.map((row) => ({
+    tag_name: row.tag_name ?? row.tag_slug ?? "No identity",
+    comment_count: Number(row.comment_count),
+  }));
+
   return (
     <div className="space-y-12">
       <section className="space-y-4">
@@ -77,6 +99,16 @@ export default function UncleJimmySquadPage() {
             </Link>
           </li>
         </ul>
+      </section>
+      <section className="space-y-4">
+        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
+          Squad Commentary
+        </h2>
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          This chart shows which identities are most active in the chronicles
+          comment threads.
+        </p>
+        <SquadCommentaryChart rows={commentaryData} />
       </section>
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
