@@ -2,16 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { Card } from "@ui";
 
 import { SectionDivider } from "@/components/SectionDivider";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
 import { getCartoonByTagId } from "@/lib/cartoon/getCartoonByTagId";
+import { getCommentsByUserId } from "@/lib/comments/getCommentsByUserId";
 import {
   getSecretIdentitySquadMember,
   listDynamicSquadMemberParams,
 } from "@/lib/unclejimmy/secretIdentitySquadMembers";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { getTaggedPosts } from "@/lib/blog";
+import { fmtDateTime } from "@/lib/datetime";
 
 type Params = { member: string };
 
@@ -20,6 +23,15 @@ export const revalidate = 0;
 
 function getMemberDescription(displayName: string): string {
   return `Profile page for ${displayName} within the 🎙unclejimmy squad.`;
+}
+
+function truncateCommentBody(body: string, maxLength = 280): string {
+  const trimmed = body.trim();
+  if (trimmed.length <= maxLength) {
+    return trimmed;
+  }
+
+  return `${trimmed.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
 export async function generateStaticParams(): Promise<Params[]> {
@@ -68,6 +80,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   const cartoon = await getCartoonByTagId(member.tagId);
   const taggedPosts = getTaggedPosts(member.tagSlug);
+  const comments = await getCommentsByUserId(member.userId);
   const showCartoon =
     cartoon?.imagePath.toLowerCase().includes("cartoon") ?? false;
 
@@ -129,6 +142,55 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       </section>
       <SectionDivider className="my-6" />
       <SquadMemberPosts tag={member.tagSlug} posts={taggedPosts} />
+      <SectionDivider className="my-6" />
+      <section className="space-y-5">
+        <header className="space-y-2">
+          <h2 className="text-xl md:text-2xl font-semibold leading-snug">
+            Comments
+          </h2>
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
+            Every comment this identity has left across the chronicles.
+          </p>
+        </header>
+
+        {comments.length === 0 ? (
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
+            No comments yet.
+          </p>
+        ) : (
+          <ul className="space-y-4">
+            {comments.map((comment) => (
+              <Card as="li" key={comment.id} className="space-y-3 p-5">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                  <Link
+                    href={`/shaolin/${encodeURIComponent(comment.postSlug)}`}
+                    className="text-sm font-semibold link-blue"
+                  >
+                    {comment.postSlug}
+                  </Link>
+                  <time
+                    dateTime={comment.createdAt}
+                    className="text-xs text-muted-foreground"
+                  >
+                    {fmtDateTime(comment.createdAt)}
+                  </time>
+                </div>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                  {truncateCommentBody(comment.body)}
+                </p>
+                <div>
+                  <Link
+                    href={`/shaolin/${encodeURIComponent(comment.postSlug)}`}
+                    className="text-sm underline hover:no-underline"
+                  >
+                    View original post
+                  </Link>
+                </div>
+              </Card>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
