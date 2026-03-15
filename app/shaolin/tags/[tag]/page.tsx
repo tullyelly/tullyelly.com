@@ -4,6 +4,7 @@ import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import FlowersInline from "@/components/flowers/FlowersInline";
 import { SectionDivider } from "@/components/SectionDivider";
+import { TagCommentsSection } from "@/components/chronicles/TagCommentsSection";
 import { Card } from "@ui";
 import { allPosts } from "contentlayer/generated";
 import { notFound } from "next/navigation";
@@ -91,6 +92,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </Card>
         ))}
       </ul>
+
+      <SectionDivider />
+
+      <TagCommentsSection tag={tag} />
 
       <SectionDivider />
 
