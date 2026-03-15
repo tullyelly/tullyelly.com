@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Card } from "@ui";
 
 import { SectionDivider } from "@/components/SectionDivider";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
@@ -23,6 +22,10 @@ export const revalidate = 0;
 
 function getMemberDescription(displayName: string): string {
   return `Profile page for ${displayName} within the 🎙unclejimmy squad.`;
+}
+
+function getRecentChroniclesDescription(displayName: string, tagSlug: string) {
+  return `Recent chronicle entries tied to ${displayName} under #${tagSlug.toLowerCase()}.`;
 }
 
 function truncateCommentBody(body: string, maxLength = 280): string {
@@ -105,11 +108,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <SectionDivider className="my-6" />
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          cartoon portrait
+          Cartoon
         </h2>
         {showCartoon && cartoon ? (
-          <>
-            <div className="relative w-full max-w-md overflow-hidden rounded-lg border border-border bg-white shadow-sm aspect-[4/5]">
+          <div className="space-y-4 rounded-lg border border-border bg-white p-4 shadow-sm md:p-6">
+            <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-lg border border-border bg-white">
               <Image
                 src={cartoon.imagePath}
                 alt={`${member.displayName} cartoon portrait`}
@@ -123,25 +126,27 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 {cartoon.description}
               </p>
             ) : null}
-          </>
+          </div>
         ) : (
-          <p className="text-[16px] md:text-[18px] text-muted-foreground">
-            No cartoon uploaded yet.
-          </p>
+          <div className="rounded-lg border border-border bg-white p-4 shadow-sm md:p-6">
+            <p className="text-[16px] md:text-[18px] text-muted-foreground">
+              No cartoon uploaded yet.
+            </p>
+          </div>
         )}
       </section>
       <SectionDivider className="my-6" />
-      <section className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          squad notes
-        </h2>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Quick notes and future updates for {member.displayName}; this space
-          will collect small moments before they grow into full entries.
-        </p>
-      </section>
-      <SectionDivider className="my-6" />
-      <SquadMemberPosts tag={member.tagSlug} posts={taggedPosts} />
+      <div className="rounded-lg border border-border bg-white p-4 shadow-sm md:p-6">
+        <SquadMemberPosts
+          tag={member.tagSlug}
+          posts={taggedPosts}
+          heading="Recent chronicles"
+          description={getRecentChroniclesDescription(
+            member.displayName,
+            member.tagSlug,
+          )}
+        />
+      </div>
       <SectionDivider className="my-6" />
       <section className="space-y-5">
         <header className="space-y-2">
@@ -149,18 +154,23 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             Comments
           </h2>
           <p className="text-[16px] md:text-[18px] text-muted-foreground">
-            Every comment this identity has left across the chronicles.
+            Every comment {member.displayName} has left across the chronicles.
           </p>
         </header>
 
         {comments.length === 0 ? (
-          <p className="text-[16px] md:text-[18px] text-muted-foreground">
-            No comments yet.
-          </p>
+          <div className="rounded-lg border border-border bg-white p-4 shadow-sm md:p-6">
+            <p className="text-[16px] md:text-[18px] text-muted-foreground">
+              No comments yet.
+            </p>
+          </div>
         ) : (
           <ul className="space-y-4">
             {comments.map((comment) => (
-              <Card as="li" key={comment.id} className="space-y-3 p-5">
+              <li
+                key={comment.id}
+                className="space-y-3 rounded-lg border border-border bg-white p-4 shadow-sm md:p-5"
+              >
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
                   <Link
                     href={`/shaolin/${encodeURIComponent(comment.postSlug)}`}
@@ -186,7 +196,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     View original post
                   </Link>
                 </div>
-              </Card>
+              </li>
             ))}
           </ul>
         )}
