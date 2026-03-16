@@ -9,7 +9,6 @@ import { getCartoonByTagId } from "@/lib/cartoon/getCartoonByTagId";
 import { getCommentsByUserId } from "@/lib/comments/getCommentsByUserId";
 import {
   getSecretIdentitySquadMember,
-  listDynamicSquadMemberParams,
 } from "@/lib/unclejimmy/secretIdentitySquadMembers";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { getTaggedPosts } from "@/lib/blog";
@@ -31,10 +30,6 @@ function truncateCommentBody(body: string, maxLength = 280): string {
   }
 
   return `${trimmed.slice(0, maxLength - 3).trimEnd()}...`;
-}
-
-export async function generateStaticParams(): Promise<Params[]> {
-  return listDynamicSquadMemberParams();
 }
 
 export async function generateMetadata({
