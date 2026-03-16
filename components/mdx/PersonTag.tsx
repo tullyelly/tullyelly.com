@@ -1,6 +1,6 @@
 export type PersonTagProps = {
-  displayName: string;
   tag: string;
+  displayName?: string;
 };
 
 /**
@@ -9,7 +9,7 @@ export type PersonTagProps = {
 export default function PersonTag({ displayName, tag }: PersonTagProps) {
   return (
     <i className="font-bold italic text-[var(--blue)]" data-person-tag={tag}>
-      {displayName}
+      {displayName ?? tag}
     </i>
   );
 }

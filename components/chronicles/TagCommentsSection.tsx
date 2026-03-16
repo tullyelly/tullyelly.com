@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDateTime } from "@/lib/datetime";
 import { Card } from "@ui";
 
@@ -111,45 +112,51 @@ export function TagCommentsSection({ tag }: Props) {
     }
   }
 
+  if (loading) {
+    return null;
+  }
+
+  if (!error && comments.length === 0) {
+    return null;
+  }
+
   return (
-    <section className="space-y-5">
-      <header className="space-y-2">
-        <h2 className="text-2xl font-semibold">Community</h2>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Comments left by this identity across the chronicles.
-        </p>
-      </header>
+    <>
+      <SectionDivider />
 
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Loading community...</p>
-      ) : error ? (
-        <p className="text-sm text-destructive">{error}</p>
-      ) : comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No comments from this identity yet.
-        </p>
-      ) : (
-        <div className="space-y-4">
-          <ul className="space-y-4">
-            {comments.map((comment) => (
-              <CommentCard key={comment.id} comment={comment} />
-            ))}
-          </ul>
+      <section className="space-y-5">
+        <header className="space-y-2">
+          <h2 className="text-2xl font-semibold">Community</h2>
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
+            Comments left by this identity across the chronicles.
+          </p>
+        </header>
 
-          {hasMore ? (
-            <div className="flex justify-start">
-              <button
-                type="button"
-                className="btn"
-                onClick={() => void handleLoadMore()}
-                disabled={loadingMore}
-              >
-                {loadingMore ? "Loading..." : "Load more"}
-              </button>
-            </div>
-          ) : null}
-        </div>
-      )}
-    </section>
+        {error ? (
+          <p className="text-sm text-destructive">{error}</p>
+        ) : (
+          <div className="space-y-4">
+            <ul className="space-y-4">
+              {comments.map((comment) => (
+                <CommentCard key={comment.id} comment={comment} />
+              ))}
+            </ul>
+
+            {hasMore ? (
+              <div className="flex justify-start">
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => void handleLoadMore()}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? "Loading..." : "Load more"}
+                </button>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </section>
+    </>
   );
 }

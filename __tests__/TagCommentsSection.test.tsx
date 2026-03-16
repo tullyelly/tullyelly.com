@@ -17,21 +17,23 @@ describe("TagCommentsSection", () => {
     global.fetch = originalFetch;
   });
 
-  it("shows the empty-state message when no comments exist", async () => {
+  it("renders nothing when no comments exist", async () => {
     global.fetch = jest.fn(async () =>
       Response.json([], { status: 200 }),
     ) as typeof fetch;
 
     render(<TagCommentsSection tag="cipher" />);
 
-    expect(await screen.findByText("Community")).toBeInTheDocument();
-    expect(
-      await screen.findByText("No comments from this identity yet."),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tag-comments?tag=cipher&limit=10",
+      );
+    });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/tag-comments?tag=cipher&limit=10",
-    );
+    expect(screen.queryByText("Community")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("No comments from this identity yet."),
+    ).not.toBeInTheDocument();
   });
 
   it("loads more comments using the last timestamp as the cursor", async () => {

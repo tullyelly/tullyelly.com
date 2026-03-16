@@ -8,6 +8,7 @@ import { Card } from "@ui";
 import { getPublishedPosts, getTagsWithCounts } from "@/lib/blog";
 import { buildMetadata } from "@/lib/seo/builders";
 import { canonicalFor } from "@/lib/seo/url";
+import { getHashtagDisplayName } from "@/lib/tags";
 
 export async function generateMetadata() {
   const title = "Chronicle tags | tullyelly";
@@ -56,7 +57,7 @@ export default function Page() {
                   prefetch={false}
                 >
                   <Badge className={getBadgeClass("classic")}>
-                    #{tag}{" "}
+                    {getHashtagDisplayName(tag)}{" "}
                     <span className="pl-1 text-[11px] opacity-80">
                       ({count})
                     </span>

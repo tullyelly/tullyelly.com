@@ -42,7 +42,7 @@ export function MothersDaySection({ date }: Props) {
         </figure>
         <p className="mt-3 text-[16px] md:text-[18px] text-muted-foreground">
           <FlowersInline>
-            <PersonTag displayName="nikkigirl" tag="nikkigirl" />, Big Ter,{" "}
+            <PersonTag tag="nikkigirl" />, Big Ter,{" "}
             <a
               className="underline hover:no-underline"
               href="https://www.youtube.com/"
