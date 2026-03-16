@@ -35,7 +35,7 @@ export default function UncleJimmyPage() {
           whether or not to try something, I&rsquo;ll immediately try it.
           I&rsquo;ve gotten better at controlling this impulse over the years,
           but not enough to where{" "}
-          <PersonTag displayName="nikkigirl" tag="nikkigirl" /> doesn&rsquo;t
+          <PersonTag tag="nikkigirl" /> doesn&rsquo;t
           still get worried every time I leave the house without her.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">

@@ -112,7 +112,7 @@ export default function CardattackPage() {
           <li>Bags</li>
           <li>Bags inside boxes</li>
           <li>
-            <PersonTag displayName="nikkigirl" tag="nikkigirl" /> 🤯
+            <PersonTag tag="nikkigirl" /> 🤯
           </li>
         </ul>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
@@ -125,7 +125,7 @@ export default function CardattackPage() {
           🃏cardattack
         </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Full credit to <PersonTag displayName="nikkigirl" tag="nikkigirl" />{" "}
+          Full credit to <PersonTag tag="nikkigirl" />{" "}
           for the 🃏cardattack name. While I&apos;m ⚒️tullyelly on{" "}
           <a
             href="https://www.tcdb.com/Profile.cfm/tullyelly"

@@ -76,7 +76,7 @@ export default function Page() {
             </a>
           </span>,
           <span key="3">
-            <PersonTag displayName="nikkigirl" tag="nikkigirl" />, Big Ter,{" "}
+            <PersonTag tag="nikkigirl" />, Big Ter,{" "}
             <a
               href="https://www.youtube.com/"
               className="underline hover:no-underline"
@@ -171,10 +171,10 @@ export default function Page() {
             </a>
           </span>,
           <span key="6">
-            <PersonTag displayName="lulu" tag="lulu" />
+            <PersonTag tag="lulu" />
             {", "}uw-stevens point, giannis, little diner xpress, pete&apos;s
             auto, george webb, the brew crew, dad,{" "}
-            <PersonTag displayName="nikkigirl" tag="nikkigirl" />
+            <PersonTag tag="nikkigirl" />
             {", "}breakfast, toothpicks, usps, walgreens, lego, f1, prisons,
             conrad, spongebob, tcdb, shin, & wyoming
           </span>,
