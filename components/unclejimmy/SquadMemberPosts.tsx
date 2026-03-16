@@ -11,16 +11,12 @@ type SquadMemberPostsProps = {
   tag: string;
   posts: TaggedPost[];
   pageSize?: number;
-  heading?: string;
-  description?: string;
 };
 
 export default function SquadMemberPosts({
   tag,
   posts,
   pageSize = 10,
-  heading,
-  description,
 }: SquadMemberPostsProps) {
   const safeSize = Number.isFinite(pageSize) ? Math.max(1, pageSize) : 10;
   const resetKey = `${tag}-${safeSize}-${posts?.length ?? 0}`;
@@ -31,8 +27,6 @@ export default function SquadMemberPosts({
       tag={tag}
       posts={posts}
       safeSize={safeSize}
-      heading={heading}
-      description={description}
     />
   );
 }
@@ -41,24 +35,16 @@ type SquadMemberPostsInnerProps = {
   tag: string;
   posts: TaggedPost[];
   safeSize: number;
-  heading?: string;
-  description?: string;
 };
 
 function SquadMemberPostsInner({
   tag,
   posts,
   safeSize,
-  heading,
-  description,
 }: SquadMemberPostsInnerProps) {
   const totalPages = Math.max(1, Math.ceil((posts?.length ?? 0) / safeSize));
   const [page, setPage] = useState(1);
   const hasPosts = Array.isArray(posts) && posts.length > 0;
-  const resolvedHeading = heading ?? `recent chronicles for ${tag.toLowerCase()}`;
-  const resolvedDescription =
-    description ??
-    `Latest entries tagged ${tag.toLowerCase()}; follow along with the journey.`;
 
   const pageItems = useMemo(() => {
     if (!Array.isArray(posts) || posts.length === 0) return [];
@@ -70,10 +56,11 @@ function SquadMemberPostsInner({
     <section className="space-y-6">
       <header className="space-y-1">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          {resolvedHeading}
+          recent chronicles for {tag.toLowerCase()}
         </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          {resolvedDescription}
+          Latest entries tagged {tag.toLowerCase()}; follow along with the
+          journey.
         </p>
       </header>
 
