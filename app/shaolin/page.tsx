@@ -8,6 +8,7 @@ import { Card } from "@ui";
 import { getPublishedPosts, getTagsWithCounts, paginate } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
 import { makeListGenerateMetadata } from "@/lib/seo/factories";
+import { getHashtagDisplayName, normalizeTagSlug } from "@/lib/tags";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -167,7 +168,7 @@ export default async function Page({
                 prefetch={false}
               >
                 <Badge className={getBadgeClass("classic")}>
-                  #{tag}{" "}
+                  {getHashtagDisplayName(tag)}{" "}
                   <span className="pl-1 text-[11px] opacity-80">({count})</span>
                 </Badge>
               </Link>
@@ -201,14 +202,14 @@ export default async function Page({
                     key={t}
                     href={
                       `/shaolin/tags/${encodeURIComponent(
-                        t.toLowerCase(),
+                        normalizeTagSlug(t),
                       )}` as Route
                     }
                     className="inline-flex"
                     prefetch={false}
                   >
                     <Badge className={getBadgeClass("planned")}>
-                      #{t.toLowerCase()}
+                      {getHashtagDisplayName(t)}
                     </Badge>
                   </Link>
                 ))}

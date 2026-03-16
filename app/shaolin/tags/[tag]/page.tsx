@@ -10,6 +10,11 @@ import { allPosts } from "contentlayer/generated";
 import { notFound } from "next/navigation";
 import { getPublishedPosts, byDateDesc } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
+import {
+  getHashtagDisplayName,
+  getTagDisplayName,
+  normalizeTagSlug,
+} from "@/lib/tags";
 
 type Params = { tag: string };
 
@@ -28,18 +33,20 @@ export async function generateMetadata({
   params: Promise<Params>;
 }) {
   const { tag: rawTag } = await params;
-  const tag = rawTag.toLowerCase();
+  const tag = normalizeTagSlug(rawTag);
+  const displayTag = getTagDisplayName(tag);
   return {
-    title: `#${tag} · chronicles`,
-    description: `Posts tagged ${tag}`,
+    title: `${getHashtagDisplayName(tag)} · chronicles`,
+    description: `Posts tagged ${displayTag}`,
   };
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { tag: rawTag } = await params;
-  const tag = rawTag.toLowerCase();
+  const tag = normalizeTagSlug(rawTag);
+  const displayTag = getTagDisplayName(tag);
   const posts = getPublishedPosts()
-    .filter((p) => (p.tags ?? []).map((t) => t.toLowerCase()).includes(tag))
+    .filter((p) => (p.tags ?? []).map((t) => normalizeTagSlug(t)).includes(tag))
     .sort(byDateDesc);
 
   if (posts.length === 0) notFound();
@@ -47,10 +54,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   return (
     <main className="max-w-4xl mx-auto space-y-10 py-6 md:py-8">
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">#{tag}</h1>
+        <h1 className="text-3xl font-semibold">{getHashtagDisplayName(tag)}</h1>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Entries that carry the {tag} label; same chronicle voice with a
-          focused thread.
+          Entries that carry the {displayTag} label; same chronicle voice with
+          a focused thread.
         </p>
       </header>
       <ul className="space-y-6">
@@ -76,14 +83,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     key={t}
                     href={
                       `/shaolin/tags/${encodeURIComponent(
-                        t.toLowerCase(),
+                        normalizeTagSlug(t),
                       )}` as Route
                     }
                     className="inline-flex"
                     prefetch={false}
                   >
                     <Badge className={getBadgeClass("planned")}>
-                      #{t.toLowerCase()}
+                      {getHashtagDisplayName(t)}
                     </Badge>
                   </Link>
                 ))}
@@ -92,8 +99,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </Card>
         ))}
       </ul>
-
-      <SectionDivider />
 
       <TagCommentsSection tag={tag} />
 

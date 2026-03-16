@@ -5,6 +5,7 @@ import { HomeCard } from "@/components/home/home-card";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { getTopChronicleTags } from "@/lib/chronicles";
+import { getHashtagDisplayName } from "@/lib/tags";
 
 export async function TopChronicleTagsCard() {
   const tags = await getTopChronicleTags(10);
@@ -41,7 +42,7 @@ export async function TopChronicleTagsCard() {
                 prefetch={false}
               >
                 <Badge className={getBadgeClass("classic")}>
-                  #{t.tag}{" "}
+                  {getHashtagDisplayName(t.tag)}{" "}
                   <span className="pl-1 text-[11px] opacity-80">
                     ({t.count})
                   </span>

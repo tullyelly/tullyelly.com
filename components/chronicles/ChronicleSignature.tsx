@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { fmtDate } from "@/lib/datetime";
 import { PILL_BLUE, pillInteractionClasses } from "@/components/ui/pillStyles";
+import { getHashtagDisplayName, normalizeTagSlug } from "@/lib/tags";
 
 type ChronicleSignatureProps = {
   title: string;
@@ -37,7 +38,7 @@ export function ChronicleSignature({
         {normalizedTags.length ? (
           <div className="mt-1 flex flex-wrap gap-1.5">
             {normalizedTags.map((tag) => {
-              const tagSlug = encodeURIComponent(tag.toLowerCase());
+              const tagSlug = encodeURIComponent(normalizeTagSlug(tag));
               return (
                 <Link
                   key={tag}
@@ -52,7 +53,7 @@ export function ChronicleSignature({
                   }}
                   prefetch={false}
                 >
-                  #{tag.toLowerCase()}
+                  {getHashtagDisplayName(tag)}
                 </Link>
               );
             })}
