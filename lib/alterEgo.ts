@@ -1,3 +1,5 @@
+import { normalizeTagSlug } from "@/lib/tags";
+
 export const ALTER_EGO_OPTIONS = [
   "mark2",
   "cardattack",
@@ -124,6 +126,58 @@ export function inferPersonTagsFromTree(
       }
 
       foundTags.push(tagAttr.value);
+    }
+
+    if (node.children) {
+      for (const child of node.children) {
+        visitNode(child);
+      }
+    }
+  };
+
+  visitNode(tree);
+  return Array.from(new Set(foundTags));
+}
+
+export function inferYouTubeVideoArtistTagsFromTree(
+  tree: MdxNode,
+  { errorPrefix = "Chronicle" }: InferOptions = {},
+): string[] {
+  const foundTags: string[] = [];
+
+  const visitNode = (node: MdxNode | undefined) => {
+    if (!node) return;
+    const isYouTubeVideo =
+      (node.type === "mdxJsxFlowElement" ||
+        node.type === "mdxJsxTextElement") &&
+      node.name === "YouTubeVideo";
+
+    if (isYouTubeVideo) {
+      const artistAttrs = (node.attributes ?? []).filter(
+        (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "artist",
+      );
+
+      if (artistAttrs.length > 1) {
+        throw new Error(
+          `${errorPrefix}: YouTubeVideo should declare exactly one artist prop.`,
+        );
+      }
+
+      const artistAttr = artistAttrs[0];
+
+      if (artistAttr) {
+        if (typeof artistAttr.value !== "string") {
+          throw new Error(
+            `${errorPrefix}: YouTubeVideo artist must be a string literal.`,
+          );
+        }
+
+        const normalizedArtistTag = normalizeTagSlug(artistAttr.value);
+
+        if (normalizedArtistTag) {
+          foundTags.push(normalizedArtistTag);
+        }
+      }
     }
 
     if (node.children) {

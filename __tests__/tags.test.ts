@@ -5,9 +5,10 @@ import {
 } from "@/lib/tags";
 
 describe("tag formatting", () => {
-  it("normalizes tag slugs to lowercase", () => {
+  it("normalizes tag slugs to lowercase with dashed spaces", () => {
     expect(normalizeTagSlug(" DOOM ")).toBe("doom");
     expect(normalizeTagSlug("NikkiGirl")).toBe("nikkigirl");
+    expect(normalizeTagSlug("Gang Starr")).toBe("gang-starr");
   });
 
   it("renders DOOM in all caps", () => {

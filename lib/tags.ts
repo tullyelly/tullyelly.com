@@ -3,7 +3,7 @@ const SPECIAL_TAG_DISPLAY: Record<string, string> = {
 };
 
 export function normalizeTagSlug(tag: string): string {
-  return tag.trim().toLowerCase();
+  return tag.trim().toLowerCase().replace(/\s+/g, "-");
 }
 
 export function getTagDisplayName(tag: string): string {
