@@ -1,4 +1,8 @@
-import { inferPersonTagsFromTree, mergeChronicleTags } from "@/lib/alterEgo";
+import {
+  inferPersonTagsFromTree,
+  inferYouTubeVideoArtistTagsFromTree,
+  mergeChronicleTags,
+} from "@/lib/alterEgo";
 
 type TestNode = {
   type?: string;
@@ -14,6 +18,19 @@ const personTagNode = (tag?: string, children: TestNode[] = []): TestNode => ({
     tag === undefined
       ? []
       : [{ type: "mdxJsxAttribute", name: "tag", value: tag }],
+  children,
+});
+
+const youTubeVideoNode = (
+  artist?: unknown,
+  children: TestNode[] = [],
+): TestNode => ({
+  type: "mdxJsxFlowElement",
+  name: "YouTubeVideo",
+  attributes:
+    artist === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "artist", value: artist }],
   children,
 });
 
@@ -58,14 +75,68 @@ describe("inferPersonTagsFromTree", () => {
   });
 });
 
+describe("inferYouTubeVideoArtistTagsFromTree", () => {
+  const errorPrefix = "Chronicle sample.mdx";
+
+  it("extracts an artist tag from YouTubeVideo", () => {
+    const tree = root([youTubeVideoNode("gang-starr")]);
+    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+      "gang-starr",
+    ]);
+  });
+
+  it("normalizes artist values into tag slugs", () => {
+    const tree = root([
+      youTubeVideoNode("Gang Starr"),
+      youTubeVideoNode("DOOM"),
+    ]);
+    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+      "gang-starr",
+      "doom",
+    ]);
+  });
+
+  it("deduplicates repeated YouTubeVideo artist tags", () => {
+    const tree = root([
+      youTubeVideoNode("gang-starr"),
+      youTubeVideoNode("gang-starr"),
+    ]);
+    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+      "gang-starr",
+    ]);
+  });
+
+  it("ignores YouTubeVideo nodes without an artist prop", () => {
+    const tree = root([youTubeVideoNode(undefined)]);
+    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual(
+      [],
+    );
+  });
+
+  it("throws when artist is not a string literal", () => {
+    const tree = root([youTubeVideoNode({ foo: "bar" })]);
+    expect(() =>
+      inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix }),
+    ).toThrow(`${errorPrefix}: YouTubeVideo artist must be a string literal.`);
+  });
+});
+
 describe("mergeChronicleTags", () => {
-  it("merges frontmatter tags, alterEgo tags, and person tags with deduplication", () => {
+  it("merges inferred artist tags alongside frontmatter and person tags", () => {
+    const errorPrefix = "Chronicle sample.mdx";
+    const tree = root([
+      personTagNode("ron"),
+      youTubeVideoNode("Gang Starr"),
+      youTubeVideoNode("gang-starr"),
+    ]);
+
     expect(
       mergeChronicleTags(
         ["alpha", "mark2"],
         ["mark2", "cardattack"],
-        ["ron", "alpha"],
+        inferPersonTagsFromTree(tree, { errorPrefix }),
+        inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix }),
       ),
-    ).toEqual(["alpha", "mark2", "cardattack", "ron"]);
+    ).toEqual(["alpha", "mark2", "cardattack", "ron", "gang-starr"]);
   });
 });

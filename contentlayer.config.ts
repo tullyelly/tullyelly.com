@@ -6,6 +6,7 @@ import {
   DEFAULT_ALTER_EGO,
   inferAlterEgosFromTree,
   inferPersonTagsFromTree,
+  inferYouTubeVideoArtistTagsFromTree,
   mergeChronicleTags,
   type MdxNode,
 } from "./lib/alterEgo";
@@ -13,6 +14,7 @@ import {
 const contentDirPath = "content";
 const inferredAlterEgos = new Map<string, string[]>();
 const inferredPersonTags = new Map<string, string[]>();
+const inferredYouTubeVideoArtistTags = new Map<string, string[]>();
 
 function resolveInferenceSourceFilePath(file: any): string | undefined {
   const rawDocPath = file?.data?.rawDocumentData?.sourceFilePath;
@@ -79,6 +81,30 @@ function remarkInferPersonTags() {
   };
 }
 
+function remarkInferYouTubeVideoArtistTags() {
+  return (tree: MdxNode, file: any) => {
+    const sourceFilePath = resolveInferenceSourceFilePath(file);
+
+    if (!sourceFilePath || sourceFilePath.startsWith("..")) {
+      throw new Error(
+        "YouTubeVideo artist inference failed because the source file path could not be resolved.",
+      );
+    }
+
+    const errorPrefix = `Chronicle ${sourceFilePath}`;
+
+    const foundTags = inferYouTubeVideoArtistTagsFromTree(tree, {
+      errorPrefix,
+    });
+
+    if (foundTags.length > 0) {
+      inferredYouTubeVideoArtistTags.set(sourceFilePath, foundTags);
+    } else {
+      inferredYouTubeVideoArtistTags.delete(sourceFilePath);
+    }
+  };
+}
+
 const Post = defineDocumentType(() => ({
   name: "Post",
   filePathPattern: "chronicles/**/*.mdx",
@@ -113,8 +139,13 @@ const Post = defineDocumentType(() => ({
       type: "list",
       of: { type: "string" },
       resolve: (doc) => {
-        const inferredAlterEgoTags = inferredAlterEgos.get(doc._raw.sourceFilePath);
+        const inferredAlterEgoTags = inferredAlterEgos.get(
+          doc._raw.sourceFilePath,
+        );
         const inferredInlinePersonTags = inferredPersonTags.get(
+          doc._raw.sourceFilePath,
+        );
+        const inferredVideoArtistTags = inferredYouTubeVideoArtistTags.get(
           doc._raw.sourceFilePath,
         );
 
@@ -123,6 +154,7 @@ const Post = defineDocumentType(() => ({
           doc.tags,
           inferredAlterEgoTags ?? [],
           inferredInlinePersonTags ?? [],
+          inferredVideoArtistTags ?? [],
         );
       },
     },
@@ -141,7 +173,11 @@ export default makeSource({
   documentTypes: [Post],
   date: { timezone: "America/Chicago" },
   mdx: {
-    remarkPlugins: [remarkInferReleaseSectionAlterEgo, remarkInferPersonTags],
+    remarkPlugins: [
+      remarkInferReleaseSectionAlterEgo,
+      remarkInferPersonTags,
+      remarkInferYouTubeVideoArtistTags,
+    ],
     rehypePlugins: [],
   },
 });
