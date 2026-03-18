@@ -56,13 +56,15 @@ const defaultComponents = {
     height,
     ...rest
   }: React.ComponentProps<typeof Image>) => (
-    <Image
-      alt={alt ?? ""}
-      width={width ?? 1200}
-      height={height ?? 630}
-      className={cn("rounded-xl shadow-sm", className)}
-      {...rest}
-    />
+    <span className="mx-auto block w-full max-w-[520px]">
+      <Image
+        alt={alt ?? ""}
+        width={width ?? 1200}
+        height={height ?? 630}
+        className={cn("w-full rounded-xl shadow-sm", className)}
+        {...rest}
+      />
+    </span>
   ),
   p: ({ className, ...props }: React.ComponentPropsWithoutRef<"p">) => (
     <p
