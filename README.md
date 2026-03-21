@@ -32,9 +32,155 @@ Environment basics:
 - Chronicle pages render via `app/shaolin/[slug]/page.tsx`; comments post to `/api/comments` and require a signed-in user.
 - Scaffold a chronicle with `npm run new-chronicle -- "Title"`; it writes `content/chronicles/<slug>.mdx` and creates `public/images/optimized/<slug>/`.
 - Scaffold a static MDX page with `npm run new-page <slug> "Title"`. It writes `app/<slug>/page.mdx` with frontmatter and expects a hero at `public/images/optimized/<slug>/hero.webp` (drop sources in `public/images/source/` first).
-- Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimize -- "<folder>"` (or `npm run images:optimize` for all sources) and `npm run images:check` to keep assets within budget.
+- Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimus -- "<folder>"` (or `npm run images:optimus` for all sources) and `npm run images:check` to keep assets within budget.
 - Reference docs: `docs/authoring.md`, `docs/static-page-template-v2.md`, and `docs/hydration*.md` for SSR to client hydration contracts.
-- ReleaseSection colour rules:
+
+### ReleaseSection Reference
+
+`ReleaseSection` is the standard chronicle MDX wrapper for persona-tagged blocks.
+`alterEgo` is always required.
+
+Supported modes and what they feed:
+
+- Plain section; persona tag plus optional trailing divider.
+- `releaseId`; links to `/mark2/shaolin-scrolls/[id]`.
+- `tcdbTradeId`; links to `/cardattack/tcdb-trade/[tradeId]`.
+- `review={{ type: "lcs", ... }}`; feeds `/cardattack/lcs` and `/cardattack/lcs/[id]`.
+- `review={{ type: "table-schema", ... }}`; feeds `/unclejimmy/table-schema` and `/unclejimmy/table-schema/[id]`.
+- `review={{ type: "save-point", ... }}`; feeds `/unclejimmy/call-a-save-point` and `/unclejimmy/call-a-save-point/[id]`.
+- `tournamentName` + `tournamentRecord` + `tournamentId`; feeds `/unclejimmy/squad/volleyball/[id]`.
+
+Rules to remember:
+
+- Pick at most one metadata mode per section: `releaseId`, `tcdbTradeId`, or `review`.
+- `completed` only works with `tcdbTradeId`.
+- `tcdbTradePartner` is optional and only belongs on TCDB trade sections.
+- If multiple sections share a `tcdbTradeId`, marking any one of them `completed` will surface the completion link for the whole trade.
+- `tournamentName` and `tournamentRecord` only render together, and only when the section is not release-linked.
+- `tournamentId` can be numeric or quoted; use it when the section should be grouped into volleyball directory/detail pages.
+- `guestMage` can be added to any section type.
+- `divider={false}` removes the trailing divider.
+- `review.url` and `review.rating` are optional.
+- `rainbowColour` is renderer-owned; do not hand-author it in chronicle MDX.
+
+Examples:
+
+Plain section:
+
+```mdx
+<ReleaseSection alterEgo="tullyelly">
+  Plain chronicle copy.
+</ReleaseSection>
+```
+
+Plain section without the trailing divider:
+
+```mdx
+<ReleaseSection alterEgo="theabbott" divider={false}>
+  Last section on the page.
+</ReleaseSection>
+```
+
+Shaolin Scrolls release link:
+
+```mdx
+<ReleaseSection alterEgo="mark2" releaseId="117">
+  Notes for a specific release.
+</ReleaseSection>
+```
+
+Open TCDB trade:
+
+```mdx
+<ReleaseSection
+  alterEgo="cardattack"
+  tcdbTradeId="997119"
+  tcdbTradePartner="JBarbs80"
+>
+  Trade notes before the return mail day lands.
+</ReleaseSection>
+```
+
+Completed TCDB trade:
+
+```mdx
+<ReleaseSection
+  alterEgo="cardattack"
+  tcdbTradeId="970598"
+  tcdbTradePartner="madding"
+  completed
+>
+  Mail day notes after the trade is finished.
+</ReleaseSection>
+```
+
+Local card shop review:
+
+```mdx
+<ReleaseSection
+  alterEgo="cardattack"
+  review={{
+    type: "lcs",
+    id: "indy-card-exchange",
+    name: "Indy Card Exchange",
+    url: "https://indycardexchange.com/",
+    rating: "8.7/10",
+  }}
+>
+  LCS visit notes.
+</ReleaseSection>
+```
+
+Table Schema review:
+
+```mdx
+<ReleaseSection
+  alterEgo="unclejimmy"
+  review={{
+    type: "table-schema",
+    id: "1",
+    name: "Colossal Cafe",
+    url: "https://colossalcafe.com/",
+    rating: "7.7",
+  }}
+>
+  Food review notes.
+</ReleaseSection>
+```
+
+Save Point review:
+
+```mdx
+<ReleaseSection
+  alterEgo="unclejimmy"
+  review={{
+    type: "save-point",
+    id: "mewgenics",
+    name: "Mewgenics",
+    url: "https://mewgenics.wiki.gg/",
+    rating: "9.5",
+  }}
+>
+  Video game review notes.
+</ReleaseSection>
+```
+
+Tournament recap with guest mage credit:
+
+```mdx
+<ReleaseSection
+  alterEgo="unclejimmy"
+  tournamentName="Dale Rohde Tournament"
+  tournamentId={2}
+  tournamentRecord="3-0"
+  guestMage="eeeeeeeemma"
+>
+  Tournament recap notes.
+</ReleaseSection>
+```
+
+ReleaseSection colour rules:
+
 - ReleaseSection accents use rainbow assignment colours from `lib/release-section-colours`; release metadata props do not select colours.
 - Multi-section renderers assign rainbow colours sequentially via shared sequencing from `lib/release-section-colours`.
 - `7+` sections use straight rainbow order with wrap; `6 or fewer` sections use a random unique subset sorted back to rainbow order.
@@ -86,10 +232,10 @@ Optimize large images before pushing to the repo:
 2. Generate optimized assets:
 
    ```bash
-   npm run images:optimize -- "<folder>"
+   npm run images:optimus -- "<folder>"
    ```
 
-   Or run `npm run images:optimize` to process the full `public/images/source/` tree.
+   Or run `npm run images:optimus` to process the full `public/images/source/` tree.
 
 3. Verify outputs:
 
@@ -103,9 +249,9 @@ Optimize large images before pushing to the repo:
    public/images/optimized/<folder>/
    ```
 
-5. On success the entire `public/images/source/` folder is cleared.
+5. On success processed source files are removed; if no other source files remain, the source folder is cleaned.
 
-Images are resized to a **1920px** max width and exported as **WebP**.
+Still images are resized to a **1920px** max width and exported as **WebP**. `.gif` and `.mp4` sources are converted to animated WebP.
 
 ---
 

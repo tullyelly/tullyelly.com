@@ -1,8 +1,8 @@
 # Image Guidelines
 
-- Optimized assets live under `public/images/optimized` and are typically generated via `npm run images:optimize -- "<folder>"`.
-- Source assets live under `public/images/source/`; the optimizer clears the source folder on success.
-- Animated sources (`.gif`, `.mp4`) use `npm run images:animated -- "<folder>"` to generate WebP outputs; processed sources are removed on success.
+- Optimized assets live under `public/images/optimized` and are typically generated via `npm run images:optimus -- "<folder>"`.
+- Source assets live under `public/images/source/`; processed source files are removed on success.
+- `npm run images:optimus` uses the still-image optimizer for `.jpg`, `.jpeg`, `.png`, `.webp`, and `.tiff`, and the animated pipeline for `.gif` and `.mp4`.
 - Outputs land in `public/images/optimized/<folder>`.
 - Paths passed to `<Image>` or `<img>` must start with a leading slash (e.g. `/images/optimized/cardattack.webp`).
 - `FolderImageCarousel` accepts a `folder` relative to the optimized root; do not pass `/images/optimized/...`.
