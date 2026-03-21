@@ -151,9 +151,9 @@ function getReviewLabel(type: ReviewType): string {
  *
  * - alterEgo: required persona tag rendered as a pill.
  * - releaseId: optional scroll ID; when present, the section renders a linked tab to `/mark2/shaolin-scrolls/{releaseId}`.
- * - tcdbTradeId: optional trade ID; when present, the section renders a linked tab to `/cardattack/tcdb-trade/{tcdbTradeId}`.
+ * - tcdbTradeId: optional trade ID; when present, the section renders a linked tab to `/cardattack/tcdb-trades/{tcdbTradeId}`.
  * - tcdbTradePartner: optional trade partner for TCDb trades.
- * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trade/{tcdbTradeId}` when companion sections exist.
+ * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trades/{tcdbTradeId}` when companion sections exist.
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
@@ -219,7 +219,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
   if (tcdbTradeId) {
     releaseType = "tcdb";
-    tradeUrl = `/cardattack/tcdb-trade/${tcdbTradeId}`;
+    tradeUrl = `/cardattack/tcdb-trades/${tcdbTradeId}`;
     tradePartnerUrl = tcdbTradePartner
       ? `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(
           tcdbTradePartner,
@@ -246,7 +246,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
     if (shouldShowCompletion) {
       completedLabel = `${tcdbTradeId}: completed`;
-      completedHref = `/cardattack/tcdb-trade/${tcdbTradeId}`;
+      completedHref = `/cardattack/tcdb-trades/${tcdbTradeId}`;
     }
   }
 
@@ -255,8 +255,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const showTournamentVisuals = showTournament && !showReleaseDetails;
   const showReviewVisuals = Boolean(review);
   const shouldRenderReview = showReviewVisuals && !showReleaseDetails;
-  const showReviewUrl =
-    review?.url !== undefined && review.url.trim() !== "";
+  const showReviewUrl = review?.url !== undefined && review.url.trim() !== "";
   const showReviewRating =
     review?.rating !== undefined && `${review.rating}`.trim() !== "";
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
@@ -268,18 +267,16 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const tabForegroundColor = isCreamCity
     ? PILL_BLACK
     : resolvedSectionTextColor;
-  const hoverBackgroundColor =
-    resolvedSectionColor
-      ? isCreamCity
-        ? PILL_BLACK
-        : "#FFFFFF"
-      : "#FFFFFF";
-  const hoverForegroundColor =
-    resolvedSectionColor
-      ? isCreamCity
-        ? PILL_CREAM_CITY
-        : resolvedSectionColor
-      : PILL_BLUE;
+  const hoverBackgroundColor = resolvedSectionColor
+    ? isCreamCity
+      ? PILL_BLACK
+      : "#FFFFFF"
+    : "#FFFFFF";
+  const hoverForegroundColor = resolvedSectionColor
+    ? isCreamCity
+      ? PILL_CREAM_CITY
+      : resolvedSectionColor
+    : PILL_BLUE;
   const tagBackgroundColor = resolvedSectionColor;
   const tagForegroundColor = resolvedSectionTextColor;
   const tabHref = releaseId ? `/mark2/shaolin-scrolls/${releaseId}` : tradeUrl;
@@ -310,9 +307,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-review-type={review?.type ?? undefined}
       data-review-id={review !== undefined ? String(review.id) : undefined}
       data-review-name={review?.name ?? undefined}
-      data-review-rating={
-        showReviewRating ? String(review?.rating) : undefined
-      }
+      data-review-rating={showReviewRating ? String(review?.rating) : undefined}
       style={
         resolvedSectionColor
           ? ({
@@ -465,7 +460,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
             className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]"
             style={
               resolvedSectionColor
-                ? ({ backgroundColor: resolvedSectionColor } satisfies CSSProperties)
+                ? ({
+                    backgroundColor: resolvedSectionColor,
+                  } satisfies CSSProperties)
                 : undefined
             }
           />
