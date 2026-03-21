@@ -119,10 +119,10 @@ export default function TcdbTradeListClient({ rows }: Props) {
             Trade ID
           </th>
           <th scope="col" className="w-[150px] whitespace-nowrap">
-            Start Date
+            Started
           </th>
           <th scope="col" className="w-[150px] whitespace-nowrap">
-            End Date
+            Completed
           </th>
           <th scope="col">Partner</th>
           <th scope="col" className="w-[130px] whitespace-nowrap">
