@@ -43,6 +43,7 @@
     "james": "npm run lint && npm run typecheck && npm test",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:animated": "node scripts/optimize-animated-webp.mjs",
+    "images:optimus": "node scripts/images-optimus.mjs",
     "images:check": "node scripts/check-images.mjs",
     "new-page": "node scripts/new-page.mjs",
     "new-chronicle": "node scripts/new-chronicle.mjs",
