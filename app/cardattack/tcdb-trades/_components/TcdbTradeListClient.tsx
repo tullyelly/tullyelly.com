@@ -13,6 +13,9 @@ type Props = {
     tradeId: string;
     startDate: string;
     endDate?: string;
+    received?: number;
+    sent?: number;
+    total?: number;
     partner?: string;
     status: "Open" | "Completed";
   }[];
@@ -32,6 +35,14 @@ function renderPartner(partner?: string) {
       {partner}
     </a>
   );
+}
+
+function renderTradeCount(value?: number) {
+  if (value === undefined) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+
+  return <span className="tabular-nums">{value}</span>;
 }
 
 export default function TcdbTradeListClient({ rows }: Props) {
@@ -124,6 +135,15 @@ export default function TcdbTradeListClient({ rows }: Props) {
           <th scope="col" className="w-[150px] whitespace-nowrap">
             Completed
           </th>
+          <th scope="col" className="w-[90px] whitespace-nowrap">
+            Received
+          </th>
+          <th scope="col" className="w-[90px] whitespace-nowrap">
+            Sent
+          </th>
+          <th scope="col" className="w-[90px] whitespace-nowrap">
+            Total
+          </th>
           <th scope="col">Partner</th>
           <th scope="col" className="w-[130px] whitespace-nowrap">
             Status
@@ -155,6 +175,15 @@ export default function TcdbTradeListClient({ rows }: Props) {
                     "Open"
                   )}
                 </td>
+                <td className="whitespace-nowrap">
+                  {renderTradeCount(row.received)}
+                </td>
+                <td className="whitespace-nowrap">
+                  {renderTradeCount(row.sent)}
+                </td>
+                <td className="whitespace-nowrap">
+                  {renderTradeCount(row.total)}
+                </td>
                 <td>{renderPartner(row.partner)}</td>
                 <td className="whitespace-nowrap">
                   <Badge
@@ -169,7 +198,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
             ))
           ) : (
             <tr>
-              <td colSpan={5} className="text-sm text-ink/70">
+              <td colSpan={8} className="text-sm text-ink/70">
                 No TCDB trades have been referenced in chronicles yet.
               </td>
             </tr>
