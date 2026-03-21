@@ -32,7 +32,7 @@ Environment basics:
 - Chronicle pages render via `app/shaolin/[slug]/page.tsx`; comments post to `/api/comments` and require a signed-in user.
 - Scaffold a chronicle with `npm run new-chronicle -- "Title"`; it writes `content/chronicles/<slug>.mdx` and creates `public/images/optimized/<slug>/`.
 - Scaffold a static MDX page with `npm run new-page <slug> "Title"`. It writes `app/<slug>/page.mdx` with frontmatter and expects a hero at `public/images/optimized/<slug>/hero.webp` (drop sources in `public/images/source/` first).
-- Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimize -- "<folder>"` (or `npm run images:optimize` for all sources) and `npm run images:check` to keep assets within budget.
+- Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimus -- "<folder>"` (or `npm run images:optimus` for all sources) and `npm run images:check` to keep assets within budget.
 - Reference docs: `docs/authoring.md`, `docs/static-page-template-v2.md`, and `docs/hydration*.md` for SSR to client hydration contracts.
 
 ### ReleaseSection Reference
@@ -232,10 +232,10 @@ Optimize large images before pushing to the repo:
 2. Generate optimized assets:
 
    ```bash
-   npm run images:optimize -- "<folder>"
+   npm run images:optimus -- "<folder>"
    ```
 
-   Or run `npm run images:optimize` to process the full `public/images/source/` tree.
+   Or run `npm run images:optimus` to process the full `public/images/source/` tree.
 
 3. Verify outputs:
 
@@ -249,9 +249,9 @@ Optimize large images before pushing to the repo:
    public/images/optimized/<folder>/
    ```
 
-5. On success the entire `public/images/source/` folder is cleared.
+5. On success processed source files are removed; if no other source files remain, the source folder is cleaned.
 
-Images are resized to a **1920px** max width and exported as **WebP**.
+Still images are resized to a **1920px** max width and exported as **WebP**. `.gif` and `.mp4` sources are converted to animated WebP.
 
 ---
 

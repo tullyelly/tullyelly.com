@@ -87,7 +87,7 @@
     1. `npm run new-page` prompts for slug/title.
     2. Drop source hero image into `/public/images/source/hero.jpg`.
     3. Edit frontmatter and write content in `/app/<slug>/page.mdx`.
-    4. `npm run images:optimize -- "<slug>"` generates `/public/images/optimized/<slug>/` WebP assets; the source folder is cleared on success.
+    4. `npm run images:optimus -- "<slug>"` generates `/public/images/optimized/<slug>/` WebP assets; processed source files are removed on success.
     5. `npm run dev` previews page and surfaces frontmatter violations.
     6. Commit, push, open PR.
 
