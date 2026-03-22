@@ -9,6 +9,7 @@ jest.mock("@/lib/db", () => ({
 
 import {
   getVolleyballTournamentDayByKeyAndDate,
+  getVolleyballTournamentSummaryByKey,
   normalizeVolleyballTournamentDate,
   normalizeVolleyballTournamentKey,
 } from "@/lib/volleyball-tournament-db";
@@ -24,6 +25,7 @@ describe("volleyball tournament db helper", () => {
         tournament_key: "1",
         tournament_name: "Midwest Boys Point Series",
         tournament_date: "2026-02-14",
+        finish: 1,
         wins: 2,
         losses: 1,
       },
@@ -35,6 +37,7 @@ describe("volleyball tournament db helper", () => {
       tournamentKey: "1",
       tournamentName: "Midwest Boys Point Series",
       tournamentDate: "2026-02-14",
+      finish: 1,
       wins: 2,
       losses: 1,
     });
@@ -62,5 +65,30 @@ describe("volleyball tournament db helper", () => {
     expect(() => normalizeVolleyballTournamentDate("2026-02-30")).toThrow(
       "Volleyball tournament lookup: tournamentDate must be a valid ISO date string in YYYY-MM-DD form.",
     );
+  });
+
+  it("returns DB-backed tournament summary metadata", async () => {
+    mockSql.mockResolvedValue([
+      {
+        tournament_key: "2",
+        tournament_name: "Dale Rohde Tournament",
+        finish: 1,
+        overall_wins: "6",
+        overall_losses: "0",
+      },
+    ]);
+
+    await expect(getVolleyballTournamentSummaryByKey(" 2 ")).resolves.toEqual({
+      tournamentKey: "2",
+      tournamentName: "Dale Rohde Tournament",
+      finish: 1,
+      overallWins: 6,
+      overallLosses: 0,
+      overallRecord: "6-0",
+    });
+
+    expect(mockSql).toHaveBeenCalledTimes(1);
+    const [, values] = mockSql.mock.calls[0] as [TemplateStringsArray, unknown[]];
+    expect(values).toEqual(["2"]);
   });
 });

@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 
+import PersonTag from "@/components/mdx/PersonTag";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 
 describe("ScrollAmendment", () => {
@@ -33,5 +34,23 @@ describe("ScrollAmendment", () => {
     expect(
       screen.getByText("Only chronicles 1-10 were updated."),
     ).toBeInTheDocument();
+  });
+
+  it("keeps inline person tags on the white text treatment", () => {
+    render(
+      <ScrollAmendment>
+        <PersonTag tag="nikkigirl" /> sent in the correction.
+      </ScrollAmendment>,
+    );
+
+    const wrapper = screen.getByRole("note");
+    expect(wrapper.className).toContain(
+      "[&_[data-person-tag]]:!text-[var(--text-on-blue)]",
+    );
+
+    expect(screen.getByText("nikkigirl")).toHaveAttribute(
+      "data-person-tag",
+      "nikkigirl",
+    );
   });
 });

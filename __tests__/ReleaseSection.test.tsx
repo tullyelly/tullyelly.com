@@ -167,6 +167,7 @@ describe("ReleaseSection", () => {
       tournamentKey: "1",
       tournamentName: "Midwest Boys Point Series",
       tournamentDate: "2026-02-14",
+      finish: null,
       wins: 2,
       losses: 1,
     });
@@ -197,6 +198,33 @@ describe("ReleaseSection", () => {
       "Midwest Boys Point Series",
     );
     expect(content).toHaveAttribute("data-tournament-record", "2-1");
+  });
+
+  it("renders the tournament trophy row at the bottom for first-place finishes", async () => {
+    getVolleyballTournamentDayByKeyAndDateMock.mockResolvedValue({
+      tournamentKey: "2",
+      tournamentName: "Dale Rohde Tournament",
+      tournamentDate: "2026-02-22",
+      finish: 1,
+      wins: 3,
+      losses: 0,
+    });
+
+    const ui = await ReleaseSection({
+      alterEgo: "unclejimmy",
+      children: <p>champions</p>,
+      tournamentId: 2,
+      tournamentDate: "2026-02-22",
+    });
+    const { container } = render(ui);
+
+    expect(screen.getByText("1st Place")).toBeInTheDocument();
+    expect(container.querySelector('img[alt=""]')).toBeInTheDocument();
+
+    const content = container.querySelector(
+      "[data-tournament-id]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-tournament-finish", "1");
   });
 
   it("throws cleanly when the volleyball tournament day is missing", async () => {
