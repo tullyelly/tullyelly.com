@@ -11,7 +11,13 @@ export type TradeSection = {
   mdx: string;
 };
 
-export type TcdbTradeSummary = {
+export type TcdbTradeCardCounts = {
+  received?: number;
+  sent?: number;
+  total?: number;
+};
+
+export type TcdbTradeSummary = TcdbTradeCardCounts & {
   tradeId: string;
   startDate: string;
   endDate?: string;
@@ -38,17 +44,30 @@ const COMPLETED_ATTR = /(^|\s)completed(\s|=|>|\/)/;
 const TRADE_ID_ATTR_NAME = "tcdbTradeId";
 const TRADE_ID_ATTR = new RegExp(`${TRADE_ID_ATTR_NAME}="([^"]+)"`);
 const TRADE_PARTNER_ATTR = /tcdbTradePartner="([^"]+)"/;
+const TRADE_RECEIVED_ATTR =
+  /(?:^|\s)received=(?:\{\s*(\d+)\s*\}|"(\d+)"|'(\d+)')/;
+const TRADE_SENT_ATTR =
+  /(?:^|\s)sent=(?:\{\s*(\d+)\s*\}|"(\d+)"|'(\d+)')/;
 
 type TradeSummaryAccumulator = {
   startDate?: string;
   endDate?: string;
   partner?: string;
+  received?: number;
+  receivedDate?: string;
+  receivedOffset?: number;
+  sent?: number;
+  sentDate?: string;
+  sentOffset?: number;
 };
 
 type ExtractedTradeTag = {
   tradeId: string;
   partner?: string;
   completed: boolean;
+  received?: number;
+  sent?: number;
+  offset: number;
 };
 
 export const getTradeIdAttribute = (tradeId: string): string =>
@@ -84,6 +103,18 @@ const compareByDateDesc = (
 const hasCompletedAttr = (openingTag: string): boolean =>
   COMPLETED_ATTR.test(openingTag);
 
+const extractNumericTradeAttr = (
+  openingTag: string,
+  pattern: RegExp,
+): number | undefined => {
+  const match = openingTag.match(pattern);
+  const rawValue = match?.[1] ?? match?.[2] ?? match?.[3];
+  if (!rawValue) return undefined;
+
+  const value = Number.parseInt(rawValue, 10);
+  return Number.isNaN(value) ? undefined : value;
+};
+
 const isEarlierDate = (candidate: string, existing?: string): boolean => {
   if (!existing) return true;
 
@@ -98,6 +129,74 @@ const isLaterDate = (candidate: string, existing?: string): boolean => {
   const diff = toTimestamp(candidate) - toTimestamp(existing);
   if (diff !== 0) return diff > 0;
   return candidate > existing;
+};
+
+const shouldUseLaterTradeValue = (
+  candidateDate: string,
+  candidateOffset: number,
+  existingDate?: string,
+  existingOffset?: number,
+): boolean => {
+  if (!existingDate) return true;
+
+  const diff = toTimestamp(candidateDate) - toTimestamp(existingDate);
+  if (diff !== 0) return diff > 0;
+  return candidateOffset > (existingOffset ?? -1);
+};
+
+const applyTradeCardCounts = (
+  trade: TradeSummaryAccumulator,
+  tag: ExtractedTradeTag,
+  postDate: string,
+) => {
+  if (
+    tag.received !== undefined &&
+    shouldUseLaterTradeValue(
+      postDate,
+      tag.offset,
+      trade.receivedDate,
+      trade.receivedOffset,
+    )
+  ) {
+    trade.received = tag.received;
+    trade.receivedDate = postDate;
+    trade.receivedOffset = tag.offset;
+  }
+
+  if (
+    tag.sent !== undefined &&
+    shouldUseLaterTradeValue(
+      postDate,
+      tag.offset,
+      trade.sentDate,
+      trade.sentOffset,
+    )
+  ) {
+    trade.sent = tag.sent;
+    trade.sentDate = postDate;
+    trade.sentOffset = tag.offset;
+  }
+};
+
+const toTradeCardCounts = (
+  received?: number,
+  sent?: number,
+): TcdbTradeCardCounts => {
+  const counts: TcdbTradeCardCounts = {};
+
+  if (received !== undefined) {
+    counts.received = received;
+  }
+
+  if (sent !== undefined) {
+    counts.sent = sent;
+  }
+
+  if (received !== undefined || sent !== undefined) {
+    counts.total = (received ?? 0) + (sent ?? 0);
+  }
+
+  return counts;
 };
 
 const extractTradeTags = (raw: string): ExtractedTradeTag[] => {
@@ -118,10 +217,15 @@ const extractTradeTags = (raw: string): ExtractedTradeTag[] => {
 
     if (tradeId) {
       const partner = openingTag.match(TRADE_PARTNER_ATTR)?.[1];
+      const received = extractNumericTradeAttr(openingTag, TRADE_RECEIVED_ATTR);
+      const sent = extractNumericTradeAttr(openingTag, TRADE_SENT_ATTR);
       tags.push({
         tradeId,
         partner,
         completed: hasCompletedAttr(openingTag),
+        received,
+        sent,
+        offset: openIndex,
       });
     }
 
@@ -228,6 +332,28 @@ export const getTcdbTradeSections = (
   );
 };
 
+export function getTcdbTradeCardCounts(
+  tradeId: string,
+  posts: PostSource[] = allPosts,
+): TcdbTradeCardCounts {
+  if (!tradeId) return {};
+
+  const trade: TradeSummaryAccumulator = {};
+
+  for (const post of posts) {
+    const raw = post.body?.raw;
+    if (!raw?.includes(TRADE_ID_ATTR_NAME)) continue;
+
+    const tradeTags = extractTradeTags(raw);
+    for (const tag of tradeTags) {
+      if (tag.tradeId !== tradeId) continue;
+      applyTradeCardCounts(trade, tag, post.date);
+    }
+  }
+
+  return toTradeCardCounts(trade.received, trade.sent);
+}
+
 export function listTcdbTrades(): TcdbTradeSummary[] {
   const trades = new Map<string, TradeSummaryAccumulator>();
 
@@ -251,13 +377,16 @@ export function listTcdbTrades(): TcdbTradeSummary[] {
         current.startDate = post.date;
       }
 
+      applyTradeCardCounts(current, tag, post.date);
       trades.set(tag.tradeId, current);
     }
   }
 
   return Array.from(trades.entries())
     .map(([tradeId, trade]) => {
+      const counts = toTradeCardCounts(trade.received, trade.sent);
       const summary: TcdbTradeSummary = {
+        ...counts,
         tradeId,
         startDate: trade.startDate ?? trade.endDate ?? "",
         status: trade.endDate ? "Completed" : "Open",

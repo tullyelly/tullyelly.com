@@ -74,8 +74,7 @@ describe("ReleaseSection", () => {
     expect(
       screen.getByText(
         (_, node) =>
-          node?.textContent ===
-          "Card Shop: Noblesville Sports Cards (9.2/10)",
+          node?.textContent === "Card Shop: Noblesville Sports Cards (9.2/10)",
       ),
     ).toBeInTheDocument();
     const shopLink = screen.getByText("Noblesville Sports Cards").closest("a");
@@ -221,7 +220,9 @@ describe("ReleaseSection", () => {
       .closest("a") as HTMLAnchorElement;
     expect(tagPill.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
     expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#000000");
-    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe(rainbowColour);
+    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe(
+      rainbowColour,
+    );
 
     const divider = container.querySelector("hr") as HTMLHRElement;
     expect(divider).toBeInTheDocument();
@@ -306,9 +307,7 @@ describe("ReleaseSection", () => {
 
     const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
-    expect(tab.getAttribute("href")).toBe(
-      "/cardattack/tcdb-trade/359632",
-    );
+    expect(tab.getAttribute("href")).toBe("/cardattack/tcdb-trades/359632");
     expect(tab).toHaveTextContent("TCDb Trade: 359632; Partner collect-a-set");
 
     expect(screen.getByText("Trade Partner:")).toBeInTheDocument();
@@ -319,6 +318,20 @@ describe("ReleaseSection", () => {
       "https://www.tcdb.com/Profile.cfm/collect-a-set",
     );
     expect(partnerLink).toHaveClass("link-blue");
+  });
+
+  it("renders tcdb trade card counts from direct props", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: "359632",
+      received: 7,
+      sent: 4,
+    });
+    render(ui);
+
+    expect(
+      screen.getByText("Card Traffic: 7 received; 4 sent; 11 total"),
+    ).toBeInTheDocument();
   });
 
   it("renders a completed link to the internal tcdb trade route", async () => {
@@ -355,7 +368,7 @@ describe("ReleaseSection", () => {
     expect(completionLink).toBeInTheDocument();
     expect(completionLink).toHaveAttribute(
       "href",
-      `/cardattack/tcdb-trade/${tradeId}`,
+      `/cardattack/tcdb-trades/${tradeId}`,
     );
   });
 
@@ -405,9 +418,52 @@ describe("ReleaseSection", () => {
     expect(completionLinks).toHaveLength(2);
     const hrefs = completionLinks.map((link) => link.getAttribute("href"));
     expect(hrefs).toEqual([
-      `/cardattack/tcdb-trade/${tradeId}`,
-      `/cardattack/tcdb-trade/${tradeId}`,
+      `/cardattack/tcdb-trades/${tradeId}`,
+      `/cardattack/tcdb-trades/${tradeId}`,
     ]);
+  });
+
+  it("propagates trade card counts to all tcdb sections sharing a tradeId", async () => {
+    const tradeId = "812345";
+    allPostsMock.push(
+      {
+        slug: "original-trade",
+        url: "/shaolin/original-trade",
+        date: "2024-01-01",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" sent={4}>`,
+        },
+      },
+      {
+        slug: "completed-trade",
+        url: "/shaolin/completed-trade",
+        date: "2024-02-01",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed received="6">`,
+        },
+      },
+    );
+
+    const incompleteSection = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: tradeId,
+    });
+    const completedSection = await ReleaseSection({
+      ...baseProps,
+      tcdbTradeId: tradeId,
+      completed: true,
+    });
+
+    render(
+      <>
+        {incompleteSection}
+        {completedSection}
+      </>,
+    );
+
+    expect(
+      screen.getAllByText("Card Traffic: 6 received; 4 sent; 10 total"),
+    ).toHaveLength(2);
   });
 
   it("throws when both releaseId and tcdbTradeId are passed", async () => {
@@ -472,7 +528,9 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-release-color", "#FF0000");
     expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
     expect(content).toHaveAttribute("data-rainbow-colour", "#FF0000");
-    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe("#FF0000");
+    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe(
+      "#FF0000",
+    );
 
     const tagPill = screen
       .getByText("#mark2")
@@ -495,7 +553,9 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-release-color", "#FF0000");
     expect(content).toHaveAttribute("data-release-text-color", "#FFFFFF");
     expect(content).toHaveAttribute("data-rainbow-colour", "#FF0000");
-    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe("#FF0000");
+    expect(content.style.getPropertyValue("--mdx-divider-color")).toBe(
+      "#FF0000",
+    );
 
     const tagPill = screen
       .getByText("#mark2")
@@ -609,7 +669,9 @@ describe("ReleaseSection", () => {
     expect(tagPill.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
     expect(tagPill.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
     expect(tagPill.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
-    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe(rainbowColour);
+    expect(tagPill.style.getPropertyValue("--tab-hover-fg")).toBe(
+      rainbowColour,
+    );
   });
 
   it("uses rainbow colour for chore releases", async () => {

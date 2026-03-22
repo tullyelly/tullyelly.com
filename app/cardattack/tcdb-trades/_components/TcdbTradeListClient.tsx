@@ -13,6 +13,9 @@ type Props = {
     tradeId: string;
     startDate: string;
     endDate?: string;
+    received?: number;
+    sent?: number;
+    total?: number;
     partner?: string;
     status: "Open" | "Completed";
   }[];
@@ -32,6 +35,14 @@ function renderPartner(partner?: string) {
       {partner}
     </a>
   );
+}
+
+function renderTradeCount(value?: number) {
+  if (value === undefined) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+
+  return <span className="tabular-nums">{value}</span>;
 }
 
 export default function TcdbTradeListClient({ rows }: Props) {
@@ -56,7 +67,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                     Trade ID
                   </p>
                   <Link
-                    href={`/cardattack/tcdb-trade/${row.tradeId}`}
+                    href={`/cardattack/tcdb-trades/${row.tradeId}`}
                     className="link-blue text-sm font-medium"
                   >
                     {row.tradeId}
@@ -76,7 +87,9 @@ export default function TcdbTradeListClient({ rows }: Props) {
                     Start Date
                   </dt>
                   <dd>
-                    <time dateTime={row.startDate}>{fmtDate(row.startDate)}</time>
+                    <time dateTime={row.startDate}>
+                      {fmtDate(row.startDate)}
+                    </time>
                   </dd>
                 </div>
                 <div>
@@ -117,10 +130,19 @@ export default function TcdbTradeListClient({ rows }: Props) {
             Trade ID
           </th>
           <th scope="col" className="w-[150px] whitespace-nowrap">
-            Start Date
+            Started
           </th>
           <th scope="col" className="w-[150px] whitespace-nowrap">
-            End Date
+            Completed
+          </th>
+          <th scope="col" className="w-[90px] whitespace-nowrap">
+            Received
+          </th>
+          <th scope="col" className="w-[90px] whitespace-nowrap">
+            Sent
+          </th>
+          <th scope="col" className="w-[90px] whitespace-nowrap">
+            Total
           </th>
           <th scope="col">Partner</th>
           <th scope="col" className="w-[130px] whitespace-nowrap">
@@ -130,14 +152,14 @@ export default function TcdbTradeListClient({ rows }: Props) {
         <TBody>
           {sortedRows.length > 0 ? (
             sortedRows.map((row) => (
-            <tr
-              key={row.tradeId}
-              className="border-b border-black/5 last:border-0"
-              data-testid="tcdb-trade-row"
-            >
+              <tr
+                key={row.tradeId}
+                className="border-b border-black/5 last:border-0"
+                data-testid="tcdb-trade-row"
+              >
                 <td className="font-medium tabular-nums">
                   <Link
-                    href={`/cardattack/tcdb-trade/${row.tradeId}`}
+                    href={`/cardattack/tcdb-trades/${row.tradeId}`}
                     className="link-blue"
                   >
                     {row.tradeId}
@@ -153,6 +175,15 @@ export default function TcdbTradeListClient({ rows }: Props) {
                     "Open"
                   )}
                 </td>
+                <td className="whitespace-nowrap">
+                  {renderTradeCount(row.received)}
+                </td>
+                <td className="whitespace-nowrap">
+                  {renderTradeCount(row.sent)}
+                </td>
+                <td className="whitespace-nowrap">
+                  {renderTradeCount(row.total)}
+                </td>
                 <td>{renderPartner(row.partner)}</td>
                 <td className="whitespace-nowrap">
                   <Badge
@@ -167,7 +198,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
             ))
           ) : (
             <tr>
-              <td colSpan={5} className="text-sm text-ink/70">
+              <td colSpan={8} className="text-sm text-ink/70">
                 No TCDB trades have been referenced in chronicles yet.
               </td>
             </tr>

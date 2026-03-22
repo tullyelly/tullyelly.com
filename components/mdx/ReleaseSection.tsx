@@ -11,7 +11,7 @@ import {
   pillInteractionClasses,
 } from "@/components/ui/pillStyles";
 import { getScroll } from "@/lib/scrolls";
-import { getTradeIdAttribute } from "@/lib/tcdb-trades";
+import { getTcdbTradeCardCounts, getTradeIdAttribute } from "@/lib/tcdb-trades";
 
 /*
 Spike note (ReleaseSection styling)
@@ -47,6 +47,8 @@ type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
   tcdbTradeId?: never;
   tcdbTradePartner?: never;
   completed?: never;
+  received?: never;
+  sent?: never;
   review?: never;
 };
 
@@ -54,6 +56,8 @@ type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
   tcdbTradeId: string;
   tcdbTradePartner?: string;
   completed?: boolean;
+  received?: string | number;
+  sent?: string | number;
   releaseId?: never;
   review?: never;
 };
@@ -64,6 +68,8 @@ type ReleaseSectionWithReview = ReleaseSectionBaseProps & {
   tcdbTradeId?: never;
   tcdbTradePartner?: never;
   completed?: never;
+  received?: never;
+  sent?: never;
 };
 
 type ReleaseSectionWithoutReleaseOrReview = ReleaseSectionBaseProps & {
@@ -72,6 +78,8 @@ type ReleaseSectionWithoutReleaseOrReview = ReleaseSectionBaseProps & {
   tcdbTradeId?: undefined;
   tcdbTradePartner?: undefined;
   completed?: never;
+  received?: never;
+  sent?: never;
 };
 
 type ReleaseSectionProps =
@@ -101,6 +109,22 @@ function countTradeSections(tradeId: string): number {
   }
 
   return count;
+}
+
+function normalizeTradeCardCount(
+  value: string | number | undefined,
+  name: "received" | "sent",
+): number | undefined {
+  if (value === undefined) return undefined;
+
+  const parsed =
+    typeof value === "number" ? value : Number.parseInt(value.trim(), 10);
+
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`ReleaseSection: ${name} must be a non-negative integer.`);
+  }
+
+  return parsed;
 }
 
 function getReadableTextColor(backgroundColor: string): string {
@@ -151,9 +175,11 @@ function getReviewLabel(type: ReviewType): string {
  *
  * - alterEgo: required persona tag rendered as a pill.
  * - releaseId: optional scroll ID; when present, the section renders a linked tab to `/mark2/shaolin-scrolls/{releaseId}`.
- * - tcdbTradeId: optional trade ID; when present, the section renders a linked tab to `/cardattack/tcdb-trade/{tcdbTradeId}`.
+ * - tcdbTradeId: optional trade ID; when present, the section renders a linked tab to `/cardattack/tcdb-trades/{tcdbTradeId}`.
  * - tcdbTradePartner: optional trade partner for TCDb trades.
- * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trade/{tcdbTradeId}` when companion sections exist.
+ * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trades/{tcdbTradeId}` when companion sections exist.
+ * - received: optional received card count for TCDb trades; propagates to all sections sharing the same trade ID.
+ * - sent: optional sent card count for TCDb trades; propagates to all sections sharing the same trade ID.
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
@@ -179,6 +205,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     tcdbTradeId,
     tcdbTradePartner,
     completed,
+    received,
+    sent,
     tournamentName,
     tournamentRecord,
     tournamentId,
@@ -217,9 +245,28 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     throw new Error("ReleaseSection: completed requires tcdbTradeId.");
   }
 
+  if ((received !== undefined || sent !== undefined) && !tcdbTradeId) {
+    throw new Error(
+      "ReleaseSection: received and sent require tcdbTradeId.",
+    );
+  }
+
+  const directTradeReceived = normalizeTradeCardCount(received, "received");
+  const directTradeSent = normalizeTradeCardCount(sent, "sent");
+  const aggregatedTradeCounts = tcdbTradeId
+    ? getTcdbTradeCardCounts(tcdbTradeId)
+    : {};
+  const resolvedTradeReceived =
+    aggregatedTradeCounts.received ?? directTradeReceived;
+  const resolvedTradeSent = aggregatedTradeCounts.sent ?? directTradeSent;
+  const resolvedTradeTotal =
+    resolvedTradeReceived !== undefined || resolvedTradeSent !== undefined
+      ? (resolvedTradeReceived ?? 0) + (resolvedTradeSent ?? 0)
+      : undefined;
+
   if (tcdbTradeId) {
     releaseType = "tcdb";
-    tradeUrl = `/cardattack/tcdb-trade/${tcdbTradeId}`;
+    tradeUrl = `/cardattack/tcdb-trades/${tcdbTradeId}`;
     tradePartnerUrl = tcdbTradePartner
       ? `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(
           tcdbTradePartner,
@@ -246,7 +293,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
     if (shouldShowCompletion) {
       completedLabel = `${tcdbTradeId}: completed`;
-      completedHref = `/cardattack/tcdb-trade/${tcdbTradeId}`;
+      completedHref = `/cardattack/tcdb-trades/${tcdbTradeId}`;
     }
   }
 
@@ -255,8 +302,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const showTournamentVisuals = showTournament && !showReleaseDetails;
   const showReviewVisuals = Boolean(review);
   const shouldRenderReview = showReviewVisuals && !showReleaseDetails;
-  const showReviewUrl =
-    review?.url !== undefined && review.url.trim() !== "";
+  const showReviewUrl = review?.url !== undefined && review.url.trim() !== "";
   const showReviewRating =
     review?.rating !== undefined && `${review.rating}`.trim() !== "";
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
@@ -268,18 +314,16 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const tabForegroundColor = isCreamCity
     ? PILL_BLACK
     : resolvedSectionTextColor;
-  const hoverBackgroundColor =
-    resolvedSectionColor
-      ? isCreamCity
-        ? PILL_BLACK
-        : "#FFFFFF"
-      : "#FFFFFF";
-  const hoverForegroundColor =
-    resolvedSectionColor
-      ? isCreamCity
-        ? PILL_CREAM_CITY
-        : resolvedSectionColor
-      : PILL_BLUE;
+  const hoverBackgroundColor = resolvedSectionColor
+    ? isCreamCity
+      ? PILL_BLACK
+      : "#FFFFFF"
+    : "#FFFFFF";
+  const hoverForegroundColor = resolvedSectionColor
+    ? isCreamCity
+      ? PILL_CREAM_CITY
+      : resolvedSectionColor
+    : PILL_BLUE;
   const tagBackgroundColor = resolvedSectionColor;
   const tagForegroundColor = resolvedSectionTextColor;
   const tabHref = releaseId ? `/mark2/shaolin-scrolls/${releaseId}` : tradeUrl;
@@ -289,6 +333,18 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const guestMageStamp = guestMage?.trim();
   const showTradePartner = Boolean(tcdbTradeId && tcdbTradePartner);
   const showCompletionLink = Boolean(completedLabel && completedHref);
+  const showTradeCardCounts = Boolean(
+    tcdbTradeId && resolvedTradeTotal !== undefined,
+  );
+  const tradeCardSummary = [
+    resolvedTradeReceived !== undefined
+      ? `${resolvedTradeReceived} received`
+      : null,
+    resolvedTradeSent !== undefined ? `${resolvedTradeSent} sent` : null,
+    resolvedTradeTotal !== undefined ? `${resolvedTradeTotal} total` : null,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join("; ");
   const footerClassName =
     showTradePartner && showCompletionLink
       ? "flex justify-between items-center gap-2"
@@ -310,8 +366,19 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-review-type={review?.type ?? undefined}
       data-review-id={review !== undefined ? String(review.id) : undefined}
       data-review-name={review?.name ?? undefined}
-      data-review-rating={
-        showReviewRating ? String(review?.rating) : undefined
+      data-review-rating={showReviewRating ? String(review?.rating) : undefined}
+      data-tcdb-received={
+        resolvedTradeReceived !== undefined
+          ? String(resolvedTradeReceived)
+          : undefined
+      }
+      data-tcdb-sent={
+        resolvedTradeSent !== undefined ? String(resolvedTradeSent) : undefined
+      }
+      data-tcdb-total={
+        resolvedTradeTotal !== undefined
+          ? String(resolvedTradeTotal)
+          : undefined
       }
       style={
         resolvedSectionColor
@@ -386,6 +453,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
           )}
           {showReviewRating ? <span>{` (${review.rating})`}</span> : null}
         </div>
+      ) : null}
+      {showTradeCardCounts ? (
+        <div className="text-sm">{`Card Traffic: ${tradeCardSummary}`}</div>
       ) : null}
       <div className={footerClassName}>
         {showTradePartner && tradePartnerUrl ? (
@@ -465,7 +535,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
             className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]"
             style={
               resolvedSectionColor
-                ? ({ backgroundColor: resolvedSectionColor } satisfies CSSProperties)
+                ? ({
+                    backgroundColor: resolvedSectionColor,
+                  } satisfies CSSProperties)
                 : undefined
             }
           />

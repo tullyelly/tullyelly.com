@@ -7,6 +7,7 @@ jest.mock("contentlayer/generated", () => ({
 import { allPosts } from "contentlayer/generated";
 import {
   extractTradeSectionsFromRaw,
+  getTcdbTradeCardCounts,
   getTcdbTradeSections,
   listTcdbTrades,
 } from "@/lib/tcdb-trades";
@@ -165,14 +166,14 @@ describe("getTcdbTradeSections", () => {
 });
 
 describe("listTcdbTrades", () => {
-  it("aggregates start/end dates, first partner, and sorts by trade id desc", () => {
+  it("aggregates received and sent card counts for a trade", () => {
     mockedAllPosts.push(
       {
         slug: "alpha-original",
         url: "/shaolin/alpha-original",
         date: "2024-01-10",
         body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="first-partner">Open</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" sent={3}>Open</ReleaseSection>`,
         },
       },
       {
@@ -180,7 +181,34 @@ describe("listTcdbTrades", () => {
         url: "/shaolin/alpha-completed",
         date: "2024-01-20",
         body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed>Closed</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed received="5">Closed</ReleaseSection>`,
+        },
+      },
+    );
+
+    expect(getTcdbTradeCardCounts("111111")).toEqual({
+      received: 5,
+      sent: 3,
+      total: 8,
+    });
+  });
+
+  it("aggregates start/end dates, first partner, and sorts by trade id desc", () => {
+    mockedAllPosts.push(
+      {
+        slug: "alpha-original",
+        url: "/shaolin/alpha-original",
+        date: "2024-01-10",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="first-partner" sent={3}>Open</ReleaseSection>`,
+        },
+      },
+      {
+        slug: "alpha-completed",
+        url: "/shaolin/alpha-completed",
+        date: "2024-01-20",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed received="5">Closed</ReleaseSection>`,
         },
       },
       {
@@ -229,7 +257,10 @@ describe("listTcdbTrades", () => {
         startDate: "2024-01-01",
         endDate: "2024-02-10",
         partner: "first-partner",
+        received: 5,
+        sent: 3,
         status: "Completed",
+        total: 8,
       },
     ]);
   });
