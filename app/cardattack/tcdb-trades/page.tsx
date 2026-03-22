@@ -10,7 +10,7 @@ export default function Page() {
   const trades = listTcdbTrades();
 
   return (
-    <FullBleedPage>
+    <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
       <Card
         as="section"
         className="space-y-8 border-0 shadow-none px-1 py-6 md:p-8"

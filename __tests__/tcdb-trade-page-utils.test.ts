@@ -173,7 +173,7 @@ describe("listTcdbTrades", () => {
         url: "/shaolin/alpha-original",
         date: "2024-01-10",
         body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" sentOut={3}>Open</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" sent={3}>Open</ReleaseSection>`,
         },
       },
       {
@@ -200,7 +200,7 @@ describe("listTcdbTrades", () => {
         url: "/shaolin/alpha-original",
         date: "2024-01-10",
         body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="first-partner" sentOut={3}>Open</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="first-partner" sent={3}>Open</ReleaseSection>`,
         },
       },
       {

@@ -48,7 +48,7 @@ type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
   tcdbTradePartner?: never;
   completed?: never;
   received?: never;
-  sentOut?: never;
+  sent?: never;
   review?: never;
 };
 
@@ -57,7 +57,7 @@ type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
   tcdbTradePartner?: string;
   completed?: boolean;
   received?: string | number;
-  sentOut?: string | number;
+  sent?: string | number;
   releaseId?: never;
   review?: never;
 };
@@ -69,7 +69,7 @@ type ReleaseSectionWithReview = ReleaseSectionBaseProps & {
   tcdbTradePartner?: never;
   completed?: never;
   received?: never;
-  sentOut?: never;
+  sent?: never;
 };
 
 type ReleaseSectionWithoutReleaseOrReview = ReleaseSectionBaseProps & {
@@ -79,7 +79,7 @@ type ReleaseSectionWithoutReleaseOrReview = ReleaseSectionBaseProps & {
   tcdbTradePartner?: undefined;
   completed?: never;
   received?: never;
-  sentOut?: never;
+  sent?: never;
 };
 
 type ReleaseSectionProps =
@@ -113,7 +113,7 @@ function countTradeSections(tradeId: string): number {
 
 function normalizeTradeCardCount(
   value: string | number | undefined,
-  name: "received" | "sentOut",
+  name: "received" | "sent",
 ): number | undefined {
   if (value === undefined) return undefined;
 
@@ -179,7 +179,7 @@ function getReviewLabel(type: ReviewType): string {
  * - tcdbTradePartner: optional trade partner for TCDb trades.
  * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trades/{tcdbTradeId}` when companion sections exist.
  * - received: optional received card count for TCDb trades; propagates to all sections sharing the same trade ID.
- * - sentOut: optional sent card count for TCDb trades; propagates to all sections sharing the same trade ID.
+ * - sent: optional sent card count for TCDb trades; propagates to all sections sharing the same trade ID.
  * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
  * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
  * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
@@ -206,7 +206,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     tcdbTradePartner,
     completed,
     received,
-    sentOut,
+    sent,
     tournamentName,
     tournamentRecord,
     tournamentId,
@@ -245,14 +245,14 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     throw new Error("ReleaseSection: completed requires tcdbTradeId.");
   }
 
-  if ((received !== undefined || sentOut !== undefined) && !tcdbTradeId) {
+  if ((received !== undefined || sent !== undefined) && !tcdbTradeId) {
     throw new Error(
-      "ReleaseSection: received and sentOut require tcdbTradeId.",
+      "ReleaseSection: received and sent require tcdbTradeId.",
     );
   }
 
   const directTradeReceived = normalizeTradeCardCount(received, "received");
-  const directTradeSent = normalizeTradeCardCount(sentOut, "sentOut");
+  const directTradeSent = normalizeTradeCardCount(sent, "sent");
   const aggregatedTradeCounts = tcdbTradeId
     ? getTcdbTradeCardCounts(tcdbTradeId)
     : {};
@@ -455,7 +455,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
         </div>
       ) : null}
       {showTradeCardCounts ? (
-        <div className="text-sm">{`Trade Cards: ${tradeCardSummary}`}</div>
+        <div className="text-sm">{`Card Traffic: ${tradeCardSummary}`}</div>
       ) : null}
       <div className={footerClassName}>
         {showTradePartner && tradePartnerUrl ? (

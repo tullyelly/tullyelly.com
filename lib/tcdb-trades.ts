@@ -46,8 +46,8 @@ const TRADE_ID_ATTR = new RegExp(`${TRADE_ID_ATTR_NAME}="([^"]+)"`);
 const TRADE_PARTNER_ATTR = /tcdbTradePartner="([^"]+)"/;
 const TRADE_RECEIVED_ATTR =
   /(?:^|\s)received=(?:\{\s*(\d+)\s*\}|"(\d+)"|'(\d+)')/;
-const TRADE_SENT_OUT_ATTR =
-  /(?:^|\s)sentOut=(?:\{\s*(\d+)\s*\}|"(\d+)"|'(\d+)')/;
+const TRADE_SENT_ATTR =
+  /(?:^|\s)sent=(?:\{\s*(\d+)\s*\}|"(\d+)"|'(\d+)')/;
 
 type TradeSummaryAccumulator = {
   startDate?: string;
@@ -218,7 +218,7 @@ const extractTradeTags = (raw: string): ExtractedTradeTag[] => {
     if (tradeId) {
       const partner = openingTag.match(TRADE_PARTNER_ATTR)?.[1];
       const received = extractNumericTradeAttr(openingTag, TRADE_RECEIVED_ATTR);
-      const sent = extractNumericTradeAttr(openingTag, TRADE_SENT_OUT_ATTR);
+      const sent = extractNumericTradeAttr(openingTag, TRADE_SENT_ATTR);
       tags.push({
         tradeId,
         partner,

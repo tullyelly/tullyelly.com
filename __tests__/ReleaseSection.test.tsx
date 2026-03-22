@@ -325,12 +325,12 @@ describe("ReleaseSection", () => {
       ...baseProps,
       tcdbTradeId: "359632",
       received: 7,
-      sentOut: 4,
+      sent: 4,
     });
     render(ui);
 
     expect(
-      screen.getByText("Trade Cards: 7 received; 4 sent; 11 total"),
+      screen.getByText("Card Traffic: 7 received; 4 sent; 11 total"),
     ).toBeInTheDocument();
   });
 
@@ -431,7 +431,7 @@ describe("ReleaseSection", () => {
         url: "/shaolin/original-trade",
         date: "2024-01-01",
         body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" sentOut={4}>`,
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" sent={4}>`,
         },
       },
       {
@@ -462,7 +462,7 @@ describe("ReleaseSection", () => {
     );
 
     expect(
-      screen.getAllByText("Trade Cards: 6 received; 4 sent; 10 total"),
+      screen.getAllByText("Card Traffic: 6 received; 4 sent; 10 total"),
     ).toHaveLength(2);
   });
 
