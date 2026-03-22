@@ -75,7 +75,7 @@ if (failures.length) {
   console.error("\nImage optimization check failed:\n");
   for (const f of failures) console.error(` - ${f}`);
   console.error(
-    `\nFix: run "npm run images:optimus -- \"<folder>\"" to regenerate still and animated assets, then commit the updated files in ${outDir}/.\n`,
+    `\nFix: run "npm run images:optimize -- \"<folder>\"" for still assets and "npm run images:animated -- \"<folder>\"" for .gif/.mp4 assets, then commit the updated files in ${outDir}/.\n`,
   );
   process.exit(1);
 } else {
