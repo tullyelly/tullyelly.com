@@ -2,12 +2,12 @@
 
 export default function LoopedGif({ src, alt }: { src: string; alt?: string }) {
   return (
-    <div className="flex justify-center">
+    <div className="mx-auto w-full md:max-w-[520px]">
       <img
         src={src}
         alt={alt || "looped animation"}
         loading="lazy"
-        className="rounded-3xl border border-white/10 shadow-lg shadow-black/40 max-w-3xl w-full"
+        className="w-full rounded-3xl border border-white/10 shadow-lg shadow-black/40"
       />
     </div>
   );
