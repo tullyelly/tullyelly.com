@@ -12,6 +12,11 @@ import {
 } from "@/components/ui/pillStyles";
 import { getScroll } from "@/lib/scrolls";
 import { getTcdbTradeCardCounts, getTradeIdAttribute } from "@/lib/tcdb-trades";
+import {
+  getVolleyballTournamentDayByKeyAndDate,
+  normalizeVolleyballTournamentDate,
+  normalizeVolleyballTournamentKey,
+} from "@/lib/volleyball-tournament-db";
 
 /*
 Spike note (ReleaseSection styling)
@@ -36,9 +41,8 @@ type ReleaseSectionBaseProps = {
   children: ReactNode;
   divider?: boolean;
   rainbowColour?: string;
-  tournamentName?: string;
-  tournamentRecord?: string;
   tournamentId?: string | number;
+  tournamentDate?: string;
   guestMage?: string;
 };
 
@@ -180,9 +184,9 @@ function getReviewLabel(type: ReviewType): string {
  * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trades/{tcdbTradeId}` when companion sections exist.
  * - received: optional received card count for TCDb trades; propagates to all sections sharing the same trade ID.
  * - sent: optional sent card count for TCDb trades; propagates to all sections sharing the same trade ID.
- * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
- * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
- * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
+ * - tournamentId: optional stable external volleyball tournament key; when present it must be paired with tournamentDate.
+ * - tournamentDate: optional ISO tournament date in YYYY-MM-DD form; when present it must be paired with tournamentId.
+ * - Volleyball metadata is DB-backed; ReleaseSection resolves tournamentName and reconstructs the W-L record from dojo.volleyball_tournament + dojo.volleyball_tournament_day.
  * - guestMage: optional guest writer label rendered as a stamp.
  * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
  * - rainbowColour: optional rainbow assignment colour; when present, it is the only colour source for section accents, including release-linked sections.
@@ -207,9 +211,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     completed,
     received,
     sent,
-    tournamentName,
-    tournamentRecord,
     tournamentId,
+    tournamentDate,
     guestMage,
     rainbowColour,
   } = props;
@@ -249,6 +252,62 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     throw new Error(
       "ReleaseSection: received and sent require tcdbTradeId.",
     );
+  }
+
+  const hasTournamentId = tournamentId !== undefined;
+  const hasTournamentDate = tournamentDate !== undefined;
+
+  if (hasTournamentId && !hasTournamentDate) {
+    throw new Error(
+      "ReleaseSection: tournamentDate is required when tournamentId is provided.",
+    );
+  }
+
+  if (hasTournamentDate && !hasTournamentId) {
+    throw new Error(
+      "ReleaseSection: tournamentId is required when tournamentDate is provided.",
+    );
+  }
+
+  let resolvedTournamentKey: string | undefined;
+  let resolvedTournamentDate: string | undefined;
+  let resolvedTournamentName: string | undefined;
+  let resolvedTournamentRecord: string | undefined;
+
+  if (hasTournamentId && hasTournamentDate) {
+    try {
+      resolvedTournamentKey = normalizeVolleyballTournamentKey(
+        String(tournamentId),
+      );
+    } catch {
+      throw new Error(
+        "ReleaseSection: tournamentId must be a non-empty string or number.",
+      );
+    }
+
+    try {
+      resolvedTournamentDate = normalizeVolleyballTournamentDate(tournamentDate);
+    } catch {
+      throw new Error(
+        "ReleaseSection: tournamentDate must be a valid ISO date string in YYYY-MM-DD form.",
+      );
+    }
+
+    const tournamentDay = await getVolleyballTournamentDayByKeyAndDate(
+      resolvedTournamentKey,
+      resolvedTournamentDate,
+    );
+
+    if (!tournamentDay) {
+      throw new Error(
+        `ReleaseSection: no volleyball tournament found for tournamentId "${resolvedTournamentKey}" on "${resolvedTournamentDate}".`,
+      );
+    }
+
+    resolvedTournamentKey = tournamentDay.tournamentKey;
+    resolvedTournamentDate = tournamentDay.tournamentDate;
+    resolvedTournamentName = tournamentDay.tournamentName;
+    resolvedTournamentRecord = `${tournamentDay.wins}-${tournamentDay.losses}`;
   }
 
   const directTradeReceived = normalizeTradeCardCount(received, "received");
@@ -297,7 +356,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     }
   }
 
-  const showTournament = Boolean(tournamentName && tournamentRecord);
+  const showTournament = Boolean(
+    resolvedTournamentName && resolvedTournamentRecord,
+  );
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
   const showTournamentVisuals = showTournament && !showReleaseDetails;
   const showReviewVisuals = Boolean(review);
@@ -360,9 +421,10 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-release-color={resolvedSectionColor}
       data-release-text-color={resolvedSectionTextColor}
       data-rainbow-colour={normalizedRainbowColour}
-      data-tournament-id={
-        tournamentId !== undefined ? String(tournamentId) : undefined
-      }
+      data-tournament-id={resolvedTournamentKey}
+      data-tournament-date={resolvedTournamentDate}
+      data-tournament-name={resolvedTournamentName}
+      data-tournament-record={resolvedTournamentRecord}
       data-review-type={review?.type ?? undefined}
       data-review-id={review !== undefined ? String(review.id) : undefined}
       data-review-name={review?.name ?? undefined}
@@ -398,7 +460,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       )}
       {children}
       {showTournamentVisuals ? (
-        <div className="text-sm">{`${tournamentName}: ${tournamentRecord}`}</div>
+        <div className="text-sm">{`${resolvedTournamentName}: ${resolvedTournamentRecord}`}</div>
       ) : null}
       {shouldRenderReview && review?.type === "lcs" && reviewLabel ? (
         <div className="text-sm">
