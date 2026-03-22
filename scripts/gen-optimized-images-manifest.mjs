@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const optimizedRoot = path.resolve("public/images/optimized");
 const outputPath = path.resolve("lib/images/optimized-images-manifest.json");
@@ -46,7 +47,7 @@ async function collectUrls() {
   return urls;
 }
 
-async function writeManifest() {
+export async function writeManifest() {
   const urls = await collectUrls();
   const manifest = {
     urls,
@@ -59,4 +60,10 @@ async function writeManifest() {
   );
 }
 
-await writeManifest();
+const isMainModule =
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMainModule) {
+  await writeManifest();
+}
