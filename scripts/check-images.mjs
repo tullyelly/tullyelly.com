@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const inDir = "public/images/source";
-const outDir = "public/images/optimized";
+const outDir = "public/images/optimus";
 
 const srcExts = new Set([".jpg", ".jpeg", ".png", ".webp", ".tiff", ".gif", ".mp4"]);
 const requiredOutputs = [".webp"]; // what image optimizers produce

@@ -13,7 +13,7 @@ const title = titleParts.join(" ");
 const dir = path.join("app", slug);
 await fs.mkdir(dir, { recursive: true });
 
-const content = `---\ntitle: "${title}"\ndescription: ""\ncanonical: "https://tullyelly.com/${slug}"\nhero:\n  src: "/images/optimized/${slug}/hero.webp"\n  alt: "${title} hero"\n  width: 1200\n  height: 675\n---\n\nimport Hero from '@/components/Hero';\nimport { buildPageMetadata } from '@/lib/page-metadata';\n\nexport const metadata = buildPageMetadata(frontmatter);\n\n# ${title}\n\n<Hero {...frontmatter.hero} caption="" />\n`;
+const content = `---\ntitle: "${title}"\ndescription: ""\ncanonical: "https://tullyelly.com/${slug}"\nhero:\n  src: "/images/optimus/${slug}/hero.webp"\n  alt: "${title} hero"\n  width: 1200\n  height: 675\n---\n\nimport Hero from '@/components/Hero';\nimport { buildPageMetadata } from '@/lib/page-metadata';\n\nexport const metadata = buildPageMetadata(frontmatter);\n\n# ${title}\n\n<Hero {...frontmatter.hero} caption="" />\n`;
 
 await fs.writeFile(path.join(dir, "page.mdx"), content);
 console.log(`Created ${dir}/page.mdx`);

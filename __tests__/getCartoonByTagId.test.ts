@@ -17,13 +17,13 @@ describe("getCartoonByTagId", () => {
   it("returns the latest cartoon metadata for a tag", async () => {
     mockSql.mockResolvedValue([
       {
-        image_path: "/images/optimized/cartoon/derek.webp",
+        image_path: "/images/optimus/cartoon/derek.webp",
         description: "Painted for the squad archives.",
       },
     ]);
 
     await expect(getCartoonByTagId(12)).resolves.toEqual({
-      imagePath: "/images/optimized/cartoon/derek.webp",
+      imagePath: "/images/optimus/cartoon/derek.webp",
       description: "Painted for the squad archives.",
     });
 

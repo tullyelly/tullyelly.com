@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 export const baseInDir = "public/images/source";
-export const baseOutDir = "public/images/optimized";
+export const baseOutDir = "public/images/optimus";
 export const optimusOutDir = "public/images/optimus";
 
 export function parseFolderArg(args, { requireFolder = false } = {}) {

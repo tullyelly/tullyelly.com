@@ -13,7 +13,7 @@ import {
   parseFolderArg,
   resolveImageDirs,
 } from "./image-optimizer-utils.mjs";
-import { writeManifest } from "./gen-optimized-images-manifest.mjs";
+import { writeManifest } from "./gen-optimus-images-manifest.mjs";
 
 const args = process.argv.slice(2);
 const hasHelpFlag = args.includes("-h") || args.includes("--help");

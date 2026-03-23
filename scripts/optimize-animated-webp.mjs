@@ -17,7 +17,7 @@ const hasHelpFlag = args.includes("-h") || args.includes("--help");
 const usage = () => {
   console.log('Usage: npm run images:animated -- [folder]');
   console.log(
-    "Converts .gif and .mp4 under public/images/source into animated WebP outputs in public/images/optimized[/folder].",
+    "Converts .gif and .mp4 under public/images/source into animated WebP outputs in public/images/optimus[/folder].",
   );
 };
 

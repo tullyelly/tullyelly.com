@@ -2,7 +2,7 @@ import "server-only";
 
 import path from "node:path";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel";
-import { listOptimizedImages } from "@/lib/images/list-optimized-images";
+import { listOptimusImages } from "@/lib/images/list-optimus-images";
 
 type FolderImageCarouselServerProps = {
   folder: string;
@@ -26,7 +26,7 @@ export default async function FolderImageCarouselServer({
   folder,
   altPrefix,
 }: FolderImageCarouselServerProps) {
-  const images = await listOptimizedImages(folder);
+  const images = await listOptimusImages(folder);
   if (images.length === 0) {
     return null;
   }
