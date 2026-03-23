@@ -13,4 +13,46 @@ infinityStone: false
 
     ---
 
+    In addition to that minor cleanup, I also converted the volleyball tournament functionality in ReleaseSection to use the database backend instead.
+
+    From this......
+
+    ```tullyelly
+    <ReleaseSection
+      alterEgo="unclejimmy"
+      tournamentId={2}
+      tournamentName="Dale Rohde Tournament"
+      tournamentRecord="3-0"
+    >
+      Tournament update content here.
+    </ReleaseSection>
+    ```
+
+    ......to this......
+
+    ```tullyelly
+    <ReleaseSection
+      alterEgo="unclejimmy"
+      tournamentId={2}
+      tournamentDate="2026-02-22"
+    >
+      Tournament update content here.
+    </ReleaseSection>
+    ```
+
+    Besides being slightly more efficient on the front-end, it allows for all kinds of additional functionality to spring up off the back-end. The custom trophy that's added when the bois win a championship is one example.
+
+    <div className="pt-1">
+      <span className="inline-flex items-center justify-center gap-3 rounded-full border border-[var(--cream)] bg-black pl-2.5 pr-4 py-2 text-sm font-semibold text-[var(--cream)] shadow-sm">
+        <span
+          aria-hidden="true"
+          className="h-8 w-8 shrink-0 bg-contain bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/images/optimus/ccvbc-trophy.webp')" }}
+        />
+        <span className="leading-none">1st Place</span>
+      </span>
+    </div>
+
+    Plus, more database = more fun.
+
 </ReleaseSection>
