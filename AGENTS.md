@@ -28,7 +28,7 @@ Humans: see `README.md` for introductions and contributor docs.
 ## Content & Pages
 
 - Chronicles: `content/chronicles/*.mdx` frontmatter (`title`, `date`, `summary`, `tags`, `draft`, `infinityStone`, `cover`, `canonical`) feed `app/shaolin` routes; comments require NextAuth session.
-- Static MDX pages: `npm run new-page <slug> "Title"` scaffolds `app/<slug>/page.mdx` pointing at `public/images/optimized/<slug>/hero.webp` (source under `public/images/source/`). Validate with `npm run validate-frontmatter && npm run validate-seo`.
+- Static MDX pages: `npm run new-page <slug> "Title"` scaffolds `app/<slug>/page.mdx` pointing at `public/images/optimus/<slug>/hero.webp` (source under `public/images/source/`). Validate with `npm run validate-frontmatter && npm run validate-seo`.
 - Use the image pipeline (`npm run images:optimize && npm run images:check`) before committing new assets.
 
 ## Data & Auth

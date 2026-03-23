@@ -39,7 +39,7 @@ export default function UncleJimmyHugBallPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/unclejimmy/hug-ball/hug-ball.webp"
+              src="/images/optimus/unclejimmy/hug-ball/hug-ball.webp"
               alt="Milwaukee Bucks hug ball"
               width={1920}
               height={2550}
@@ -104,7 +104,7 @@ export default function UncleJimmyHugBallPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/unclejimmy/hug-ball/THE-hug-ball.webp"
+              src="/images/optimus/unclejimmy/hug-ball/THE-hug-ball.webp"
               alt="A ball of tape. THE hug ball."
               width={1920}
               height={2550}

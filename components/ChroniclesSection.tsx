@@ -158,7 +158,7 @@ export function ChroniclesSection({ date }: { date?: string }) {
           style={{ borderColor: "var(--blue)" }}
         >
           <Image
-            src="/images/optimized/raistlin black robes.webp"
+            src="/images/optimus/raistlin black robes.webp"
             alt="Raistlin in black robes, atmospheric portrait"
             width={320}
             height={420}

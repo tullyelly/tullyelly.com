@@ -102,7 +102,7 @@ export default function UncleJimmySquadJeffMeffPage() {
           Here's us at the concert a few months later!
         </p>
         <Image
-          src="/images/optimized/unclejimmy/squad/jeff-meff/chromakopia.webp"
+          src="/images/optimus/unclejimmy/squad/jeff-meff/chromakopia.webp"
           alt="jeff meff, bonnibel and unclejimmy at the concert"
           width={1280}
           height={964}

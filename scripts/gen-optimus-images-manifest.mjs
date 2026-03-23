@@ -2,15 +2,15 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-const optimizedRoot = path.resolve("public/images/optimized");
-const outputPath = path.resolve("lib/images/optimized-images-manifest.json");
+const optimusRoot = path.resolve("public/images/optimus");
+const outputPath = path.resolve("lib/images/optimus-images-manifest.json");
 const allowedExtensions = new Set([".webp", ".png", ".jpg", ".jpeg", ".gif"]);
-const outputRootUrl = "/images/optimized";
+const outputRootUrl = "/images/optimus";
 
 const toPosixPath = (value) => value.replace(/\\/g, "/");
 
 const toImageUrl = (absolutePath) => {
-  const relativePath = toPosixPath(path.relative(optimizedRoot, absolutePath));
+  const relativePath = toPosixPath(path.relative(optimusRoot, absolutePath));
   return `${outputRootUrl}/${relativePath}`;
 };
 
@@ -29,13 +29,13 @@ async function* walk(dir) {
 
 async function collectUrls() {
   try {
-    await fs.access(optimizedRoot);
+    await fs.access(optimusRoot);
   } catch {
     return [];
   }
 
   const urls = [];
-  for await (const filePath of walk(optimizedRoot)) {
+  for await (const filePath of walk(optimusRoot)) {
     const ext = path.extname(filePath).toLowerCase();
     if (!allowedExtensions.has(ext)) {
       continue;

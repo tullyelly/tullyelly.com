@@ -10,7 +10,7 @@ const frontmatter = {
     "On the search for some cute stamps for lulu, an adventure unfolded.",
   canonical: "https://tullyelly.com/unclejimmy/cute-stamps",
   hero: {
-    src: "/images/optimized/cute-stamps.webp",
+    src: "/images/optimus/cute-stamps.webp",
     alt: "Cute stamps - SpongeBob and baby wild animals",
     width: 1920,
     height: 1446,
@@ -54,7 +54,7 @@ export default function Page() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/uw-stevens-point.webp"
+              src="/images/optimus/uw-stevens-point.webp"
               alt="UW-Stevens Point postcard with bold purple lettering"
               width={1920}
               height={2550}
@@ -67,7 +67,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/bucks-n-six.webp"
+              src="/images/optimus/bucks-n-six.webp"
               alt="Milwaukee Bucks in six celebration poster"
               width={1920}
               height={2560}
@@ -100,7 +100,7 @@ export default function Page() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/little-diner-xpress.webp"
+              src="/images/optimus/little-diner-xpress.webp"
               alt="Little Diner Xpress postcard with playful signage"
               width={1920}
               height={2550}
@@ -113,7 +113,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/menu.webp"
+              src="/images/optimus/menu.webp"
               alt="Retro breakfast menu layout in warm colors"
               width={1920}
               height={2550}
@@ -124,7 +124,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/brunch.webp"
+              src="/images/optimus/brunch.webp"
               alt="Brunch poster celebrating weekend specials"
               width={1920}
               height={2550}
@@ -137,7 +137,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/toothpick.webp"
+              src="/images/optimus/toothpick.webp"
               alt="Toothpick illustration with bright diner palette"
               width={1920}
               height={2560}
@@ -179,7 +179,7 @@ export default function Page() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/usps-mailbox.webp"
+              src="/images/optimus/usps-mailbox.webp"
               alt="USPS mailbox illustration with friendly lettering"
               width={1920}
               height={2550}
@@ -190,7 +190,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/usps-truck.webp"
+              src="/images/optimus/usps-truck.webp"
               alt="USPS delivery truck graphic in motion"
               width={1920}
               height={2560}
@@ -217,7 +217,7 @@ export default function Page() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/walgreens.webp"
+              src="/images/optimus/walgreens.webp"
               alt="Walgreens storefront rendered with soft gradients"
               width={1920}
               height={2560}
@@ -228,7 +228,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/22-23-prizm.webp"
+              src="/images/optimus/22-23-prizm.webp"
               alt="Twenty two to twenty three Prizm basketball card box art"
               width={1920}
               height={1446}
@@ -241,7 +241,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm sm:col-span-2">
             <Image
-              src="/images/optimized/lego-f1.webp"
+              src="/images/optimus/lego-f1.webp"
               alt="LEGO Formula One car kit posed on a reflective surface"
               width={1920}
               height={1446}
@@ -271,7 +271,7 @@ export default function Page() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/emma-car.webp"
+              src="/images/optimus/emma-car.webp"
               alt="Emma smiling in a vintage car illustration"
               width={1920}
               height={2560}
@@ -284,7 +284,7 @@ export default function Page() {
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
             <Image
-              src="/images/optimized/appleton-west-rock.webp"
+              src="/images/optimus/appleton-west-rock.webp"
               alt="Appleton West rock wall postcard with blue accents"
               width={1920}
               height={2560}
@@ -310,7 +310,7 @@ export default function Page() {
         </p>
         <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
           <Image
-            src="/images/optimized/cute-stamps.webp"
+            src="/images/optimus/cute-stamps.webp"
             alt="Cute stamps collage in coral tones"
             width={1920}
             height={1446}

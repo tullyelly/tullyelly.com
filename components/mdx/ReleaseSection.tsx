@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { allPosts } from "contentlayer/generated";
 
 import { Badge } from "@/app/ui/Badge";
@@ -12,6 +13,11 @@ import {
 } from "@/components/ui/pillStyles";
 import { getScroll } from "@/lib/scrolls";
 import { getTcdbTradeCardCounts, getTradeIdAttribute } from "@/lib/tcdb-trades";
+import {
+  getVolleyballTournamentDayByKeyAndDate,
+  normalizeVolleyballTournamentDate,
+  normalizeVolleyballTournamentKey,
+} from "@/lib/volleyball-tournament-db";
 
 /*
 Spike note (ReleaseSection styling)
@@ -31,14 +37,15 @@ export type ReviewProps = {
   rating?: string | number;
 };
 
+const TOURNAMENT_TROPHY_ICON_SRC = "/images/optimus/ccvbc-trophy.webp";
+
 type ReleaseSectionBaseProps = {
   alterEgo: string;
   children: ReactNode;
   divider?: boolean;
   rainbowColour?: string;
-  tournamentName?: string;
-  tournamentRecord?: string;
   tournamentId?: string | number;
+  tournamentDate?: string;
   guestMage?: string;
 };
 
@@ -168,6 +175,13 @@ function getReviewLabel(type: ReviewType): string {
   return type;
 }
 
+function getTournamentFinishLabel(finish: number | null): string | null {
+  if (finish === 1) return "1st Place";
+  if (finish === 2) return "2nd Place";
+  if (finish === 3) return "3rd Place";
+  return null;
+}
+
 // ReleaseSection acts as a no-op wrapper for MDX content and optionally renders a
 // divider after the block (Great Lakes blue hr from global MDX styles).
 /**
@@ -180,9 +194,9 @@ function getReviewLabel(type: ReviewType): string {
  * - completed: optional completion link; only valid with tcdbTradeId; points to `/cardattack/tcdb-trades/{tcdbTradeId}` when companion sections exist.
  * - received: optional received card count for TCDb trades; propagates to all sections sharing the same trade ID.
  * - sent: optional sent card count for TCDb trades; propagates to all sections sharing the same trade ID.
- * - tournamentName: optional tournament label; rendered only when paired with tournamentRecord and no releaseId/tcdbTradeId is present.
- * - tournamentRecord: optional tournament record; rendered only when paired with tournamentName and no releaseId/tcdbTradeId is present.
- * - tournamentId: optional tournament identifier reserved for future tournament-linked features.
+ * - tournamentId: optional stable external volleyball tournament key; when present it must be paired with tournamentDate.
+ * - tournamentDate: optional ISO tournament date in YYYY-MM-DD form; when present it must be paired with tournamentId.
+ * - Volleyball metadata is DB-backed; ReleaseSection resolves tournamentName and reconstructs the W-L record from dojo.volleyball_tournament + dojo.volleyball_tournament_day.
  * - guestMage: optional guest writer label rendered as a stamp.
  * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
  * - rainbowColour: optional rainbow assignment colour; when present, it is the only colour source for section accents, including release-linked sections.
@@ -207,9 +221,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     completed,
     received,
     sent,
-    tournamentName,
-    tournamentRecord,
     tournamentId,
+    tournamentDate,
     guestMage,
     rainbowColour,
   } = props;
@@ -249,6 +262,64 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     throw new Error(
       "ReleaseSection: received and sent require tcdbTradeId.",
     );
+  }
+
+  const hasTournamentId = tournamentId !== undefined;
+  const hasTournamentDate = tournamentDate !== undefined;
+
+  if (hasTournamentId && !hasTournamentDate) {
+    throw new Error(
+      "ReleaseSection: tournamentDate is required when tournamentId is provided.",
+    );
+  }
+
+  if (hasTournamentDate && !hasTournamentId) {
+    throw new Error(
+      "ReleaseSection: tournamentId is required when tournamentDate is provided.",
+    );
+  }
+
+  let resolvedTournamentKey: string | undefined;
+  let resolvedTournamentDate: string | undefined;
+  let resolvedTournamentName: string | undefined;
+  let resolvedTournamentRecord: string | undefined;
+  let resolvedTournamentFinish: number | null | undefined;
+
+  if (hasTournamentId && hasTournamentDate) {
+    try {
+      resolvedTournamentKey = normalizeVolleyballTournamentKey(
+        String(tournamentId),
+      );
+    } catch {
+      throw new Error(
+        "ReleaseSection: tournamentId must be a non-empty string or number.",
+      );
+    }
+
+    try {
+      resolvedTournamentDate = normalizeVolleyballTournamentDate(tournamentDate);
+    } catch {
+      throw new Error(
+        "ReleaseSection: tournamentDate must be a valid ISO date string in YYYY-MM-DD form.",
+      );
+    }
+
+    const tournamentDay = await getVolleyballTournamentDayByKeyAndDate(
+      resolvedTournamentKey,
+      resolvedTournamentDate,
+    );
+
+    if (!tournamentDay) {
+      throw new Error(
+        `ReleaseSection: no volleyball tournament found for tournamentId "${resolvedTournamentKey}" on "${resolvedTournamentDate}".`,
+      );
+    }
+
+    resolvedTournamentKey = tournamentDay.tournamentKey;
+    resolvedTournamentDate = tournamentDay.tournamentDate;
+    resolvedTournamentName = tournamentDay.tournamentName;
+    resolvedTournamentRecord = `${tournamentDay.wins}-${tournamentDay.losses}`;
+    resolvedTournamentFinish = tournamentDay.finish;
   }
 
   const directTradeReceived = normalizeTradeCardCount(received, "received");
@@ -297,9 +368,14 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     }
   }
 
-  const showTournament = Boolean(tournamentName && tournamentRecord);
+  const showTournament = Boolean(
+    resolvedTournamentName && resolvedTournamentRecord,
+  );
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
   const showTournamentVisuals = showTournament && !showReleaseDetails;
+  const tournamentFinishLabel = getTournamentFinishLabel(
+    resolvedTournamentFinish ?? null,
+  );
   const showReviewVisuals = Boolean(review);
   const shouldRenderReview = showReviewVisuals && !showReleaseDetails;
   const showReviewUrl = review?.url !== undefined && review.url.trim() !== "";
@@ -351,6 +427,33 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       : showTradePartner
         ? "flex justify-between items-center"
         : "flex justify-end";
+  const showTournamentFinishFooter =
+    showTournamentVisuals && Boolean(tournamentFinishLabel);
+  const tournamentFinishHasTrophy = resolvedTournamentFinish === 1;
+  const tournamentFinishClassName = tournamentFinishHasTrophy
+    ? "inline-flex items-center justify-center gap-3 rounded-full border border-[var(--cream)] bg-black pl-2.5 pr-4 py-2 text-sm font-semibold text-[var(--cream)] shadow-sm"
+    : "inline-flex items-center justify-center gap-3 rounded-full border border-black/10 bg-black/5 px-3 py-2 text-sm font-semibold text-muted-foreground";
+  const alterEgoTag = (
+    <Link
+      href={`/shaolin/tags/${encodeURIComponent(alterEgo.toLowerCase())}`}
+      prefetch={false}
+      className={[
+        "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
+        pillInteractionClasses,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{
+        ["--tab-bg" as string]: tagBackgroundColor,
+        ["--tab-fg" as string]: tagForegroundColor,
+        ["--tab-hover-bg" as string]: hoverBackgroundColor,
+        ["--tab-hover-fg" as string]: hoverForegroundColor,
+        textDecoration: "none",
+      }}
+    >
+      <span>#{String(alterEgo)}</span>
+    </Link>
+  );
 
   const baseContent = (
     <div
@@ -360,8 +463,15 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-release-color={resolvedSectionColor}
       data-release-text-color={resolvedSectionTextColor}
       data-rainbow-colour={normalizedRainbowColour}
-      data-tournament-id={
-        tournamentId !== undefined ? String(tournamentId) : undefined
+      data-tournament-id={resolvedTournamentKey}
+      data-tournament-date={resolvedTournamentDate}
+      data-tournament-name={resolvedTournamentName}
+      data-tournament-record={resolvedTournamentRecord}
+      data-tournament-finish={
+        resolvedTournamentFinish !== undefined &&
+        resolvedTournamentFinish !== null
+          ? String(resolvedTournamentFinish)
+          : undefined
       }
       data-review-type={review?.type ?? undefined}
       data-review-id={review !== undefined ? String(review.id) : undefined}
@@ -398,7 +508,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       )}
       {children}
       {showTournamentVisuals ? (
-        <div className="text-sm">{`${tournamentName}: ${tournamentRecord}`}</div>
+        <div className="text-sm">{`${resolvedTournamentName}: ${resolvedTournamentRecord}`}</div>
       ) : null}
       {shouldRenderReview && review?.type === "lcs" && reviewLabel ? (
         <div className="text-sm">
@@ -457,40 +567,41 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       {showTradeCardCounts ? (
         <div className="text-sm">{`Card Traffic: ${tradeCardSummary}`}</div>
       ) : null}
-      <div className={footerClassName}>
-        {showTradePartner && tradePartnerUrl ? (
-          <div className="text-sm">
-            <span>Trade Partner: </span>
-            <Link href={tradePartnerUrl} className="link-blue">
-              {tcdbTradePartner}
-            </Link>
+      {showTournamentFinishFooter ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div className={tournamentFinishClassName}>
+            {tournamentFinishHasTrophy ? (
+              <Image
+                src={TOURNAMENT_TROPHY_ICON_SRC}
+                alt=""
+                aria-hidden="true"
+                width={32}
+                height={32}
+                className="h-8 w-8 shrink-0"
+              />
+            ) : null}
+            <span className="leading-none">{tournamentFinishLabel}</span>
           </div>
-        ) : null}
-        {completedLabel && completedHref ? (
-          <Link href={completedHref} className="link-blue text-sm">
-            {completedLabel}
-          </Link>
-        ) : null}
-        <Link
-          href={`/shaolin/tags/${encodeURIComponent(alterEgo.toLowerCase())}`}
-          prefetch={false}
-          className={[
-            "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
-            pillInteractionClasses,
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          style={{
-            ["--tab-bg" as string]: tagBackgroundColor,
-            ["--tab-fg" as string]: tagForegroundColor,
-            ["--tab-hover-bg" as string]: hoverBackgroundColor,
-            ["--tab-hover-fg" as string]: hoverForegroundColor,
-            textDecoration: "none",
-          }}
-        >
-          <span>#{String(alterEgo)}</span>
-        </Link>
-      </div>
+          {alterEgoTag}
+        </div>
+      ) : (
+        <div className={footerClassName}>
+          {showTradePartner && tradePartnerUrl ? (
+            <div className="text-sm">
+              <span>Trade Partner: </span>
+              <Link href={tradePartnerUrl} className="link-blue">
+                {tcdbTradePartner}
+              </Link>
+            </div>
+          ) : null}
+          {completedLabel && completedHref ? (
+            <Link href={completedHref} className="link-blue text-sm">
+              {completedLabel}
+            </Link>
+          ) : null}
+          {alterEgoTag}
+        </div>
+      )}
     </div>
   );
 

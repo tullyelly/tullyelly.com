@@ -9,10 +9,11 @@ import {
   emptyDir,
   ensureDir,
   formatDirLabel,
+  optimusOutDir,
   parseFolderArg,
   resolveImageDirs,
 } from "./image-optimizer-utils.mjs";
-import { writeManifest } from "./gen-optimized-images-manifest.mjs";
+import { writeManifest } from "./gen-optimus-images-manifest.mjs";
 
 const args = process.argv.slice(2);
 const hasHelpFlag = args.includes("-h") || args.includes("--help");
@@ -20,7 +21,7 @@ const hasHelpFlag = args.includes("-h") || args.includes("--help");
 const usage = () => {
   console.log('Usage: npm run images:optimus -- [folder]');
   console.log(
-    "Optimizes still images and animated sources under public/images/source into public/images/optimized.",
+    "Optimizes still images and animated sources under public/images/source into public/images/optimus.",
   );
   console.log(
     "The optional folder is an output folder only; images are always read from public/images/source.",
@@ -140,7 +141,9 @@ async function optimizeAnimated(srcAbs, inDirAbs, outDirAbs) {
 
   try {
     const folderArg = parseFolderArg(args);
-    ({ baseInDirAbs, outDirAbs } = resolveImageDirs(folderArg));
+    ({ baseInDirAbs, outDirAbs } = resolveImageDirs(folderArg, {
+      outDir: optimusOutDir,
+    }));
     inDirAbs = baseInDirAbs;
     await ensureDir(inDirAbs);
     await ensureDir(outDirAbs);

@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 export const baseInDir = "public/images/source";
-export const baseOutDir = "public/images/optimized";
+export const baseOutDir = "public/images/optimus";
+export const optimusOutDir = "public/images/optimus";
 
 export function parseFolderArg(args, { requireFolder = false } = {}) {
   const folderParts = [];
@@ -85,9 +86,9 @@ function resolveWithin(baseAbs, subdir) {
   return resolved;
 }
 
-export function resolveImageDirs(folderArg) {
+export function resolveImageDirs(folderArg, { outDir = baseOutDir } = {}) {
   const baseInDirAbs = path.resolve(baseInDir);
-  const baseOutDirAbs = path.resolve(baseOutDir);
+  const baseOutDirAbs = path.resolve(outDir);
   const normalizedFolderArg = normalizeFolderArg(
     folderArg,
     baseInDirAbs,

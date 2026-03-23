@@ -11,13 +11,13 @@ export default function Page() {
       <h1 id="title">Image Sanity Check</h1>
       <p>Raw &lt;img&gt; below should match Next.js Image.</p>
       <img
-        src="/images/optimized/cardattack.webp"
+        src="/images/optimus/cardattack.webp"
         width="1200"
         height="675"
         alt="raw control"
       />
       <Image
-        src="/images/optimized/cardattack.webp"
+        src="/images/optimus/cardattack.webp"
         alt="next-image"
         width={1200}
         height={675}

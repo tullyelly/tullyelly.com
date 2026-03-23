@@ -79,15 +79,15 @@
    /public/images
      /source
        hero.jpg
-     /optimized
-       /[slug]          # optimized assets
+     /optimus
+       /[slug]          # generated assets
    ```
 
 10. **Authoring UX: “Add a Page in 45 Seconds”**
     1. `npm run new-page` prompts for slug/title.
     2. Drop source hero image into `/public/images/source/hero.jpg`.
     3. Edit frontmatter and write content in `/app/<slug>/page.mdx`.
-    4. `npm run images:optimus -- "<slug>"` generates `/public/images/optimized/<slug>/` WebP assets; processed source files are removed on success.
+    4. `npm run images:optimus -- "<slug>"` generates `/public/images/optimus/<slug>/` WebP assets; processed source files are removed on success.
     5. `npm run dev` previews page and surfaces frontmatter violations.
     6. Commit, push, open PR.
 

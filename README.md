@@ -30,8 +30,8 @@ Environment basics:
 
 - Chronicles live in `content/chronicles/*.mdx` and are built by Contentlayer. Frontmatter: `title`, `date`, `summary`, `tags`, `draft`, `infinityStone`, `cover`, `canonical`. Slugs map to `/shaolin/<slug>`.
 - Chronicle pages render via `app/shaolin/[slug]/page.tsx`; comments post to `/api/comments` and require a signed-in user.
-- Scaffold a chronicle with `npm run new-chronicle -- "Title"`; it writes `content/chronicles/<slug>.mdx` and creates `public/images/optimized/<slug>/`.
-- Scaffold a static MDX page with `npm run new-page <slug> "Title"`. It writes `app/<slug>/page.mdx` with frontmatter and expects a hero at `public/images/optimized/<slug>/hero.webp` (drop sources in `public/images/source/` first).
+- Scaffold a chronicle with `npm run new-chronicle -- "Title"`; it writes `content/chronicles/<slug>.mdx` and creates `public/images/optimus/<slug>/`.
+- Scaffold a static MDX page with `npm run new-page <slug> "Title"`. It writes `app/<slug>/page.mdx` with frontmatter and expects a hero at `public/images/optimus/<slug>/hero.webp` (drop sources in `public/images/source/` first).
 - Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimus -- "<folder>"` (or `npm run images:optimus` for all sources) and `npm run images:check` to keep assets within budget.
 - Reference docs: `docs/authoring.md`, `docs/static-page-template-v2.md`, and `docs/hydration*.md` for SSR to client hydration contracts.
 
@@ -246,7 +246,7 @@ Optimize large images before pushing to the repo:
 4. Optimized images are saved to:
 
    ```
-   public/images/optimized/<folder>/
+   public/images/optimus/<folder>/
    ```
 
 5. On success processed source files are removed; if no other source files remain, the source folder is cleaned.

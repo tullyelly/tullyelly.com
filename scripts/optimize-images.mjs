@@ -17,7 +17,7 @@ const hasHelpFlag = args.includes("-h") || args.includes("--help");
 const usage = () => {
   console.log('Usage: npm run images:optimize -- [folder]');
   console.log(
-    "Optimizes images under public/images/source into public/images/optimized[/folder].",
+    "Optimizes images under public/images/source into public/images/optimus[/folder].",
   );
 };
 

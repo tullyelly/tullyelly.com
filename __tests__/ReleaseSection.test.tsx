@@ -2,6 +2,7 @@ import type React from "react";
 import { render, screen } from "@testing-library/react";
 
 const getScrollMock = jest.fn();
+const getVolleyballTournamentDayByKeyAndDateMock = jest.fn();
 const allPostsMock: Array<{
   body: { raw: string };
   slug: string;
@@ -21,6 +22,68 @@ jest.mock("contentlayer/generated", () => ({
 }));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
+}));
+jest.mock("@/lib/volleyball-tournament-db", () => ({
+  getVolleyballTournamentDayByKeyAndDate: (...args: unknown[]) =>
+    getVolleyballTournamentDayByKeyAndDateMock(...args),
+  normalizeVolleyballTournamentKey: (value: string) => {
+    const normalized = value.trim();
+
+    if (!normalized) {
+      throw new Error(
+        "Volleyball tournament lookup: tournamentKey must be a non-empty string.",
+      );
+    }
+
+    return normalized;
+  },
+  normalizeVolleyballTournamentDate: (value: string) => {
+    const normalized = value.trim();
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      throw new Error(
+        "Volleyball tournament lookup: tournamentDate must be a valid ISO date string in YYYY-MM-DD form.",
+      );
+    }
+
+    const [year, month, day] = normalized
+      .split("-")
+      .map((segment) => Number.parseInt(segment, 10));
+    const isLeapYear =
+      year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
+    const daysInMonth = [
+      31,
+      isLeapYear ? 29 : 28,
+      31,
+      30,
+      31,
+      30,
+      31,
+      31,
+      30,
+      31,
+      30,
+      31,
+    ];
+    const maxDay = daysInMonth[month - 1];
+
+    if (
+      !Number.isInteger(year) ||
+      !Number.isInteger(month) ||
+      !Number.isInteger(day) ||
+      month < 1 ||
+      month > 12 ||
+      !maxDay ||
+      day < 1 ||
+      day > maxDay
+    ) {
+      throw new Error(
+        "Volleyball tournament lookup: tournamentDate must be a valid ISO date string in YYYY-MM-DD form.",
+      );
+    }
+
+    return normalized;
+  },
 }));
 
 import ReleaseSection from "@/components/mdx/ReleaseSection";
@@ -43,6 +106,7 @@ const baseProps = {
 describe("ReleaseSection", () => {
   beforeEach(() => {
     getScrollMock.mockReset();
+    getVolleyballTournamentDayByKeyAndDateMock.mockReset();
     allPostsMock.length = 0;
   });
 
@@ -56,6 +120,125 @@ describe("ReleaseSection", () => {
     expect(container.querySelector("hr")).toBeInTheDocument();
     expect(container.querySelector("[data-release-name]")).toBeNull();
     expect(container.querySelector(".relative")).toBeNull();
+  });
+
+  it("requires tournamentDate when tournamentId is provided", async () => {
+    await expect(
+      ReleaseSection({
+        ...baseProps,
+        tournamentId: 1,
+      }),
+    ).rejects.toThrow(
+      "ReleaseSection: tournamentDate is required when tournamentId is provided.",
+    );
+
+    expect(getVolleyballTournamentDayByKeyAndDateMock).not.toHaveBeenCalled();
+  });
+
+  it("requires tournamentId when tournamentDate is provided", async () => {
+    await expect(
+      ReleaseSection({
+        ...baseProps,
+        tournamentDate: "2026-02-14",
+      }),
+    ).rejects.toThrow(
+      "ReleaseSection: tournamentId is required when tournamentDate is provided.",
+    );
+
+    expect(getVolleyballTournamentDayByKeyAndDateMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid tournament ISO date strings before querying", async () => {
+    await expect(
+      ReleaseSection({
+        ...baseProps,
+        tournamentId: 1,
+        tournamentDate: "2026-02-30",
+      }),
+    ).rejects.toThrow(
+      "ReleaseSection: tournamentDate must be a valid ISO date string in YYYY-MM-DD form.",
+    );
+
+    expect(getVolleyballTournamentDayByKeyAndDateMock).not.toHaveBeenCalled();
+  });
+
+  it("renders DB-backed volleyball tournament metadata", async () => {
+    getVolleyballTournamentDayByKeyAndDateMock.mockResolvedValue({
+      tournamentKey: "1",
+      tournamentName: "Midwest Boys Point Series",
+      tournamentDate: "2026-02-14",
+      finish: null,
+      wins: 2,
+      losses: 1,
+    });
+
+    const ui = await ReleaseSection({
+      alterEgo: "unclejimmy",
+      children: <p>tournament report</p>,
+      tournamentId: 1,
+      tournamentDate: "2026-02-14",
+    });
+    const { container } = render(ui);
+
+    expect(getVolleyballTournamentDayByKeyAndDateMock).toHaveBeenCalledWith(
+      "1",
+      "2026-02-14",
+    );
+    expect(
+      screen.getByText("Midwest Boys Point Series: 2-1"),
+    ).toBeInTheDocument();
+
+    const content = container.querySelector(
+      "[data-tournament-id]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-tournament-id", "1");
+    expect(content).toHaveAttribute("data-tournament-date", "2026-02-14");
+    expect(content).toHaveAttribute(
+      "data-tournament-name",
+      "Midwest Boys Point Series",
+    );
+    expect(content).toHaveAttribute("data-tournament-record", "2-1");
+  });
+
+  it("renders the tournament trophy row at the bottom for first-place finishes", async () => {
+    getVolleyballTournamentDayByKeyAndDateMock.mockResolvedValue({
+      tournamentKey: "2",
+      tournamentName: "Dale Rohde Tournament",
+      tournamentDate: "2026-02-22",
+      finish: 1,
+      wins: 3,
+      losses: 0,
+    });
+
+    const ui = await ReleaseSection({
+      alterEgo: "unclejimmy",
+      children: <p>champions</p>,
+      tournamentId: 2,
+      tournamentDate: "2026-02-22",
+    });
+    const { container } = render(ui);
+
+    expect(screen.getByText("1st Place")).toBeInTheDocument();
+    expect(container.querySelector('img[alt=""]')).toBeInTheDocument();
+
+    const content = container.querySelector(
+      "[data-tournament-id]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-tournament-finish", "1");
+  });
+
+  it("throws cleanly when the volleyball tournament day is missing", async () => {
+    getVolleyballTournamentDayByKeyAndDateMock.mockResolvedValue(null);
+
+    await expect(
+      ReleaseSection({
+        ...baseProps,
+        tournamentId: 1,
+        tournamentDate: "2026-02-14",
+      }),
+    ).rejects.toThrow(
+      'ReleaseSection: no volleyball tournament found for tournamentId "1" on "2026-02-14".',
+    );
   });
 
   it("renders lcs details from the unified review prop", async () => {

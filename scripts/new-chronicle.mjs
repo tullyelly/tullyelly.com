@@ -7,7 +7,7 @@ const hasHelpFlag = titleParts.includes("-h") || titleParts.includes("--help");
 
 const usage = () => {
   console.log('Usage: npm run new-chronicle -- "Title"');
-  console.log("Creates content/chronicles/<slug>.mdx and public/images/optimized/<slug>/");
+  console.log("Creates content/chronicles/<slug>.mdx and public/images/optimus/<slug>/");
 };
 
 if (hasHelpFlag) {
@@ -112,7 +112,7 @@ assertDateOnly(date);
 const nextDay = await getNextDay();
 
 const chroniclePath = path.join("content", "chronicles", `${slug}.mdx`);
-const imagesDir = path.join("public", "images", "optimized", slug);
+const imagesDir = path.join("public", "images", "optimus", slug);
 
 try {
   await fs.access(chroniclePath);

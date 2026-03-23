@@ -86,7 +86,7 @@
     "sanity:db": "node scripts/db_sanity.mjs",
     "check:use-server": "bash scripts/check-use-server.sh",
     "gen:build-info": "node scripts/gen-build-info.mjs",
-    "gen:images-manifest": "node scripts/gen-optimized-images-manifest.mjs",
+    "gen:images-manifest": "node scripts/gen-optimus-images-manifest.mjs",
     "content:build": "contentlayer2 build",
     "content:dev": "contentlayer2 dev --clearCache",
     "contentlayer:build": "contentlayer2 build",

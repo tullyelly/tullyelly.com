@@ -38,7 +38,7 @@ export default async function HomePage() {
       <div className="flex justify-center">
         <figure className="overflow-hidden rounded-2xl border border-border/60 bg-white/70">
           <Image
-            src="/images/optimized/homepage.webp"
+            src="/images/optimus/homepage.webp"
             alt="Homepage collage preview"
             width={1280}
             height={853}
