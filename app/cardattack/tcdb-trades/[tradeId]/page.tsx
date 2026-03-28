@@ -39,7 +39,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { tradeId } = await params;
-  const sections = getTcdbTradeSections(tradeId);
+  const sections = await getTcdbTradeSections(tradeId);
 
   if (sections.length === 0) {
     notFound();

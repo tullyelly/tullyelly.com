@@ -4,7 +4,19 @@ jest.mock("contentlayer/generated", () => ({
   allPosts: [],
 }));
 
-import { allPosts } from "contentlayer/generated";
+const getTcdbTradeCardCountsFromDbMock = jest.fn();
+const listTcdbTradeDaysFromDbMock = jest.fn();
+const listTcdbTradesFromDbMock = jest.fn();
+
+jest.mock("@/lib/tcdb-trade-db", () => ({
+  getTcdbTradeCardCountsFromDb: (...args: unknown[]) =>
+    getTcdbTradeCardCountsFromDbMock(...args),
+  listTcdbTradeDaysFromDb: (...args: unknown[]) =>
+    listTcdbTradeDaysFromDbMock(...args),
+  listTcdbTradesFromDb: (...args: unknown[]) =>
+    listTcdbTradesFromDbMock(...args),
+}));
+
 import {
   extractTradeSectionsFromRaw,
   getTcdbTradeCardCounts,
@@ -19,10 +31,13 @@ type MockPost = {
   body: { raw: string };
 };
 
-const mockedAllPosts = allPosts as unknown as MockPost[];
-
 beforeEach(() => {
-  mockedAllPosts.length = 0;
+  getTcdbTradeCardCountsFromDbMock.mockReset();
+  listTcdbTradeDaysFromDbMock.mockReset();
+  listTcdbTradesFromDbMock.mockReset();
+  getTcdbTradeCardCountsFromDbMock.mockResolvedValue({});
+  listTcdbTradeDaysFromDbMock.mockResolvedValue([]);
+  listTcdbTradesFromDbMock.mockResolvedValue([]);
 });
 
 describe("extractTradeSectionsFromRaw", () => {
@@ -61,8 +76,15 @@ describe("extractTradeSectionsFromRaw", () => {
 });
 
 describe("getTcdbTradeSections", () => {
-  it("orders original before completed based on post dates", () => {
+  it("orders original before completed based on DB trade-day sides", async () => {
     const tradeId = "444";
+    listTcdbTradeDaysFromDbMock.mockResolvedValue([
+      { tradeDate: "2024-01-01", side: "sent" },
+      { tradeDate: "2024-02-01", side: "sent" },
+      { tradeDate: "2024-02-15", side: "received" },
+      { tradeDate: "2024-03-01", side: "received" },
+    ]);
+
     const posts = [
       {
         slug: "later-original",
@@ -85,7 +107,7 @@ describe("getTcdbTradeSections", () => {
         url: "/shaolin/completed-early",
         date: "2024-02-15",
         body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>Early</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">Early</ReleaseSection>`,
         },
       },
       {
@@ -93,12 +115,12 @@ describe("getTcdbTradeSections", () => {
         url: "/shaolin/completed-late",
         date: "2024-03-01",
         body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>Late</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">Late</ReleaseSection>`,
         },
       },
     ];
 
-    const sections = getTcdbTradeSections(tradeId, posts);
+    const sections = await getTcdbTradeSections(tradeId, posts);
 
     expect(sections.map((section) => section.kind)).toEqual([
       "original",
@@ -110,10 +132,15 @@ describe("getTcdbTradeSections", () => {
     expect(sections[1]?.postSlug).toBe("later-original");
     expect(sections[2]?.postSlug).toBe("completed-late");
     expect(sections[3]?.postSlug).toBe("completed-early");
+    expect(listTcdbTradeDaysFromDbMock).toHaveBeenCalledWith(tradeId);
   });
 
-  it("renders multiple sections for the same tradeId in a single post", () => {
+  it("renders multiple sections for the same tradeId in a single post", async () => {
     const tradeId = "555";
+    listTcdbTradeDaysFromDbMock.mockResolvedValue([
+      { tradeDate: "2024-01-10", side: "sent" },
+    ]);
+
     const post = {
       slug: "double-trade",
       url: "/shaolin/double-trade",
@@ -131,14 +158,14 @@ describe("getTcdbTradeSections", () => {
       },
     };
 
-    const sections = getTcdbTradeSections(tradeId, [post]);
+    const sections = await getTcdbTradeSections(tradeId, [post]);
 
     expect(sections).toHaveLength(2);
     expect(sections[0]?.mdx).toContain("First block");
     expect(sections[1]?.mdx).toContain("Second block");
   });
 
-  it("preserves in-post order for multiple completed blocks", () => {
+  it("falls back to authored completed attrs when DB day metadata is missing", async () => {
     const tradeId = "666";
     const post = {
       slug: "completed-trade",
@@ -157,99 +184,39 @@ describe("getTcdbTradeSections", () => {
       },
     };
 
-    const sections = getTcdbTradeSections(tradeId, [post]);
+    const sections = await getTcdbTradeSections(tradeId, [post]);
 
     expect(sections).toHaveLength(2);
     expect(sections[0]?.mdx).toContain("First complete");
     expect(sections[1]?.mdx).toContain("Second complete");
+    expect(sections[0]?.kind).toBe("completed");
+    expect(sections[1]?.kind).toBe("completed");
   });
 });
 
 describe("listTcdbTrades", () => {
-  it("aggregates received and sent card counts for a trade", () => {
-    mockedAllPosts.push(
-      {
-        slug: "alpha-original",
-        url: "/shaolin/alpha-original",
-        date: "2024-01-10",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" sent={3}>Open</ReleaseSection>`,
-        },
-      },
-      {
-        slug: "alpha-completed",
-        url: "/shaolin/alpha-completed",
-        date: "2024-01-20",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed received="5">Closed</ReleaseSection>`,
-        },
-      },
-    );
-
-    expect(getTcdbTradeCardCounts("111111")).toEqual({
+  it("reads received and sent card counts from the DB helper", async () => {
+    getTcdbTradeCardCountsFromDbMock.mockResolvedValue({
       received: 5,
       sent: 3,
       total: 8,
     });
+
+    await expect(getTcdbTradeCardCounts("111111")).resolves.toEqual({
+      received: 5,
+      sent: 3,
+      total: 8,
+    });
+    expect(getTcdbTradeCardCountsFromDbMock).toHaveBeenCalledWith("111111");
   });
 
-  it("aggregates start/end dates, first partner, and sorts by trade id desc", () => {
-    mockedAllPosts.push(
-      {
-        slug: "alpha-original",
-        url: "/shaolin/alpha-original",
-        date: "2024-01-10",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="first-partner" sent={3}>Open</ReleaseSection>`,
-        },
-      },
-      {
-        slug: "alpha-completed",
-        url: "/shaolin/alpha-completed",
-        date: "2024-01-20",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed received="5">Closed</ReleaseSection>`,
-        },
-      },
-      {
-        slug: "beta-original",
-        url: "/shaolin/beta-original",
-        date: "2024-03-05",
-        body: {
-          raw: [
-            "<ReleaseSection",
-            '  alterEgo="cardattack"',
-            '  tcdbTradeId="222222"',
-            '  tcdbTradePartner="beta-partner"',
-            ">",
-            "  Beta",
-            "</ReleaseSection>",
-          ].join("\n"),
-        },
-      },
-      {
-        slug: "alpha-original-earlier",
-        url: "/shaolin/alpha-original-earlier",
-        date: "2024-01-01",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" tcdbTradePartner="ignored-later">Earlier open</ReleaseSection>`,
-        },
-      },
-      {
-        slug: "alpha-completed-later",
-        url: "/shaolin/alpha-completed-later",
-        date: "2024-02-10",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" tcdbTradeId="111111" completed />`,
-        },
-      },
-    );
-
-    expect(listTcdbTrades()).toEqual([
+  it("returns DB-backed list summaries", async () => {
+    listTcdbTradesFromDbMock.mockResolvedValue([
       {
         tradeId: "222222",
         startDate: "2024-03-05",
         partner: "beta-partner",
+        sectionCount: 1,
         status: "Open",
       },
       {
@@ -259,9 +226,32 @@ describe("listTcdbTrades", () => {
         partner: "first-partner",
         received: 5,
         sent: 3,
+        sectionCount: 2,
         status: "Completed",
         total: 8,
       },
     ]);
+
+    await expect(listTcdbTrades()).resolves.toEqual([
+      {
+        tradeId: "222222",
+        startDate: "2024-03-05",
+        partner: "beta-partner",
+        sectionCount: 1,
+        status: "Open",
+      },
+      {
+        tradeId: "111111",
+        startDate: "2024-01-01",
+        endDate: "2024-02-10",
+        partner: "first-partner",
+        received: 5,
+        sent: 3,
+        sectionCount: 2,
+        status: "Completed",
+        total: 8,
+      },
+    ]);
+    expect(listTcdbTradesFromDbMock).toHaveBeenCalledTimes(1);
   });
 });

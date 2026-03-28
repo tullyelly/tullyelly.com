@@ -6,8 +6,8 @@ import TcdbTradeListClient from "./_components/TcdbTradeListClient";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function Page() {
-  const trades = listTcdbTrades();
+export default async function Page() {
+  const trades = await listTcdbTrades();
 
   return (
     <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
