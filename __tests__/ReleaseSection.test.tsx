@@ -3,25 +3,18 @@ import { render, screen } from "@testing-library/react";
 
 const getScrollMock = jest.fn();
 const getVolleyballTournamentDayByKeyAndDateMock = jest.fn();
-const allPostsMock: Array<{
-  body: { raw: string };
-  slug: string;
-  url: string;
-  date: string;
-}> = [];
+const getTcdbTradeSummaryFromDbMock = jest.fn();
 
 jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
 }));
 jest.mock("server-only", () => ({}));
-jest.mock("contentlayer/generated", () => ({
-  __esModule: true,
-  get allPosts() {
-    return allPostsMock;
-  },
-}));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
+}));
+jest.mock("@/lib/tcdb-trade-db", () => ({
+  getTcdbTradeSummaryFromDb: (...args: unknown[]) =>
+    getTcdbTradeSummaryFromDbMock(...args),
 }));
 jest.mock("@/lib/volleyball-tournament-db", () => ({
   getVolleyballTournamentDayByKeyAndDate: (...args: unknown[]) =>
@@ -107,7 +100,9 @@ describe("ReleaseSection", () => {
   beforeEach(() => {
     getScrollMock.mockReset();
     getVolleyballTournamentDayByKeyAndDateMock.mockReset();
-    allPostsMock.length = 0;
+    getTcdbTradeSummaryFromDbMock.mockReset();
+
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue(null);
   });
 
   it("renders the default layout when releaseId is missing", async () => {
@@ -472,11 +467,18 @@ describe("ReleaseSection", () => {
   });
 
   it("does not call getScroll and renders tcdb trade tab + partner link", async () => {
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue({
+      tradeId: "359632",
+      partner: "collect-a-set",
+      startDate: "2026-01-01",
+      sectionCount: 1,
+      status: "Open",
+    });
+
     const rainbowColour = "#00FF00";
     const ui = await ReleaseSection({
       ...baseProps,
       tcdbTradeId: "359632",
-      tcdbTradePartner: "collect-a-set",
       rainbowColour,
     });
     const { container } = render(ui);
@@ -501,17 +503,27 @@ describe("ReleaseSection", () => {
       "https://www.tcdb.com/Profile.cfm/collect-a-set",
     );
     expect(partnerLink).toHaveClass("link-blue");
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenCalledWith("359632");
   });
 
-  it("renders tcdb trade card counts from direct props", async () => {
+  it("renders tcdb trade card counts from the DB summary helper", async () => {
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue({
+      tradeId: "359632",
+      startDate: "2026-01-01",
+      sectionCount: 1,
+      status: "Open",
+      received: 7,
+      sent: 4,
+      total: 11,
+    });
+
     const ui = await ReleaseSection({
       ...baseProps,
       tcdbTradeId: "359632",
-      received: 7,
-      sent: 4,
     });
     render(ui);
 
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenCalledWith("359632");
     expect(
       screen.getByText("Card Traffic: 7 received; 4 sent; 11 total"),
     ).toBeInTheDocument();
@@ -519,29 +531,17 @@ describe("ReleaseSection", () => {
 
   it("renders a completed link to the internal tcdb trade route", async () => {
     const tradeId = "359632";
-    allPostsMock.push(
-      {
-        slug: "followup-trade",
-        url: "/shaolin/followup-trade",
-        date: "2024-02-01",
-        body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>`,
-        },
-      },
-      {
-        slug: "original-trade",
-        url: "/shaolin/original-trade",
-        date: "2024-01-01",
-        body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
-        },
-      },
-    );
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue({
+      tradeId,
+      startDate: "2026-01-01",
+      endDate: "2026-01-10",
+      sectionCount: 2,
+      status: "Completed",
+    });
 
     const ui = await ReleaseSection({
       ...baseProps,
       tcdbTradeId: tradeId,
-      completed: true,
     });
     render(ui);
 
@@ -553,28 +553,18 @@ describe("ReleaseSection", () => {
       "href",
       `/cardattack/tcdb-trades/${tradeId}`,
     );
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenCalledWith(tradeId);
   });
 
   it("propagates completed links to all tcdb sections sharing a tradeId", async () => {
     const tradeId = "812345";
-    allPostsMock.push(
-      {
-        slug: "original-trade",
-        url: "/shaolin/original-trade",
-        date: "2024-01-01",
-        body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
-        },
-      },
-      {
-        slug: "completed-trade",
-        url: "/shaolin/completed-trade",
-        date: "2024-02-01",
-        body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed>`,
-        },
-      },
-    );
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue({
+      tradeId,
+      startDate: "2026-01-01",
+      endDate: "2026-02-01",
+      sectionCount: 2,
+      status: "Completed",
+    });
 
     const incompleteSection = await ReleaseSection({
       ...baseProps,
@@ -583,7 +573,6 @@ describe("ReleaseSection", () => {
     const completedSection = await ReleaseSection({
       ...baseProps,
       tcdbTradeId: tradeId,
-      completed: true,
     });
 
     render(
@@ -604,28 +593,20 @@ describe("ReleaseSection", () => {
       `/cardattack/tcdb-trades/${tradeId}`,
       `/cardattack/tcdb-trades/${tradeId}`,
     ]);
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenCalledTimes(2);
   });
 
-  it("propagates trade card counts to all tcdb sections sharing a tradeId", async () => {
+  it("propagates DB-backed trade card counts to all tcdb sections sharing a tradeId", async () => {
     const tradeId = "812345";
-    allPostsMock.push(
-      {
-        slug: "original-trade",
-        url: "/shaolin/original-trade",
-        date: "2024-01-01",
-        body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" sent={4}>`,
-        },
-      },
-      {
-        slug: "completed-trade",
-        url: "/shaolin/completed-trade",
-        date: "2024-02-01",
-        body: {
-          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}" completed received="6">`,
-        },
-      },
-    );
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue({
+      tradeId,
+      startDate: "2026-01-01",
+      sectionCount: 1,
+      status: "Open",
+      received: 6,
+      sent: 4,
+      total: 10,
+    });
 
     const incompleteSection = await ReleaseSection({
       ...baseProps,
@@ -634,7 +615,6 @@ describe("ReleaseSection", () => {
     const completedSection = await ReleaseSection({
       ...baseProps,
       tcdbTradeId: tradeId,
-      completed: true,
     });
 
     render(
@@ -647,6 +627,14 @@ describe("ReleaseSection", () => {
     expect(
       screen.getAllByText("Card Traffic: 6 received; 4 sent; 10 total"),
     ).toHaveLength(2);
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(
+      1,
+      tradeId,
+    );
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(
+      2,
+      tradeId,
+    );
   });
 
   it("throws when both releaseId and tcdbTradeId are passed", async () => {

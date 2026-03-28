@@ -1,0 +1,86 @@
+---
+title: "found it!"
+date: "2026-03-27"
+summary: "Take 2; Day 66, Six."
+draft: false
+infinityStone: false
+---
+
+<ReleaseSection alterEgo="tullyelly" releaseId="143">
+    A little bit more than [two months ago](/shaolin/100), I noted there was a bug in my release ID generation process, and I just verified exactly what it is.
+
+    All of that to say, I confirmed my suspicions and the solution I had in mind then, is still the same solution I have in mind now. I wasn't waiting for this confirmation to take that path, I just haven't been motivated to do so as of yet.
+
+    I could easily fix it right now. I will not easily fix it right now. Release 142 is only whispers of a myth, entirely a legend.
+
+    Found it!
+
+    ---
+
+    Before we get into the meat of it, I also slightly adjusted the column widths on [tcdb trades](/cardattack/tcdb-trades) so that the Partner name did not wrap on the full desktop app.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="cardattack" releaseId="143">
+    ![authentic](/images/optimus/found-it/authentic.webp)
+    
+    One way or another, we will finish this box of football cards from <PersonTag tag="derek" /> this weekend - starting with [2007 SP Authentic](https://www.tcdb.com/ViewSet.cfm/sid/8491/2007-SP-Authentic).
+
+    <FolderImageCarousel folder="found-it/keepers" />
+
+    Some quick hitters:
+
+    - Always happy to see <PersonTag displayName="donald driver" tag="donald" /> show up to the party.
+    - Is <PersonTag displayName="walter jones" tag="noles" /> my favorite lineman of all time? He's in the running.
+    - I hate the <PersonTag tag="patriots" />. I hate the <PersonTag tag="vikings" />. Somehow, <PersonTag displayName="randy moss" tag="randy" /> beats those odds
+    - <PersonTag displayName="tom brady" tag="patriots" /> is a turd.
+
+    83 cards into the keeper pile and 288 cards into the trade pile.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="cardattack" releaseId="143">
+  As for the meat of it, <PersonTag tag="cipher" /> ripped through the code
+  base, and moved the [TCDb Trades](/cardattack/tcdb-trades) data it runs off
+  of, from being embedded into these chronicles into a database backend. Because
+  we already had a roadmap based upon the previous work done to [volleyball
+  tournaments](/unclejimmy/squad/volleyball), it was quite quick.
+
+We go from......
+
+```mdx
+<ReleaseSection
+  alterEgo="cardattack"
+  tcdbTradeId="997119"
+  tcdbTradePartner="JBarbs80"
+  sent="19"
+  received="20"
+>
+```
+
+......to......
+
+```mdx
+<ReleaseSection alterEgo="cardattack" tcdbTradeId="997119">
+```
+
+I used to sometimes forget to fill out all of the data because I had to hand type it. Now, well, I can still forget to do stuff, it's just much easier not too now. Plus, forward facing flexibility added.
+
+Iterate.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="tullyelly" divider={false}>
+  Because of the relative popularity of the site, or at least the consistent
+  usage of the site, along with the database work mentioned above, I ran into the free limits on my [Neon](https://neon.com/)
+  database server. Rather than trying to skimp here or there, I just bit the
+  bullet, and started to pay for it. I only hit the cap late in the month so I
+  could have adjusted, and yet, paying for this is inevitable.
+
+If you do the cost vs. how much time I spend here math, plus add in the mental health benefits of letting it all out maths, I end up with an equation that says it's doubtful there's a better bang for the buck in my life right now.
+
+Plus, I randomly had some hits from Japan, Canada, and a brief, but significant run of hits from Singapore this week. I'll pay a few bucks a month to say hi to someone from Singapore for no good reason.
+
+Whatever it was they were looking for, I hope they found it.
+
+</ReleaseSection>

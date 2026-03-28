@@ -124,30 +124,49 @@ export default function TcdbTradeListClient({ rows }: Props) {
         variant="bucks"
         aria-label="TCDB trades table"
         data-testid="tcdb-trade-table"
+        className="[&_th.tcdb-trade-compact]:px-3 [&_td.tcdb-trade-compact]:px-3"
       >
         <THead variant="bucks">
-          <th scope="col" className="w-[110px] whitespace-nowrap">
+          <th scope="col" className="w-[104px] whitespace-nowrap">
             Trade ID
           </th>
-          <th scope="col" className="w-[150px] whitespace-nowrap">
+          <th
+            scope="col"
+            className="tcdb-trade-compact w-[116px] whitespace-nowrap"
+          >
+            Status
+          </th>
+          <th
+            scope="col"
+            className="tcdb-trade-compact w-[132px] whitespace-nowrap"
+          >
             Started
           </th>
-          <th scope="col" className="w-[150px] whitespace-nowrap">
+          <th
+            scope="col"
+            className="tcdb-trade-compact w-[132px] whitespace-nowrap"
+          >
             Completed
           </th>
-          <th scope="col" className="w-[90px] whitespace-nowrap">
+          <th
+            scope="col"
+            className="tcdb-trade-compact w-[76px] whitespace-nowrap"
+          >
             Received
           </th>
-          <th scope="col" className="w-[90px] whitespace-nowrap">
+          <th
+            scope="col"
+            className="tcdb-trade-compact w-[76px] whitespace-nowrap"
+          >
             Sent
           </th>
-          <th scope="col" className="w-[90px] whitespace-nowrap">
+          <th
+            scope="col"
+            className="tcdb-trade-compact w-[76px] whitespace-nowrap"
+          >
             Total
           </th>
           <th scope="col">Partner</th>
-          <th scope="col" className="w-[130px] whitespace-nowrap">
-            Status
-          </th>
         </THead>
         <TBody>
           {sortedRows.length > 0 ? (
@@ -165,27 +184,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                     {row.tradeId}
                   </Link>
                 </td>
-                <td className="whitespace-nowrap">
-                  <time dateTime={row.startDate}>{fmtDate(row.startDate)}</time>
-                </td>
-                <td className="whitespace-nowrap">
-                  {row.endDate ? (
-                    <time dateTime={row.endDate}>{fmtDate(row.endDate)}</time>
-                  ) : (
-                    "Open"
-                  )}
-                </td>
-                <td className="whitespace-nowrap">
-                  {renderTradeCount(row.received)}
-                </td>
-                <td className="whitespace-nowrap">
-                  {renderTradeCount(row.sent)}
-                </td>
-                <td className="whitespace-nowrap">
-                  {renderTradeCount(row.total)}
-                </td>
-                <td>{renderPartner(row.partner)}</td>
-                <td className="whitespace-nowrap">
+                <td className="tcdb-trade-compact whitespace-nowrap">
                   <Badge
                     className={getBadgeClass(
                       row.status === "Open" ? "chore" : "spike",
@@ -193,6 +192,28 @@ export default function TcdbTradeListClient({ rows }: Props) {
                   >
                     {row.status}
                   </Badge>
+                </td>
+                <td className="tcdb-trade-compact whitespace-nowrap">
+                  <time dateTime={row.startDate}>{fmtDate(row.startDate)}</time>
+                </td>
+                <td className="tcdb-trade-compact whitespace-nowrap">
+                  {row.endDate ? (
+                    <time dateTime={row.endDate}>{fmtDate(row.endDate)}</time>
+                  ) : (
+                    "Open"
+                  )}
+                </td>
+                <td className="tcdb-trade-compact whitespace-nowrap">
+                  {renderTradeCount(row.received)}
+                </td>
+                <td className="tcdb-trade-compact whitespace-nowrap">
+                  {renderTradeCount(row.sent)}
+                </td>
+                <td className="tcdb-trade-compact whitespace-nowrap">
+                  {renderTradeCount(row.total)}
+                </td>
+                <td className="[overflow-wrap:anywhere]">
+                  {renderPartner(row.partner)}
                 </td>
               </tr>
             ))
