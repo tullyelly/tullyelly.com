@@ -117,13 +117,13 @@ export async function getTcdbTradeSummaryFromDb(
       ) AS end_date,
       COUNT(day.id) AS section_count,
       COALESCE(BOOL_OR(day.side = 'received'), FALSE) AS has_completed,
-      SUM(day.received) AS received,
-      SUM(day.sent) AS sent
+      trade.received AS received,
+      trade.sent AS sent
     FROM dojo.tcdb_trade AS trade
     LEFT JOIN dojo.tcdb_trade_day AS day
-      ON day.tcdb_trade_id = trade.id
+      ON day.trade_id = trade.trade_id
     WHERE trade.trade_id = ${normalizedTradeId}
-    GROUP BY trade.id
+    GROUP BY trade.id, trade.trade_id, trade.partner, trade.received, trade.sent
     LIMIT 1
   `;
 
@@ -146,12 +146,12 @@ export async function listTcdbTradesFromDb(): Promise<TcdbTradeSummary[]> {
       ) AS end_date,
       COUNT(day.id) AS section_count,
       COALESCE(BOOL_OR(day.side = 'received'), FALSE) AS has_completed,
-      SUM(day.received) AS received,
-      SUM(day.sent) AS sent
+      trade.received AS received,
+      trade.sent AS sent
     FROM dojo.tcdb_trade AS trade
     LEFT JOIN dojo.tcdb_trade_day AS day
-      ON day.tcdb_trade_id = trade.id
-    GROUP BY trade.id, trade.trade_id, trade.partner
+      ON day.trade_id = trade.trade_id
+    GROUP BY trade.id, trade.trade_id, trade.partner, trade.received, trade.sent
   `;
 
   return rows
@@ -170,7 +170,7 @@ export async function listTcdbTradeDaysFromDb(
       day.side
     FROM dojo.tcdb_trade AS trade
     JOIN dojo.tcdb_trade_day AS day
-      ON day.tcdb_trade_id = trade.id
+      ON day.trade_id = trade.trade_id
     WHERE trade.trade_id = ${normalizedTradeId}
     ORDER BY day.trade_date ASC
   `;
