@@ -8,6 +8,7 @@ import { ChroniclePostTailCards } from "@/components/chronicles/ChroniclePostTai
 import { ChroniclePrevNextNav } from "@/components/chronicles/ChroniclePrevNextNav";
 import { CommentsSection } from "@/components/chronicles/CommentsSection";
 import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
+import PageIntro from "@/components/layout/PageIntro";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
 
@@ -46,18 +47,12 @@ function PostContent({ slug }: { slug: string }) {
   if (!post) notFound();
   return (
     <div className="-mx-2 md:mx-0">
-      <article className="w-full max-w-none md:max-w-3xl md:mx-auto space-y-10 mt-8 md:mt-10">
+      <article className="w-full max-w-none space-y-10 md:mx-auto md:max-w-3xl">
         <Card
           as="section"
-          className="space-y-6 border-0 shadow-none px-1 py-6 md:p-8"
+          className="border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8 md:pt-0"
         >
-          <header className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-              {fmtDate(post.date)}
-              {`: ${post.title}`}
-            </h1>
-          </header>
-          <div className="space-y-4">
+          <PageIntro title={`${fmtDate(post.date)}: ${post.title}`}>
             <ChronicleMdxRenderer code={post.body.code} source={post.body.raw} />
             <ChronicleSignature
               title={post.title}
@@ -66,7 +61,7 @@ function PostContent({ slug }: { slug: string }) {
               tags={post.tags}
             />
             <ChroniclePrevNextNav slug={post.slug} />
-          </div>
+          </PageIntro>
         </Card>
 
         <CommentsSection postSlug={post.slug} />
