@@ -4,6 +4,8 @@ import {
   getTcdbTradeCardCountsFromDb,
   listTcdbTradeDaysFromDb,
   listTcdbTradesFromDb,
+  type TcdbTradeDay,
+  type TcdbTradeDaySide,
 } from "@/lib/tcdb-trade-db";
 
 export type TradeSectionKind = "original" | "completed";
@@ -13,7 +15,22 @@ export type TradeSection = {
   postSlug: string;
   postUrl: string;
   postDate: string;
+  postTitle?: string;
   mdx: string;
+};
+
+export type TcdbTradeSourcePost = {
+  slug: string;
+  url: string;
+  date: string;
+  title?: string;
+};
+
+export type TcdbTradeNarrativeDay = {
+  tradeDate: string;
+  side: TcdbTradeDaySide;
+  sections: TradeSection[];
+  sourcePosts: TcdbTradeSourcePost[];
 };
 
 export type TcdbTradeCardCounts = {
@@ -36,6 +53,7 @@ type PostSource = {
   slug: string;
   url: string;
   date: string;
+  title?: string;
 };
 
 type ExtractedSection = {
@@ -56,6 +74,12 @@ export const getTradeIdAttribute = (tradeId: string): string =>
 const toTimestamp = (value: string): number => {
   const ts = new Date(value).getTime();
   return Number.isNaN(ts) ? 0 : ts;
+};
+
+const normalizeTradePostDate = (value: string): string => {
+  const trimmed = value.trim();
+  const leadingDate = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  return leadingDate?.[1] ?? trimmed;
 };
 
 const compareByDateAsc = (
@@ -161,14 +185,19 @@ function getResolvedTradeSectionKind(
   return fallbackKind;
 }
 
-export const getTcdbTradeSections = async (
-  tradeId: string,
-  posts: PostSource[] = allPosts,
-): Promise<TradeSection[]> => {
-  if (!tradeId) return [];
+function getTradeDayKey(
+  tradeDate: string,
+  side: TcdbTradeDaySide,
+): `${TcdbTradeDaySide}:${string}` {
+  return `${side}:${tradeDate}`;
+}
 
+function collectTcdbTradeSections(
+  tradeId: string,
+  tradeDays: TcdbTradeDay[],
+  posts: PostSource[],
+): Array<TradeSection & ExtractedSection> {
   const tradeAttr = getTradeIdAttribute(tradeId);
-  const tradeDays = await listTcdbTradeDaysFromDb(tradeId);
   const sideByDate = new Map(
     tradeDays.map((tradeDay) => [tradeDay.tradeDate, tradeDay.side]),
   );
@@ -179,15 +208,33 @@ export const getTcdbTradeSections = async (
 
     const sections = extractTradeSectionsWithOffsets(post.body.raw, tradeId);
     for (const section of sections) {
+      const normalizedPostDate = normalizeTradePostDate(post.date);
       extracted.push({
         ...section,
-        kind: getResolvedTradeSectionKind(section.kind, sideByDate, post.date),
+        kind: getResolvedTradeSectionKind(
+          section.kind,
+          sideByDate,
+          normalizedPostDate,
+        ),
         postSlug: post.slug,
         postUrl: post.url,
-        postDate: post.date,
+        postDate: normalizedPostDate,
+        ...(post.title ? { postTitle: post.title } : {}),
       });
     }
   }
+
+  return extracted;
+}
+
+export const getTcdbTradeSections = async (
+  tradeId: string,
+  posts: PostSource[] = allPosts,
+): Promise<TradeSection[]> => {
+  if (!tradeId) return [];
+
+  const tradeDays = await listTcdbTradeDaysFromDb(tradeId);
+  const extracted = collectTcdbTradeSections(tradeId, tradeDays, posts);
 
   if (extracted.length === 0) return [];
 
@@ -202,6 +249,61 @@ export const getTcdbTradeSections = async (
     ({ offset: _offset, ...rest }) => rest,
   );
 };
+
+export async function getTcdbTradeNarrativeDays(
+  tradeId: string,
+  posts: PostSource[] = allPosts,
+): Promise<TcdbTradeNarrativeDay[]> {
+  if (!tradeId) return [];
+
+  const tradeDays = await listTcdbTradeDaysFromDb(tradeId);
+  if (tradeDays.length === 0) return [];
+
+  const extracted = collectTcdbTradeSections(tradeId, tradeDays, posts).sort(
+    compareByDateAsc,
+  );
+  const sectionsByDay = new Map<string, TradeSection[]>();
+  const sourcePostsByDay = new Map<string, TcdbTradeSourcePost[]>();
+
+  for (const { offset: _offset, ...section } of extracted) {
+    const key = getTradeDayKey(
+      section.postDate,
+      section.kind === "completed" ? "received" : "sent",
+    );
+
+    const sections = sectionsByDay.get(key);
+    if (sections) {
+      sections.push(section);
+    } else {
+      sectionsByDay.set(key, [section]);
+    }
+
+    const sourcePosts = sourcePostsByDay.get(key) ?? [];
+    if (!sourcePosts.some((post) => post.url === section.postUrl)) {
+      sourcePosts.push({
+        slug: section.postSlug,
+        url: section.postUrl,
+        date: section.postDate,
+        ...(section.postTitle ? { title: section.postTitle } : {}),
+      });
+      sourcePostsByDay.set(key, sourcePosts);
+    }
+  }
+
+  return tradeDays.map((tradeDay) => {
+    const key = getTradeDayKey(tradeDay.tradeDate, tradeDay.side);
+    return {
+      tradeDate: tradeDay.tradeDate,
+      side: tradeDay.side,
+      sections: sectionsByDay.get(key) ?? [],
+      sourcePosts: sourcePostsByDay.get(key) ?? [],
+    };
+  });
+}
+
+export function getTcdbProfileUrl(partner: string): string {
+  return `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(partner)}`;
+}
 
 export async function getTcdbTradeCardCounts(
   tradeId: string,
