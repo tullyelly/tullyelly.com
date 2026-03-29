@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import PageIntro from "@/components/layout/PageIntro";
 import TCDBRankingTable from "@/components/tcdb/TCDBRankingTable";
 import type { RankingResponse } from "@/lib/data/tcdb";
 import type { HomieOption } from "../_lib/getHomieOptions";
@@ -44,27 +45,25 @@ export default function TcdbRankingsView({
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            TCDB Rankings
-          </h1>
-          {showRefreshing ? (
+      <PageIntro
+        title="TCDB Rankings"
+        accessory={
+          showRefreshing ? (
             <span className="inline-flex items-center rounded-full bg-[var(--cream)] px-3 py-1 text-xs font-semibold uppercase text-ink/80">
               Refreshing…
             </span>
-          ) : null}
-        </div>
-        {canCreate ? (
-          <AddSnapshotButton
-            homieOptions={homieOptions}
-            defaultRankingDate={defaultRankingDate}
-            onSnapshotCreated={handleSnapshotCreated}
-          />
-        ) : null}
-      </header>
-
-      <section className="space-y-4">
+          ) : null
+        }
+        actions={
+          canCreate ? (
+            <AddSnapshotButton
+              homieOptions={homieOptions}
+              defaultRankingDate={defaultRankingDate}
+              onSnapshotCreated={handleSnapshotCreated}
+            />
+          ) : null
+        }
+      >
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           I love me some{" "}
           <a
@@ -85,7 +84,7 @@ export default function TcdbRankingsView({
           This is in the early MVP (minimum viable product) stages, so please
           let me know what you think.
         </p>
-      </section>
+      </PageIntro>
 
       <TCDBRankingTable serverData={data} />
     </div>

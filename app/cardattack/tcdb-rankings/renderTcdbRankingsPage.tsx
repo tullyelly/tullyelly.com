@@ -1,5 +1,7 @@
+import { Card } from "@ui";
 import { unstable_cache } from "next/cache";
 import { canCurrentUser as can } from "@/lib/authz";
+import FullBleedPage from "@/components/layout/FullBleedPage";
 import {
   listTcdbRankings,
   type RankingResponse,
@@ -58,13 +60,18 @@ export async function renderTcdbRankingsPage(
     (await getCurrentDateIso()) || data.data[0]?.ranking_at || "";
 
   return (
-    <div className="space-y-10">
-      <TcdbRankingsView
-        canCreate={canCreate}
-        homieOptions={homieOptions}
-        data={data}
-        defaultRankingDate={defaultRankingDate}
-      />
-    </div>
+    <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
+      <Card
+        as="section"
+        className="border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8 md:pt-0"
+      >
+        <TcdbRankingsView
+          canCreate={canCreate}
+          homieOptions={homieOptions}
+          data={data}
+          defaultRankingDate={defaultRankingDate}
+        />
+      </Card>
+    </FullBleedPage>
   );
 }
