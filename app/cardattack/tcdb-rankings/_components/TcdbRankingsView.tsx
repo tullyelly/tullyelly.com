@@ -5,6 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import PageIntro from "@/components/layout/PageIntro";
 import TCDBRankingTable from "@/components/tcdb/TCDBRankingTable";
 import type { RankingResponse } from "@/lib/data/tcdb";
+import {
+  tcdbTradeInspiredRankingsTheme,
+  tcdbTradeTableThemeStyle,
+} from "@/lib/tcdb-theme";
 import type { HomieOption } from "../_lib/getHomieOptions";
 import AddSnapshotButton from "./AddSnapshotButton";
 
@@ -86,7 +90,13 @@ export default function TcdbRankingsView({
         </p>
       </PageIntro>
 
-      <TCDBRankingTable serverData={data} />
+      <TCDBRankingTable
+        serverData={data}
+        theme={{
+          ...tcdbTradeInspiredRankingsTheme,
+          tableThemeStyle: tcdbTradeTableThemeStyle,
+        }}
+      />
     </div>
   );
 }

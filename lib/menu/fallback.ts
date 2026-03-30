@@ -147,6 +147,13 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       iconKey: "Trophy",
       feature: "menu.cardattack.tcdb.rankings",
     },
+    {
+      id: "tcdb-trades",
+      label: "Trades",
+      href: "/cardattack/tcdb-trades",
+      iconKey: "ArrowLeftRight",
+      feature: "menu.cardattack.tcdb.trades",
+    },
   ],
   theabbott: [
     {

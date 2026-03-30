@@ -32,6 +32,13 @@ export const TEST_MENU_ITEMS: NavItem[] = [
         featureKey: "menu.cardattack.tcdb.rankings",
       },
       {
+        id: "cardattack-trades",
+        kind: "link",
+        label: "TCDB Trades",
+        href: "/menu-test/target",
+        featureKey: "menu.cardattack.tcdb.trades",
+      },
+      {
         id: "cardattack-home",
         kind: "link",
         label: "TCDB Home",

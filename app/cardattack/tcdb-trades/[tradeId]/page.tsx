@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 
 import FullBleedPage from "@/components/layout/FullBleedPage";
 import { fmtDate } from "@/lib/datetime";
+import { tcdbTradePageThemeVars } from "@/lib/tcdb-theme";
 import { getTcdbTradeSummaryFromDb } from "@/lib/tcdb-trade-db";
 import {
   getTcdbProfileUrl,
@@ -18,17 +18,6 @@ type TradeChronicleDay = Awaited<
   ReturnType<typeof getTcdbTradeNarrativeDays>
 >[number] & {
   anchorId: string;
-};
-
-const TRADE_PAGE_TOKENS: CSSProperties = {
-  ["--trade-rust" as string]: "#B45028",
-  ["--trade-rust-deep" as string]: "#A84822",
-  ["--trade-rust-soft" as string]: "#F1E3DB",
-  ["--trade-blue" as string]: "var(--blue)",
-  ["--trade-blue-soft" as string]: "#E9F0FF",
-  ["--trade-off-white" as string]: "#F8F8F8",
-  ["--trade-charcoal" as string]: "#303828",
-  ["--trade-border" as string]: "#D8CDC6",
 };
 
 const topLinkClassName =
@@ -185,7 +174,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
       <div
         className="space-y-8 px-1 py-6 md:px-2 md:py-8"
-        style={TRADE_PAGE_TOKENS}
+        style={tcdbTradePageThemeVars}
       >
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--trade-rust)_0%,var(--trade-rust-deep)_100%)] text-[color:var(--trade-off-white)] shadow-sm">
           <div className="space-y-4 px-4 py-4 md:space-y-6 md:px-6 md:py-6">
