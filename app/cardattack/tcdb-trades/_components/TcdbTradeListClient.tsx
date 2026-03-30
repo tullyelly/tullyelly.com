@@ -7,6 +7,7 @@ import { getBadgeClass } from "@/app/ui/badge-maps";
 import { Table, TBody, THead } from "@/components/ui/Table";
 import { Card } from "@ui";
 import { fmtDate } from "@/lib/datetime";
+import { tcdbTradeTableThemeStyle } from "@/lib/tcdb-theme";
 
 type Props = {
   rows: {
@@ -20,6 +21,10 @@ type Props = {
     status: "Open" | "Completed";
   }[];
 };
+
+function getTradeStatusBadgeClass(status: "Open" | "Completed") {
+  return getBadgeClass(status === "Open" ? "tcdb" : "spike");
+}
 
 function renderPartner(partner?: string) {
   if (!partner) {
@@ -74,9 +79,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                   </Link>
                 </div>
                 <Badge
-                  className={getBadgeClass(
-                    row.status === "Open" ? "chore" : "spike",
-                  )}
+                  className={getTradeStatusBadgeClass(row.status)}
                 >
                   {row.status}
                 </Badge>
@@ -125,6 +128,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
         aria-label="TCDB trades table"
         data-testid="tcdb-trade-table"
         className="[&_th.tcdb-trade-compact]:px-3 [&_td.tcdb-trade-compact]:px-3"
+        themeStyle={tcdbTradeTableThemeStyle}
       >
         <THead variant="bucks">
           <th scope="col" className="w-[104px] whitespace-nowrap">
@@ -173,7 +177,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
             sortedRows.map((row) => (
               <tr
                 key={row.tradeId}
-                className="border-b border-black/5 last:border-0"
+                className="border-b border-[color:var(--table-row-divider)] last:border-0"
                 data-testid="tcdb-trade-row"
               >
                 <td className="font-medium tabular-nums">
@@ -185,11 +189,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                   </Link>
                 </td>
                 <td className="tcdb-trade-compact whitespace-nowrap">
-                  <Badge
-                    className={getBadgeClass(
-                      row.status === "Open" ? "chore" : "spike",
-                    )}
-                  >
+                  <Badge className={getTradeStatusBadgeClass(row.status)}>
                     {row.status}
                   </Badge>
                 </td>

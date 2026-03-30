@@ -8,11 +8,12 @@ import {
   useState,
   useTransition,
 } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import { X } from "lucide-react";
 import TrendPill from "./TrendPill";
+import type { TCDBRankingTableTheme } from "./TCDBRankingTable";
 import { Table, TBody, THead } from "@/components/ui/Table";
 import TablePager from "@/components/ui/TablePager";
 import { Card } from "@ui";
@@ -32,6 +33,23 @@ const integerFormatter = new Intl.NumberFormat("en-US");
 const signedFormatter = new Intl.NumberFormat("en-US", {
   signDisplay: "always",
 });
+
+const DEFAULT_RANKING_DIALOG_STYLE: CSSProperties = {
+  ["--ranking-dialog-shell-bg" as string]: "var(--white)",
+  ["--ranking-dialog-text" as string]: "var(--ink)",
+  ["--ranking-dialog-border" as string]: "var(--cream)",
+  ["--ranking-dialog-ring" as string]: "var(--blue)",
+  ["--ranking-dialog-header-background" as string]: "var(--blue)",
+  ["--ranking-dialog-header-fg" as string]: "var(--white)",
+  ["--ranking-dialog-header-button-bg" as string]: "rgba(255, 255, 255, 0.15)",
+  ["--ranking-dialog-header-button-hover-bg" as string]:
+    "rgba(255, 255, 255, 0.25)",
+  ["--ranking-dialog-header-ring-offset" as string]: "var(--blue)",
+  ["--ranking-dialog-surface-bg" as string]: "var(--white)",
+  ["--ranking-dialog-surface-border" as string]: "var(--border-subtle)",
+  ["--ranking-dialog-label" as string]:
+    "color-mix(in srgb, var(--ink) 60%, white)",
+};
 
 function formatSigned(value: number | null | undefined) {
   if (value === null || value === undefined) return "Not available";
@@ -87,10 +105,12 @@ const dialogFields: ReadonlyArray<{
 
 export type TCDBRankingTableClientProps = {
   serverData: RankingResponse;
+  theme?: TCDBRankingTableTheme;
 };
 
 export default function TCDBRankingTableClient({
   serverData,
+  theme,
 }: TCDBRankingTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -111,6 +131,13 @@ export default function TCDBRankingTableClient({
   const rows = useMemo(
     () => [...serverData.data].sort((a, b) => b.card_count - a.card_count),
     [serverData.data],
+  );
+  const detailDialogStyle = useMemo(
+    () => ({
+      ...DEFAULT_RANKING_DIALOG_STYLE,
+      ...(theme?.detailDialogStyle ?? {}),
+    }),
+    [theme?.detailDialogStyle],
   );
 
   const lastTriggerRef = useRef<HTMLAnchorElement | null>(null);
@@ -385,6 +412,7 @@ export default function TCDBRankingTableClient({
           aria-label="TCDB rankings table"
           data-testid="tcdb-rankings-table"
           className="thead-sticky"
+          themeStyle={theme?.tableThemeStyle}
         >
           <THead variant="bucks">
             <th scope="col" className="w-[120px]">
@@ -407,7 +435,7 @@ export default function TCDBRankingTableClient({
                 <tr
                   key={row.homie_id}
                   data-testid="tcdb-table-row"
-                  className="border-b border-black/5 last:border-0"
+                  className="border-b border-[color:var(--table-row-divider)] last:border-0"
                 >
                   <td className="tabular-nums text-ink/80">
                     <TCDBRankingRowClient
@@ -474,7 +502,8 @@ export default function TCDBRankingTableClient({
         <Modal
           open
           onClose={handleCloseDetail}
-          className="w-[min(80vw,640px)] max-w-[640px] sm:w-[min(80vw,640px)] overflow-x-hidden box-border"
+          className="box-border w-[min(80vw,640px)] max-w-[640px] overflow-x-hidden border-[color:var(--ranking-dialog-border)] bg-[color:var(--ranking-dialog-shell-bg)] text-[color:var(--ranking-dialog-text)] focus-visible:outline-[color:var(--ranking-dialog-ring)] sm:w-[min(80vw,640px)]"
+          contentStyle={detailDialogStyle}
         >
           <div
             className="flex min-h-0 w-full flex-1 flex-col"
@@ -484,7 +513,7 @@ export default function TCDBRankingTableClient({
           >
             <div
               data-dialog-handle
-              className="sticky top-0 z-[1] flex items-center justify-between gap-3 rounded-t-2xl bg-[var(--blue)] px-5 py-3 text-white"
+              className="sticky top-0 z-[1] flex items-center justify-between gap-3 rounded-t-2xl px-5 py-3 text-[color:var(--ranking-dialog-header-fg)] [background:var(--ranking-dialog-header-background)]"
             >
               <div className="min-w-0 flex-1">
                 <ModalTitle className="truncate text-base font-semibold leading-6">
@@ -494,7 +523,7 @@ export default function TCDBRankingTableClient({
               <ModalClose asChild>
                 <button
                   type="button"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--blue)]"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[color:var(--ranking-dialog-header-button-bg)] text-[color:var(--ranking-dialog-header-fg)] transition-colors hover:bg-[color:var(--ranking-dialog-header-button-hover-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ranking-dialog-header-ring-offset)]"
                   aria-label="Close dialog"
                   onPointerDown={(event) => event.stopPropagation()}
                 >
@@ -516,12 +545,12 @@ export default function TCDBRankingTableClient({
                   {dialogFields.map(({ label, render }) => (
                     <div
                       key={label}
-                      className="min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-white p-4 shadow-sm"
+                      className="min-w-0 rounded-2xl border border-[color:var(--ranking-dialog-surface-border)] bg-[color:var(--ranking-dialog-surface-bg)] p-4 shadow-sm"
                     >
-                      <div className="text-[11px] font-semibold uppercase tracking-wide text-ink/60">
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--ranking-dialog-label)]">
                         {label}
                       </div>
-                      <div className="mt-1 min-w-0 text-sm text-ink">
+                      <div className="mt-1 min-w-0 text-sm text-[color:var(--ranking-dialog-text)]">
                         {render(detailRow)}
                       </div>
                     </div>

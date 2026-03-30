@@ -1,6 +1,7 @@
 import { Card } from "@ui";
 
 import FullBleedPage from "@/components/layout/FullBleedPage";
+import PageIntro from "@/components/layout/PageIntro";
 import PersonCard from "@/components/mdx/PersonTag";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { getAllVolleyballTournamentSummaries } from "@/lib/volleyball-tournaments";
@@ -40,15 +41,13 @@ export default function UncleJimmyVolleyballLandingPage() {
         as="section"
         className="space-y-8 border-0 shadow-none px-1 py-6 md:p-8"
       >
-        <header>
-          <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            Volleyball Tournaments
-          </h1>
-        </header>
-
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Here's a running list of <PersonCard displayName="jeff meff" tag="jeff-meff" />'s volleyball tournaments. 
-        </p>
+        <PageIntro title="Volleyball Tournaments">
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
+            Here&apos;s a running list of{" "}
+            <PersonCard displayName="jeff meff" tag="jeff-meff" />
+            &apos;s volleyball tournaments.
+          </p>
+        </PageIntro>
 
         <VolleyballTournamentListClient rows={tournaments} />
       </Card>

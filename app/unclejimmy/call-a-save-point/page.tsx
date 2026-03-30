@@ -1,6 +1,7 @@
 import { Card } from "@ui";
 
 import FullBleedPage from "@/components/layout/FullBleedPage";
+import PageIntro from "@/components/layout/PageIntro";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { getAllSavePointSummaries } from "@/lib/save-point";
 
@@ -39,14 +40,11 @@ export default function UncleJimmyCallASavePointPage() {
         as="section"
         className="space-y-8 border-0 shadow-none px-1 py-6 md:p-8"
       >
-        <header>
-          <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            Call A Save Point
-          </h1>
-        </header>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Running list of video game reviews from chronicles.
-        </p>
+        <PageIntro title="Call A Save Point">
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
+            Running list of video game reviews from chronicles.
+          </p>
+        </PageIntro>
         <SavePointListClient rows={games} />
       </Card>
     </FullBleedPage>

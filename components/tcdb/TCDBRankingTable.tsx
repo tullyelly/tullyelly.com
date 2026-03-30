@@ -1,8 +1,15 @@
 import dynamic from "next/dynamic";
+import type { CSSProperties } from "react";
 import type { RankingResponse } from "@/lib/data/tcdb";
+
+export type TCDBRankingTableTheme = {
+  tableThemeStyle?: CSSProperties;
+  detailDialogStyle?: CSSProperties;
+};
 
 type TCDBRankingTableProps = {
   serverData: RankingResponse;
+  theme?: TCDBRankingTableTheme;
 };
 
 const TCDBRankingTableClient = dynamic(
@@ -12,6 +19,7 @@ const TCDBRankingTableClient = dynamic(
 
 export default function TCDBRankingTable({
   serverData,
+  theme,
 }: TCDBRankingTableProps) {
-  return <TCDBRankingTableClient serverData={serverData} />;
+  return <TCDBRankingTableClient serverData={serverData} theme={theme} />;
 }

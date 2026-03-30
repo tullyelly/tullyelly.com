@@ -18,6 +18,8 @@ type ModalProps = {
   children: React.ReactNode;
   title?: string;
   className?: string;
+  contentStyle?: React.CSSProperties;
+  overlayClassName?: string;
   draggable?: boolean;
   initialPosition?: {
     top?: number | string;
@@ -148,14 +150,19 @@ export function Modal({
   children,
   title,
   className,
+  contentStyle,
+  overlayClassName,
   draggable = true,
   initialPosition,
 }: ModalProps) {
   const [mounted, setMounted] = React.useState(false);
 
   const style = React.useMemo(
-    () => createContentStyle(initialPosition),
-    [initialPosition],
+    () => ({
+      ...createContentStyle(initialPosition),
+      ...(contentStyle ?? {}),
+    }),
+    [contentStyle, initialPosition],
   );
 
   React.useEffect(() => {
@@ -187,7 +194,10 @@ export function Modal({
         ? createPortal(
             <>
               <DialogOverlay
-                className="fixed inset-0 z-[1000] bg-black/25"
+                className={cn(
+                  "fixed inset-0 z-[1000] bg-black/25",
+                  overlayClassName,
+                )}
                 data-testid="modal-overlay"
               />
               <DraggableContent

@@ -1,6 +1,7 @@
 import { Card } from "@ui";
 
 import FullBleedPage from "@/components/layout/FullBleedPage";
+import PageIntro from "@/components/layout/PageIntro";
 import { getAllTableSchemaSummaries } from "@/lib/table-schema";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
@@ -39,14 +40,11 @@ export default function UncleJimmyTableSchemaPage() {
         as="section"
         className="space-y-8 border-0 shadow-none px-1 py-6 md:p-8"
       >
-        <header>
-          <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            Table Schema
-          </h1>
-        </header>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Running list of restaurants we have been visiting.
-        </p>
+        <PageIntro title="Table Schema">
+          <p className="text-[16px] md:text-[18px] text-muted-foreground">
+            Running list of restaurants we have been visiting.
+          </p>
+        </PageIntro>
         <TableSchemaListClient rows={tableSchemas} />
       </Card>
     </FullBleedPage>

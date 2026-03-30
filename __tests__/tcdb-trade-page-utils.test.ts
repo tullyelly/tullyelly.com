@@ -20,16 +20,11 @@ jest.mock("@/lib/tcdb-trade-db", () => ({
 import {
   extractTradeSectionsFromRaw,
   getTcdbTradeCardCounts,
+  getTcdbTradeNarrativeDays,
+  getTcdbProfileUrl,
   getTcdbTradeSections,
   listTcdbTrades,
 } from "@/lib/tcdb-trades";
-
-type MockPost = {
-  slug: string;
-  url: string;
-  date: string;
-  body: { raw: string };
-};
 
 beforeEach(() => {
   getTcdbTradeCardCountsFromDbMock.mockReset();
@@ -191,6 +186,82 @@ describe("getTcdbTradeSections", () => {
     expect(sections[1]?.mdx).toContain("Second complete");
     expect(sections[0]?.kind).toBe("completed");
     expect(sections[1]?.kind).toBe("completed");
+  });
+});
+
+describe("getTcdbTradeNarrativeDays", () => {
+  it("groups chronicle sections into DB-backed day buckets", async () => {
+    const tradeId = "777";
+    listTcdbTradeDaysFromDbMock.mockResolvedValue([
+      { tradeDate: "2024-01-10", side: "sent" },
+      { tradeDate: "2024-01-12", side: "sent" },
+      { tradeDate: "2024-01-18", side: "received" },
+    ]);
+
+    const posts = [
+      {
+        slug: "sent-day",
+        title: "Sent Day",
+        url: "/shaolin/sent-day",
+        date: "2024-01-10T06:00:00Z",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">Sent</ReleaseSection>`,
+        },
+      },
+      {
+        slug: "received-day",
+        title: "Received Day",
+        url: "/shaolin/received-day",
+        date: "2024-01-18T06:00:00Z",
+        body: {
+          raw: [
+            `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+            "  First block",
+            "</ReleaseSection>",
+            "",
+            `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">`,
+            "  Second block",
+            "</ReleaseSection>",
+          ].join("\n"),
+        },
+      },
+    ];
+
+    const days = await getTcdbTradeNarrativeDays(tradeId, posts);
+
+    expect(days).toHaveLength(3);
+    expect(days[0]).toMatchObject({
+      tradeDate: "2024-01-10",
+      side: "sent",
+    });
+    expect(days[0]?.sections).toHaveLength(1);
+    expect(days[0]?.sourcePosts).toEqual([
+      {
+        slug: "sent-day",
+        title: "Sent Day",
+        url: "/shaolin/sent-day",
+        date: "2024-01-10",
+      },
+    ]);
+    expect(days[1]?.sections).toEqual([]);
+    expect(days[1]?.sourcePosts).toEqual([]);
+    expect(days[2]?.sections).toHaveLength(2);
+    expect(days[2]?.sourcePosts).toEqual([
+      {
+        slug: "received-day",
+        title: "Received Day",
+        url: "/shaolin/received-day",
+        date: "2024-01-18",
+      },
+    ]);
+  });
+});
+
+describe("getTcdbProfileUrl", () => {
+  it("builds the TCDB partner profile URL with encoding", () => {
+    expect(getTcdbProfileUrl("collect a/set")).toBe(
+      "https://www.tcdb.com/Profile.cfm/collect%20a%2Fset",
+    );
   });
 });
 

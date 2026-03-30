@@ -568,13 +568,13 @@ p {
 
   @media (min-width: 768px) {
     .zebra-desktop tbody tr:nth-child(even) td {
-      background-color: var(--cream);
+      background-color: var(--table-row-even-bg);
     }
     .zebra-desktop tbody tr:nth-child(odd) td {
-      background-color: var(--white);
+      background-color: var(--table-row-odd-bg);
     }
     .zebra-desktop tbody tr:hover td {
-      filter: brightness(0.98);
+      filter: var(--table-row-hover-filter);
     }
     .thead-sticky thead tr {
       position: sticky;
