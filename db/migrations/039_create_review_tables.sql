@@ -388,10 +388,10 @@ WITH review_reference_seed (
   VALUES
     ('lcs', 'indy-card-exchange', 'Indy Card Exchange', 'https://indycardexchange.com/', 'indy-card-exchange', '/shaolin/indy-card-exchange', DATE '2026-02-14', 'indy card exchange', 1, '8.7/10'),
     ('lcs', 'iconic-sports-cards', 'Iconic Sports Cards', 'https://iconicbreaks.com/', 'usa-usa-usa', '/shaolin/usa-usa-usa', DATE '2026-02-22', 'USA! USA! USA!', 2, '8.5'),
-    ('table-schema', '1', 'Colossal Cafe', 'https://colossalcafe.com/', 'usa-usa-usa', '/shaolin/usa-usa-usa', DATE '2026-02-22', 'USA! USA! USA!', 1, '7.7'),
-    ('table-schema', '2', 'Draft Gastropub', 'https://www.draftappleton.com/', 'draft', '/shaolin/draft', DATE '2026-02-27', 'draft', 1, '7.4'),
+    ('table-schema', 'colossal-cafe', 'Colossal Cafe', 'https://colossalcafe.com/', 'usa-usa-usa', '/shaolin/usa-usa-usa', DATE '2026-02-22', 'USA! USA! USA!', 1, '7.7'),
+    ('table-schema', 'draft-gastropub', 'Draft Gastropub', 'https://www.draftappleton.com/', 'draft', '/shaolin/draft', DATE '2026-02-27', 'draft', 1, '7.4'),
     ('save-point', 'mewgenics', 'Mewgenics', 'https://mewgenics.wiki.gg/', 'call-a-save-point', '/shaolin/call-a-save-point', DATE '2026-03-03', 'call a save point', 1, '9.5'),
-    ('golden-age', 'little-red-barn', 'Little Red Barn Antiques', NULL, 'self-care', '/shaolin/self-care', DATE '2026-04-01', 'self care', 1, '8.8/10')
+    ('golden-age', 'originals', 'ORIGINALS Mall of Antiques', NULL, 'self-care', '/shaolin/self-care', DATE '2026-04-01', 'self care', 1, '7.2')
 ),
 review_subject_seed AS (
   SELECT DISTINCT
@@ -435,10 +435,10 @@ WITH review_reference_seed (
   VALUES
     ('lcs', 'indy-card-exchange', 'Indy Card Exchange', 'https://indycardexchange.com/', 'indy-card-exchange', '/shaolin/indy-card-exchange', DATE '2026-02-14', 'indy card exchange', 1, '8.7/10'),
     ('lcs', 'iconic-sports-cards', 'Iconic Sports Cards', 'https://iconicbreaks.com/', 'usa-usa-usa', '/shaolin/usa-usa-usa', DATE '2026-02-22', 'USA! USA! USA!', 2, '8.5'),
-    ('table-schema', '1', 'Colossal Cafe', 'https://colossalcafe.com/', 'usa-usa-usa', '/shaolin/usa-usa-usa', DATE '2026-02-22', 'USA! USA! USA!', 1, '7.7'),
-    ('table-schema', '2', 'Draft Gastropub', 'https://www.draftappleton.com/', 'draft', '/shaolin/draft', DATE '2026-02-27', 'draft', 1, '7.4'),
+    ('table-schema', 'colossal-cafe', 'Colossal Cafe', 'https://colossalcafe.com/', 'usa-usa-usa', '/shaolin/usa-usa-usa', DATE '2026-02-22', 'USA! USA! USA!', 1, '7.7'),
+    ('table-schema', 'draft-gastropub', 'Draft Gastropub', 'https://www.draftappleton.com/', 'draft', '/shaolin/draft', DATE '2026-02-27', 'draft', 1, '7.4'),
     ('save-point', 'mewgenics', 'Mewgenics', 'https://mewgenics.wiki.gg/', 'call-a-save-point', '/shaolin/call-a-save-point', DATE '2026-03-03', 'call a save point', 1, '9.5'),
-    ('golden-age', 'little-red-barn', 'Little Red Barn Antiques', NULL, 'self-care', '/shaolin/self-care', DATE '2026-04-01', 'self care', 1, '8.8/10')
+    ('golden-age', 'originals', 'ORIGINALS Mall of Antiques', NULL, 'self-care', '/shaolin/self-care', DATE '2026-04-01', 'self care', 1, '7.2')
 )
 INSERT INTO dojo.review_reference (
   review_subject_id,
