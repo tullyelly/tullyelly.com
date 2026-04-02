@@ -138,7 +138,7 @@ describe("summarizeSavePointSections", () => {
 });
 
 describe("getAllSavePointSummaries", () => {
-  it("groups by savePointId and sorts by latest post date descending", () => {
+  it("groups by savePointId and sorts by latest post date descending", async () => {
     const posts = [
       {
         slug: "mew-early",
@@ -169,12 +169,14 @@ describe("getAllSavePointSummaries", () => {
       },
     ];
 
-    const summaries = getAllSavePointSummaries(posts);
+    const summaries = await getAllSavePointSummaries(posts);
 
     expect(summaries).toHaveLength(2);
     expect(summaries[0]?.savePointId).toBe("chrono-trigger");
     expect(summaries[0]?.savePointName).toBe("Chrono Trigger");
-    expect(summaries[0]?.savePointUrl).toBe("https://chronotrigger.example.com");
+    expect(summaries[0]?.savePointUrl).toBe(
+      "https://chronotrigger.example.com",
+    );
     expect(summaries[0]?.averageRating).toBe(10);
     expect(summaries[0]?.visitCount).toBe(1);
     expect(summaries[1]?.savePointId).toBe("mewgenics");
@@ -186,7 +188,7 @@ describe("getAllSavePointSummaries", () => {
 });
 
 describe("getSavePointPageData", () => {
-  it("returns normalized page data for existing save point ids", () => {
+  it("returns normalized page data for existing save point ids", async () => {
     const posts = [
       {
         slug: "mewgenics",
@@ -199,7 +201,7 @@ describe("getSavePointPageData", () => {
       },
     ];
 
-    const data = getSavePointPageData("mewgenics", posts);
+    const data = await getSavePointPageData("mewgenics", posts);
 
     expect(data).not.toBeNull();
     expect(data?.savePointId).toBe("mewgenics");
@@ -210,8 +212,8 @@ describe("getSavePointPageData", () => {
     expect(data?.sections).toHaveLength(1);
   });
 
-  it("returns null when no sections exist for the id", () => {
-    const data = getSavePointPageData("404", []);
+  it("returns null when no sections exist for the id", async () => {
+    const data = await getSavePointPageData("404", []);
     expect(data).toBeNull();
   });
 });

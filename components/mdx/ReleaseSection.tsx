@@ -10,10 +10,10 @@ import {
   PILL_CREAM_CITY,
   pillInteractionClasses,
 } from "@/components/ui/pillStyles";
+import { getReviewSummaryFromDb } from "@/lib/review-db";
+import { REVIEW_TYPE_CONFIG, type ReviewType } from "@/lib/review-types";
 import { getScroll } from "@/lib/scrolls";
-import {
-  getTcdbTradeSummaryFromDb,
-} from "@/lib/tcdb-trade-db";
+import { getTcdbTradeSummaryFromDb } from "@/lib/tcdb-trade-db";
 import {
   getVolleyballTournamentDayByKeyAndDate,
   normalizeVolleyballTournamentDate,
@@ -28,12 +28,10 @@ Spike note (ReleaseSection styling)
 - Rejected: release-type palette branching and ad hoc per-section color maps.
 */
 
-export type ReviewType = "lcs" | "table-schema" | "save-point";
-
 export type ReviewProps = {
   type: ReviewType;
   id: string | number;
-  name: string;
+  name?: string;
   url?: string;
   rating?: string | number;
 };
@@ -106,19 +104,7 @@ function getReadableTextColor(backgroundColor: string): string {
 }
 
 function getReviewLabel(type: ReviewType): string {
-  if (type === "lcs") {
-    return "Card Shop";
-  }
-
-  if (type === "table-schema") {
-    return "Table Schema";
-  }
-
-  if (type === "save-point") {
-    return "Save Point";
-  }
-
-  return type;
+  return REVIEW_TYPE_CONFIG[type].singularLabel;
 }
 
 function getTournamentFinishLabel(finish: number | null): string | null {
@@ -171,6 +157,10 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   let tradeUrl: string | undefined;
   let tradePartnerUrl: string | undefined;
   let tabLabel: string | undefined;
+  let reviewSummary: Awaited<ReturnType<typeof getReviewSummaryFromDb>> = null;
+  let resolvedReviewName: string | undefined;
+  let resolvedReviewUrl: string | undefined;
+  let resolvedReviewRating: string | undefined;
 
   if (releaseId && tcdbTradeId) {
     throw new Error(
@@ -189,6 +179,21 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       "ReleaseSection: pass either tcdbTradeId or review, not both.",
     );
   }
+
+  reviewSummary = review
+    ? await getReviewSummaryFromDb(review.type, review.id)
+    : null;
+  resolvedReviewName =
+    review?.name?.trim() ||
+    reviewSummary?.name ||
+    (review ? String(review.id).trim() : undefined);
+  resolvedReviewUrl = review?.url?.trim() || reviewSummary?.url;
+  resolvedReviewRating =
+    review?.rating !== undefined && `${review.rating}`.trim() !== ""
+      ? String(review.rating)
+      : reviewSummary?.averageRating !== undefined
+        ? `${reviewSummary.averageRating.toFixed(1)}/10`
+        : undefined;
 
   const hasTournamentId = tournamentId !== undefined;
   const hasTournamentDate = tournamentDate !== undefined;
@@ -223,7 +228,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     }
 
     try {
-      resolvedTournamentDate = normalizeVolleyballTournamentDate(tournamentDate);
+      resolvedTournamentDate =
+        normalizeVolleyballTournamentDate(tournamentDate);
     } catch {
       throw new Error(
         "ReleaseSection: tournamentDate must be a valid ISO date string in YYYY-MM-DD form.",
@@ -298,9 +304,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   );
   const showReviewVisuals = Boolean(review);
   const shouldRenderReview = showReviewVisuals && !showReleaseDetails;
-  const showReviewUrl = review?.url !== undefined && review.url.trim() !== "";
-  const showReviewRating =
-    review?.rating !== undefined && `${review.rating}`.trim() !== "";
+  const showReviewUrl =
+    resolvedReviewUrl !== undefined && resolvedReviewUrl.trim() !== "";
+  const showReviewRating = resolvedReviewRating !== undefined;
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
   // Rainbow assignment is the only accent colour source for ReleaseSection.
   const normalizedRainbowColour = rainbowColour?.trim() || PILL_BLUE;
@@ -395,8 +401,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       }
       data-review-type={review?.type ?? undefined}
       data-review-id={review !== undefined ? String(review.id) : undefined}
-      data-review-name={review?.name ?? undefined}
-      data-review-rating={showReviewRating ? String(review?.rating) : undefined}
+      data-review-name={resolvedReviewName ?? undefined}
+      data-review-rating={resolvedReviewRating ?? undefined}
       data-tcdb-received={
         resolvedTradeReceived !== undefined
           ? String(resolvedTradeReceived)
@@ -430,58 +436,24 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       {showTournamentVisuals ? (
         <div className="text-sm">{`${resolvedTournamentName}: ${resolvedTournamentRecord}`}</div>
       ) : null}
-      {shouldRenderReview && review?.type === "lcs" && reviewLabel ? (
+      {shouldRenderReview && reviewLabel && resolvedReviewName ? (
         <div className="text-sm">
           <span>{`${reviewLabel}: `}</span>
-          {showReviewUrl && review.url ? (
+          {showReviewUrl && resolvedReviewUrl ? (
             <Link
-              href={review.url}
+              href={resolvedReviewUrl}
               className="link-blue"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {review.name}
+              {resolvedReviewName}
             </Link>
           ) : (
-            <span>{review.name}</span>
+            <span>{resolvedReviewName}</span>
           )}
-          {showReviewRating ? <span>{` (${review.rating})`}</span> : null}
-        </div>
-      ) : null}
-      {shouldRenderReview && review?.type === "table-schema" && reviewLabel ? (
-        <div className="text-sm">
-          <span>{`${reviewLabel}: `}</span>
-          {showReviewUrl && review.url ? (
-            <Link
-              href={review.url}
-              className="link-blue"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {review.name}
-            </Link>
-          ) : (
-            <span>{review.name}</span>
-          )}
-          {showReviewRating ? <span>{` (${review.rating})`}</span> : null}
-        </div>
-      ) : null}
-      {shouldRenderReview && review?.type === "save-point" && reviewLabel ? (
-        <div className="text-sm">
-          <span>{`${reviewLabel}: `}</span>
-          {showReviewUrl && review.url ? (
-            <Link
-              href={review.url}
-              className="link-blue"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {review.name}
-            </Link>
-          ) : (
-            <span>{review.name}</span>
-          )}
-          {showReviewRating ? <span>{` (${review.rating})`}</span> : null}
+          {showReviewRating ? (
+            <span>{` (${resolvedReviewRating})`}</span>
+          ) : null}
         </div>
       ) : null}
       {showTradeCardCounts ? (
@@ -526,6 +498,10 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   );
 
   if (!showReleaseDetails) {
+    const reviewContainerClassName =
+      review?.type === "table-schema"
+        ? "rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4"
+        : "rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4";
     const plainContent = showTournamentVisuals ? (
       <div
         className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
@@ -533,23 +509,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       >
         {baseContent}
       </div>
-    ) : review?.type === "lcs" && showReviewVisuals ? (
+    ) : showReviewVisuals ? (
       <div
-        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
-        style={{ borderColor: resolvedSectionColor }}
-      >
-        {baseContent}
-      </div>
-    ) : review?.type === "table-schema" && showReviewVisuals ? (
-      <div
-        className="rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4"
-        style={{ borderColor: resolvedSectionColor }}
-      >
-        {baseContent}
-      </div>
-    ) : review?.type === "save-point" && showReviewVisuals ? (
-      <div
-        className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
+        className={reviewContainerClassName}
         style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}

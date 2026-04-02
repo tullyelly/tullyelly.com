@@ -4,11 +4,16 @@ import { render, screen } from "@testing-library/react";
 const getScrollMock = jest.fn();
 const getVolleyballTournamentDayByKeyAndDateMock = jest.fn();
 const getTcdbTradeSummaryFromDbMock = jest.fn();
+const getReviewSummaryFromDbMock = jest.fn();
 
 jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
 }));
 jest.mock("server-only", () => ({}));
+jest.mock("@/lib/review-db", () => ({
+  getReviewSummaryFromDb: (...args: unknown[]) =>
+    getReviewSummaryFromDbMock(...args),
+}));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
 }));
@@ -42,8 +47,7 @@ jest.mock("@/lib/volleyball-tournament-db", () => ({
     const [year, month, day] = normalized
       .split("-")
       .map((segment) => Number.parseInt(segment, 10));
-    const isLeapYear =
-      year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
+    const isLeapYear = year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
     const daysInMonth = [
       31,
       isLeapYear ? 29 : 28,
@@ -101,8 +105,10 @@ describe("ReleaseSection", () => {
     getScrollMock.mockReset();
     getVolleyballTournamentDayByKeyAndDateMock.mockReset();
     getTcdbTradeSummaryFromDbMock.mockReset();
+    getReviewSummaryFromDbMock.mockReset();
 
     getTcdbTradeSummaryFromDbMock.mockResolvedValue(null);
+    getReviewSummaryFromDbMock.mockResolvedValue(null);
   });
 
   it("renders the default layout when releaseId is missing", async () => {
@@ -362,6 +368,68 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-review-id", "chrono-trigger");
     expect(content).toHaveAttribute("data-review-name", "Chrono Trigger");
     expect(content).toHaveAttribute("data-review-rating", "10/10");
+  });
+
+  it("supports minimal review props for future review types without requiring DB metadata", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      review: {
+        type: "golden-age",
+        id: "little-red-barn",
+      },
+    });
+    const { container } = render(ui);
+
+    expect(
+      screen.getByText(
+        (_, node) => node?.textContent === "Antique Shop: little-red-barn",
+      ),
+    ).toBeInTheDocument();
+
+    const content = container.querySelector(
+      "[data-review-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-review-type", "golden-age");
+    expect(content).toHaveAttribute("data-review-id", "little-red-barn");
+    expect(content).toHaveAttribute("data-review-name", "little-red-barn");
+    expect(content).not.toHaveAttribute("data-review-rating");
+  });
+
+  it("resolves minimal review props from DB metadata when available", async () => {
+    getReviewSummaryFromDbMock.mockResolvedValue({
+      externalId: "little-red-barn",
+      name: "Little Red Barn Antiques",
+      averageRating: 8.8,
+      visitCount: 1,
+      latestPostDate: "2026-04-01",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      review: {
+        type: "golden-age",
+        id: "little-red-barn",
+      },
+    });
+    const { container } = render(ui);
+
+    expect(getReviewSummaryFromDbMock).toHaveBeenCalledWith(
+      "golden-age",
+      "little-red-barn",
+    );
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent ===
+          "Antique Shop: Little Red Barn Antiques (8.8/10)",
+      ),
+    ).toBeInTheDocument();
+
+    const content = container.querySelector(
+      "[data-review-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-review-name", "Little Red Barn Antiques");
+    expect(content).toHaveAttribute("data-review-rating", "8.8/10");
   });
 
   it("applies rainbowColour to eligible non-release sections", async () => {
@@ -627,14 +695,8 @@ describe("ReleaseSection", () => {
     expect(
       screen.getAllByText("Card Traffic: 6 received; 4 sent; 10 total"),
     ).toHaveLength(2);
-    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(
-      1,
-      tradeId,
-    );
-    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(
-      2,
-      tradeId,
-    );
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(1, tradeId);
+    expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(2, tradeId);
   });
 
   it("throws when both releaseId and tcdbTradeId are passed", async () => {

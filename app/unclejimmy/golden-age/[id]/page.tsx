@@ -8,7 +8,7 @@ import { getReviewDetailMetadata } from "@/lib/review-route-metadata";
 
 type Params = { id: string };
 
-const reviewType = "table-schema" as const;
+const reviewType = "golden-age" as const;
 const routeConfig = getReviewRouteConfig(reviewType);
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export async function generateMetadata({
   return getReviewDetailMetadata(reviewType, id, review);
 }
 
-export default async function UncleJimmyTableSchemaIdPage({
+export default async function UncleJimmyGoldenAgeIdPage({
   params,
 }: {
   params: Promise<Params>;

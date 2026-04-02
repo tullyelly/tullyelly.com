@@ -119,7 +119,7 @@ describe("summarizeLcsSections", () => {
 });
 
 describe("getAllLcsSummaries", () => {
-  it("groups by lcsId and sorts by latest post date descending", () => {
+  it("groups by lcsId and sorts by latest post date descending", async () => {
     const posts = [
       {
         slug: "indy-early",
@@ -150,7 +150,7 @@ describe("getAllLcsSummaries", () => {
       },
     ];
 
-    const summaries = getAllLcsSummaries(posts);
+    const summaries = await getAllLcsSummaries(posts);
 
     expect(summaries).toHaveLength(2);
     expect(summaries[0]?.lcsId).toBe("iconic-sports-cards");
@@ -166,7 +166,7 @@ describe("getAllLcsSummaries", () => {
 });
 
 describe("getLcsPageData", () => {
-  it("returns normalized page data for existing lcs ids", () => {
+  it("returns normalized page data for existing lcs ids", async () => {
     const posts = [
       {
         slug: "indy",
@@ -179,7 +179,7 @@ describe("getLcsPageData", () => {
       },
     ];
 
-    const data = getLcsPageData("indy-card-exchange", posts);
+    const data = await getLcsPageData("indy-card-exchange", posts);
 
     expect(data).not.toBeNull();
     expect(data?.lcsId).toBe("indy-card-exchange");
@@ -190,8 +190,8 @@ describe("getLcsPageData", () => {
     expect(data?.sections).toHaveLength(1);
   });
 
-  it("returns null when no sections exist for the id", () => {
-    const data = getLcsPageData("404", []);
+  it("returns null when no sections exist for the id", async () => {
+    const data = await getLcsPageData("404", []);
     expect(data).toBeNull();
   });
 });
