@@ -131,7 +131,7 @@ describe("summarizeTableSchemaSections", () => {
 });
 
 describe("getAllTableSchemaSummaries", () => {
-  it("groups by tableSchemaId and sorts by latest post date descending", () => {
+  it("groups by tableSchemaId and sorts by latest post date descending", async () => {
     const posts = [
       {
         slug: "pizza-early",
@@ -162,12 +162,14 @@ describe("getAllTableSchemaSummaries", () => {
       },
     ];
 
-    const summaries = getAllTableSchemaSummaries(posts);
+    const summaries = await getAllTableSchemaSummaries(posts);
 
     expect(summaries).toHaveLength(2);
     expect(summaries[0]?.tableSchemaId).toBe("2");
     expect(summaries[0]?.tableSchemaName).toBe("Burger Barn");
-    expect(summaries[0]?.tableSchemaUrl).toBe("https://burger-barn.example.com");
+    expect(summaries[0]?.tableSchemaUrl).toBe(
+      "https://burger-barn.example.com",
+    );
     expect(summaries[0]?.averageRating).toBe(7.5);
     expect(summaries[0]?.visitCount).toBe(1);
     expect(summaries[1]?.tableSchemaId).toBe("1");
@@ -179,7 +181,7 @@ describe("getAllTableSchemaSummaries", () => {
 });
 
 describe("getTableSchemaPageData", () => {
-  it("returns normalized page data for existing table schemas", () => {
+  it("returns normalized page data for existing table schemas", async () => {
     const posts = [
       {
         slug: "pizza",
@@ -192,7 +194,7 @@ describe("getTableSchemaPageData", () => {
       },
     ];
 
-    const data = getTableSchemaPageData("1", posts);
+    const data = await getTableSchemaPageData("1", posts);
 
     expect(data).not.toBeNull();
     expect(data?.tableSchemaId).toBe("1");
@@ -203,8 +205,8 @@ describe("getTableSchemaPageData", () => {
     expect(data?.sections).toHaveLength(1);
   });
 
-  it("returns null when no sections exist for the id", () => {
-    const data = getTableSchemaPageData("404", []);
+  it("returns null when no sections exist for the id", async () => {
+    const data = await getTableSchemaPageData("404", []);
     expect(data).toBeNull();
   });
 });
