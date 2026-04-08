@@ -2,6 +2,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+import { slugifyChronicleTitle } from "./slug-utils.mjs";
+
 const [, , ...titleParts] = process.argv;
 const hasHelpFlag = titleParts.includes("-h") || titleParts.includes("--help");
 
@@ -28,19 +30,7 @@ if (!rawTitle) {
 }
 
 const title = rawTitle.replace(/\s+/g, " ").replace(/"/g, '\\"');
-
-const slugify = (value) =>
-  value
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .normalize("NFKD")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const slug = slugify(rawTitle);
+const slug = slugifyChronicleTitle(rawTitle);
 
 if (!slug) {
   console.error("Error: unable to generate slug from title.");

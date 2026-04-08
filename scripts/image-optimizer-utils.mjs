@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { normalizeSlugPath } from "./slug-utils.mjs";
+
 export const baseInDir = "public/images/source";
 export const baseOutDir = "public/images/optimus";
 export const optimusOutDir = "public/images/optimus";
@@ -89,10 +91,8 @@ function resolveWithin(baseAbs, subdir) {
 export function resolveImageDirs(folderArg, { outDir = baseOutDir } = {}) {
   const baseInDirAbs = path.resolve(baseInDir);
   const baseOutDirAbs = path.resolve(outDir);
-  const normalizedFolderArg = normalizeFolderArg(
-    folderArg,
-    baseInDirAbs,
-    baseOutDirAbs,
+  const normalizedFolderArg = normalizeSlugPath(
+    normalizeFolderArg(folderArg, baseInDirAbs, baseOutDirAbs),
   );
 
   return {
