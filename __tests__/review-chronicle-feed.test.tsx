@@ -2,19 +2,26 @@ import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 
 const compileMdxToCodeMock = jest.fn();
-const mdxRendererMock = jest.fn(
-  ({ code }: { code: string; components?: unknown }) => (
-    <div data-testid="mdx-renderer">{code}</div>
-  ),
+const chronicleSectionMdxRendererMock = jest.fn(
+  ({
+    code,
+  }: {
+    code: string;
+    postDate: string;
+    components?: Record<string, unknown>;
+  }) => <div data-testid="chronicle-section-mdx-renderer">{code}</div>,
 );
 
 jest.mock("@/lib/mdx/compile", () => ({
   compileMdxToCode: (...args: unknown[]) => compileMdxToCodeMock(...args),
 }));
 
-jest.mock("@/components/mdx-renderer", () => ({
-  MdxRenderer: (props: { code: string; components?: unknown }) =>
-    mdxRendererMock(props),
+jest.mock("@/components/chronicles/ChronicleSectionMdxRenderer", () => ({
+  ChronicleSectionMdxRenderer: (props: {
+    code: string;
+    postDate: string;
+    components?: Record<string, unknown>;
+  }) => chronicleSectionMdxRendererMock(props),
 }));
 
 jest.mock("@/lib/datetime", () => ({
@@ -33,7 +40,7 @@ import ReviewChronicleFeed from "@/components/reviews/ReviewChronicleFeed";
 describe("ReviewChronicleFeed", () => {
   beforeEach(() => {
     compileMdxToCodeMock.mockReset();
-    mdxRendererMock.mockClear();
+    chronicleSectionMdxRendererMock.mockClear();
     compileMdxToCodeMock.mockImplementation(async (source: string) => {
       return `compiled:${source}`;
     });
@@ -100,14 +107,18 @@ describe("ReviewChronicleFeed", () => {
       screen.getByRole("link", { name: "Original Chronicle: hooky" }),
     ).toHaveAttribute("href", "/shaolin/hooky");
 
-    const mdxRendered = screen.getAllByTestId("mdx-renderer");
+    const mdxRendered = screen.getAllByTestId("chronicle-section-mdx-renderer");
     expect(mdxRendered).toHaveLength(2);
     expect(mdxRendered[0]).toHaveTextContent("compiled:");
     expect(mdxRendered[1]).toHaveTextContent("compiled:");
 
-    const firstMdxProps = mdxRendererMock.mock.calls[0]?.[0] as
-      | { components?: { ReleaseSection?: unknown } }
+    const firstMdxProps = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
+      | {
+          postDate?: string;
+          components?: { ReleaseSection?: unknown };
+        }
       | undefined;
+    expect(firstMdxProps?.postDate).toBe("2026-04-01");
     expect(firstMdxProps?.components?.ReleaseSection).toBeDefined();
   });
 });

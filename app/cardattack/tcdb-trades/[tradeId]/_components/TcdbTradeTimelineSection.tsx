@@ -1,9 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
-import type { ComponentProps, ComponentPropsWithoutRef, ReactNode } from "react";
+import type {
+  ComponentProps,
+  ComponentPropsWithoutRef,
+  ReactNode,
+} from "react";
 
-import { MdxRenderer } from "@/components/mdx-renderer";
+import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
 import FolderImageCarouselServer from "@/components/media/FolderImageCarousel.server";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
@@ -186,7 +190,9 @@ export default async function TcdbTradeChronicleFeed({
         />
       </span>
     ),
-    FolderImageCarousel: (props: ComponentProps<typeof FolderImageCarouselServer>) => (
+    FolderImageCarousel: (
+      props: ComponentProps<typeof FolderImageCarouselServer>,
+    ) => (
       <div className="mx-auto w-full max-w-[30rem]">
         <FolderImageCarouselServer {...props} />
       </div>
@@ -281,8 +287,9 @@ export default async function TcdbTradeChronicleFeed({
                             : "var(--trade-rust)",
                       }}
                     >
-                      <MdxRenderer
+                      <ChronicleSectionMdxRenderer
                         code={section.code}
+                        postDate={section.postDate}
                         components={tradeMdxComponents}
                       />
                     </div>

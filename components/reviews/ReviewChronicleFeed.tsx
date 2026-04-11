@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ComponentProps } from "react";
 
+import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
-import { MdxRenderer } from "@/components/mdx-renderer";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
 import { createNextRainbowColour } from "@/lib/release-section-colours";
@@ -136,8 +136,9 @@ export default async function ReviewChronicleFeed({
             </header>
 
             <div className="rounded-[28px] border border-[color:var(--review-border)] bg-[color:var(--review-surface)] px-4 py-4 shadow-sm md:px-5 md:py-5">
-              <MdxRenderer
+              <ChronicleSectionMdxRenderer
                 code={entry.section.code}
+                postDate={entry.section.postDate}
                 components={{ ReleaseSection: RainbowReleaseSection }}
               />
             </div>
