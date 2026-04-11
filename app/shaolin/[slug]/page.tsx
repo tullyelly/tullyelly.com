@@ -53,7 +53,11 @@ function PostContent({ slug }: { slug: string }) {
           className="border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8 md:pt-0"
         >
           <PageIntro title={`${fmtDate(post.date)}: ${post.title}`}>
-            <ChronicleMdxRenderer code={post.body.code} source={post.body.raw} />
+            <ChronicleMdxRenderer
+              code={post.body.code}
+              postDate={post.date}
+              source={post.body.raw}
+            />
             <ChronicleSignature
               title={post.title}
               date={post.date}
