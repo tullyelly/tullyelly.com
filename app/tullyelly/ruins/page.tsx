@@ -51,7 +51,11 @@ function LatestPost({ post }: { post: Post }) {
         <p className="text-sm opacity-70">{fmtDate(post.date)}</p>
       </header>
       <div className="space-y-4">
-        <ChronicleMdxRenderer code={post.body.code} source={post.body.raw} />
+        <ChronicleMdxRenderer
+          code={post.body.code}
+          postDate={post.date}
+          source={post.body.raw}
+        />
         <ChronicleSignature
           title={post.title}
           date={post.date}
