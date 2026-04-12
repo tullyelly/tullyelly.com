@@ -1,10 +1,7 @@
 import type { ComponentProps } from "react";
 
+import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
-import TcdbSnapshot, {
-  type TcdbSnapshotProps,
-} from "@/components/mdx/TcdbSnapshot";
-import { MdxRenderer } from "@/components/mdx-renderer";
 import { createNextRainbowColour } from "@/lib/release-section-colours";
 
 type ChronicleMdxRendererProps = {
@@ -17,7 +14,6 @@ const countReleaseSections = (source: string): number =>
   source.match(/<ReleaseSection\b/g)?.length ?? 0;
 
 type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
-type BoundTcdbSnapshotProps = Pick<TcdbSnapshotProps, "tag">;
 
 /**
  * Chronicle-specific MDX wrapper that enables per-page rainbow assignment for
@@ -36,16 +32,12 @@ export function ChronicleMdxRenderer({
     return <ReleaseSection {...props} rainbowColour={nextRainbowColour()} />;
   }
 
-  function BoundTcdbSnapshot({ tag }: BoundTcdbSnapshotProps) {
-    return <TcdbSnapshot tag={tag} snapshotDate={postDate} />;
-  }
-
   return (
-    <MdxRenderer
+    <ChronicleSectionMdxRenderer
       code={code}
+      postDate={postDate}
       components={{
         ReleaseSection: RainbowReleaseSection,
-        TcdbSnapshot: BoundTcdbSnapshot,
       }}
     />
   );

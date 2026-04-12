@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ComponentProps } from "react";
 
+import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
-import { MdxRenderer } from "@/components/mdx-renderer";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
 import { createNextRainbowColour } from "@/lib/release-section-colours";
@@ -96,8 +96,9 @@ export default async function VolleyballTournamentSections({
               (original post)
             </Link>
           </h2>
-          <MdxRenderer
+          <ChronicleSectionMdxRenderer
             code={section.code}
+            postDate={section.postDate}
             components={{ ReleaseSection: RainbowReleaseSection }}
           />
         </section>
