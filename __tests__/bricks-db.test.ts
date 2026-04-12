@@ -81,7 +81,7 @@ describe("bricks db helpers", () => {
     await expect(listBricksSummariesFromDb("lego")).resolves.toEqual([
       {
         subset: "lego",
-        legoId: "10330",
+        publicId: "10330",
         setName: "McLaren MP4/4 & Ayrton Senna",
         tag: "f1",
         pieceCount: 693,
@@ -116,7 +116,7 @@ describe("bricks db helpers", () => {
 
     await expect(getBricksSummaryFromDb("lego", " 10330 ")).resolves.toEqual({
       subset: "lego",
-      legoId: "10330",
+      publicId: "10330",
       setName: "McLaren MP4/4 & Ayrton Senna",
       reviewScore: 9,
       firstBuildDate: "2026-04-01",
@@ -181,5 +181,23 @@ describe("bricks db helpers", () => {
     await expect(getBricksSummaryFromDb("lego", "10330")).resolves.toBeNull();
     await expect(listBricksDaysFromDb("lego", "10330")).resolves.toEqual([]);
     expect(mockSql).not.toHaveBeenCalled();
+  });
+
+  it("falls back cleanly when a DB row contains an out-of-range review score", async () => {
+    mockSql.mockResolvedValue([
+      {
+        subset: "lego",
+        lego_id: "10330",
+        set_name: "McLaren MP4/4 & Ayrton Senna",
+        tag: null,
+        piece_count: "693",
+        review_score: "11.0",
+        first_build_date: "2026-04-01",
+        latest_build_date: "2026-04-03",
+        session_count: "2",
+      },
+    ]);
+
+    await expect(getBricksSummaryFromDb("lego", "10330")).resolves.toBeNull();
   });
 });

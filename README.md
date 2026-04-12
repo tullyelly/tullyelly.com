@@ -44,20 +44,18 @@ Supported modes and what they feed:
 
 - Plain section; persona tag plus optional trailing divider.
 - `releaseId`; links to `/mark2/shaolin-scrolls/[id]`.
-- `tcdbTradeId`; links to `/cardattack/tcdb-trade/[tradeId]`.
+- `tcdbTradeId`; links to `/cardattack/tcdb-trades/[tradeId]`.
 - `review={{ type: "lcs", ... }}`; feeds `/cardattack/lcs` and `/cardattack/lcs/[id]`.
 - `review={{ type: "table-schema", ... }}`; feeds `/unclejimmy/table-schema` and `/unclejimmy/table-schema/[id]`.
 - `review={{ type: "save-point", ... }}`; feeds `/unclejimmy/call-a-save-point` and `/unclejimmy/call-a-save-point/[id]`.
 - `bricks={{ type: "lego", ... }}`; feeds `/unclejimmy/bricks/lego` and `/unclejimmy/bricks/lego/[id]`.
-- `tournamentName` + `tournamentRecord` + `tournamentId`; feeds `/unclejimmy/squad/volleyball/[id]`.
+- `tournamentId` + `tournamentDate`; feeds `/unclejimmy/squad/volleyball/[id]`.
 
 Rules to remember:
 
 - Pick at most one metadata mode per section: `releaseId`, `tcdbTradeId`, `review`, or `bricks`.
-- `completed` only works with `tcdbTradeId`.
-- `tcdbTradePartner` is optional and only belongs on TCDB trade sections.
-- If multiple sections share a `tcdbTradeId`, marking any one of them `completed` will surface the completion link for the whole trade.
-- `tournamentName` and `tournamentRecord` only render together, and only when the section is not release-linked.
+- TCDB trade partner, card counts, and completion links are resolved from DB-backed trade metadata.
+- `tournamentId` and `tournamentDate` must be provided together.
 - `tournamentId` can be numeric or quoted; use it when the section should be grouped into volleyball directory/detail pages.
 - `guestMage` can be added to any section type.
 - `divider={false}` removes the trailing divider.
@@ -92,11 +90,7 @@ Shaolin Scrolls release link:
 Open TCDB trade:
 
 ```mdx
-<ReleaseSection
-  alterEgo="cardattack"
-  tcdbTradeId="997119"
-  tcdbTradePartner="JBarbs80"
->
+<ReleaseSection alterEgo="cardattack" tcdbTradeId="997119">
   Trade notes before the return mail day lands.
 </ReleaseSection>
 ```
@@ -104,12 +98,7 @@ Open TCDB trade:
 Completed TCDB trade:
 
 ```mdx
-<ReleaseSection
-  alterEgo="cardattack"
-  tcdbTradeId="970598"
-  tcdbTradePartner="madding"
-  completed
->
+<ReleaseSection alterEgo="cardattack" tcdbTradeId="970598">
   Mail day notes after the trade is finished.
 </ReleaseSection>
 ```
@@ -165,7 +154,7 @@ Save Point review:
 </ReleaseSection>
 ```
 
-Bricks LEGO build:
+Bricks: LEGO build:
 
 ```mdx
 <ReleaseSection
@@ -184,9 +173,8 @@ Tournament recap with guest mage credit:
 ```mdx
 <ReleaseSection
   alterEgo="unclejimmy"
-  tournamentName="Dale Rohde Tournament"
   tournamentId={2}
-  tournamentRecord="3-0"
+  tournamentDate="2026-02-22"
   guestMage="eeeeeeeemma"
 >
   Tournament recap notes.

@@ -445,7 +445,7 @@ describe("ReleaseSection", () => {
   it("renders bricks LEGO details from DB-backed metadata with an internal route link", async () => {
     getBricksSummaryFromDbMock.mockResolvedValue({
       subset: "lego",
-      legoId: "10330",
+      publicId: "10330",
       setName: "McLaren MP4/4 & Ayrton Senna",
       tag: "f1",
       pieceCount: 693,
@@ -469,7 +469,7 @@ describe("ReleaseSection", () => {
       screen.getByText(
         (_, node) =>
           node?.textContent ===
-          "Bricks LEGO: McLaren MP4/4 & Ayrton Senna (9.3/10)",
+          "Bricks: LEGO; McLaren MP4/4 & Ayrton Senna (9.3/10)",
       ),
     ).toBeInTheDocument();
     expect(
@@ -520,7 +520,7 @@ describe("ReleaseSection", () => {
     expect(
       screen.getByText(
         (_, node) =>
-          node?.textContent === "Bricks LEGO: Mercedes-AMG F1 W14 (8.7/10)",
+          node?.textContent === "Bricks: LEGO; Mercedes-AMG F1 W14 (8.7/10)",
       ),
     ).toBeInTheDocument();
     expect(

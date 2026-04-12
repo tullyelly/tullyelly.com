@@ -19,3 +19,7 @@ export function normalizeBricksPublicId(value: string | number): string {
 export function normalizeLegoId(value: string | number): string {
   return normalizeBricksPublicId(value);
 }
+
+export function formatBricksReviewScore(value: number): string {
+  return `${value.toFixed(1)}/10`;
+}

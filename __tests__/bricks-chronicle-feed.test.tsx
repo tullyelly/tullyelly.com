@@ -49,30 +49,6 @@ describe("BricksChronicleFeed", () => {
   it("compiles build-session MDX, disables nested dividers, and renders bags plus source links", async () => {
     const days = [
       {
-        buildDate: "2026-04-01",
-        bags: "1-3",
-        sourcePosts: [
-          {
-            slug: "timeout",
-            title: "timeout",
-            url: "/shaolin/timeout",
-            date: "2026-04-01",
-          },
-        ],
-        sections: [
-          {
-            subset: "lego" as const,
-            legoId: "10330",
-            postSlug: "timeout",
-            postUrl: "/shaolin/timeout",
-            postDate: "2026-04-01",
-            postTitle: "timeout",
-            mdx: '<ReleaseSection alterEgo="unclejimmy" divider={true} bricks={{ type: "lego", id: "10330" }}>Opening bags</ReleaseSection>',
-            sectionOrdinal: 1,
-          },
-        ],
-      },
-      {
         buildDate: "2026-04-03",
         bags: "4-6",
         sourcePosts: [
@@ -86,12 +62,36 @@ describe("BricksChronicleFeed", () => {
         sections: [
           {
             subset: "lego" as const,
-            legoId: "10330",
+            publicId: "10330",
             postSlug: "saturday-oooh-ooooh",
             postUrl: "/shaolin/saturday-oooh-ooooh",
             postDate: "2026-04-03",
             postTitle: "saturday oooh ooooh",
             mdx: '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Finishing touches</ReleaseSection>',
+            sectionOrdinal: 1,
+          },
+        ],
+      },
+      {
+        buildDate: "2026-04-01",
+        bags: "1-3",
+        sourcePosts: [
+          {
+            slug: "timeout",
+            title: "timeout",
+            url: "/shaolin/timeout",
+            date: "2026-04-01",
+          },
+        ],
+        sections: [
+          {
+            subset: "lego" as const,
+            publicId: "10330",
+            postSlug: "timeout",
+            postUrl: "/shaolin/timeout",
+            postDate: "2026-04-01",
+            postTitle: "timeout",
+            mdx: '<ReleaseSection alterEgo="unclejimmy" divider={true} bricks={{ type: "lego", id: "10330" }}>Opening bags</ReleaseSection>',
             sectionOrdinal: 1,
           },
         ],
@@ -104,7 +104,7 @@ describe("BricksChronicleFeed", () => {
       emptyMessage: "Nothing here yet.",
       missingContentMessage: "Missing content.",
     });
-    render(ui);
+    const { container } = render(ui);
 
     expect(compileMdxToCodeMock).toHaveBeenCalledTimes(2);
     const firstCall = String(compileMdxToCodeMock.mock.calls[0]?.[0] ?? "");
@@ -113,6 +113,10 @@ describe("BricksChronicleFeed", () => {
 
     expect(screen.getByText("2026-04-01")).toBeInTheDocument();
     expect(screen.getByText("2026-04-03")).toBeInTheDocument();
+    const renderedText = container.textContent ?? "";
+    expect(renderedText.indexOf("2026-04-01")).toBeLessThan(
+      renderedText.indexOf("2026-04-03"),
+    );
     expect(screen.getByText("Bags 1-3")).toBeInTheDocument();
     expect(screen.getByText("Bags 4-6")).toBeInTheDocument();
     expect(

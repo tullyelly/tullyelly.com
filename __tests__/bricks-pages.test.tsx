@@ -43,7 +43,7 @@ describe("bricks route pages", () => {
     listBricksSummariesMock.mockResolvedValue([
       {
         subset: "lego",
-        legoId: "10330",
+        publicId: "10330",
         setName: "McLaren MP4/4 & Ayrton Senna",
         tag: "f1",
         pieceCount: 693,
@@ -75,7 +75,7 @@ describe("bricks route pages", () => {
       config: getBricksRouteConfig("lego"),
       bricks: {
         subset: "lego",
-        legoId: "10330",
+        publicId: "10330",
         setName: "McLaren MP4/4 & Ayrton Senna",
         tag: "f1",
         pieceCount: 693,
@@ -90,7 +90,7 @@ describe("bricks route pages", () => {
             sections: [
               {
                 subset: "lego",
-                legoId: "10330",
+                publicId: "10330",
                 postSlug: "timeout",
                 postUrl: "/shaolin/timeout",
                 postDate: "2026-04-01",
@@ -117,7 +117,7 @@ describe("bricks route pages", () => {
       screen.getAllByText("McLaren MP4/4 & Ayrton Senna").length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getByRole("link", { name: "← Back to bricks: LEGO" }),
+      screen.getByRole("link", { name: "← Back to Bricks: LEGO" }),
     ).toHaveAttribute("href", "/unclejimmy/bricks/lego");
     expect(screen.getByText("Chronicle Feed")).toBeInTheDocument();
     expect(screen.getByText("LEGO ID")).toBeInTheDocument();

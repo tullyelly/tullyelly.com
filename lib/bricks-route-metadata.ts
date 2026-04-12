@@ -29,41 +29,46 @@ export function getBricksCollectionMetadata(subset: BricksSubset): Metadata {
 
 export function getBricksDetailMetadata(
   subset: BricksSubset,
-  legoId: string,
+  publicId: string,
   bricksData: BricksPageData | null,
 ): Metadata {
   const config = getBricksRouteConfig(subset);
-  const setName = bricksData?.setName ?? `LEGO Set ${legoId}`;
-  const score = bricksData?.reviewScore ?? 0;
-  const sessionCount = bricksData?.sessionCount ?? 0;
-  const sessionLabel =
-    sessionCount === 1
-      ? config.countSingularLabel
-      : config.countLabel.toLowerCase();
-  const latestSessionDate = bricksData?.latestBuildDate;
-  const latestPhrase = latestSessionDate
-    ? ` Latest chronicle: ${fmtDate(latestSessionDate)}.`
-    : "";
-  const piecePhrase =
-    bricksData?.pieceCount !== undefined
-      ? ` ${bricksData.pieceCount} pieces.`
-      : "";
-  const tagPhrase = bricksData?.tag ? ` Tag: ${bricksData.tag}.` : "";
-  const title = `${setName} | ${config.detailMetaSuffix}`;
-  const description = `Overall score: ${score.toFixed(1)}/10 from ${sessionCount} tracked ${sessionLabel}.${latestPhrase}${piecePhrase}${tagPhrase}`;
+  const title = `${bricksData?.setName ?? `LEGO Set ${publicId}`} | ${config.detailMetaSuffix}`;
+  const encodedPublicId = encodeURIComponent(publicId);
+
+  const description = bricksData
+    ? (() => {
+        const sessionCount = bricksData.sessionCount;
+        const sessionLabel =
+          sessionCount === 1
+            ? config.countSingularLabel
+            : config.countLabel.toLowerCase();
+        const latestSessionDate = bricksData.latestBuildDate;
+        const latestPhrase = latestSessionDate
+          ? ` Latest chronicle: ${fmtDate(latestSessionDate)}.`
+          : "";
+        const piecePhrase =
+          bricksData.pieceCount !== undefined
+            ? ` ${bricksData.pieceCount} pieces.`
+            : "";
+        const tagPhrase = bricksData.tag ? ` Tag: ${bricksData.tag}.` : "";
+
+        return `Overall score: ${bricksData.reviewScore.toFixed(1)}/10 from ${sessionCount} tracked ${sessionLabel}.${latestPhrase}${piecePhrase}${tagPhrase}`;
+      })()
+    : `DB-backed LEGO build dossier for LEGO ID ${publicId}. Chronicle sessions render from the original ReleaseSection MDX content.`;
 
   return {
     title,
     description,
     alternates: {
       canonical: canonicalUrl(
-        `${config.collectionPath.slice(1)}/${encodeURIComponent(legoId)}`,
+        `${config.collectionPath.slice(1)}/${encodedPublicId}`,
       ),
     },
     openGraph: {
       title,
       description,
-      url: `${config.collectionPath}/${encodeURIComponent(legoId)}`,
+      url: `${config.collectionPath}/${encodedPublicId}`,
       type: "website",
     },
     twitter: {

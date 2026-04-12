@@ -1,8 +1,8 @@
 import "server-only";
 
 import { sql } from "@/lib/db";
+import { normalizeBricksPublicId, type BricksSubset } from "@/lib/bricks-types";
 import { isNextBuild } from "@/lib/env";
-import { normalizeLegoId, type BricksSubset } from "@/lib/bricks-types";
 
 type BricksSummaryRow = {
   subset: BricksSubset;
@@ -23,7 +23,7 @@ type BricksDayRow = {
 
 export type BricksSummary = {
   subset: BricksSubset;
-  legoId: string;
+  publicId: string;
   setName: string;
   tag?: string;
   pieceCount?: number;
@@ -62,6 +62,30 @@ function toOptionalString(value: string | null): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
+function toReviewScore(value: number | string): number {
+  const parsed = toMaybeNumber(value);
+
+  if (parsed === undefined || parsed < 1 || parsed > 10) {
+    throw new Error("Bricks DB row is missing a valid review_score.");
+  }
+
+  return parsed;
+}
+
+function toPieceCount(value: number | string | null): number | undefined {
+  const parsed = toMaybeNumber(value);
+
+  if (parsed === undefined) {
+    return undefined;
+  }
+
+  if (parsed < 0) {
+    throw new Error("Bricks DB row is missing a valid piece_count.");
+  }
+
+  return parsed;
+}
+
 function shouldSkipBricksDb(): boolean {
   return (
     isNextBuild() ||
@@ -87,28 +111,22 @@ async function withBricksDbFallback<T>(
 }
 
 function toBricksSummary(row: BricksSummaryRow): BricksSummary {
-  const reviewScore = toMaybeNumber(row.review_score);
-
-  if (reviewScore === undefined) {
-    throw new Error("Bricks DB row is missing a valid review_score.");
-  }
+  const reviewScore = toReviewScore(row.review_score);
+  const pieceCount = toPieceCount(row.piece_count);
+  const tag = toOptionalString(row.tag);
+  const firstBuildDate = toOptionalString(row.first_build_date);
+  const latestBuildDate = toOptionalString(row.latest_build_date);
 
   return {
     subset: row.subset,
-    legoId: row.lego_id,
+    publicId: row.lego_id,
     setName: row.set_name,
     reviewScore,
     sessionCount: toInteger(row.session_count),
-    ...(toOptionalString(row.tag) ? { tag: toOptionalString(row.tag) } : {}),
-    ...(toMaybeNumber(row.piece_count) !== undefined
-      ? { pieceCount: toMaybeNumber(row.piece_count) }
-      : {}),
-    ...(toOptionalString(row.first_build_date)
-      ? { firstBuildDate: toOptionalString(row.first_build_date) }
-      : {}),
-    ...(toOptionalString(row.latest_build_date)
-      ? { latestBuildDate: toOptionalString(row.latest_build_date) }
-      : {}),
+    ...(tag ? { tag } : {}),
+    ...(pieceCount !== undefined ? { pieceCount } : {}),
+    ...(firstBuildDate ? { firstBuildDate } : {}),
+    ...(latestBuildDate ? { latestBuildDate } : {}),
   };
 }
 
@@ -150,9 +168,9 @@ export async function listBricksSummariesFromDb(
 
 export async function getBricksSummaryFromDb(
   subset: BricksSubset,
-  legoId: string | number,
+  publicId: string | number,
 ): Promise<BricksSummary | null> {
-  const normalizedLegoId = normalizeLegoId(legoId);
+  const normalizedPublicId = normalizeBricksPublicId(publicId);
 
   return withBricksDbFallback(async () => {
     const [row] = await sql<BricksSummaryRow>`
@@ -170,7 +188,7 @@ export async function getBricksSummaryFromDb(
       LEFT JOIN dojo.bricks_day AS day
         ON day.bricks_header_id = header.id
       WHERE header.subset = ${subset}
-        AND header.lego_id = ${normalizedLegoId}
+        AND header.lego_id = ${normalizedPublicId}
       GROUP BY
         header.id,
         header.subset,
@@ -188,9 +206,9 @@ export async function getBricksSummaryFromDb(
 
 export async function listBricksDaysFromDb(
   subset: BricksSubset,
-  legoId: string | number,
+  publicId: string | number,
 ): Promise<BricksDay[]> {
-  const normalizedLegoId = normalizeLegoId(legoId);
+  const normalizedPublicId = normalizeBricksPublicId(publicId);
 
   return withBricksDbFallback(async () => {
     const rows = await sql<BricksDayRow>`
@@ -201,7 +219,7 @@ export async function listBricksDaysFromDb(
       JOIN dojo.bricks_day AS day
         ON day.bricks_header_id = header.id
       WHERE header.subset = ${subset}
-        AND header.lego_id = ${normalizedLegoId}
+        AND header.lego_id = ${normalizedPublicId}
       ORDER BY day.build_date ASC
     `;
 

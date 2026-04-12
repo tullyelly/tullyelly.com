@@ -37,6 +37,18 @@ type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
 const countReleaseSections = (source: string): number =>
   source.match(RELEASE_SECTION_PATTERN)?.length ?? 0;
 
+function toTimestamp(value: string): number {
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function compareBuildDaysAsc(
+  a: Pick<BricksNarrativeDay, "buildDate">,
+  b: Pick<BricksNarrativeDay, "buildDate">,
+): number {
+  return toTimestamp(a.buildDate) - toTimestamp(b.buildDate);
+}
+
 function getSourcePostLabel(
   post: BricksNarrativeDay["sourcePosts"][number],
 ): string {
@@ -49,8 +61,9 @@ export default async function BricksChronicleFeed({
   emptyMessage,
   missingContentMessage,
 }: BricksChronicleFeedProps) {
+  const sortedDays = [...days].sort(compareBuildDaysAsc);
   const renderableDays: RenderableDay[] = await Promise.all(
-    days.map(async (day) => ({
+    sortedDays.map(async (day) => ({
       ...day,
       compiledSections: await Promise.all(
         day.sections.map(async (section) => ({

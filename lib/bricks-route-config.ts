@@ -49,10 +49,10 @@ export const BRICKS_ROUTE_CONFIG: Record<BricksSubset, BricksRouteConfig> = {
     collectionHeroTitle: "Bricks: LEGO",
     collectionHeroDescription:
       "Set dossiers organized by DB-backed bricks metadata, while the actual build notes stay in the original chronicle MDX sections.",
-    detailMetaSuffix: "🎙unclejimmy bricks lego",
+    detailMetaSuffix: "Bricks: LEGO | 🎙unclejimmy",
     detailHeroEyebrow: "LEGO Build Dossier",
     collectionSectionEyebrow: "Build Directory",
-    detailBackLabel: "Back to bricks: LEGO",
+    detailBackLabel: "Back to Bricks: LEGO",
     subjectLabel: "Set",
     subjectIdLabel: "LEGO ID",
     tagLabel: "Tag",
@@ -68,7 +68,7 @@ export const BRICKS_ROUTE_CONFIG: Record<BricksSubset, BricksRouteConfig> = {
     emptyFeedMessage: "No LEGO build sessions are tracked for this set yet.",
     missingContentMessage:
       "No chronicle build notes are attached to this session yet.",
-    collectionTableAriaLabel: "Bricks LEGO sets table",
+    collectionTableAriaLabel: "Bricks: LEGO set table",
     collectionDirectoryHeading: "Tracked Sets",
     detailFeedHeading: "Chronicle Feed",
     detailFeedDescription:

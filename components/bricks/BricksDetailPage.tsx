@@ -4,6 +4,7 @@ import FullBleedPage from "@/components/layout/FullBleedPage";
 import BricksChronicleFeed from "@/components/bricks/BricksChronicleFeed";
 import type { BricksPageData } from "@/lib/bricks-content";
 import type { BricksRouteConfig } from "@/lib/bricks-route-config";
+import { formatBricksReviewScore } from "@/lib/bricks-types";
 import { fmtDate } from "@/lib/datetime";
 
 type BricksDetailPageProps = {
@@ -16,10 +17,6 @@ const topLinkClassName =
 const summaryValueClassName = "text-sm font-semibold leading-snug";
 const summaryLabelClassName =
   "text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.18em] opacity-75 md:text-[0.72rem] xl:whitespace-nowrap";
-
-function formatScore(score: number): string {
-  return `${score.toFixed(1)}/10`;
-}
 
 function formatSessionDate(value?: string): string {
   return value ? fmtDate(value, "America/Chicago", "long") : "Not available";
@@ -42,12 +39,12 @@ export default async function BricksDetailPage({
     },
     {
       label: config.subjectIdLabel,
-      value: bricks.legoId,
+      value: bricks.publicId,
       valueContainerClassName: "flex min-h-[2.25rem] items-center",
     },
     {
       label: config.scoreLabel,
-      value: formatScore(bricks.reviewScore),
+      value: formatBricksReviewScore(bricks.reviewScore),
       badgeClassName:
         "inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--bricks-accent)] px-3 py-1 text-[color:var(--bricks-pill-fg)] shadow-sm",
       valueContainerClassName: "flex min-h-[2.25rem] items-center",

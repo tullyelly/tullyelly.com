@@ -11,7 +11,7 @@ import {
 } from "@/lib/bricks-db";
 import {
   isBricksSubset,
-  normalizeLegoId,
+  normalizeBricksPublicId,
   type BricksSubset,
 } from "@/lib/bricks-types";
 
@@ -25,12 +25,12 @@ type PostSource = {
 
 type ExtractBricksOptions = {
   subset?: BricksSubset;
-  legoId?: string;
+  publicId?: string;
 };
 
 type BricksCore = {
   subset: BricksSubset;
-  legoId: string;
+  publicId: string;
 };
 
 type BricksSectionWithOffset = BricksSection & { offset: number };
@@ -122,11 +122,11 @@ function extractBricksFromOpeningTag(openingTag: string): BricksCore | null {
     return null;
   }
 
-  const normalizedLegoId = normalizeLegoId(id);
+  const normalizedPublicId = normalizeBricksPublicId(id);
 
   return {
     subset,
-    legoId: normalizedLegoId,
+    publicId: normalizedPublicId,
   };
 }
 
@@ -178,9 +178,9 @@ function toBricksSection(
 
 export function getBricksIdAttribute(
   subset: BricksSubset,
-  legoId: string | number,
+  publicId: string | number,
 ): string {
-  return `bricks={{ type: "${subset}", id: "${normalizeLegoId(legoId)}" }}`;
+  return `bricks={{ type: "${subset}", id: "${normalizeBricksPublicId(publicId)}" }}`;
 }
 
 export function extractBricksSectionsWithOffsets(
@@ -223,10 +223,10 @@ export function extractBricksSectionsWithOffsets(
 
     const matchesSubset =
       options.subset === undefined || bricks.subset === options.subset;
-    const matchesLegoId =
-      options.legoId === undefined || bricks.legoId === options.legoId;
+    const matchesPublicId =
+      options.publicId === undefined || bricks.publicId === options.publicId;
 
-    if (!matchesSubset || !matchesLegoId) {
+    if (!matchesSubset || !matchesPublicId) {
       if (isSelfClosing) {
         index = tagEnd + 1;
         continue;
@@ -275,17 +275,17 @@ export function extractBricksSectionsWithOffsets(
 
 export function getBricksSections(
   subset: BricksSubset,
-  legoId: string | number,
+  publicId: string | number,
   posts: PostSource[] = allPosts,
 ): BricksSection[] {
-  const normalizedLegoId = normalizeLegoId(legoId);
+  const normalizedPublicId = normalizeBricksPublicId(publicId);
   const extracted: BricksSectionWithOffset[] = [];
 
   for (const post of posts) {
     const raw = post.body?.raw ?? "";
     const sections = extractBricksSectionsWithOffsets(raw, {
       subset,
-      legoId: normalizedLegoId,
+      publicId: normalizedPublicId,
     });
 
     for (const section of sections) {
@@ -300,17 +300,17 @@ export function getBricksSections(
 
 export async function getBricksNarrativeDays(
   subset: BricksSubset,
-  legoId: string | number,
+  publicId: string | number,
   posts: PostSource[] = allPosts,
 ): Promise<BricksNarrativeDay[]> {
-  const normalizedLegoId = normalizeLegoId(legoId);
-  const buildDays = await listBricksDaysFromDb(subset, normalizedLegoId);
+  const normalizedPublicId = normalizeBricksPublicId(publicId);
+  const buildDays = await listBricksDaysFromDb(subset, normalizedPublicId);
 
   if (buildDays.length === 0) {
     return [];
   }
 
-  const sections = getBricksSections(subset, normalizedLegoId, posts);
+  const sections = getBricksSections(subset, normalizedPublicId, posts);
   const sectionsByDay = new Map<string, BricksSection[]>();
   const sourcePostsByDay = new Map<string, BricksSourcePost[]>();
 
@@ -351,13 +351,13 @@ export async function listBricksSummaries(
 
 export async function getBricksPageData(
   subset: BricksSubset,
-  legoId: string | number,
+  publicId: string | number,
   posts: PostSource[] = allPosts,
 ): Promise<BricksPageData | null> {
-  const normalizedLegoId = normalizeLegoId(legoId);
+  const normalizedPublicId = normalizeBricksPublicId(publicId);
   const [summary, days] = await Promise.all([
-    getBricksSummaryFromDb(subset, normalizedLegoId),
-    getBricksNarrativeDays(subset, normalizedLegoId, posts),
+    getBricksSummaryFromDb(subset, normalizedPublicId),
+    getBricksNarrativeDays(subset, normalizedPublicId, posts),
   ]);
 
   if (!summary) {

@@ -59,18 +59,18 @@ describe("extractBricksSectionsWithOffsets", () => {
     expect(
       sections.map((section) => ({
         subset: section.subset,
-        legoId: section.legoId,
+        publicId: section.publicId,
         sectionOrdinal: section.sectionOrdinal,
       })),
     ).toEqual([
       {
         subset: "lego",
-        legoId: "10330",
+        publicId: "10330",
         sectionOrdinal: 1,
       },
       {
         subset: "lego",
-        legoId: "42171",
+        publicId: "42171",
         sectionOrdinal: 2,
       },
     ]);
@@ -229,7 +229,7 @@ describe("listBricksSummaries", () => {
     listBricksSummariesFromDbMock.mockResolvedValue([
       {
         subset: "lego",
-        legoId: "10330",
+        publicId: "10330",
         setName: "McLaren MP4/4 & Ayrton Senna",
         reviewScore: 9.2,
         sessionCount: 2,
@@ -240,7 +240,7 @@ describe("listBricksSummaries", () => {
     await expect(listBricksSummaries("lego")).resolves.toEqual([
       {
         subset: "lego",
-        legoId: "10330",
+        publicId: "10330",
         setName: "McLaren MP4/4 & Ayrton Senna",
         reviewScore: 9.2,
         sessionCount: 2,
@@ -254,7 +254,7 @@ describe("getBricksPageData", () => {
   it("merges DB metadata with narrative days derived from the chronicle content", async () => {
     getBricksSummaryFromDbMock.mockResolvedValue({
       subset: "lego",
-      legoId: "10330",
+      publicId: "10330",
       setName: "McLaren MP4/4 & Ayrton Senna",
       tag: "f1",
       pieceCount: 693,
@@ -291,7 +291,7 @@ describe("getBricksPageData", () => {
 
     await expect(getBricksPageData("lego", "10330", posts)).resolves.toEqual({
       subset: "lego",
-      legoId: "10330",
+      publicId: "10330",
       setName: "McLaren MP4/4 & Ayrton Senna",
       tag: "f1",
       pieceCount: 693,

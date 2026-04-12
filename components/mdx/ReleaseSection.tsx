@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/pillStyles";
 import { getBricksSummaryFromDb } from "@/lib/bricks-db";
 import { getReviewSummaryFromDb } from "@/lib/review-db";
-import { normalizeLegoId, type BricksSubset } from "@/lib/bricks-types";
+import {
+  formatBricksReviewScore as formatNormalizedBricksReviewScore,
+  normalizeBricksPublicId,
+  type BricksSubset,
+} from "@/lib/bricks-types";
 import { REVIEW_TYPE_CONFIG, type ReviewType } from "@/lib/review-types";
 import { getScroll } from "@/lib/scrolls";
 import { getTcdbTradeSummaryFromDb } from "@/lib/tcdb-trade-db";
@@ -132,7 +136,7 @@ function getReviewLabel(type: ReviewType): string {
 
 function getBricksLabel(type: BricksSubset): string {
   if (type === "lego") {
-    return "Bricks LEGO";
+    return "Bricks: LEGO";
   }
 
   return "Bricks";
@@ -156,7 +160,7 @@ function toOptionalText(
   return normalized ? normalized : undefined;
 }
 
-function formatBricksReviewScore(
+function formatBricksReviewScoreOverride(
   value: string | number | undefined,
 ): string | undefined {
   const normalized = toOptionalText(value);
@@ -173,7 +177,7 @@ function formatBricksReviewScore(
     return undefined;
   }
 
-  return `${parsed.toFixed(1)}/10`;
+  return formatNormalizedBricksReviewScore(parsed);
 }
 
 // ReleaseSection acts as a no-op wrapper for MDX content and optionally renders a
@@ -224,7 +228,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   let resolvedReviewName: string | undefined;
   let resolvedReviewUrl: string | undefined;
   let resolvedReviewRating: string | undefined;
-  let resolvedBricksId: string | undefined;
+  let resolvedBricksPublicId: string | undefined;
   let resolvedBricksName: string | undefined;
   let resolvedBricksTag: string | undefined;
   let resolvedBricksPieceCount: string | undefined;
@@ -283,11 +287,13 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const bricksSummary = bricks
     ? await getBricksSummaryFromDb(bricks.type, bricks.id)
     : null;
-  resolvedBricksId = bricks ? normalizeLegoId(bricks.id) : undefined;
+  resolvedBricksPublicId = bricks
+    ? normalizeBricksPublicId(bricks.id)
+    : undefined;
   resolvedBricksName =
     toOptionalText(bricks?.name) ||
     bricksSummary?.setName ||
-    resolvedBricksId ||
+    resolvedBricksPublicId ||
     undefined;
   resolvedBricksTag = toOptionalText(bricks?.tag) || bricksSummary?.tag;
   resolvedBricksPieceCount =
@@ -296,13 +302,15 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       ? String(bricksSummary.pieceCount)
       : undefined);
   resolvedBricksReviewScore =
-    formatBricksReviewScore(bricks?.reviewScore) ||
+    formatBricksReviewScoreOverride(bricks?.reviewScore) ||
     (bricksSummary?.reviewScore !== undefined
-      ? `${bricksSummary.reviewScore.toFixed(1)}/10`
+      ? formatNormalizedBricksReviewScore(bricksSummary.reviewScore)
       : undefined);
   resolvedBricksRoute =
-    bricks && resolvedBricksId
-      ? `/unclejimmy/bricks/${bricks.type}/${encodeURIComponent(resolvedBricksId)}`
+    bricks && resolvedBricksPublicId
+      ? `/unclejimmy/bricks/${bricks.type}/${encodeURIComponent(
+          resolvedBricksPublicId,
+        )}`
       : undefined;
 
   const hasTournamentId = tournamentId !== undefined;
@@ -422,7 +430,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
   const bricksLabel = bricks ? getBricksLabel(bricks.type) : undefined;
   const bricksSummaryParts = [
-    resolvedBricksId ? `LEGO ID ${resolvedBricksId}` : null,
+    resolvedBricksPublicId ? `LEGO ID ${resolvedBricksPublicId}` : null,
     resolvedBricksPieceCount ? `${resolvedBricksPieceCount} pieces` : null,
     resolvedBricksTag ? `Tag ${resolvedBricksTag}` : null,
   ]
@@ -524,7 +532,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-review-name={resolvedReviewName ?? undefined}
       data-review-rating={resolvedReviewRating ?? undefined}
       data-bricks-type={bricks?.type ?? undefined}
-      data-bricks-id={resolvedBricksId ?? undefined}
+      data-bricks-id={resolvedBricksPublicId ?? undefined}
       data-bricks-name={resolvedBricksName ?? undefined}
       data-bricks-tag={resolvedBricksTag ?? undefined}
       data-bricks-piece-count={resolvedBricksPieceCount ?? undefined}
@@ -586,7 +594,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       {shouldRenderBricks && bricksLabel && resolvedBricksName ? (
         <div className="space-y-1 text-sm">
           <div>
-            <span>{`${bricksLabel}: `}</span>
+            <span>{`${bricksLabel}; `}</span>
             {resolvedBricksRoute ? (
               <Link href={resolvedBricksRoute} className="link-blue">
                 {resolvedBricksName}
