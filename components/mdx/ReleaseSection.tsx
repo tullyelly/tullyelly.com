@@ -4,13 +4,20 @@ import Image from "next/image";
 
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
+import PersonTag from "@/components/mdx/PersonTag";
 import {
   PILL_BLUE,
   PILL_BLACK,
   PILL_CREAM_CITY,
   pillInteractionClasses,
 } from "@/components/ui/pillStyles";
+import { getBricksSummaryFromDb } from "@/lib/bricks-db";
 import { getReviewSummaryFromDb } from "@/lib/review-db";
+import {
+  formatBricksReviewScore as formatNormalizedBricksReviewScore,
+  normalizeBricksPublicId,
+  type BricksSubset,
+} from "@/lib/bricks-types";
 import { REVIEW_TYPE_CONFIG, type ReviewType } from "@/lib/review-types";
 import { getScroll } from "@/lib/scrolls";
 import { getTcdbTradeSummaryFromDb } from "@/lib/tcdb-trade-db";
@@ -36,6 +43,15 @@ export type ReviewProps = {
   rating?: string | number;
 };
 
+export type BricksProps = {
+  type: BricksSubset;
+  id: string | number;
+  name?: string;
+  tag?: string;
+  pieceCount?: string | number;
+  reviewScore?: string | number;
+};
+
 const TOURNAMENT_TROPHY_ICON_SRC = "/images/optimus/ccvbc-trophy.webp";
 
 type ReleaseSectionBaseProps = {
@@ -52,31 +68,43 @@ type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
   releaseId: string;
   tcdbTradeId?: never;
   review?: never;
+  bricks?: never;
 };
 
 type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
   tcdbTradeId: string;
   releaseId?: never;
   review?: never;
+  bricks?: never;
 };
 
 type ReleaseSectionWithReview = ReleaseSectionBaseProps & {
   review: ReviewProps;
   releaseId?: never;
   tcdbTradeId?: never;
+  bricks?: never;
 };
 
-type ReleaseSectionWithoutReleaseOrReview = ReleaseSectionBaseProps & {
+type ReleaseSectionWithBricks = ReleaseSectionBaseProps & {
+  bricks: BricksProps;
+  releaseId?: never;
+  tcdbTradeId?: never;
+  review?: never;
+};
+
+type ReleaseSectionWithoutReleaseReviewOrBricks = ReleaseSectionBaseProps & {
   review?: undefined;
   releaseId?: undefined;
   tcdbTradeId?: undefined;
+  bricks?: undefined;
 };
 
 type ReleaseSectionProps =
   | ReleaseSectionWithReleaseId
   | ReleaseSectionWithTcdbTrade
   | ReleaseSectionWithReview
-  | ReleaseSectionWithoutReleaseOrReview;
+  | ReleaseSectionWithBricks
+  | ReleaseSectionWithoutReleaseReviewOrBricks;
 
 function getReadableTextColor(backgroundColor: string): string {
   const normalized = backgroundColor.replace(/^#/, "");
@@ -114,6 +142,50 @@ function getTournamentFinishLabel(finish: number | null): string | null {
   return null;
 }
 
+function toOptionalText(
+  value: string | number | undefined,
+): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const normalized = String(value).trim();
+  return normalized ? normalized : undefined;
+}
+
+function formatBricksReviewScoreOverride(
+  value: string | number | undefined,
+): string | undefined {
+  const normalized = toOptionalText(value);
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (normalized.includes("/")) {
+    return normalized;
+  }
+
+  const parsed = Number.parseFloat(normalized);
+  if (Number.isNaN(parsed)) {
+    return undefined;
+  }
+
+  return formatNormalizedBricksReviewScore(parsed);
+}
+
+function getBricksReferenceUrl(
+  type: BricksSubset,
+  publicId: string,
+): string | undefined {
+  if (type === "lego") {
+    return `https://www.lego.com/en-ch/service/building-instructions/${encodeURIComponent(
+      publicId,
+    )}`;
+  }
+
+  return undefined;
+}
+
 // ReleaseSection acts as a no-op wrapper for MDX content and optionally renders a
 // divider after the block (Great Lakes blue hr from global MDX styles).
 /**
@@ -129,6 +201,7 @@ function getTournamentFinishLabel(finish: number | null): string | null {
  * - TCDb metadata is DB-backed; ReleaseSection resolves aggregate card counts and completion state from dojo.tcdb_trade + dojo.tcdb_trade_day while preserving tcdbTradeId as the public route key.
  * - guestMage: optional guest writer label rendered as a stamp.
  * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
+ * - bricks: optional bricks metadata for subset-backed build features such as LEGO; must not be combined with releaseId, tcdbTradeId, or review.
  * - rainbowColour: optional rainbow assignment colour; when present, it is the only colour source for section accents, including release-linked sections.
  * - Visual: default is plain content; with releaseId/tcdbTradeId, a bordered container and tab appear using the rainbow assignment colour.
  *
@@ -140,7 +213,7 @@ function getTournamentFinishLabel(finish: number | null): string | null {
  * ```
  */
 export default async function ReleaseSection(props: ReleaseSectionProps) {
-  const { review } = props;
+  const { review, bricks } = props;
   const {
     alterEgo,
     children,
@@ -161,6 +234,13 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   let resolvedReviewName: string | undefined;
   let resolvedReviewUrl: string | undefined;
   let resolvedReviewRating: string | undefined;
+  let resolvedBricksPublicId: string | undefined;
+  let resolvedBricksName: string | undefined;
+  let resolvedBricksTag: string | undefined;
+  let resolvedBricksPieceCount: string | undefined;
+  let resolvedBricksReviewScore: string | undefined;
+  let resolvedBricksRoute: string | undefined;
+  let resolvedBricksReferenceUrl: string | undefined;
 
   if (releaseId && tcdbTradeId) {
     throw new Error(
@@ -180,6 +260,22 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     );
   }
 
+  if (releaseId && bricks) {
+    throw new Error(
+      "ReleaseSection: pass either releaseId or bricks, not both.",
+    );
+  }
+
+  if (tcdbTradeId && bricks) {
+    throw new Error(
+      "ReleaseSection: pass either tcdbTradeId or bricks, not both.",
+    );
+  }
+
+  if (review && bricks) {
+    throw new Error("ReleaseSection: pass either review or bricks, not both.");
+  }
+
   reviewSummary = review
     ? await getReviewSummaryFromDb(review.type, review.id)
     : null;
@@ -194,6 +290,39 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       : reviewSummary?.averageRating !== undefined
         ? `${reviewSummary.averageRating.toFixed(1)}/10`
         : undefined;
+
+  const bricksSummary = bricks
+    ? await getBricksSummaryFromDb(bricks.type, bricks.id)
+    : null;
+  resolvedBricksPublicId = bricks
+    ? normalizeBricksPublicId(bricks.id)
+    : undefined;
+  resolvedBricksName =
+    toOptionalText(bricks?.name) ||
+    bricksSummary?.setName ||
+    resolvedBricksPublicId ||
+    undefined;
+  resolvedBricksTag = toOptionalText(bricks?.tag) || bricksSummary?.tag;
+  resolvedBricksPieceCount =
+    toOptionalText(bricks?.pieceCount) ||
+    (bricksSummary?.pieceCount !== undefined
+      ? String(bricksSummary.pieceCount)
+      : undefined);
+  resolvedBricksReviewScore =
+    formatBricksReviewScoreOverride(bricks?.reviewScore) ||
+    (bricksSummary?.reviewScore !== undefined
+      ? formatNormalizedBricksReviewScore(bricksSummary.reviewScore)
+      : undefined);
+  resolvedBricksRoute =
+    bricks && resolvedBricksPublicId
+      ? `/unclejimmy/bricks/${bricks.type}/${encodeURIComponent(
+          resolvedBricksPublicId,
+        )}`
+      : undefined;
+  resolvedBricksReferenceUrl =
+    bricks && resolvedBricksPublicId
+      ? getBricksReferenceUrl(bricks.type, resolvedBricksPublicId)
+      : undefined;
 
   const hasTournamentId = tournamentId !== undefined;
   const hasTournamentDate = tournamentDate !== undefined;
@@ -304,10 +433,15 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   );
   const showReviewVisuals = Boolean(review);
   const shouldRenderReview = showReviewVisuals && !showReleaseDetails;
+  const showBricksVisuals = Boolean(bricks);
+  const shouldRenderBricks = showBricksVisuals && !showReleaseDetails;
   const showReviewUrl =
     resolvedReviewUrl !== undefined && resolvedReviewUrl.trim() !== "";
   const showReviewRating = resolvedReviewRating !== undefined;
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
+  const showBricksMetadataRow = Boolean(
+    resolvedBricksPublicId || resolvedBricksPieceCount || resolvedBricksTag,
+  );
   // Rainbow assignment is the only accent colour source for ReleaseSection.
   const normalizedRainbowColour = rainbowColour?.trim() || PILL_BLUE;
   const resolvedSectionColor = normalizedRainbowColour;
@@ -403,6 +537,13 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-review-id={review !== undefined ? String(review.id) : undefined}
       data-review-name={resolvedReviewName ?? undefined}
       data-review-rating={resolvedReviewRating ?? undefined}
+      data-bricks-type={bricks?.type ?? undefined}
+      data-bricks-id={resolvedBricksPublicId ?? undefined}
+      data-bricks-name={resolvedBricksName ?? undefined}
+      data-bricks-tag={resolvedBricksTag ?? undefined}
+      data-bricks-piece-count={resolvedBricksPieceCount ?? undefined}
+      data-bricks-review-score={resolvedBricksReviewScore ?? undefined}
+      data-bricks-route={resolvedBricksRoute ?? undefined}
       data-tcdb-received={
         resolvedTradeReceived !== undefined
           ? String(resolvedTradeReceived)
@@ -456,6 +597,60 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
           ) : null}
         </div>
       ) : null}
+      {shouldRenderBricks && resolvedBricksName ? (
+        <div className="space-y-1 text-sm">
+          <div>
+            {resolvedBricksRoute ? (
+              <Link href={resolvedBricksRoute} className="link-blue">
+                {resolvedBricksName}
+              </Link>
+            ) : (
+              <span>{resolvedBricksName}</span>
+            )}
+            {resolvedBricksReviewScore ? (
+              <span>{` (${resolvedBricksReviewScore})`}</span>
+            ) : null}
+          </div>
+          {showBricksMetadataRow ? (
+            <div>
+              {resolvedBricksPublicId ? (
+                <>
+                  <span>LEGO ID: </span>
+                  {resolvedBricksReferenceUrl ? (
+                    <Link
+                      href={resolvedBricksReferenceUrl}
+                      className="link-blue"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {resolvedBricksPublicId}
+                    </Link>
+                  ) : (
+                    <span>{resolvedBricksPublicId}</span>
+                  )}
+                </>
+              ) : null}
+              {resolvedBricksPieceCount ? (
+                <>
+                  {resolvedBricksPublicId ? <span>; </span> : null}
+                  <span>{`${resolvedBricksPieceCount} pieces`}</span>
+                </>
+              ) : null}
+              {resolvedBricksTag ? (
+                <>
+                  {resolvedBricksPublicId || resolvedBricksPieceCount ? (
+                    <span>; </span>
+                  ) : null}
+                  <PersonTag
+                    tag={resolvedBricksTag}
+                    displayName={resolvedBricksTag}
+                  />
+                </>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       {showTradeCardCounts ? (
         <div className="text-sm">{`Card Traffic: ${tradeCardSummary}`}</div>
       ) : null}
@@ -502,9 +697,18 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       review?.type === "table-schema"
         ? "rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4"
         : "rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4";
+    const bricksContainerClassName =
+      "rounded-lg border-[4px] border-solid border-[var(--gold)] px-4 py-4";
     const plainContent = showTournamentVisuals ? (
       <div
         className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
+      >
+        {baseContent}
+      </div>
+    ) : showBricksVisuals ? (
+      <div
+        className={bricksContainerClassName}
         style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}

@@ -5,6 +5,7 @@ const getScrollMock = jest.fn();
 const getVolleyballTournamentDayByKeyAndDateMock = jest.fn();
 const getTcdbTradeSummaryFromDbMock = jest.fn();
 const getReviewSummaryFromDbMock = jest.fn();
+const getBricksSummaryFromDbMock = jest.fn();
 
 jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
@@ -13,6 +14,10 @@ jest.mock("server-only", () => ({}));
 jest.mock("@/lib/review-db", () => ({
   getReviewSummaryFromDb: (...args: unknown[]) =>
     getReviewSummaryFromDbMock(...args),
+}));
+jest.mock("@/lib/bricks-db", () => ({
+  getBricksSummaryFromDb: (...args: unknown[]) =>
+    getBricksSummaryFromDbMock(...args),
 }));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
@@ -106,9 +111,11 @@ describe("ReleaseSection", () => {
     getVolleyballTournamentDayByKeyAndDateMock.mockReset();
     getTcdbTradeSummaryFromDbMock.mockReset();
     getReviewSummaryFromDbMock.mockReset();
+    getBricksSummaryFromDbMock.mockReset();
 
     getTcdbTradeSummaryFromDbMock.mockResolvedValue(null);
     getReviewSummaryFromDbMock.mockResolvedValue(null);
+    getBricksSummaryFromDbMock.mockResolvedValue(null);
   });
 
   it("renders the default layout when releaseId is missing", async () => {
@@ -428,8 +435,110 @@ describe("ReleaseSection", () => {
     const content = container.querySelector(
       "[data-review-name]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-review-name", "Little Red Barn Antiques");
+    expect(content).toHaveAttribute(
+      "data-review-name",
+      "Little Red Barn Antiques",
+    );
     expect(content).toHaveAttribute("data-review-rating", "8.8/10");
+  });
+
+  it("renders bricks LEGO details from DB-backed metadata with an internal route link", async () => {
+    getBricksSummaryFromDbMock.mockResolvedValue({
+      subset: "lego",
+      publicId: "10330",
+      setName: "McLaren MP4/4 & Ayrton Senna",
+      tag: "f1",
+      pieceCount: 693,
+      reviewScore: 9.3,
+      sessionCount: 2,
+      firstBuildDate: "2026-04-01",
+      latestBuildDate: "2026-04-03",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      bricks: {
+        type: "lego",
+        id: "10330",
+      },
+    });
+    const { container } = render(ui);
+
+    expect(getBricksSummaryFromDbMock).toHaveBeenCalledWith("lego", "10330");
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent === "McLaren MP4/4 & Ayrton Senna (9.3/10)",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, node) => node?.textContent === "LEGO ID: 10330; 693 pieces; f1",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-person-tag="f1"]'),
+    ).toBeInTheDocument();
+
+    const setLink = screen
+      .getByText("McLaren MP4/4 & Ayrton Senna")
+      .closest("a");
+    expect(setLink).toBeInTheDocument();
+    expect(setLink).toHaveAttribute("href", "/unclejimmy/bricks/lego/10330");
+    expect(screen.getByRole("link", { name: "10330" })).toHaveAttribute(
+      "href",
+      "https://www.lego.com/en-ch/service/building-instructions/10330",
+    );
+
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+
+    const content = container.querySelector(
+      "[data-bricks-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-bricks-type", "lego");
+    expect(content).toHaveAttribute("data-bricks-id", "10330");
+    expect(content).toHaveAttribute(
+      "data-bricks-name",
+      "McLaren MP4/4 & Ayrton Senna",
+    );
+    expect(content).toHaveAttribute("data-bricks-tag", "f1");
+    expect(content).toHaveAttribute("data-bricks-piece-count", "693");
+    expect(content).toHaveAttribute("data-bricks-review-score", "9.3/10");
+    expect(content).toHaveAttribute(
+      "data-bricks-route",
+      "/unclejimmy/bricks/lego/10330",
+    );
+  });
+
+  it("supports authored bricks overrides when DB metadata is missing", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      bricks: {
+        type: "lego",
+        id: "42171",
+        name: "Mercedes-AMG F1 W14",
+        tag: "f1",
+        pieceCount: 1642,
+        reviewScore: 8.7,
+      },
+    });
+    render(ui);
+
+    expect(
+      screen.getByText(
+        (_, node) => node?.textContent === "Mercedes-AMG F1 W14 (8.7/10)",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, node) => node?.textContent === "LEGO ID: 42171; 1642 pieces; f1",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "42171" })).toHaveAttribute(
+      "href",
+      "https://www.lego.com/en-ch/service/building-instructions/42171",
+    );
   });
 
   it("applies rainbowColour to eligible non-release sections", async () => {
@@ -736,6 +845,53 @@ describe("ReleaseSection", () => {
         },
       }),
     ).rejects.toThrow("either tcdbTradeId or review");
+  });
+
+  it("throws when both review and bricks are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        review: {
+          type: "table-schema" as const,
+          id: "table-schema-42",
+          name: "Pizza Shack",
+          rating: "9/10",
+        },
+        bricks: {
+          type: "lego" as const,
+          id: "10330",
+        },
+      }),
+    ).rejects.toThrow("either review or bricks");
+  });
+
+  it("throws when both releaseId and bricks are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        releaseId: "12",
+        bricks: {
+          type: "lego" as const,
+          id: "10330",
+        },
+      }),
+    ).rejects.toThrow("either releaseId or bricks");
+  });
+
+  it("throws when both tcdbTradeId and bricks are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        tcdbTradeId: "359632",
+        bricks: {
+          type: "lego" as const,
+          id: "10330",
+        },
+      }),
+    ).rejects.toThrow("either tcdbTradeId or bricks");
   });
 
   it("applies rainbowColour when releaseId is present", async () => {
