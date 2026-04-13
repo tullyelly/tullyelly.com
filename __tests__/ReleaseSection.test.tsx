@@ -468,12 +468,16 @@ describe("ReleaseSection", () => {
     expect(
       screen.getByText(
         (_, node) =>
-          node?.textContent ===
-          "Bricks: LEGO; McLaren MP4/4 & Ayrton Senna (9.3/10)",
+          node?.textContent === "McLaren MP4/4 & Ayrton Senna (9.3/10)",
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("LEGO ID 10330; 693 pieces; Tag f1"),
+      screen.getByText(
+        (_, node) => node?.textContent === "LEGO ID: 10330; 693 pieces; f1",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-person-tag="f1"]'),
     ).toBeInTheDocument();
 
     const setLink = screen
@@ -481,6 +485,10 @@ describe("ReleaseSection", () => {
       .closest("a");
     expect(setLink).toBeInTheDocument();
     expect(setLink).toHaveAttribute("href", "/unclejimmy/bricks/lego/10330");
+    expect(screen.getByRole("link", { name: "10330" })).toHaveAttribute(
+      "href",
+      "https://www.lego.com/en-ch/service/building-instructions/10330",
+    );
 
     const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
@@ -519,13 +527,18 @@ describe("ReleaseSection", () => {
 
     expect(
       screen.getByText(
-        (_, node) =>
-          node?.textContent === "Bricks: LEGO; Mercedes-AMG F1 W14 (8.7/10)",
+        (_, node) => node?.textContent === "Mercedes-AMG F1 W14 (8.7/10)",
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("LEGO ID 42171; 1642 pieces; Tag f1"),
+      screen.getByText(
+        (_, node) => node?.textContent === "LEGO ID: 42171; 1642 pieces; f1",
+      ),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "42171" })).toHaveAttribute(
+      "href",
+      "https://www.lego.com/en-ch/service/building-instructions/42171",
+    );
   });
 
   it("applies rainbowColour to eligible non-release sections", async () => {

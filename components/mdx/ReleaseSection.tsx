@@ -4,6 +4,7 @@ import Image from "next/image";
 
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
+import PersonTag from "@/components/mdx/PersonTag";
 import {
   PILL_BLUE,
   PILL_BLACK,
@@ -134,14 +135,6 @@ function getReviewLabel(type: ReviewType): string {
   return REVIEW_TYPE_CONFIG[type].singularLabel;
 }
 
-function getBricksLabel(type: BricksSubset): string {
-  if (type === "lego") {
-    return "Bricks: LEGO";
-  }
-
-  return "Bricks";
-}
-
 function getTournamentFinishLabel(finish: number | null): string | null {
   if (finish === 1) return "1st Place";
   if (finish === 2) return "2nd Place";
@@ -178,6 +171,19 @@ function formatBricksReviewScoreOverride(
   }
 
   return formatNormalizedBricksReviewScore(parsed);
+}
+
+function getBricksReferenceUrl(
+  type: BricksSubset,
+  publicId: string,
+): string | undefined {
+  if (type === "lego") {
+    return `https://www.lego.com/en-ch/service/building-instructions/${encodeURIComponent(
+      publicId,
+    )}`;
+  }
+
+  return undefined;
 }
 
 // ReleaseSection acts as a no-op wrapper for MDX content and optionally renders a
@@ -234,6 +240,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   let resolvedBricksPieceCount: string | undefined;
   let resolvedBricksReviewScore: string | undefined;
   let resolvedBricksRoute: string | undefined;
+  let resolvedBricksReferenceUrl: string | undefined;
 
   if (releaseId && tcdbTradeId) {
     throw new Error(
@@ -311,6 +318,10 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       ? `/unclejimmy/bricks/${bricks.type}/${encodeURIComponent(
           resolvedBricksPublicId,
         )}`
+      : undefined;
+  resolvedBricksReferenceUrl =
+    bricks && resolvedBricksPublicId
+      ? getBricksReferenceUrl(bricks.type, resolvedBricksPublicId)
       : undefined;
 
   const hasTournamentId = tournamentId !== undefined;
@@ -428,14 +439,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     resolvedReviewUrl !== undefined && resolvedReviewUrl.trim() !== "";
   const showReviewRating = resolvedReviewRating !== undefined;
   const reviewLabel = review ? getReviewLabel(review.type) : undefined;
-  const bricksLabel = bricks ? getBricksLabel(bricks.type) : undefined;
-  const bricksSummaryParts = [
-    resolvedBricksPublicId ? `LEGO ID ${resolvedBricksPublicId}` : null,
-    resolvedBricksPieceCount ? `${resolvedBricksPieceCount} pieces` : null,
-    resolvedBricksTag ? `Tag ${resolvedBricksTag}` : null,
-  ]
-    .filter((part): part is string => Boolean(part))
-    .join("; ");
+  const showBricksMetadataRow = Boolean(
+    resolvedBricksPublicId || resolvedBricksPieceCount || resolvedBricksTag,
+  );
   // Rainbow assignment is the only accent colour source for ReleaseSection.
   const normalizedRainbowColour = rainbowColour?.trim() || PILL_BLUE;
   const resolvedSectionColor = normalizedRainbowColour;
@@ -591,10 +597,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
           ) : null}
         </div>
       ) : null}
-      {shouldRenderBricks && bricksLabel && resolvedBricksName ? (
+      {shouldRenderBricks && resolvedBricksName ? (
         <div className="space-y-1 text-sm">
           <div>
-            <span>{`${bricksLabel}; `}</span>
             {resolvedBricksRoute ? (
               <Link href={resolvedBricksRoute} className="link-blue">
                 {resolvedBricksName}
@@ -606,7 +611,44 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
               <span>{` (${resolvedBricksReviewScore})`}</span>
             ) : null}
           </div>
-          {bricksSummaryParts ? <div>{bricksSummaryParts}</div> : null}
+          {showBricksMetadataRow ? (
+            <div>
+              {resolvedBricksPublicId ? (
+                <>
+                  <span>LEGO ID: </span>
+                  {resolvedBricksReferenceUrl ? (
+                    <Link
+                      href={resolvedBricksReferenceUrl}
+                      className="link-blue"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {resolvedBricksPublicId}
+                    </Link>
+                  ) : (
+                    <span>{resolvedBricksPublicId}</span>
+                  )}
+                </>
+              ) : null}
+              {resolvedBricksPieceCount ? (
+                <>
+                  {resolvedBricksPublicId ? <span>; </span> : null}
+                  <span>{`${resolvedBricksPieceCount} pieces`}</span>
+                </>
+              ) : null}
+              {resolvedBricksTag ? (
+                <>
+                  {resolvedBricksPublicId || resolvedBricksPieceCount ? (
+                    <span>; </span>
+                  ) : null}
+                  <PersonTag
+                    tag={resolvedBricksTag}
+                    displayName={resolvedBricksTag}
+                  />
+                </>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
       {showTradeCardCounts ? (
