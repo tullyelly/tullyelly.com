@@ -154,6 +154,13 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       iconKey: "ArrowLeftRight",
       feature: "menu.cardattack.tcdb.trades",
     },
+    {
+      id: "set-collector",
+      label: "Set Collector",
+      href: "/cardattack/set-collector",
+      iconKey: "Archive",
+      feature: "menu.cardattack.tcdb.set.collector",
+    },
   ],
   theabbott: [
     {
