@@ -638,9 +638,28 @@ describe("ReleaseSection", () => {
       rainbowColour,
     );
 
-    const divider = container.querySelector("hr") as HTMLHRElement;
-    expect(divider).toBeInTheDocument();
-    expect(divider).toHaveStyle({ backgroundColor: toRgb(rainbowColour) });
+    expect(container.querySelector("hr")).toBeNull();
+  });
+
+  it("does not render a duplicate bottom divider for bordered USPS sections", async () => {
+    getUspsSummaryFromDbMock.mockResolvedValue({
+      citySlug: "menasha",
+      cityName: "Menasha",
+      state: "Wisconsin",
+      rating: 10,
+      visitCount: 1,
+      firstVisitDate: "2026-04-01",
+      latestVisitDate: "2026-04-01",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      usps: "menasha",
+    });
+    const { container } = render(ui);
+
+    expect(container.querySelector("div.rounded-lg")).toBeInTheDocument();
+    expect(container.querySelector("hr")).toBeNull();
   });
 
   it("wraps content with a release container and link tab when releaseId is provided", async () => {

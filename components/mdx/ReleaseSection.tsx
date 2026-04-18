@@ -785,6 +785,11 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   );
 
   if (!showReleaseDetails) {
+    const hasPlainVisualContainer =
+      showTournamentVisuals ||
+      showUspsVisuals ||
+      showBricksVisuals ||
+      showReviewVisuals;
     const reviewContainerClassName =
       review?.type === "table-schema"
         ? "rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4"
@@ -828,7 +833,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     return (
       <>
         {plainContent}
-        {divider ? (
+        {divider && !hasPlainVisualContainer ? (
           <hr
             className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]"
             style={
