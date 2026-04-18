@@ -48,9 +48,9 @@ describe("getUspsCityAttribute", () => {
 });
 
 describe("extractUspsSectionsWithOffsets", () => {
-  it("supports USPS city slug props and preserves USPS ordinals within a post", () => {
+  it("supports USPS city slug props on release-linked sections and preserves USPS ordinals within a post", () => {
     const raw = [
-      '<ReleaseSection alterEgo="cardattack" usps="menasha">First visit</ReleaseSection>',
+      '<ReleaseSection alterEgo="cardattack" releaseId="55" usps="menasha">First visit</ReleaseSection>',
       "",
       '<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange" }}>Ignore me</ReleaseSection>',
       "",
@@ -272,7 +272,7 @@ describe("getUspsPageData", () => {
         url: "/shaolin/mail-day",
         date: "2026-04-01",
         body: {
-          raw: '<ReleaseSection alterEgo="cardattack" usps="menasha">Envelope stack</ReleaseSection>',
+          raw: '<ReleaseSection alterEgo="cardattack" releaseId="55" usps="menasha">Envelope stack</ReleaseSection>',
         },
       },
     ];
@@ -290,6 +290,7 @@ describe("getUspsPageData", () => {
           visitDate: "2026-04-01",
           sections: [
             expect.objectContaining({
+              mdx: expect.stringContaining('releaseId="55"'),
               postSlug: "mail-day",
               postDate: "2026-04-01",
               sectionOrdinal: 1,

@@ -600,6 +600,61 @@ describe("ReleaseSection", () => {
     );
   });
 
+  it("renders USPS details alongside release visuals when releaseId and usps are both passed", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "55",
+      release_name: "International Bricks",
+      release_type: "year",
+      status: "released",
+      release_date: "2026-04-18",
+      label: "International Bricks",
+    });
+    getUspsSummaryFromDbMock.mockResolvedValue({
+      citySlug: "appleton-sdc",
+      cityName: "Appleton",
+      state: "Wisconsin",
+      rating: 9.1,
+      visitCount: 6,
+      firstVisitDate: "2026-03-01",
+      latestVisitDate: "2026-04-18",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "55",
+      usps: " appleton-sdc ",
+    });
+    const { container } = render(ui);
+
+    expect(getScrollMock).toHaveBeenCalledWith("55");
+    expect(getUspsSummaryFromDbMock).toHaveBeenCalledWith("appleton-sdc");
+
+    const tab = container.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab).toHaveAttribute("href", "/mark2/shaolin-scrolls/55");
+    expect(tab).toHaveTextContent("International Bricks");
+
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent === "Appleton, Wisconsin (9.1/10; 6 visits)",
+      ),
+    ).toBeInTheDocument();
+
+    const uspsLink = screen.getByText("Appleton, Wisconsin").closest("a");
+    expect(uspsLink).toBeInTheDocument();
+    expect(uspsLink).toHaveAttribute("href", "/cardattack/usps/appleton-sdc");
+
+    const content = container.querySelector(
+      "[data-usps-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-release-name", "International Bricks");
+    expect(content).toHaveAttribute("data-usps-id", "appleton-sdc");
+    expect(content).toHaveAttribute("data-usps-name", "Appleton, Wisconsin");
+    expect(content).toHaveAttribute("data-usps-rating", "9.1/10");
+    expect(content).toHaveAttribute("data-usps-visit-count", "6");
+  });
+
   it("applies rainbowColour to eligible non-release sections", async () => {
     const rainbowColour = "#00FF00";
     const ui = await ReleaseSection({

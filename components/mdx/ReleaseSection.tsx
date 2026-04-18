@@ -73,7 +73,7 @@ type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
   tcdbTradeId?: never;
   review?: never;
   bricks?: never;
-  usps?: never;
+  usps?: string;
 };
 
 type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
@@ -220,7 +220,7 @@ function getBricksReferenceUrl(
  * - guestMage: optional guest writer label rendered as a stamp.
  * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
  * - bricks: optional bricks metadata for subset-backed build features such as LEGO; must not be combined with releaseId, tcdbTradeId, or review.
- * - usps: optional USPS city slug that links the section to the DB-backed cardattack USPS route and resolves the USPS total visit count; must not be combined with releaseId, tcdbTradeId, review, or bricks.
+ * - usps: optional USPS city slug that links the section to the DB-backed cardattack USPS route and resolves the USPS total visit count; it may be combined with releaseId, but must not be combined with tcdbTradeId, review, or bricks.
  * - rainbowColour: optional rainbow assignment colour; when present, it is the only colour source for section accents, including release-linked sections.
  * - Visual: default is plain content; with releaseId/tcdbTradeId, a bordered container and tab appear using the rainbow assignment colour.
  *
@@ -298,10 +298,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
   if (review && bricks) {
     throw new Error("ReleaseSection: pass either review or bricks, not both.");
-  }
-
-  if (releaseId && usps) {
-    throw new Error("ReleaseSection: pass either releaseId or usps, not both.");
   }
 
   if (tcdbTradeId && usps) {
@@ -500,7 +496,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     resolvedBricksPublicId || resolvedBricksPieceCount || resolvedBricksTag,
   );
   const showUspsVisuals = Boolean(usps);
-  const shouldRenderUsps = showUspsVisuals && !showReleaseDetails;
+  const shouldRenderUsps = showUspsVisuals;
   const resolvedUspsVisitLabel =
     resolvedUspsVisitCount === undefined
       ? undefined
