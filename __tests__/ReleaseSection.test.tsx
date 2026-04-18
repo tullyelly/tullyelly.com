@@ -6,6 +6,7 @@ const getVolleyballTournamentDayByKeyAndDateMock = jest.fn();
 const getTcdbTradeSummaryFromDbMock = jest.fn();
 const getReviewSummaryFromDbMock = jest.fn();
 const getBricksSummaryFromDbMock = jest.fn();
+const getUspsSummaryFromDbMock = jest.fn();
 
 jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
@@ -18,6 +19,15 @@ jest.mock("@/lib/review-db", () => ({
 jest.mock("@/lib/bricks-db", () => ({
   getBricksSummaryFromDb: (...args: unknown[]) =>
     getBricksSummaryFromDbMock(...args),
+}));
+jest.mock("@/lib/usps-db", () => ({
+  getUspsSummaryFromDb: (...args: unknown[]) => getUspsSummaryFromDbMock(...args),
+  normalizeUspsCitySlug: (value: string) =>
+    value
+      .trim()
+      .replace(/^\/+/g, "")
+      .replace(/\/+$/g, "")
+      .toLowerCase(),
 }));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
@@ -112,10 +122,12 @@ describe("ReleaseSection", () => {
     getTcdbTradeSummaryFromDbMock.mockReset();
     getReviewSummaryFromDbMock.mockReset();
     getBricksSummaryFromDbMock.mockReset();
+    getUspsSummaryFromDbMock.mockReset();
 
     getTcdbTradeSummaryFromDbMock.mockResolvedValue(null);
     getReviewSummaryFromDbMock.mockResolvedValue(null);
     getBricksSummaryFromDbMock.mockResolvedValue(null);
+    getUspsSummaryFromDbMock.mockResolvedValue(null);
   });
 
   it("renders the default layout when releaseId is missing", async () => {
@@ -541,6 +553,53 @@ describe("ReleaseSection", () => {
     );
   });
 
+  it("renders USPS details from DB-backed metadata with the total visit count", async () => {
+    getUspsSummaryFromDbMock.mockResolvedValue({
+      citySlug: "menasha",
+      cityName: "Menasha",
+      state: "Wisconsin",
+      rating: 8.7,
+      visitCount: 4,
+      firstVisitDate: "2026-04-01",
+      latestVisitDate: "2026-04-05",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      usps: " menasha ",
+    });
+    const { container } = render(ui);
+
+    expect(getUspsSummaryFromDbMock).toHaveBeenCalledWith("menasha");
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent === "Menasha, Wisconsin (8.7/10; 4 visits)",
+      ),
+    ).toBeInTheDocument();
+
+    const uspsLink = screen.getByText("Menasha, Wisconsin").closest("a");
+    expect(uspsLink).toBeInTheDocument();
+    expect(uspsLink).toHaveAttribute("href", "/cardattack/usps/menasha");
+
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper.className).toContain("border-solid");
+    expect(wrapper.className).toContain("border-[var(--blue)]");
+
+    const content = container.querySelector(
+      "[data-usps-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-usps-id", "menasha");
+    expect(content).toHaveAttribute("data-usps-name", "Menasha, Wisconsin");
+    expect(content).toHaveAttribute("data-usps-rating", "8.7/10");
+    expect(content).toHaveAttribute("data-usps-visit-count", "4");
+    expect(content).toHaveAttribute(
+      "data-usps-route",
+      "/cardattack/usps/menasha",
+    );
+  });
+
   it("applies rainbowColour to eligible non-release sections", async () => {
     const rainbowColour = "#00FF00";
     const ui = await ReleaseSection({
@@ -864,6 +923,22 @@ describe("ReleaseSection", () => {
         },
       }),
     ).rejects.toThrow("either review or bricks");
+  });
+
+  it("throws when both review and usps are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        review: {
+          type: "lcs" as const,
+          id: "indy-card-exchange",
+          name: "Indy Card Exchange",
+          rating: "9.0/10",
+        },
+        usps: "menasha",
+      }),
+    ).rejects.toThrow("either review or usps");
   });
 
   it("throws when both releaseId and bricks are passed", async () => {
