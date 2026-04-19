@@ -4,6 +4,7 @@ import type { MDXComponents } from "mdx/types";
 import LoopedGIF from "@/components/LoopedGIF";
 import { CodePanel } from "@/components/mdx/code-panel";
 import PersonTag from "@/components/mdx/PersonTag";
+import SetCollector from "@/components/mdx/SetCollector";
 import SmartLink from "@/components/mdx/SmartLink";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
@@ -41,6 +42,7 @@ type CustomMDXComponents = MDXComponents & {
   CodePanel: typeof CodePanel;
   PersonTag: typeof PersonTag;
   ReleaseSection: typeof ReleaseSection;
+  SetCollector: typeof SetCollector;
   ScrollAmendment: typeof ScrollAmendment;
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
   YouTubeVideo: typeof YouTubeVideo;
@@ -212,6 +214,7 @@ export const mdxComponents: CustomMDXComponents = {
   CodePanel,
   PersonTag,
   ReleaseSection,
+  SetCollector,
   ScrollAmendment,
   YouTubeMusicPlaylist,
   YouTubeVideo,
