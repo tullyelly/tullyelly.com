@@ -45,7 +45,7 @@ Supported modes and what they feed:
 - Plain section; persona tag plus optional trailing divider.
 - `releaseId`; links to `/mark2/shaolin-scrolls/[id]`.
 - `tcdbTradeId`; links to `/cardattack/tcdb-trades/[tradeId]`.
-- `review={{ type: "lcs", ... }}`; feeds `/cardattack/lcs` and `/cardattack/lcs/[id]`.
+- `lcs="shop-slug"`; feeds `/cardattack/lcs` and `/cardattack/lcs/[id]`.
 - `review={{ type: "table-schema", ... }}`; feeds `/unclejimmy/table-schema` and `/unclejimmy/table-schema/[id]`.
 - `review={{ type: "save-point", ... }}`; feeds `/unclejimmy/call-a-save-point` and `/unclejimmy/call-a-save-point/[id]`.
 - `bricks={{ type: "lego", ... }}`; feeds `/unclejimmy/bricks/lego` and `/unclejimmy/bricks/lego/[id]`.
@@ -53,7 +53,7 @@ Supported modes and what they feed:
 
 Rules to remember:
 
-- Pick at most one metadata mode per section: `releaseId`, `tcdbTradeId`, `review`, or `bricks`.
+- Pick at most one metadata mode per section: `releaseId`, `tcdbTradeId`, `review`, `lcs`, `bricks`, or `usps`.
 - TCDB trade partner, card counts, and completion links are resolved from DB-backed trade metadata.
 - `tournamentId` and `tournamentDate` must be provided together.
 - `tournamentId` can be numeric or quoted; use it when the section should be grouped into volleyball directory/detail pages.
@@ -108,13 +108,7 @@ Local card shop review:
 ```mdx
 <ReleaseSection
   alterEgo="cardattack"
-  review={{
-    type: "lcs",
-    id: "indy-card-exchange",
-    name: "Indy Card Exchange",
-    url: "https://indycardexchange.com/",
-    rating: "8.7/10",
-  }}
+  lcs="indy-card-exchange"
 >
   LCS visit notes.
 </ReleaseSection>

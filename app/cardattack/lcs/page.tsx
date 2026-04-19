@@ -1,16 +1,15 @@
-import ReviewLandingPage from "@/components/reviews/ReviewLandingPage";
-import { listReviewSummaries } from "@/lib/review-content";
-import { getReviewRouteConfig } from "@/lib/review-route-config";
-import { getReviewCollectionMetadata } from "@/lib/review-route-metadata";
+import LcsLandingPage from "@/components/lcs/LcsLandingPage";
+import { listLcsSummaries } from "@/lib/lcs-content";
+import { getLcsRouteConfig } from "@/lib/lcs-route-config";
+import { getLcsCollectionMetadata } from "@/lib/lcs-route-metadata";
 
-const reviewType = "lcs" as const;
-const routeConfig = getReviewRouteConfig(reviewType);
+const routeConfig = getLcsRouteConfig();
 
-export const metadata = getReviewCollectionMetadata(reviewType);
+export const metadata = getLcsCollectionMetadata();
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function CardattackLcsLandingPage() {
-  const shops = await listReviewSummaries(reviewType);
-  return <ReviewLandingPage config={routeConfig} rows={shops} />;
+  const rows = await listLcsSummaries();
+  return <LcsLandingPage config={routeConfig} rows={rows} />;
 }

@@ -40,42 +40,6 @@ export type ReviewRouteConfig = {
 };
 
 export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
-  lcs: {
-    type: "lcs",
-    brandTitle: "🃏cardattack",
-    collectionMetaTitle: "LCS | 🃏cardattack",
-    collectionMetaDescription:
-      "Local card shop visits tracked from chronicles, with normalized ratings and visit history by shop.",
-    collectionHeroTitle: "Local Card Shops",
-    collectionHeroDescription:
-      "Normalized card shop dossiers built from review metadata, with every visit still rendered from the original chronicle MDX sections.",
-    detailMetaSuffix: "🃏cardattack lcs",
-    detailHeroEyebrow: "Card Shop Dossier",
-    collectionSectionEyebrow: "Review Directory",
-    detailBackLabel: "Back to local card shops",
-    subjectLabel: "Card Shop",
-    subjectIdLabel: "Shop ID",
-    countLabel: "Visits",
-    countSingularLabel: "visit",
-    latestCountLabel: "Last Visit",
-    entryLabel: "Visit",
-    outboundLinkLabel: "Visit shop site",
-    tableExternalLinkLabel: "shop site",
-    emptyCollectionMessage:
-      "No local card shop reviews have been referenced in chronicles yet.",
-    emptyFeedMessage: "No chronicle visits are attached to this card shop yet.",
-    collectionTableAriaLabel: "Local card shops table",
-    collectionTableFirstColumnLabel: "Card Shop",
-    collectionDirectoryHeading: "Tracked Shops",
-    detailFeedHeading: "Chronicle Feed",
-    detailFeedDescription:
-      "Every entry below is compiled from the original chronicle MDX source.",
-    pageThemeVars: reviewPageThemeVarsByType.lcs,
-    tableThemeStyle: reviewTableThemeStyleByType.lcs,
-    collectionPath: REVIEW_TYPE_CONFIG.lcs.collectionPath,
-    label: REVIEW_TYPE_CONFIG.lcs.label,
-    singularLabel: REVIEW_TYPE_CONFIG.lcs.singularLabel,
-  },
   "table-schema": {
     type: "table-schema",
     brandTitle: "🎙unclejimmy",

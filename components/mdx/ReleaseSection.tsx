@@ -18,9 +18,15 @@ import {
   normalizeBricksPublicId,
   type BricksSubset,
 } from "@/lib/bricks-types";
+import { getLcsSummaryFromDb } from "@/lib/lcs-db";
+import { normalizeLcsSlug } from "@/lib/lcs-types";
 import { REVIEW_TYPE_CONFIG, type ReviewType } from "@/lib/review-types";
 import { getScroll } from "@/lib/scrolls";
 import { getTcdbTradeSummaryFromDb } from "@/lib/tcdb-trade-db";
+import {
+  getUspsSummaryFromDb,
+  normalizeUspsCitySlug,
+} from "@/lib/usps-db";
 import {
   getVolleyballTournamentDayByKeyAndDate,
   normalizeVolleyballTournamentDate,
@@ -69,6 +75,8 @@ type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
   tcdbTradeId?: never;
   review?: never;
   bricks?: never;
+  usps?: string;
+  lcs?: string;
 };
 
 type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
@@ -76,6 +84,8 @@ type ReleaseSectionWithTcdbTrade = ReleaseSectionBaseProps & {
   releaseId?: never;
   review?: never;
   bricks?: never;
+  usps?: never;
+  lcs?: never;
 };
 
 type ReleaseSectionWithReview = ReleaseSectionBaseProps & {
@@ -83,6 +93,8 @@ type ReleaseSectionWithReview = ReleaseSectionBaseProps & {
   releaseId?: never;
   tcdbTradeId?: never;
   bricks?: never;
+  usps?: never;
+  lcs?: never;
 };
 
 type ReleaseSectionWithBricks = ReleaseSectionBaseProps & {
@@ -90,6 +102,26 @@ type ReleaseSectionWithBricks = ReleaseSectionBaseProps & {
   releaseId?: never;
   tcdbTradeId?: never;
   review?: never;
+  usps?: never;
+  lcs?: never;
+};
+
+type ReleaseSectionWithUsps = ReleaseSectionBaseProps & {
+  usps: string;
+  releaseId?: never;
+  tcdbTradeId?: never;
+  review?: never;
+  bricks?: never;
+  lcs?: never;
+};
+
+type ReleaseSectionWithLcs = ReleaseSectionBaseProps & {
+  lcs: string;
+  releaseId?: never;
+  tcdbTradeId?: never;
+  review?: never;
+  bricks?: never;
+  usps?: never;
 };
 
 type ReleaseSectionWithoutReleaseReviewOrBricks = ReleaseSectionBaseProps & {
@@ -97,6 +129,8 @@ type ReleaseSectionWithoutReleaseReviewOrBricks = ReleaseSectionBaseProps & {
   releaseId?: undefined;
   tcdbTradeId?: undefined;
   bricks?: undefined;
+  usps?: undefined;
+  lcs?: undefined;
 };
 
 type ReleaseSectionProps =
@@ -104,6 +138,8 @@ type ReleaseSectionProps =
   | ReleaseSectionWithTcdbTrade
   | ReleaseSectionWithReview
   | ReleaseSectionWithBricks
+  | ReleaseSectionWithUsps
+  | ReleaseSectionWithLcs
   | ReleaseSectionWithoutReleaseReviewOrBricks;
 
 function getReadableTextColor(backgroundColor: string): string {
@@ -200,8 +236,10 @@ function getBricksReferenceUrl(
  * - Volleyball metadata is DB-backed; ReleaseSection resolves tournamentName and reconstructs the W-L record from dojo.volleyball_tournament + dojo.volleyball_tournament_day.
  * - TCDb metadata is DB-backed; ReleaseSection resolves aggregate card counts and completion state from dojo.tcdb_trade + dojo.tcdb_trade_day while preserving tcdbTradeId as the public route key.
  * - guestMage: optional guest writer label rendered as a stamp.
- * - review: optional unified review metadata for local card shop, table schema, or future review types; must not be combined with releaseId or tcdbTradeId.
+ * - review: optional unified review metadata for shared review families such as table schema, save point, or golden age; must not be combined with releaseId or tcdbTradeId.
  * - bricks: optional bricks metadata for subset-backed build features such as LEGO; must not be combined with releaseId, tcdbTradeId, or review.
+ * - usps: optional USPS city slug that links the section to the DB-backed cardattack USPS route and resolves the USPS total visit count; it may be combined with releaseId, but must not be combined with tcdbTradeId, review, or bricks.
+ * - lcs: optional local card shop slug that links the section to the DB-backed cardattack LCS route and resolves the shop summary metadata; it may be combined with releaseId, but must not be combined with tcdbTradeId, review, bricks, or usps.
  * - rainbowColour: optional rainbow assignment colour; when present, it is the only colour source for section accents, including release-linked sections.
  * - Visual: default is plain content; with releaseId/tcdbTradeId, a bordered container and tab appear using the rainbow assignment colour.
  *
@@ -213,7 +251,7 @@ function getBricksReferenceUrl(
  * ```
  */
 export default async function ReleaseSection(props: ReleaseSectionProps) {
-  const { review, bricks } = props;
+  const { review, bricks, usps, lcs } = props;
   const {
     alterEgo,
     children,
@@ -241,6 +279,19 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   let resolvedBricksReviewScore: string | undefined;
   let resolvedBricksRoute: string | undefined;
   let resolvedBricksReferenceUrl: string | undefined;
+  let resolvedUspsCitySlug: string | undefined;
+  let resolvedUspsName: string | undefined;
+  let resolvedUspsRating: string | undefined;
+  let resolvedUspsRoute: string | undefined;
+  let resolvedUspsVisitCount: number | undefined;
+  let resolvedLcsSlug: string | undefined;
+  let resolvedLcsName: string | undefined;
+  let resolvedLcsCity: string | undefined;
+  let resolvedLcsState: string | undefined;
+  let resolvedLcsRating: string | undefined;
+  let resolvedLcsRoute: string | undefined;
+  let resolvedLcsVisitCount: number | undefined;
+  let resolvedLcsUrl: string | undefined;
 
   if (releaseId && tcdbTradeId) {
     throw new Error(
@@ -274,6 +325,36 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
   if (review && bricks) {
     throw new Error("ReleaseSection: pass either review or bricks, not both.");
+  }
+
+  if (tcdbTradeId && usps) {
+    throw new Error(
+      "ReleaseSection: pass either tcdbTradeId or usps, not both.",
+    );
+  }
+
+  if (review && usps) {
+    throw new Error("ReleaseSection: pass either review or usps, not both.");
+  }
+
+  if (bricks && usps) {
+    throw new Error("ReleaseSection: pass either bricks or usps, not both.");
+  }
+
+  if (tcdbTradeId && lcs) {
+    throw new Error("ReleaseSection: pass either tcdbTradeId or lcs, not both.");
+  }
+
+  if (review && lcs) {
+    throw new Error("ReleaseSection: pass either review or lcs, not both.");
+  }
+
+  if (bricks && lcs) {
+    throw new Error("ReleaseSection: pass either bricks or lcs, not both.");
+  }
+
+  if (usps && lcs) {
+    throw new Error("ReleaseSection: pass either usps or lcs, not both.");
   }
 
   reviewSummary = review
@@ -323,6 +404,43 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     bricks && resolvedBricksPublicId
       ? getBricksReferenceUrl(bricks.type, resolvedBricksPublicId)
       : undefined;
+  resolvedUspsCitySlug = usps ? normalizeUspsCitySlug(usps) : undefined;
+  const uspsSummary = resolvedUspsCitySlug
+    ? await getUspsSummaryFromDb(resolvedUspsCitySlug)
+    : null;
+  resolvedUspsName = uspsSummary
+    ? `${uspsSummary.cityName}, ${uspsSummary.state}`
+    : toOptionalText(usps) || resolvedUspsCitySlug;
+  resolvedUspsRating =
+    uspsSummary?.rating !== undefined
+      ? `${uspsSummary.rating.toFixed(1)}/10`
+      : undefined;
+  resolvedUspsVisitCount = uspsSummary?.visitCount;
+  resolvedUspsRoute = resolvedUspsCitySlug
+    ? `/cardattack/usps/${encodeURIComponent(resolvedUspsCitySlug)}`
+    : undefined;
+  if (lcs !== undefined) {
+    try {
+      resolvedLcsSlug = normalizeLcsSlug(lcs);
+    } catch {
+      throw new Error(
+        "ReleaseSection: lcs must be a non-empty string or number.",
+      );
+    }
+  }
+  const lcsSummary = resolvedLcsSlug
+    ? await getLcsSummaryFromDb(resolvedLcsSlug)
+    : null;
+  resolvedLcsName = lcsSummary?.name || resolvedLcsSlug;
+  resolvedLcsCity = lcsSummary?.city;
+  resolvedLcsState = lcsSummary?.state;
+  resolvedLcsRating =
+    lcsSummary?.rating !== undefined ? `${lcsSummary.rating.toFixed(1)}/10` : undefined;
+  resolvedLcsVisitCount = lcsSummary?.visitCount;
+  resolvedLcsUrl = lcsSummary?.url;
+  resolvedLcsRoute = resolvedLcsSlug
+    ? `/cardattack/lcs/${encodeURIComponent(resolvedLcsSlug)}`
+    : undefined;
 
   const hasTournamentId = tournamentId !== undefined;
   const hasTournamentDate = tournamentDate !== undefined;
@@ -442,6 +560,27 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const showBricksMetadataRow = Boolean(
     resolvedBricksPublicId || resolvedBricksPieceCount || resolvedBricksTag,
   );
+  const showUspsVisuals = Boolean(usps);
+  const shouldRenderUsps = showUspsVisuals;
+  const resolvedUspsVisitLabel =
+    resolvedUspsVisitCount === undefined
+      ? undefined
+      : `${resolvedUspsVisitCount} ${
+          resolvedUspsVisitCount === 1 ? "visit" : "visits"
+        }`;
+  const resolvedLcsLocation = [resolvedLcsCity, resolvedLcsState]
+    .filter((value): value is string => Boolean(value))
+    .join(", ");
+  const resolvedLcsDisplayName =
+    resolvedLcsName && resolvedLcsLocation
+      ? `${resolvedLcsName}; ${resolvedLcsLocation}`
+      : resolvedLcsName;
+  const showLcsVisuals = Boolean(lcs);
+  const shouldRenderLcs = showLcsVisuals;
+  const resolvedLcsVisitLabel =
+    resolvedLcsVisitCount === undefined
+      ? undefined
+      : `${resolvedLcsVisitCount} ${resolvedLcsVisitCount === 1 ? "visit" : "visits"}`;
   // Rainbow assignment is the only accent colour source for ReleaseSection.
   const normalizedRainbowColour = rainbowColour?.trim() || PILL_BLUE;
   const resolvedSectionColor = normalizedRainbowColour;
@@ -544,6 +683,27 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-bricks-piece-count={resolvedBricksPieceCount ?? undefined}
       data-bricks-review-score={resolvedBricksReviewScore ?? undefined}
       data-bricks-route={resolvedBricksRoute ?? undefined}
+      data-usps-id={resolvedUspsCitySlug ?? undefined}
+      data-usps-name={resolvedUspsName ?? undefined}
+      data-usps-rating={resolvedUspsRating ?? undefined}
+      data-usps-visit-count={
+        resolvedUspsVisitCount !== undefined
+          ? String(resolvedUspsVisitCount)
+          : undefined
+      }
+      data-usps-route={resolvedUspsRoute ?? undefined}
+      data-lcs-slug={resolvedLcsSlug ?? undefined}
+      data-lcs-name={resolvedLcsName ?? undefined}
+      data-lcs-city={resolvedLcsCity ?? undefined}
+      data-lcs-state={resolvedLcsState ?? undefined}
+      data-lcs-rating={resolvedLcsRating ?? undefined}
+      data-lcs-visit-count={
+        resolvedLcsVisitCount !== undefined
+          ? String(resolvedLcsVisitCount)
+          : undefined
+      }
+      data-lcs-route={resolvedLcsRoute ?? undefined}
+      data-lcs-url={resolvedLcsUrl ?? undefined}
       data-tcdb-received={
         resolvedTradeReceived !== undefined
           ? String(resolvedTradeReceived)
@@ -651,6 +811,42 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
           ) : null}
         </div>
       ) : null}
+      {shouldRenderUsps && resolvedUspsName ? (
+        <div className="text-sm">
+          {resolvedUspsRoute ? (
+            <Link href={resolvedUspsRoute} className="link-blue">
+              {resolvedUspsName}
+            </Link>
+          ) : (
+            <span>{resolvedUspsName}</span>
+          )}
+          {resolvedUspsRating || resolvedUspsVisitLabel ? (
+            <span>
+              {` (${[resolvedUspsRating, resolvedUspsVisitLabel]
+                .filter((part): part is string => Boolean(part))
+                .join("; ")})`}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {shouldRenderLcs && resolvedLcsDisplayName ? (
+        <div className="text-sm">
+          {resolvedLcsRoute ? (
+            <Link href={resolvedLcsRoute} className="link-blue">
+              {resolvedLcsDisplayName}
+            </Link>
+          ) : (
+            <span>{resolvedLcsDisplayName}</span>
+          )}
+          {resolvedLcsRating || resolvedLcsVisitLabel ? (
+            <span>
+              {` (${[resolvedLcsRating, resolvedLcsVisitLabel]
+                .filter((part): part is string => Boolean(part))
+                .join("; ")})`}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
       {showTradeCardCounts ? (
         <div className="text-sm">{`Card Traffic: ${tradeCardSummary}`}</div>
       ) : null}
@@ -693,15 +889,39 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   );
 
   if (!showReleaseDetails) {
+    const hasPlainVisualContainer =
+      showTournamentVisuals ||
+      showUspsVisuals ||
+      showLcsVisuals ||
+      showBricksVisuals ||
+      showReviewVisuals;
     const reviewContainerClassName =
       review?.type === "table-schema"
         ? "rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4"
         : "rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4";
     const bricksContainerClassName =
       "rounded-lg border-[4px] border-solid border-[var(--gold)] px-4 py-4";
+    const uspsContainerClassName =
+      "rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4";
+    const lcsContainerClassName =
+      "rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4";
     const plainContent = showTournamentVisuals ? (
       <div
         className="rounded-lg border-[4px] border-solid border-[var(--blue)] px-4 py-4"
+        style={{ borderColor: resolvedSectionColor }}
+      >
+        {baseContent}
+      </div>
+    ) : showUspsVisuals ? (
+      <div
+        className={uspsContainerClassName}
+        style={{ borderColor: resolvedSectionColor }}
+      >
+        {baseContent}
+      </div>
+    ) : showLcsVisuals ? (
+      <div
+        className={lcsContainerClassName}
         style={{ borderColor: resolvedSectionColor }}
       >
         {baseContent}
@@ -727,7 +947,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     return (
       <>
         {plainContent}
-        {divider ? (
+        {divider && !hasPlainVisualContainer ? (
           <hr
             className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]"
             style={

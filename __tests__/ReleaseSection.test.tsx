@@ -6,6 +6,8 @@ const getVolleyballTournamentDayByKeyAndDateMock = jest.fn();
 const getTcdbTradeSummaryFromDbMock = jest.fn();
 const getReviewSummaryFromDbMock = jest.fn();
 const getBricksSummaryFromDbMock = jest.fn();
+const getUspsSummaryFromDbMock = jest.fn();
+const getLcsSummaryFromDbMock = jest.fn();
 
 jest.mock("@/components/Tweet", () => ({
   XEmbed: () => null,
@@ -18,6 +20,18 @@ jest.mock("@/lib/review-db", () => ({
 jest.mock("@/lib/bricks-db", () => ({
   getBricksSummaryFromDb: (...args: unknown[]) =>
     getBricksSummaryFromDbMock(...args),
+}));
+jest.mock("@/lib/usps-db", () => ({
+  getUspsSummaryFromDb: (...args: unknown[]) => getUspsSummaryFromDbMock(...args),
+  normalizeUspsCitySlug: (value: string) =>
+    value
+      .trim()
+      .replace(/^\/+/g, "")
+      .replace(/\/+$/g, "")
+      .toLowerCase(),
+}));
+jest.mock("@/lib/lcs-db", () => ({
+  getLcsSummaryFromDb: (...args: unknown[]) => getLcsSummaryFromDbMock(...args),
 }));
 jest.mock("@/lib/scrolls", () => ({
   getScroll: (...args: unknown[]) => getScrollMock(...args),
@@ -112,10 +126,14 @@ describe("ReleaseSection", () => {
     getTcdbTradeSummaryFromDbMock.mockReset();
     getReviewSummaryFromDbMock.mockReset();
     getBricksSummaryFromDbMock.mockReset();
+    getUspsSummaryFromDbMock.mockReset();
+    getLcsSummaryFromDbMock.mockReset();
 
     getTcdbTradeSummaryFromDbMock.mockResolvedValue(null);
     getReviewSummaryFromDbMock.mockResolvedValue(null);
     getBricksSummaryFromDbMock.mockResolvedValue(null);
+    getUspsSummaryFromDbMock.mockResolvedValue(null);
+    getLcsSummaryFromDbMock.mockResolvedValue(null);
   });
 
   it("renders the default layout when releaseId is missing", async () => {
@@ -249,14 +267,14 @@ describe("ReleaseSection", () => {
     );
   });
 
-  it("renders lcs details from the unified review prop", async () => {
+  it("renders shared review details from the unified review prop", async () => {
     const ui = await ReleaseSection({
       ...baseProps,
       review: {
-        type: "lcs",
-        id: "noblesville-sports-cards",
-        name: "Noblesville Sports Cards",
-        url: "https://noblesvillesportscards.example.com",
+        type: "golden-age",
+        id: "little-red-barn",
+        name: "Little Red Barn Antiques",
+        url: "https://littleredbarn.example.com",
         rating: "9.2/10",
       },
     });
@@ -265,14 +283,17 @@ describe("ReleaseSection", () => {
     expect(
       screen.getByText(
         (_, node) =>
-          node?.textContent === "Card Shop: Noblesville Sports Cards (9.2/10)",
+          node?.textContent ===
+          "Antique Shop: Little Red Barn Antiques (9.2/10)",
       ),
     ).toBeInTheDocument();
-    const shopLink = screen.getByText("Noblesville Sports Cards").closest("a");
+    const shopLink = screen
+      .getByText("Little Red Barn Antiques")
+      .closest("a");
     expect(shopLink).toBeInTheDocument();
     expect(shopLink).toHaveAttribute(
       "href",
-      "https://noblesvillesportscards.example.com",
+      "https://littleredbarn.example.com",
     );
     expect(screen.queryByText("Legacy Shop")).toBeNull();
 
@@ -283,14 +304,11 @@ describe("ReleaseSection", () => {
     const content = container.querySelector(
       "[data-review-name]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-review-type", "lcs");
-    expect(content).toHaveAttribute(
-      "data-review-id",
-      "noblesville-sports-cards",
-    );
+    expect(content).toHaveAttribute("data-review-type", "golden-age");
+    expect(content).toHaveAttribute("data-review-id", "little-red-barn");
     expect(content).toHaveAttribute(
       "data-review-name",
-      "Noblesville Sports Cards",
+      "Little Red Barn Antiques",
     );
     expect(content).toHaveAttribute("data-review-rating", "9.2/10");
   });
@@ -541,15 +559,240 @@ describe("ReleaseSection", () => {
     );
   });
 
+  it("renders USPS details from DB-backed metadata with the total visit count", async () => {
+    getUspsSummaryFromDbMock.mockResolvedValue({
+      citySlug: "menasha",
+      cityName: "Menasha",
+      state: "Wisconsin",
+      rating: 8.7,
+      visitCount: 4,
+      firstVisitDate: "2026-04-01",
+      latestVisitDate: "2026-04-05",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      usps: " menasha ",
+    });
+    const { container } = render(ui);
+
+    expect(getUspsSummaryFromDbMock).toHaveBeenCalledWith("menasha");
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent === "Menasha, Wisconsin (8.7/10; 4 visits)",
+      ),
+    ).toBeInTheDocument();
+
+    const uspsLink = screen.getByText("Menasha, Wisconsin").closest("a");
+    expect(uspsLink).toBeInTheDocument();
+    expect(uspsLink).toHaveAttribute("href", "/cardattack/usps/menasha");
+
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper.className).toContain("border-solid");
+    expect(wrapper.className).toContain("border-[var(--blue)]");
+
+    const content = container.querySelector(
+      "[data-usps-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-usps-id", "menasha");
+    expect(content).toHaveAttribute("data-usps-name", "Menasha, Wisconsin");
+    expect(content).toHaveAttribute("data-usps-rating", "8.7/10");
+    expect(content).toHaveAttribute("data-usps-visit-count", "4");
+    expect(content).toHaveAttribute(
+      "data-usps-route",
+      "/cardattack/usps/menasha",
+    );
+  });
+
+  it("renders USPS details alongside release visuals when releaseId and usps are both passed", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "55",
+      release_name: "International Bricks",
+      release_type: "year",
+      status: "released",
+      release_date: "2026-04-18",
+      label: "International Bricks",
+    });
+    getUspsSummaryFromDbMock.mockResolvedValue({
+      citySlug: "appleton-sdc",
+      cityName: "Appleton",
+      state: "Wisconsin",
+      rating: 9.1,
+      visitCount: 6,
+      firstVisitDate: "2026-03-01",
+      latestVisitDate: "2026-04-18",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "55",
+      usps: " appleton-sdc ",
+    });
+    const { container } = render(ui);
+
+    expect(getScrollMock).toHaveBeenCalledWith("55");
+    expect(getUspsSummaryFromDbMock).toHaveBeenCalledWith("appleton-sdc");
+
+    const tab = container.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab).toHaveAttribute("href", "/mark2/shaolin-scrolls/55");
+    expect(tab).toHaveTextContent("International Bricks");
+
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent === "Appleton, Wisconsin (9.1/10; 6 visits)",
+      ),
+    ).toBeInTheDocument();
+
+    const uspsLink = screen.getByText("Appleton, Wisconsin").closest("a");
+    expect(uspsLink).toBeInTheDocument();
+    expect(uspsLink).toHaveAttribute("href", "/cardattack/usps/appleton-sdc");
+
+    const content = container.querySelector(
+      "[data-usps-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-release-name", "International Bricks");
+    expect(content).toHaveAttribute("data-usps-id", "appleton-sdc");
+    expect(content).toHaveAttribute("data-usps-name", "Appleton, Wisconsin");
+    expect(content).toHaveAttribute("data-usps-rating", "9.1/10");
+    expect(content).toHaveAttribute("data-usps-visit-count", "6");
+  });
+
+  it("renders LCS details from DB-backed metadata with an internal route link", async () => {
+    getLcsSummaryFromDbMock.mockResolvedValue({
+      slug: "walgreens-college",
+      name: "Walgreens: College",
+      city: "Appleton",
+      state: "WI",
+      rating: 6.5,
+      url: "https://www.walgreens.com/",
+      visitCount: 1,
+      firstVisitDate: "2026-03-28",
+      latestVisitDate: "2026-03-28",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      lcs: " walgreens-college ",
+    });
+    const { container } = render(ui);
+
+    expect(getLcsSummaryFromDbMock).toHaveBeenCalledWith("walgreens-college");
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent ===
+          "Walgreens: College; Appleton, WI (6.5/10; 1 visit)",
+      ),
+    ).toBeInTheDocument();
+
+    const lcsLink = screen
+      .getByText("Walgreens: College; Appleton, WI")
+      .closest("a");
+    expect(lcsLink).toBeInTheDocument();
+    expect(lcsLink).toHaveAttribute(
+      "href",
+      "/cardattack/lcs/walgreens-college",
+    );
+
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper.className).toContain("border-solid");
+    expect(wrapper.className).toContain("border-[var(--blue)]");
+
+    const content = container.querySelector("[data-lcs-name]") as HTMLDivElement;
+    expect(content).toHaveAttribute("data-lcs-slug", "walgreens-college");
+    expect(content).toHaveAttribute("data-lcs-name", "Walgreens: College");
+    expect(content).toHaveAttribute("data-lcs-city", "Appleton");
+    expect(content).toHaveAttribute("data-lcs-state", "WI");
+    expect(content).toHaveAttribute("data-lcs-rating", "6.5/10");
+    expect(content).toHaveAttribute("data-lcs-visit-count", "1");
+    expect(content).toHaveAttribute(
+      "data-lcs-route",
+      "/cardattack/lcs/walgreens-college",
+    );
+    expect(content).toHaveAttribute("data-lcs-url", "https://www.walgreens.com/");
+  });
+
+  it("renders LCS details alongside release visuals when releaseId and lcs are both passed", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "55",
+      release_name: "International Bricks",
+      release_type: "year",
+      status: "released",
+      release_date: "2026-04-18",
+      label: "International Bricks",
+    });
+    getLcsSummaryFromDbMock.mockResolvedValue({
+      slug: "walgreens-college",
+      name: "Walgreens: College",
+      city: "Appleton",
+      state: "WI",
+      rating: 6.5,
+      visitCount: 1,
+      firstVisitDate: "2026-03-28",
+      latestVisitDate: "2026-03-28",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      releaseId: "55",
+      lcs: "walgreens-college",
+    });
+    const { container } = render(ui);
+
+    expect(getScrollMock).toHaveBeenCalledWith("55");
+    expect(getLcsSummaryFromDbMock).toHaveBeenCalledWith("walgreens-college");
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent ===
+          "Walgreens: College; Appleton, WI (6.5/10; 1 visit)",
+      ),
+    ).toBeInTheDocument();
+
+    const tab = container.querySelector(".absolute") as HTMLAnchorElement;
+    expect(tab).toBeInTheDocument();
+    expect(tab).toHaveAttribute("href", "/mark2/shaolin-scrolls/55");
+
+    const content = container.querySelector("[data-lcs-name]") as HTMLDivElement;
+    expect(content).toHaveAttribute("data-release-name", "International Bricks");
+    expect(content).toHaveAttribute("data-lcs-slug", "walgreens-college");
+  });
+
+  it("supports minimal lcs props when DB metadata is missing", async () => {
+    const ui = await ReleaseSection({
+      ...baseProps,
+      lcs: "walgreens-college",
+    });
+    const { container } = render(ui);
+
+    const lcsLink = screen.getByRole("link", { name: "walgreens-college" });
+    expect(lcsLink).toBeInTheDocument();
+    expect(lcsLink).toHaveAttribute(
+      "href",
+      "/cardattack/lcs/walgreens-college",
+    );
+
+    const content = container.querySelector("[data-lcs-name]") as HTMLDivElement;
+    expect(content).toHaveAttribute("data-lcs-slug", "walgreens-college");
+    expect(content).toHaveAttribute("data-lcs-name", "walgreens-college");
+    expect(content).not.toHaveAttribute("data-lcs-rating");
+    expect(content).not.toHaveAttribute("data-lcs-visit-count");
+  });
+
   it("applies rainbowColour to eligible non-release sections", async () => {
     const rainbowColour = "#00FF00";
     const ui = await ReleaseSection({
       ...baseProps,
       rainbowColour,
       review: {
-        type: "lcs",
-        id: "noblesville-sports-cards",
-        name: "Noblesville Sports Cards",
+        type: "save-point",
+        id: "chrono-trigger",
+        name: "Chrono Trigger",
         rating: "9.2/10",
       },
     });
@@ -579,9 +822,28 @@ describe("ReleaseSection", () => {
       rainbowColour,
     );
 
-    const divider = container.querySelector("hr") as HTMLHRElement;
-    expect(divider).toBeInTheDocument();
-    expect(divider).toHaveStyle({ backgroundColor: toRgb(rainbowColour) });
+    expect(container.querySelector("hr")).toBeNull();
+  });
+
+  it("does not render a duplicate bottom divider for bordered USPS sections", async () => {
+    getUspsSummaryFromDbMock.mockResolvedValue({
+      citySlug: "menasha",
+      cityName: "Menasha",
+      state: "Wisconsin",
+      rating: 10,
+      visitCount: 1,
+      firstVisitDate: "2026-04-01",
+      latestVisitDate: "2026-04-01",
+    });
+
+    const ui = await ReleaseSection({
+      ...baseProps,
+      usps: "menasha",
+    });
+    const { container } = render(ui);
+
+    expect(container.querySelector("div.rounded-lg")).toBeInTheDocument();
+    expect(container.querySelector("hr")).toBeNull();
   });
 
   it("wraps content with a release container and link tab when releaseId is provided", async () => {
@@ -864,6 +1126,33 @@ describe("ReleaseSection", () => {
         },
       }),
     ).rejects.toThrow("either review or bricks");
+  });
+
+  it("throws when both review and usps are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        review: {
+          type: "table-schema" as const,
+          id: "1",
+          name: "Pizza Shack",
+          rating: "9.0/10",
+        },
+        usps: "menasha",
+      }),
+    ).rejects.toThrow("either review or usps");
+  });
+
+  it("throws when both usps and lcs are passed", async () => {
+    await expect(
+      // @ts-expect-error - runtime guard should reject mutually exclusive props.
+      ReleaseSection({
+        ...baseProps,
+        usps: "menasha",
+        lcs: "walgreens-college",
+      }),
+    ).rejects.toThrow("either usps or lcs");
   });
 
   it("throws when both releaseId and bricks are passed", async () => {

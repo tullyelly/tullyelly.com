@@ -4,39 +4,61 @@ jest.mock("contentlayer/generated", () => ({
   allPosts: [],
 }));
 
+const getLcsSummaryFromDbMock = jest.fn();
+const listLcsDaysFromDbMock = jest.fn();
+const listLcsSummariesFromDbMock = jest.fn();
+
+jest.mock("@/lib/lcs-db", () => ({
+  getLcsSummaryFromDb: (...args: unknown[]) => getLcsSummaryFromDbMock(...args),
+  listLcsDaysFromDb: (...args: unknown[]) => listLcsDaysFromDbMock(...args),
+  listLcsSummariesFromDb: (...args: unknown[]) =>
+    listLcsSummariesFromDbMock(...args),
+}));
+
 import {
   extractLcsSectionsWithOffsets,
-  getAllLcsSummaries,
-  getLcsIdAttribute,
+  getLcsAttribute,
+  getLcsNarrativeDays,
   getLcsPageData,
   getLcsSections,
-  summarizeLcsSections,
-} from "@/lib/lcs";
+  listLcsSummaries,
+} from "@/lib/lcs-content";
 
-describe("getLcsIdAttribute", () => {
-  it("returns the normalized lcs id attribute format", () => {
-    expect(getLcsIdAttribute(" indy-card-exchange ")).toBe(
-      'review={{ type: "lcs", id: "indy-card-exchange" }}',
+beforeEach(() => {
+  getLcsSummaryFromDbMock.mockReset();
+  listLcsDaysFromDbMock.mockReset();
+  listLcsSummariesFromDbMock.mockReset();
+
+  getLcsSummaryFromDbMock.mockResolvedValue(null);
+  listLcsDaysFromDbMock.mockResolvedValue([]);
+  listLcsSummariesFromDbMock.mockResolvedValue([]);
+});
+
+describe("getLcsAttribute", () => {
+  it("returns the normalized lcs attribute format", () => {
+    expect(getLcsAttribute(" Indy Card Exchange ")).toBe(
+      'lcs="indy-card-exchange"',
     );
   });
 });
 
 describe("extractLcsSectionsWithOffsets", () => {
-  it("extracts sections with lcs review objects and ignores non-lcs reviews", () => {
-    const blockA = `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange", name: "Indy Card Exchange", rating: "8.7/10" }}>\n  Day one\n</ReleaseSection>`;
-    const blockB = `<ReleaseSection alterEgo="cardattack" review={{ type: 'lcs', id: "iconic-sports-cards", name: 'Iconic Sports Cards', rating: '8.5' }}>\n  Day two\n</ReleaseSection>`;
-    const blockC = `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange", name: "Indy Card Exchange", rating: "8.9/10" }}>\n  Day three\n</ReleaseSection>`;
-    const blockD = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: "pizza-shack", name: "Pizza Shack", rating: "9.2" }}>\n  Skip\n</ReleaseSection>`;
+  it("extracts lcs-tagged sections and ignores shared review props", () => {
+    const blockA = `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">\n  Day one\n</ReleaseSection>`;
+    const blockB = `<ReleaseSection alterEgo="cardattack" lcs='iconic-sports-cards'>\n  Day two\n</ReleaseSection>`;
+    const blockC = `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">\n  Day three\n</ReleaseSection>`;
+    const blockD = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "golden-age", id: "legacy-review-prop" }}>\n  Ignore me\n</ReleaseSection>`;
     const raw = `${blockA}\n\n${blockB}\n\n${blockC}\n\n${blockD}`;
 
-    const sections = extractLcsSectionsWithOffsets(raw, "indy-card-exchange");
+    const sections = extractLcsSectionsWithOffsets(raw, {
+      slug: "indy-card-exchange",
+    });
 
     expect(sections).toHaveLength(2);
     expect(sections[0]?.mdx).toBe(blockA);
-    expect(sections[0]?.lcsName).toBe("Indy Card Exchange");
-    expect(sections[0]?.lcsRating).toBe("8.7/10");
+    expect(sections[0]?.slug).toBe("indy-card-exchange");
     expect(sections[1]?.mdx).toBe(blockC);
-    expect(sections[1]?.lcsId).toBe("indy-card-exchange");
+    expect(sections[1]?.slug).toBe("indy-card-exchange");
   });
 });
 
@@ -49,7 +71,7 @@ describe("getLcsSections", () => {
         url: "/shaolin/later-visit",
         date: "2026-02-16",
         body: {
-          raw: `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange", name: "Indy Card Exchange", rating: "8.9/10" }}>Later</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">Later</ReleaseSection>`,
         },
       },
       {
@@ -58,7 +80,7 @@ describe("getLcsSections", () => {
         url: "/shaolin/earlier-visit",
         date: "2026-02-15",
         body: {
-          raw: `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange", name: "Indy Card Exchange", rating: "8.7/10" }}>Earlier</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">Earlier</ReleaseSection>`,
         },
       },
     ];
@@ -66,115 +88,161 @@ describe("getLcsSections", () => {
     const sections = getLcsSections("indy-card-exchange", posts);
 
     expect(sections).toHaveLength(2);
+    expect(sections[0]?.slug).toBe("indy-card-exchange");
     expect(sections[0]?.postSlug).toBe("earlier-visit");
     expect(sections[1]?.postSlug).toBe("later-visit");
   });
 });
 
-describe("summarizeLcsSections", () => {
-  it("parses numeric ratings, ignores invalid ratings, and rounds to one decimal", () => {
-    const sections = [
+describe("getLcsNarrativeDays", () => {
+  it("groups chronicle sections into DB-backed visit-day buckets", async () => {
+    listLcsDaysFromDbMock.mockResolvedValue([
+      { visitDate: "2026-02-14" },
+      { visitDate: "2026-02-16" },
+      { visitDate: "2026-02-17" },
+    ]);
+
+    const posts = [
       {
-        lcsId: "indy-card-exchange",
-        postSlug: "a",
-        postUrl: "/shaolin/a",
-        postDate: "2026-02-14",
-        postTitle: "A",
-        lcsName: "Indy Card Exchange",
-        lcsUrl: "https://indycardexchange.com/",
-        lcsRating: "8.7",
-        mdx: "<ReleaseSection />",
+        slug: "indy-day-one",
+        title: "Indy Day One",
+        url: "/shaolin/indy-day-one",
+        date: "2026-02-14",
+        body: {
+          raw: [
+            `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">One</ReleaseSection>`,
+            "",
+            `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">Two</ReleaseSection>`,
+          ].join("\n"),
+        },
       },
       {
-        lcsId: "indy-card-exchange",
-        postSlug: "b",
-        postUrl: "/shaolin/b",
-        postDate: "2026-02-15",
-        postTitle: "B",
-        lcsName: "Indy Card Exchange",
-        lcsUrl: "https://indycardexchange.com/",
-        lcsRating: "8.9/10",
-        mdx: "<ReleaseSection />",
+        slug: "indy-day-two",
+        title: "Indy Day Two",
+        url: "/shaolin/indy-day-two",
+        date: "2026-02-16",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">Three</ReleaseSection>`,
+        },
       },
       {
-        lcsId: "indy-card-exchange",
-        postSlug: "c",
-        postUrl: "/shaolin/c",
-        postDate: "2026-02-16",
-        postTitle: "C",
-        lcsName: "Indy Card Exchange",
-        lcsUrl: "https://indycardexchange.com/",
-        lcsRating: "unknown",
-        mdx: "<ReleaseSection />",
+        slug: "other-shop",
+        title: "Other Shop",
+        url: "/shaolin/other-shop",
+        date: "2026-02-16",
+        body: {
+          raw: `<ReleaseSection alterEgo="cardattack" lcs="iconic-sports-cards">Ignore me</ReleaseSection>`,
+        },
       },
     ];
 
-    const summary = summarizeLcsSections(sections);
+    await expect(getLcsNarrativeDays("indy-card-exchange", posts)).resolves.toEqual([
+      {
+        visitDate: "2026-02-14",
+        sections: [
+          expect.objectContaining({
+            postSlug: "indy-day-one",
+            postDate: "2026-02-14",
+            sectionOrdinal: 1,
+          }),
+          expect.objectContaining({
+            postSlug: "indy-day-one",
+            postDate: "2026-02-14",
+            sectionOrdinal: 2,
+          }),
+        ],
+        sourcePosts: [
+          {
+            slug: "indy-day-one",
+            title: "Indy Day One",
+            url: "/shaolin/indy-day-one",
+            date: "2026-02-14",
+          },
+        ],
+      },
+      {
+        visitDate: "2026-02-16",
+        sections: [
+          expect.objectContaining({
+            postSlug: "indy-day-two",
+            postDate: "2026-02-16",
+            sectionOrdinal: 1,
+          }),
+        ],
+        sourcePosts: [
+          {
+            slug: "indy-day-two",
+            title: "Indy Day Two",
+            url: "/shaolin/indy-day-two",
+            date: "2026-02-16",
+          },
+        ],
+      },
+      {
+        visitDate: "2026-02-17",
+        sections: [],
+        sourcePosts: [],
+      },
+    ]);
 
-    expect(summary.lcsName).toBe("Indy Card Exchange");
-    expect(summary.lcsUrl).toBe("https://indycardexchange.com/");
-    expect(summary.averageRating).toBe(8.8);
-    expect(summary.visitCount).toBe(3);
+    expect(listLcsDaysFromDbMock).toHaveBeenCalledWith("indy-card-exchange");
   });
 });
 
-describe("getAllLcsSummaries", () => {
-  it("groups by lcsId and sorts by latest post date descending", async () => {
-    const posts = [
+describe("listLcsSummaries", () => {
+  it("returns the DB-backed list for local card shops", async () => {
+    listLcsSummariesFromDbMock.mockResolvedValue([
       {
-        slug: "indy-early",
-        title: "Indy Early",
-        url: "/shaolin/indy-early",
-        date: "2026-02-14",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange", rating: "8.7" }}>Visit</ReleaseSection>`,
-        },
+        slug: "indy-card-exchange",
+        name: "Indy Card Exchange",
+        city: "Indianapolis",
+        state: "IN",
+        rating: 8.7,
+        visitCount: 2,
+        latestVisitDate: "2026-02-16",
       },
-      {
-        slug: "iconic-late",
-        title: "Iconic Late",
-        url: "/shaolin/iconic-late",
-        date: "2026-02-17",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "iconic-sports-cards", name: "Iconic Sports Cards", rating: "8.5/10" }}>Visit</ReleaseSection>`,
-        },
-      },
-      {
-        slug: "indy-late",
-        title: "Indy Late",
-        url: "/shaolin/indy-late",
-        date: "2026-02-16",
-        body: {
-          raw: `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange", name: "Indy Card Exchange", rating: "8.9/10" }}>Visit</ReleaseSection>`,
-        },
-      },
-    ];
+    ]);
 
-    const summaries = await getAllLcsSummaries(posts);
-
-    expect(summaries).toHaveLength(2);
-    expect(summaries[0]?.lcsId).toBe("iconic-sports-cards");
-    expect(summaries[0]?.lcsName).toBe("Iconic Sports Cards");
-    expect(summaries[0]?.averageRating).toBe(8.5);
-    expect(summaries[0]?.visitCount).toBe(1);
-    expect(summaries[1]?.lcsId).toBe("indy-card-exchange");
-    expect(summaries[1]?.lcsName).toBe("Indy Card Exchange");
-    expect(summaries[1]?.averageRating).toBe(8.8);
-    expect(summaries[1]?.visitCount).toBe(2);
-    expect(summaries[1]?.latestPostDate).toBe("2026-02-16");
+    await expect(listLcsSummaries()).resolves.toEqual([
+      {
+        slug: "indy-card-exchange",
+        name: "Indy Card Exchange",
+        city: "Indianapolis",
+        state: "IN",
+        rating: 8.7,
+        visitCount: 2,
+        latestVisitDate: "2026-02-16",
+      },
+    ]);
   });
 });
 
 describe("getLcsPageData", () => {
-  it("returns normalized page data for existing lcs ids", async () => {
+  it("merges DB metadata with narrative days derived from chronicle content", async () => {
+    getLcsSummaryFromDbMock.mockResolvedValue({
+      slug: "indy-card-exchange",
+      name: "Indy Card Exchange",
+      city: "Indianapolis",
+      state: "IN",
+      rating: 8.7,
+      url: "https://indycardexchange.com/",
+      firstVisitDate: "2026-02-14",
+      latestVisitDate: "2026-02-16",
+      visitCount: 2,
+    });
+    listLcsDaysFromDbMock.mockResolvedValue([
+      { visitDate: "2026-02-14" },
+      { visitDate: "2026-02-16" },
+    ]);
+
     const posts = [
       {
-        slug: "indy",
-        title: "Indy",
-        url: "/shaolin/indy",
+        slug: "indy-day-one",
+        title: "Indy Day One",
+        url: "/shaolin/indy-day-one",
         date: "2026-02-14",
         body: {
-          raw: `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange", name: "Indy Card Exchange", url: "https://indycardexchange.com/", rating: "8.7/10" }}>Visit</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">Visit</ReleaseSection>`,
         },
       },
     ];
@@ -182,15 +250,45 @@ describe("getLcsPageData", () => {
     const data = await getLcsPageData("indy-card-exchange", posts);
 
     expect(data).not.toBeNull();
-    expect(data?.lcsId).toBe("indy-card-exchange");
-    expect(data?.lcsName).toBe("Indy Card Exchange");
-    expect(data?.lcsUrl).toBe("https://indycardexchange.com/");
-    expect(data?.summary.averageRating).toBe(8.7);
-    expect(data?.summary.visitCount).toBe(1);
-    expect(data?.sections).toHaveLength(1);
+    expect(data).toEqual({
+      slug: "indy-card-exchange",
+      name: "Indy Card Exchange",
+      city: "Indianapolis",
+      state: "IN",
+      rating: 8.7,
+      url: "https://indycardexchange.com/",
+      firstVisitDate: "2026-02-14",
+      latestVisitDate: "2026-02-16",
+      visitCount: 2,
+      days: [
+        {
+          visitDate: "2026-02-14",
+          sections: [
+            expect.objectContaining({
+              postSlug: "indy-day-one",
+              postDate: "2026-02-14",
+              mdx: expect.stringContaining("Visit"),
+            }),
+          ],
+          sourcePosts: [
+            {
+              slug: "indy-day-one",
+              title: "Indy Day One",
+              url: "/shaolin/indy-day-one",
+              date: "2026-02-14",
+            },
+          ],
+        },
+        {
+          visitDate: "2026-02-16",
+          sections: [],
+          sourcePosts: [],
+        },
+      ],
+    });
   });
 
-  it("returns null when no sections exist for the id", async () => {
+  it("returns null when no DB summary exists for the slug", async () => {
     const data = await getLcsPageData("404", []);
     expect(data).toBeNull();
   });

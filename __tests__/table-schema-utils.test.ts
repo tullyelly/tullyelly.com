@@ -26,7 +26,7 @@ describe("extractTableSchemaSectionsWithOffsets", () => {
     const blockA = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: 1, name: "Pizza Shack", url: "https://pizza-shack.example.com", rating: "8.5/10" }}>\n  Day one\n</ReleaseSection>`;
     const blockB = `<ReleaseSection alterEgo="unclejimmy" review={{ type: 'table-schema', id: "2", name: 'Burger Barn', rating: '7.0' }}>\n  Day two\n</ReleaseSection>`;
     const blockC = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "table-schema", id: "1", name: "Pizza Shack", rating: "9/10" }}>\n  Day three\n</ReleaseSection>`;
-    const blockD = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "lcs", id: "not-a-restaurant", name: "Card Shop", rating: "9.9" }}>\n  Skip\n</ReleaseSection>`;
+    const blockD = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "golden-age", id: "little-red-barn", name: "Little Red Barn Antiques", rating: "9.9" }}>\n  Skip\n</ReleaseSection>`;
     const raw = `${blockA}\n\n${blockB}\n\n${blockC}\n\n${blockD}`;
 
     const sections = extractTableSchemaSectionsWithOffsets(raw, "1");
