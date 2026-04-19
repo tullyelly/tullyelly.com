@@ -26,7 +26,7 @@ describe("extractSavePointSectionsWithOffsets", () => {
     const blockA = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "save-point", id: "mewgenics", name: "Mewgenics", url: "https://mewgenics.example.com", rating: "9.5/10" }}>\n  Day one\n</ReleaseSection>`;
     const blockB = `<ReleaseSection alterEgo="unclejimmy" review={{ type: 'save-point', id: "chrono-trigger", name: 'Chrono Trigger', rating: '10/10' }}>\n  Day two\n</ReleaseSection>`;
     const blockC = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "save-point", id: "mewgenics", name: "Mewgenics", rating: "9.0/10" }}>\n  Day three\n</ReleaseSection>`;
-    const blockD = `<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "iconic-sports-cards", name: "Iconic Sports Cards", rating: "8.5" }}>\n  Skip\n</ReleaseSection>`;
+    const blockD = `<ReleaseSection alterEgo="unclejimmy" review={{ type: "golden-age", id: "little-red-barn", name: "Little Red Barn Antiques", rating: "8.5" }}>\n  Skip\n</ReleaseSection>`;
     const raw = `${blockA}\n\n${blockB}\n\n${blockC}\n\n${blockD}`;
 
     const sections = extractSavePointSectionsWithOffsets(raw, "mewgenics");

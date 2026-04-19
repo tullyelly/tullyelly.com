@@ -1,18 +1,26 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import ReviewDetailPage from "@/components/reviews/ReviewDetailPage";
-import { getReviewPageData } from "@/lib/review-content";
-import { getReviewRouteConfig } from "@/lib/review-route-config";
-import { getReviewDetailMetadata } from "@/lib/review-route-metadata";
+import LcsDetailPage from "@/components/lcs/LcsDetailPage";
+import { getLcsPageData } from "@/lib/lcs-content";
+import { getLcsRouteConfig } from "@/lib/lcs-route-config";
+import { getLcsDetailMetadata } from "@/lib/lcs-route-metadata";
+import { normalizeLcsSlug } from "@/lib/lcs-types";
 
 type Params = { id: string };
 
-const reviewType = "lcs" as const;
-const routeConfig = getReviewRouteConfig(reviewType);
+const routeConfig = getLcsRouteConfig();
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+function getNormalizedLcsSlug(id: string): string | null {
+  try {
+    return normalizeLcsSlug(id);
+  } catch {
+    return null;
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -20,8 +28,14 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const review = await getReviewPageData(reviewType, id);
-  return getReviewDetailMetadata(reviewType, id, review);
+  const slug = getNormalizedLcsSlug(id);
+
+  if (!slug) {
+    return getLcsDetailMetadata(id, null);
+  }
+
+  const lcs = await getLcsPageData(slug);
+  return getLcsDetailMetadata(slug, lcs);
 }
 
 export default async function CardattackLcsIdPage({
@@ -30,10 +44,17 @@ export default async function CardattackLcsIdPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const review = await getReviewPageData(reviewType, id);
-  if (!review) {
+  const slug = getNormalizedLcsSlug(id);
+
+  if (!slug) {
     notFound();
   }
 
-  return <ReviewDetailPage config={routeConfig} review={review} />;
+  const lcs = await getLcsPageData(slug);
+
+  if (!lcs) {
+    notFound();
+  }
+
+  return <LcsDetailPage config={routeConfig} lcs={lcs} />;
 }

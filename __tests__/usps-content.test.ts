@@ -52,7 +52,7 @@ describe("extractUspsSectionsWithOffsets", () => {
     const raw = [
       '<ReleaseSection alterEgo="cardattack" releaseId="55" usps="menasha">First visit</ReleaseSection>',
       "",
-      '<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange" }}>Ignore me</ReleaseSection>',
+      '<ReleaseSection alterEgo="unclejimmy" review={{ type: "golden-age", id: "little-red-barn" }}>Ignore me</ReleaseSection>',
       "",
       '<ReleaseSection alterEgo="cardattack" usps="appleton">Other city</ReleaseSection>',
       "",

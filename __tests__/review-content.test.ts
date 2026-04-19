@@ -50,7 +50,7 @@ describe("extractReviewSectionsWithOffsets", () => {
       "",
       '<ReleaseSection alterEgo="unclejimmy" review={{ type: "golden-age", id: "little-red-barn" }}>Antiques</ReleaseSection>',
       "",
-      '<ReleaseSection alterEgo="cardattack" review={{ type: "lcs", id: "indy-card-exchange" }}>Cards</ReleaseSection>',
+      '<ReleaseSection alterEgo="unclejimmy" review={{ type: "save-point", id: "chrono-trigger" }}>Games</ReleaseSection>',
     ].join("\n");
 
     const sections = extractReviewSectionsWithOffsets(raw);
@@ -73,8 +73,8 @@ describe("extractReviewSectionsWithOffsets", () => {
         sectionOrdinal: 2,
       },
       {
-        reviewType: "lcs",
-        externalId: "indy-card-exchange",
+        reviewType: "save-point",
+        externalId: "chrono-trigger",
         sectionOrdinal: 3,
       },
     ]);

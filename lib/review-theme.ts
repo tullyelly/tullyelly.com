@@ -11,15 +11,6 @@ const baseReviewThemeVars: CSSProperties = {
 };
 
 export const reviewPageThemeVarsByType: Record<ReviewType, CSSProperties> = {
-  lcs: {
-    ...baseReviewThemeVars,
-    ["--review-accent" as string]: "var(--blue)",
-    ["--review-accent-deep" as string]: "var(--blue-contrast)",
-    ["--review-accent-soft" as string]: "color-mix(in srgb, var(--blue) 12%, white)",
-    ["--review-accent-wash" as string]: "color-mix(in srgb, var(--blue) 8%, white)",
-    ["--review-border" as string]: "color-mix(in srgb, var(--blue) 18%, white)",
-    ["--review-pill-fg" as string]: "var(--white)",
-  },
   "table-schema": {
     ...baseReviewThemeVars,
     ["--review-accent" as string]: "var(--table-schema-spice)",
@@ -64,18 +55,6 @@ export const reviewPageThemeVarsByType: Record<ReviewType, CSSProperties> = {
 };
 
 export const reviewTableThemeStyleByType: Record<ReviewType, CSSProperties> = {
-  lcs: {
-    ...reviewPageThemeVarsByType.lcs,
-    ["--table-frame-border" as string]: "var(--review-accent)",
-    ["--table-head-background" as string]:
-      "linear-gradient(135deg, var(--review-accent) 0%, var(--review-accent-deep) 100%)",
-    ["--table-head-text" as string]: "var(--white)",
-    ["--table-row-even-bg" as string]: "var(--review-accent-wash)",
-    ["--table-row-odd-bg" as string]: "var(--review-surface)",
-    ["--table-row-hover-filter" as string]: "brightness(0.98)",
-    ["--table-row-divider" as string]:
-      "color-mix(in srgb, var(--review-accent) 14%, transparent)",
-  },
   "table-schema": {
     ...reviewPageThemeVarsByType["table-schema"],
     ["--table-frame-border" as string]: "var(--review-accent)",
