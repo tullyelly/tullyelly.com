@@ -1,14 +1,15 @@
-export function normalizeSetCollectorId(value: string | number): number {
-  const raw = String(value).trim();
+export function normalizeSetCollectorSlug(value: string | number): string {
+  const normalized = String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+/g, "")
+    .replace(/\/+$/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/g, "")
+    .replace(/-+$/g, "");
 
-  if (!/^\d+$/.test(raw)) {
-    throw new Error("Set Collector lookup: id must be a positive integer.");
-  }
-
-  const normalized = Number.parseInt(raw, 10);
-
-  if (!Number.isSafeInteger(normalized) || normalized <= 0) {
-    throw new Error("Set Collector lookup: id must be a positive integer.");
+  if (!normalized) {
+    throw new Error("Set Collector lookup: slug must be a non-empty string.");
   }
 
   return normalized;

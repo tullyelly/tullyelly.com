@@ -1,13 +1,14 @@
 import "server-only";
 
 import {
+  getSetCollectorSummaryForDateFromDb,
   getSetCollectorSummaryFromDb,
   listSetCollectorSnapshotsFromDb,
   listSetCollectorSummariesFromDb,
   type SetCollectorSnapshot as SetCollectorDbSnapshot,
   type SetCollectorSummary as SetCollectorDbSummary,
 } from "@/lib/set-collector-db";
-import { normalizeSetCollectorId } from "@/lib/set-collector-types";
+import { normalizeSetCollectorSlug } from "@/lib/set-collector-types";
 
 export type SetCollectorSummaryRow = SetCollectorDbSummary;
 export type SetCollectorSnapshotRow = SetCollectorDbSnapshot;
@@ -16,9 +17,9 @@ export type SetCollectorPageData = SetCollectorSummaryRow & {
   snapshots: SetCollectorSnapshotRow[];
 };
 
-export function getSetCollectorDetailHref(id: string | number): string {
-  const normalizedId = normalizeSetCollectorId(id);
-  return `/cardattack/set-collector/${encodeURIComponent(String(normalizedId))}`;
+export function getSetCollectorDetailHref(slug: string | number): string {
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
+  return `/cardattack/set-collector/${encodeURIComponent(normalizedSlug)}`;
 }
 
 export async function listSetCollectorSummaryRows(): Promise<
@@ -28,26 +29,29 @@ export async function listSetCollectorSummaryRows(): Promise<
 }
 
 export async function getSetCollectorSummaryRow(
-  id: string | number,
+  slug: string | number,
+  snapshotDate?: string,
 ): Promise<SetCollectorSummaryRow | null> {
-  const normalizedId = normalizeSetCollectorId(id);
-  return getSetCollectorSummaryFromDb(normalizedId);
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
+  return snapshotDate
+    ? getSetCollectorSummaryForDateFromDb(normalizedSlug, snapshotDate)
+    : getSetCollectorSummaryFromDb(normalizedSlug);
 }
 
 export async function listSetCollectorSnapshotRows(
-  id: string | number,
+  slug: string | number,
 ): Promise<SetCollectorSnapshotRow[]> {
-  const normalizedId = normalizeSetCollectorId(id);
-  return listSetCollectorSnapshotsFromDb(normalizedId);
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
+  return listSetCollectorSnapshotsFromDb(normalizedSlug);
 }
 
 export async function getSetCollectorPageData(
-  id: string | number,
+  slug: string | number,
 ): Promise<SetCollectorPageData | null> {
-  const normalizedId = normalizeSetCollectorId(id);
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
   const [summary, snapshots] = await Promise.all([
-    getSetCollectorSummaryFromDb(normalizedId),
-    listSetCollectorSnapshotsFromDb(normalizedId),
+    getSetCollectorSummaryFromDb(normalizedSlug),
+    listSetCollectorSnapshotsFromDb(normalizedSlug),
   ]);
 
   if (!summary) {

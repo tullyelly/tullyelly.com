@@ -59,6 +59,7 @@ describe("set collector route pages", () => {
     listSetCollectorSummaryRowsMock.mockResolvedValue([
       {
         id: 12,
+        setSlug: "1991-92-upper-deck",
         setName: "1991-92 Upper Deck",
         releaseYear: 1991,
         manufacturer: "Upper Deck",
@@ -87,12 +88,13 @@ describe("set collector route pages", () => {
     ).toBeInTheDocument();
     expect(
       screen.getAllByRole("link", { name: "1991-92 Upper Deck" })[0],
-    ).toHaveAttribute("href", "/cardattack/set-collector/12");
+    ).toHaveAttribute("href", "/cardattack/set-collector/1991-92-upper-deck");
   });
 
   it("builds detail metadata from DB-backed page data", async () => {
     getSetCollectorPageDataMock.mockResolvedValue({
       id: 12,
+      setSlug: "1991-92-upper-deck",
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
@@ -122,33 +124,38 @@ describe("set collector route pages", () => {
     });
 
     const metadata = await generateSetCollectorDetailMetadata({
-      params: Promise.resolve({ id: "12" }),
+      params: Promise.resolve({ id: " /1991 92 Upper Deck/ " }),
     });
 
-    expect(getSetCollectorPageDataMock).toHaveBeenCalledWith(12);
+    expect(getSetCollectorPageDataMock).toHaveBeenCalledWith(
+      "1991-92-upper-deck",
+    );
     expect(metadata.title).toBe("1991-92 Upper Deck | Set Collector");
     expect(metadata.description).toBe(
       "1991 Upper Deck 1991-92 Upper Deck. Set size: 500 cards. 456 of 500 cards; 91.2% complete. Latest snapshot: 2026-04-10.",
     );
     expect(metadata.alternates?.canonical).toBe(
-      "https://tullyelly.com/cardattack/set-collector/12",
+      "https://tullyelly.com/cardattack/set-collector/1991-92-upper-deck",
     );
-    expect(metadata.openGraph?.url).toBe("/cardattack/set-collector/12");
+    expect(metadata.openGraph?.url).toBe(
+      "/cardattack/set-collector/1991-92-upper-deck",
+    );
   });
 
-  it("uses defensive detail metadata when the route id is invalid", async () => {
+  it("uses defensive detail metadata when the route slug is invalid", async () => {
     const metadata = await generateSetCollectorDetailMetadata({
-      params: Promise.resolve({ id: "abc" }),
+      params: Promise.resolve({ id: "///" }),
     });
 
     expect(metadata.title).toBe("Set Collector | cardattack vault");
-    expect(metadata.description).toBe("Tracked card set abc detail page.");
+    expect(metadata.description).toBe("Tracked card set /// detail page.");
     expect(getSetCollectorPageDataMock).not.toHaveBeenCalled();
   });
 
   it("renders the detail route from DB-backed page data", async () => {
     getSetCollectorPageDataMock.mockResolvedValue({
       id: 12,
+      setSlug: "1991-92-upper-deck",
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
@@ -189,11 +196,13 @@ describe("set collector route pages", () => {
     });
 
     const ui = await CardattackSetCollectorIdPage({
-      params: Promise.resolve({ id: "12" }),
+      params: Promise.resolve({ id: "1991-92-upper-deck" }),
     });
     render(ui);
 
-    expect(getSetCollectorPageDataMock).toHaveBeenCalledWith(12);
+    expect(getSetCollectorPageDataMock).toHaveBeenCalledWith(
+      "1991-92-upper-deck",
+    );
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(
       screen.getByRole("link", { name: "← Back to Set Collector" }),
@@ -203,10 +212,10 @@ describe("set collector route pages", () => {
     ).toHaveAttribute("href", "/cardattack/tcdb-trades/960943");
   });
 
-  it("throws notFound for invalid route ids", async () => {
+  it("throws notFound for invalid route slugs", async () => {
     await expect(
       CardattackSetCollectorIdPage({
-        params: Promise.resolve({ id: "abc" }),
+        params: Promise.resolve({ id: "///" }),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
@@ -214,16 +223,18 @@ describe("set collector route pages", () => {
     expect(getSetCollectorPageDataMock).not.toHaveBeenCalled();
   });
 
-  it("throws notFound when a valid route id is missing from the DB", async () => {
+  it("throws notFound when a valid route slug is missing from the DB", async () => {
     getSetCollectorPageDataMock.mockResolvedValue(null);
 
     await expect(
       CardattackSetCollectorIdPage({
-        params: Promise.resolve({ id: "12" }),
+        params: Promise.resolve({ id: "1991-92-upper-deck" }),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
-    expect(getSetCollectorPageDataMock).toHaveBeenCalledWith(12);
+    expect(getSetCollectorPageDataMock).toHaveBeenCalledWith(
+      "1991-92-upper-deck",
+    );
     expect(notFoundMock).toHaveBeenCalledTimes(1);
   });
 });

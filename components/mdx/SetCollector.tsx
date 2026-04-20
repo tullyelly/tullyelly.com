@@ -6,11 +6,12 @@ import {
 } from "@/lib/set-collector-content";
 import {
   formatSetCollectorPercentComplete,
-  normalizeSetCollectorId,
+  normalizeSetCollectorSlug,
 } from "@/lib/set-collector-types";
 
 export type SetCollectorProps = {
-  id: string | number;
+  set: string | number;
+  snapshotDate?: string;
 };
 
 const linkClassName = "underline hover:no-underline text-primary";
@@ -27,11 +28,14 @@ function formatLatestProgress(
   return `${cardsOwned}/${totalCards}; ${formatSetCollectorPercentComplete(percentComplete)}`;
 }
 
-export default async function SetCollector({ id }: SetCollectorProps) {
-  let normalizedId: number;
+export default async function SetCollector({
+  set,
+  snapshotDate,
+}: SetCollectorProps) {
+  let normalizedSlug: string;
 
   try {
-    normalizedId = normalizeSetCollectorId(id);
+    normalizedSlug = normalizeSetCollectorSlug(set);
   } catch {
     return null;
   }
@@ -39,9 +43,12 @@ export default async function SetCollector({ id }: SetCollectorProps) {
   let summary: Awaited<ReturnType<typeof getSetCollectorSummaryRow>> = null;
 
   try {
-    summary = await getSetCollectorSummaryRow(normalizedId);
+    summary = await getSetCollectorSummaryRow(normalizedSlug, snapshotDate);
   } catch (error) {
-    console.error(`[set-collector] failed to render set "${normalizedId}"`, error);
+    console.error(
+      `[set-collector] failed to render set "${normalizedSlug}"${snapshotDate ? ` on "${snapshotDate}"` : ""}`,
+      error,
+    );
     return null;
   }
 
@@ -58,25 +65,13 @@ export default async function SetCollector({ id }: SetCollectorProps) {
   return (
     <>
       <Link
-        href={getSetCollectorDetailHref(summary.id)}
+        href={getSetCollectorDetailHref(summary.setSlug)}
         prefetch={false}
         className={linkClassName}
       >
         {summary.setName}
       </Link>
       {latestProgress ? <span>{` (${latestProgress})`}</span> : null}
-      {summary.tcdbTradeId ? (
-        <>
-          <span className="text-muted-foreground">{"; trade "}</span>
-          <Link
-            href={`/cardattack/tcdb-trades/${encodeURIComponent(summary.tcdbTradeId)}`}
-            prefetch={false}
-            className={linkClassName}
-          >
-            {summary.tcdbTradeId}
-          </Link>
-        </>
-      ) : null}
     </>
   );
 }

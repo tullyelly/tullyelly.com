@@ -1,11 +1,13 @@
 import "server-only";
 
+import { asDateString } from "@/lib/dates";
 import { sql } from "@/lib/db";
 import { isNextBuild } from "@/lib/env";
-import { normalizeSetCollectorId } from "@/lib/set-collector-types";
+import { normalizeSetCollectorSlug } from "@/lib/set-collector-types";
 
 type SetCollectorSummaryRow = {
   id: number | string;
+  set_slug: string;
   set_name: string;
   release_year: number | string;
   manufacturer: string;
@@ -37,6 +39,7 @@ export type SetCollectorSnapshotStats = {
 
 export type SetCollectorSummary = {
   id: number;
+  setSlug: string;
   setName: string;
   releaseYear: number;
   manufacturer: string;
@@ -175,6 +178,7 @@ function toSetCollectorSummary(row: SetCollectorSummaryRow): SetCollectorSummary
 
   return {
     id: toInteger(row.id),
+    setSlug: row.set_slug,
     setName: row.set_name,
     releaseYear: toInteger(row.release_year),
     manufacturer: row.manufacturer,
@@ -218,6 +222,7 @@ export async function listSetCollectorSummariesFromDb(): Promise<
     const rows = await sql<SetCollectorSummaryRow>`
       SELECT
         header.id,
+        header.set_slug,
         header.set_name,
         header.release_year,
         header.manufacturer,
@@ -260,14 +265,15 @@ export async function listSetCollectorSummariesFromDb(): Promise<
 }
 
 export async function getSetCollectorSummaryFromDb(
-  id: string | number,
+  slug: string | number,
 ): Promise<SetCollectorSummary | null> {
-  const normalizedId = normalizeSetCollectorId(id);
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
 
   return withSetCollectorDbFallback(async () => {
     const [row] = await sql<SetCollectorSummaryRow>`
       SELECT
         header.id,
+        header.set_slug,
         header.set_name,
         header.release_year,
         header.manufacturer,
@@ -299,7 +305,56 @@ export async function getSetCollectorSummaryFromDb(
         FROM dojo.set_collector_snapshot AS snapshot
         WHERE snapshot.set_collector_header_id = header.id
       ) AS stats ON TRUE
-      WHERE header.id = ${normalizedId}
+      WHERE header.set_slug = ${normalizedSlug}
+      LIMIT 1
+    `;
+
+    return row ? toSetCollectorSummary(row) : null;
+  }, null);
+}
+
+export async function getSetCollectorSummaryForDateFromDb(
+  slug: string | number,
+  snapshotDate: string,
+): Promise<SetCollectorSummary | null> {
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
+  const normalizedDate = asDateString(snapshotDate);
+
+  if (!normalizedDate || !/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate)) {
+    return null;
+  }
+
+  return withSetCollectorDbFallback(async () => {
+    const [row] = await sql<SetCollectorSummaryRow>`
+      SELECT
+        header.id,
+        header.set_slug,
+        header.set_name,
+        header.release_year,
+        header.manufacturer,
+        header.tcdb_set_url,
+        header.completed_set_photo_path,
+        header.category_tag,
+        header.rating,
+        header.total_cards,
+        snapshot.cards_owned,
+        snapshot.tcdb_trade_id,
+        TO_CHAR(stats.first_snapshot_date, 'YYYY-MM-DD') AS first_snapshot_date,
+        TO_CHAR(stats.latest_snapshot_date, 'YYYY-MM-DD') AS latest_snapshot_date,
+        COALESCE(stats.snapshot_count, 0) AS snapshot_count
+      FROM dojo.set_collector_header AS header
+      LEFT JOIN dojo.set_collector_snapshot AS snapshot
+        ON snapshot.set_collector_header_id = header.id
+       AND snapshot.snapshot_date = ${normalizedDate}::date
+      LEFT JOIN LATERAL (
+        SELECT
+          MIN(timeline.snapshot_date) AS first_snapshot_date,
+          MAX(timeline.snapshot_date) AS latest_snapshot_date,
+          COUNT(timeline.id) AS snapshot_count
+        FROM dojo.set_collector_snapshot AS timeline
+        WHERE timeline.set_collector_header_id = header.id
+      ) AS stats ON TRUE
+      WHERE header.set_slug = ${normalizedSlug}
       LIMIT 1
     `;
 
@@ -308,9 +363,9 @@ export async function getSetCollectorSummaryFromDb(
 }
 
 export async function listSetCollectorSnapshotsFromDb(
-  id: string | number,
+  slug: string | number,
 ): Promise<SetCollectorSnapshot[]> {
-  const normalizedId = normalizeSetCollectorId(id);
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
 
   return withSetCollectorDbFallback(async () => {
     const rows = await sql<SetCollectorSnapshotRow>`
@@ -324,7 +379,7 @@ export async function listSetCollectorSnapshotsFromDb(
       FROM dojo.set_collector_snapshot AS snapshot
       INNER JOIN dojo.set_collector_header AS header
         ON header.id = snapshot.set_collector_header_id
-      WHERE snapshot.set_collector_header_id = ${normalizedId}
+      WHERE header.set_slug = ${normalizedSlug}
       ORDER BY snapshot.snapshot_date ASC, snapshot.id ASC
     `;
 
@@ -333,9 +388,9 @@ export async function listSetCollectorSnapshotsFromDb(
 }
 
 export async function getLatestSetCollectorSnapshotFromDb(
-  id: string | number,
+  slug: string | number,
 ): Promise<SetCollectorSnapshot | null> {
-  const normalizedId = normalizeSetCollectorId(id);
+  const normalizedSlug = normalizeSetCollectorSlug(slug);
 
   return withSetCollectorDbFallback(async () => {
     const [row] = await sql<SetCollectorSnapshotRow>`
@@ -349,7 +404,7 @@ export async function getLatestSetCollectorSnapshotFromDb(
       FROM dojo.set_collector_snapshot AS snapshot
       INNER JOIN dojo.set_collector_header AS header
         ON header.id = snapshot.set_collector_header_id
-      WHERE snapshot.set_collector_header_id = ${normalizedId}
+      WHERE header.set_slug = ${normalizedSlug}
       ORDER BY snapshot.snapshot_date DESC, snapshot.id DESC
       LIMIT 1
     `;

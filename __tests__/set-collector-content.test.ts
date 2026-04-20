@@ -1,10 +1,13 @@
 jest.mock("server-only", () => ({}));
 
+const getSetCollectorSummaryForDateFromDbMock = jest.fn();
 const getSetCollectorSummaryFromDbMock = jest.fn();
 const listSetCollectorSnapshotsFromDbMock = jest.fn();
 const listSetCollectorSummariesFromDbMock = jest.fn();
 
 jest.mock("@/lib/set-collector-db", () => ({
+  getSetCollectorSummaryForDateFromDb: (...args: unknown[]) =>
+    getSetCollectorSummaryForDateFromDbMock(...args),
   getSetCollectorSummaryFromDb: (...args: unknown[]) =>
     getSetCollectorSummaryFromDbMock(...args),
   listSetCollectorSnapshotsFromDb: (...args: unknown[]) =>
@@ -22,19 +25,21 @@ import {
 } from "@/lib/set-collector-content";
 
 beforeEach(() => {
+  getSetCollectorSummaryForDateFromDbMock.mockReset();
   getSetCollectorSummaryFromDbMock.mockReset();
   listSetCollectorSnapshotsFromDbMock.mockReset();
   listSetCollectorSummariesFromDbMock.mockReset();
 
+  getSetCollectorSummaryForDateFromDbMock.mockResolvedValue(null);
   getSetCollectorSummaryFromDbMock.mockResolvedValue(null);
   listSetCollectorSnapshotsFromDbMock.mockResolvedValue([]);
   listSetCollectorSummariesFromDbMock.mockResolvedValue([]);
 });
 
 describe("getSetCollectorDetailHref", () => {
-  it("normalizes the numeric detail route id", () => {
-    expect(getSetCollectorDetailHref(" 12 ")).toBe(
-      "/cardattack/set-collector/12",
+  it("normalizes the slug-based detail route id", () => {
+    expect(getSetCollectorDetailHref(" /1992 Courtside Draft Pix/ ")).toBe(
+      "/cardattack/set-collector/1992-courtside-draft-pix",
     );
   });
 });
@@ -44,6 +49,7 @@ describe("listSetCollectorSummaryRows", () => {
     listSetCollectorSummariesFromDbMock.mockResolvedValue([
       {
         id: 12,
+        setSlug: "1991-92-upper-deck",
         setName: "1991-92 Upper Deck",
         releaseYear: 1991,
         manufacturer: "Upper Deck",
@@ -66,6 +72,7 @@ describe("listSetCollectorSummaryRows", () => {
     await expect(listSetCollectorSummaryRows()).resolves.toEqual([
       expect.objectContaining({
         id: 12,
+        setSlug: "1991-92-upper-deck",
         setName: "1991-92 Upper Deck",
         percentComplete: 91.2,
       }),
@@ -74,9 +81,10 @@ describe("listSetCollectorSummaryRows", () => {
 });
 
 describe("getSetCollectorSummaryRow", () => {
-  it("normalizes the id before delegating to the DB helper", async () => {
+  it("normalizes the slug before delegating to the DB helper", async () => {
     getSetCollectorSummaryFromDbMock.mockResolvedValue({
       id: 12,
+      setSlug: "1991-92-upper-deck",
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
@@ -91,14 +99,53 @@ describe("getSetCollectorSummaryRow", () => {
       latestSnapshotDate: "2026-04-10",
     });
 
-    await expect(getSetCollectorSummaryRow(" 12 ")).resolves.toEqual(
+    await expect(
+      getSetCollectorSummaryRow(" /1991 92 Upper Deck/ "),
+    ).resolves.toEqual(
       expect.objectContaining({
         id: 12,
+        setSlug: "1991-92-upper-deck",
         setName: "1991-92 Upper Deck",
       }),
     );
 
-    expect(getSetCollectorSummaryFromDbMock).toHaveBeenCalledWith(12);
+    expect(getSetCollectorSummaryFromDbMock).toHaveBeenCalledWith(
+      "1991-92-upper-deck",
+    );
+  });
+
+  it("uses the dated summary helper when a snapshot date is provided", async () => {
+    getSetCollectorSummaryForDateFromDbMock.mockResolvedValue({
+      id: 12,
+      setSlug: "1991-92-upper-deck",
+      setName: "1991-92 Upper Deck",
+      releaseYear: 1991,
+      manufacturer: "Upper Deck",
+      tcdbSetUrl: "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
+      totalCards: 500,
+      cardsOwned: 450,
+      cardsMissing: 50,
+      percentComplete: 90,
+      tcdbTradeId: "1005001",
+      snapshotCount: 3,
+      latestSnapshotDate: "2026-04-10",
+    });
+
+    await expect(
+      getSetCollectorSummaryRow(" /1991 92 Upper Deck/ ", "2026-04-01"),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        setSlug: "1991-92-upper-deck",
+        cardsOwned: 450,
+        percentComplete: 90,
+      }),
+    );
+
+    expect(getSetCollectorSummaryForDateFromDbMock).toHaveBeenCalledWith(
+      "1991-92-upper-deck",
+      "2026-04-01",
+    );
+    expect(getSetCollectorSummaryFromDbMock).not.toHaveBeenCalled();
   });
 });
 
@@ -116,7 +163,9 @@ describe("listSetCollectorSnapshotRows", () => {
       },
     ]);
 
-    await expect(listSetCollectorSnapshotRows(12)).resolves.toEqual([
+    await expect(
+      listSetCollectorSnapshotRows("1991-92-upper-deck"),
+    ).resolves.toEqual([
       expect.objectContaining({
         id: 101,
         setId: 12,
@@ -124,7 +173,9 @@ describe("listSetCollectorSnapshotRows", () => {
       }),
     ]);
 
-    expect(listSetCollectorSnapshotsFromDbMock).toHaveBeenCalledWith(12);
+    expect(listSetCollectorSnapshotsFromDbMock).toHaveBeenCalledWith(
+      "1991-92-upper-deck",
+    );
   });
 });
 
@@ -132,6 +183,7 @@ describe("getSetCollectorPageData", () => {
   it("combines the summary row with snapshot timeline rows", async () => {
     getSetCollectorSummaryFromDbMock.mockResolvedValue({
       id: 12,
+      setSlug: "1991-92-upper-deck",
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
@@ -170,8 +222,9 @@ describe("getSetCollectorPageData", () => {
       },
     ]);
 
-    await expect(getSetCollectorPageData("12")).resolves.toEqual({
+    await expect(getSetCollectorPageData("1991-92-upper-deck")).resolves.toEqual({
       id: 12,
+      setSlug: "1991-92-upper-deck",
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
@@ -235,6 +288,6 @@ describe("getSetCollectorPageData", () => {
       },
     ]);
 
-    await expect(getSetCollectorPageData(12)).resolves.toBeNull();
+    await expect(getSetCollectorPageData("1991-92-upper-deck")).resolves.toBeNull();
   });
 });

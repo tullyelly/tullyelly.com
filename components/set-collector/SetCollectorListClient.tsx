@@ -11,6 +11,7 @@ import {
 
 type SetCollectorListRow = {
   id: number;
+  setSlug: string;
   setName: string;
   releaseYear: number;
   manufacturer: string;
@@ -105,7 +106,7 @@ export default function SetCollectorListClient({
                     <div className="min-w-0 space-y-1">
                       <p className={mobileMetaLabelClassName}>Tracked Set</p>
                       <Link
-                        href={`${detailBasePath}/${row.id}`}
+                        href={`${detailBasePath}/${row.setSlug}`}
                         className="block text-lg font-semibold leading-tight text-[color:var(--collector-link)] transition hover:text-[color:var(--collector-link-hover)]"
                       >
                         {row.setName}
@@ -216,7 +217,7 @@ export default function SetCollectorListClient({
                 >
                   <td>
                     <Link
-                      href={`${detailBasePath}/${row.id}`}
+                      href={`${detailBasePath}/${row.setSlug}`}
                       className="text-base font-semibold text-[color:var(--collector-link)] transition hover:text-[color:var(--collector-link-hover)]"
                     >
                       {row.setName}

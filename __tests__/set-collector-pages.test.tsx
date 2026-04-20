@@ -22,6 +22,7 @@ describe("set collector pages", () => {
         rows={[
           {
             id: 12,
+            setSlug: "1991-92-upper-deck",
             setName: "1991-92 Upper Deck",
             releaseYear: 1991,
             manufacturer: "Upper Deck",
@@ -54,7 +55,7 @@ describe("set collector pages", () => {
     expect(screen.getAllByText("456 / 500").length).toBeGreaterThan(0);
     expect(
       screen.getAllByRole("link", { name: "1991-92 Upper Deck" })[0],
-    ).toHaveAttribute("href", "/cardattack/set-collector/12");
+    ).toHaveAttribute("href", "/cardattack/set-collector/1991-92-upper-deck");
   });
 
   it("renders the set collector detail page with current progress and snapshot history", () => {
@@ -62,6 +63,7 @@ describe("set collector pages", () => {
       <SetCollectorDetailPage
         setCollector={{
           id: 12,
+          setSlug: "1991-92-upper-deck",
           setName: "1991-92 Upper Deck",
           releaseYear: 1991,
           manufacturer: "Upper Deck",
@@ -143,6 +145,7 @@ describe("set collector pages", () => {
       <SetCollectorDetailPage
         setCollector={{
           id: 21,
+          setSlug: "1993-topps-finest",
           setName: "1993 Topps Finest",
           releaseYear: 1993,
           manufacturer: "Topps",

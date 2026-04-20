@@ -11,6 +11,7 @@ jest.mock("@/lib/db", () => ({
 
 import {
   getLatestSetCollectorSnapshotFromDb,
+  getSetCollectorSummaryForDateFromDb,
   getSetCollectorSummaryFromDb,
   listSetCollectorSnapshotsFromDb,
   listSetCollectorSummariesFromDb,
@@ -18,7 +19,7 @@ import {
 import {
   formatSetCollectorPercentComplete,
   formatSetCollectorRating,
-  normalizeSetCollectorId,
+  normalizeSetCollectorSlug,
 } from "@/lib/set-collector-types";
 
 const mutableEnv = process.env as Record<string, string | undefined>;
@@ -62,9 +63,15 @@ describe("set collector db helpers", () => {
     }
   });
 
-  it("rejects non-numeric set collector ids", () => {
-    expect(() => normalizeSetCollectorId("abc")).toThrow(
-      "Set Collector lookup: id must be a positive integer.",
+  it("normalizes set collector slugs into kebab-case", () => {
+    expect(normalizeSetCollectorSlug(" /1992 Courtside Draft Pix/ ")).toBe(
+      "1992-courtside-draft-pix",
+    );
+  });
+
+  it("rejects blank set collector slugs", () => {
+    expect(() => normalizeSetCollectorSlug("   ")).toThrow(
+      "Set Collector lookup: slug must be a non-empty string.",
     );
   });
 
@@ -81,6 +88,7 @@ describe("set collector db helpers", () => {
     mockSql.mockResolvedValue([
       {
         id: "12",
+        set_slug: "1991-92-upper-deck",
         set_name: "1991-92 Upper Deck",
         release_year: "1991",
         manufacturer: "Upper Deck",
@@ -100,6 +108,7 @@ describe("set collector db helpers", () => {
     await expect(listSetCollectorSummariesFromDb()).resolves.toEqual([
       {
         id: 12,
+        setSlug: "1991-92-upper-deck",
         setName: "1991-92 Upper Deck",
         releaseYear: 1991,
         manufacturer: "Upper Deck",
@@ -124,6 +133,7 @@ describe("set collector db helpers", () => {
     mockSql.mockResolvedValue([
       {
         id: 7,
+        set_slug: "1990-91-hoops",
         set_name: "1990-91 Hoops",
         release_year: "1990",
         manufacturer: "Hoops",
@@ -140,8 +150,11 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getSetCollectorSummaryFromDb(" 7 ")).resolves.toEqual({
+    await expect(
+      getSetCollectorSummaryFromDb(" /1990 91 Hoops/ "),
+    ).resolves.toEqual({
       id: 7,
+      setSlug: "1990-91-hoops",
       setName: "1990-91 Hoops",
       releaseYear: 1990,
       manufacturer: "Hoops",
@@ -161,13 +174,14 @@ describe("set collector db helpers", () => {
       TemplateStringsArray,
       unknown[],
     ];
-    expect(values).toEqual([7]);
+    expect(values).toEqual(["1990-91-hoops"]);
   });
 
   it("allows unrated sets without a completed photo path", async () => {
     mockSql.mockResolvedValue([
       {
         id: 8,
+        set_slug: "1993-topps-finest",
         set_name: "1993 Topps Finest",
         release_year: "1993",
         manufacturer: "Topps",
@@ -184,8 +198,9 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getSetCollectorSummaryFromDb(8)).resolves.toEqual({
+    await expect(getSetCollectorSummaryFromDb("1993-topps-finest")).resolves.toEqual({
       id: 8,
+      setSlug: "1993-topps-finest",
       setName: "1993 Topps Finest",
       releaseYear: 1993,
       manufacturer: "Topps",
@@ -199,6 +214,70 @@ describe("set collector db helpers", () => {
       latestSnapshotDate: "2026-04-14",
       snapshotCount: 2,
     });
+  });
+
+  it("returns a summary row bound to one exact snapshot date", async () => {
+    mockSql.mockResolvedValue([
+      {
+        id: 12,
+        set_slug: "1992-courtside-draft-pix",
+        set_name: "1992 Courtside Draft Pix",
+        release_year: "1992",
+        manufacturer: "Courtside",
+        tcdb_set_url: "https://www.tcdb.com/ViewSet.cfm/sid/56520/1992-Courtside-Draft-Pix",
+        completed_set_photo_path: null,
+        category_tag: "basketball",
+        rating: "8.00",
+        cards_owned: "133",
+        total_cards: "147",
+        tcdb_trade_id: "1004001",
+        first_snapshot_date: "2026-04-01",
+        latest_snapshot_date: "2026-04-19",
+        snapshot_count: "4",
+      },
+    ]);
+
+    await expect(
+      getSetCollectorSummaryForDateFromDb(
+        " /1992 Courtside Draft Pix/ ",
+        "2026-04-10T04:00:00.000Z",
+      ),
+    ).resolves.toEqual({
+      id: 12,
+      setSlug: "1992-courtside-draft-pix",
+      setName: "1992 Courtside Draft Pix",
+      releaseYear: 1992,
+      manufacturer: "Courtside",
+      tcdbSetUrl:
+        "https://www.tcdb.com/ViewSet.cfm/sid/56520/1992-Courtside-Draft-Pix",
+      categoryTag: "basketball",
+      rating: 8,
+      cardsOwned: 133,
+      totalCards: 147,
+      cardsMissing: 14,
+      percentComplete: 90.5,
+      tcdbTradeId: "1004001",
+      firstSnapshotDate: "2026-04-01",
+      latestSnapshotDate: "2026-04-19",
+      snapshotCount: 4,
+    });
+
+    const [, values] = mockSql.mock.calls[0] as [
+      TemplateStringsArray,
+      unknown[],
+    ];
+    expect(values).toEqual(["2026-04-10", "1992-courtside-draft-pix"]);
+  });
+
+  it("returns null for invalid dated summary lookups without querying", async () => {
+    await expect(
+      getSetCollectorSummaryForDateFromDb(
+        "1992-courtside-draft-pix",
+        "not-a-date",
+      ),
+    ).resolves.toBeNull();
+
+    expect(mockSql).not.toHaveBeenCalled();
   });
 
   it("returns ordered snapshot rows with derived progress fields", async () => {
@@ -221,7 +300,9 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(listSetCollectorSnapshotsFromDb(12)).resolves.toEqual([
+    await expect(
+      listSetCollectorSnapshotsFromDb("1991-92-upper-deck"),
+    ).resolves.toEqual([
       {
         id: 101,
         setId: 12,
@@ -247,7 +328,7 @@ describe("set collector db helpers", () => {
       TemplateStringsArray,
       unknown[],
     ];
-    expect(values).toEqual([12]);
+    expect(values).toEqual(["1991-92-upper-deck"]);
   });
 
   it("returns the latest snapshot for one tracked set", async () => {
@@ -262,7 +343,9 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getLatestSetCollectorSnapshotFromDb("12")).resolves.toEqual({
+    await expect(
+      getLatestSetCollectorSnapshotFromDb("1991-92-upper-deck"),
+    ).resolves.toEqual({
       id: 102,
       setId: 12,
       snapshotDate: "2026-04-10",
@@ -286,7 +369,9 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getLatestSetCollectorSnapshotFromDb(12)).resolves.toEqual({
+    await expect(
+      getLatestSetCollectorSnapshotFromDb("1991-92-upper-deck"),
+    ).resolves.toEqual({
       id: 103,
       setId: 12,
       snapshotDate: "2026-04-11",
@@ -301,9 +386,13 @@ describe("set collector db helpers", () => {
     process.env.SKIP_DB = "true";
 
     await expect(listSetCollectorSummariesFromDb()).resolves.toEqual([]);
-    await expect(getSetCollectorSummaryFromDb(12)).resolves.toBeNull();
-    await expect(listSetCollectorSnapshotsFromDb(12)).resolves.toEqual([]);
-    await expect(getLatestSetCollectorSnapshotFromDb(12)).resolves.toBeNull();
+    await expect(getSetCollectorSummaryFromDb("1991-92-upper-deck")).resolves.toBeNull();
+    await expect(
+      listSetCollectorSnapshotsFromDb("1991-92-upper-deck"),
+    ).resolves.toEqual([]);
+    await expect(
+      getLatestSetCollectorSnapshotFromDb("1991-92-upper-deck"),
+    ).resolves.toBeNull();
     expect(mockSql).not.toHaveBeenCalled();
   });
 
@@ -311,6 +400,7 @@ describe("set collector db helpers", () => {
     mockSql.mockResolvedValue([
       {
         id: "12",
+        set_slug: "1991-92-upper-deck",
         set_name: "1991-92 Upper Deck",
         release_year: "1991",
         manufacturer: "Upper Deck",
@@ -327,7 +417,7 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getSetCollectorSummaryFromDb(12)).resolves.toBeNull();
+    await expect(getSetCollectorSummaryFromDb("1991-92-upper-deck")).resolves.toBeNull();
   });
 
   it("falls back cleanly when a snapshot row contains invalid progress counts", async () => {
@@ -342,6 +432,8 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getLatestSetCollectorSnapshotFromDb(12)).resolves.toBeNull();
+    await expect(
+      getLatestSetCollectorSnapshotFromDb("1991-92-upper-deck"),
+    ).resolves.toBeNull();
   });
 });

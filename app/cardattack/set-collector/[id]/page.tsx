@@ -7,7 +7,7 @@ import { getSetCollectorPageData } from "@/lib/set-collector-content";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
   formatSetCollectorPercentComplete,
-  normalizeSetCollectorId,
+  normalizeSetCollectorSlug,
 } from "@/lib/set-collector-types";
 
 type Params = { id: string };
@@ -15,9 +15,9 @@ type Params = { id: string };
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-function getNormalizedId(id: string): number | null {
+function getNormalizedSlug(id: string): string | null {
   try {
-    return normalizeSetCollectorId(id);
+    return normalizeSetCollectorSlug(id);
   } catch {
     return null;
   }
@@ -50,33 +50,33 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const normalizedId = getNormalizedId(id);
+  const normalizedSlug = getNormalizedSlug(id);
 
-  if (!normalizedId) {
+  if (!normalizedSlug) {
     return {
       title: "Set Collector | cardattack vault",
       description: `Tracked card set ${id} detail page.`,
     };
   }
 
-  const setCollector = await getSetCollectorPageData(normalizedId);
+  const setCollector = await getSetCollectorPageData(normalizedSlug);
   const title = setCollector
     ? `${setCollector.setName} | Set Collector`
-    : `Set ${normalizedId} | Set Collector`;
-  const description = buildDescription(String(normalizedId), setCollector);
+    : `Set ${normalizedSlug} | Set Collector`;
+  const description = buildDescription(normalizedSlug, setCollector);
 
   return {
     title,
     description,
     alternates: {
       canonical: canonicalUrl(
-        `cardattack/set-collector/${encodeURIComponent(String(normalizedId))}`,
+        `cardattack/set-collector/${encodeURIComponent(normalizedSlug)}`,
       ),
     },
     openGraph: {
       title,
       description,
-      url: `/cardattack/set-collector/${encodeURIComponent(String(normalizedId))}`,
+      url: `/cardattack/set-collector/${encodeURIComponent(normalizedSlug)}`,
       type: "website",
     },
     twitter: {
@@ -93,13 +93,13 @@ export default async function CardattackSetCollectorIdPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const normalizedId = getNormalizedId(id);
+  const normalizedSlug = getNormalizedSlug(id);
 
-  if (!normalizedId) {
+  if (!normalizedSlug) {
     notFound();
   }
 
-  const setCollector = await getSetCollectorPageData(normalizedId);
+  const setCollector = await getSetCollectorPageData(normalizedSlug);
 
   if (!setCollector) {
     notFound();
