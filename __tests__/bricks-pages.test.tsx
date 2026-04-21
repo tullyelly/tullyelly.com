@@ -29,7 +29,7 @@ jest.mock("@/components/bricks/BricksChronicleFeed", () => ({
   }) => bricksChronicleFeedMock(props),
 }));
 
-import UncleJimmyBricksLegoPage from "@/app/unclejimmy/bricks/lego/page";
+import UncleJimmyBricksLegoPage from "@/app/unclejimmy/bricks/page";
 import BricksDetailPage from "@/components/bricks/BricksDetailPage";
 import { getBricksRouteConfig } from "@/lib/bricks-route-config";
 
@@ -67,7 +67,7 @@ describe("bricks route pages", () => {
     expect(screen.getAllByText("LEGO ID 10330").length).toBeGreaterThan(0);
     expect(
       screen.getAllByRole("link", { name: "McLaren MP4/4 & Ayrton Senna" })[0],
-    ).toHaveAttribute("href", "/unclejimmy/bricks/lego/10330");
+    ).toHaveAttribute("href", "/unclejimmy/bricks/10330");
   });
 
   it("renders the bricks detail page from DB metadata plus MDX chronicle content", async () => {
@@ -95,7 +95,7 @@ describe("bricks route pages", () => {
                 postUrl: "/shaolin/timeout",
                 postDate: "2026-04-01",
                 postTitle: "timeout",
-                mdx: '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Opening bags</ReleaseSection>',
+                mdx: '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Opening bags</ReleaseSection>',
                 sectionOrdinal: 1,
               },
             ],
@@ -118,7 +118,7 @@ describe("bricks route pages", () => {
     ).toBeGreaterThan(0);
     expect(
       screen.getByRole("link", { name: "← Back to Bricks: LEGO" }),
-    ).toHaveAttribute("href", "/unclejimmy/bricks/lego");
+    ).toHaveAttribute("href", "/unclejimmy/bricks");
     expect(screen.getByText("Chronicle Feed")).toBeInTheDocument();
     expect(screen.getByText("LEGO ID")).toBeInTheDocument();
     expect(screen.getByText("693")).toBeInTheDocument();

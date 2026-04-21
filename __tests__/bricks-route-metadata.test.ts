@@ -9,9 +9,9 @@ describe("bricks route metadata", () => {
 
     expect(metadata.title).toBe("Bricks: LEGO | 🎙unclejimmy");
     expect(metadata.alternates?.canonical).toBe(
-      "https://tullyelly.com/unclejimmy/bricks/lego",
+      "https://tullyelly.com/unclejimmy/bricks",
     );
-    expect(metadata.openGraph?.url).toBe("/unclejimmy/bricks/lego");
+    expect(metadata.openGraph?.url).toBe("/unclejimmy/bricks");
   });
 
   it("builds detail metadata from DB-backed bricks data", () => {
@@ -35,9 +35,9 @@ describe("bricks route metadata", () => {
       "Overall score: 9.3/10 from 2 tracked sessions. Latest chronicle: Apr 03, 2026. 693 pieces. Tag: f1.",
     );
     expect(metadata.alternates?.canonical).toBe(
-      "https://tullyelly.com/unclejimmy/bricks/lego/10330",
+      "https://tullyelly.com/unclejimmy/bricks/10330",
     );
-    expect(metadata.openGraph?.url).toBe("/unclejimmy/bricks/lego/10330");
+    expect(metadata.openGraph?.url).toBe("/unclejimmy/bricks/10330");
   });
 
   it("uses a defensive fallback description when the set is missing", () => {

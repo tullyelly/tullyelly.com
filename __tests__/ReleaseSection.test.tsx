@@ -475,10 +475,7 @@ describe("ReleaseSection", () => {
 
     const ui = await ReleaseSection({
       ...baseProps,
-      bricks: {
-        type: "lego",
-        id: "10330",
-      },
+      bricks: "10330",
     });
     const { container } = render(ui);
 
@@ -502,7 +499,7 @@ describe("ReleaseSection", () => {
       .getByText("McLaren MP4/4 & Ayrton Senna")
       .closest("a");
     expect(setLink).toBeInTheDocument();
-    expect(setLink).toHaveAttribute("href", "/unclejimmy/bricks/lego/10330");
+    expect(setLink).toHaveAttribute("href", "/unclejimmy/bricks/10330");
     expect(screen.getByRole("link", { name: "10330" })).toHaveAttribute(
       "href",
       "https://www.lego.com/en-ch/service/building-instructions/10330",
@@ -514,7 +511,6 @@ describe("ReleaseSection", () => {
     const content = container.querySelector(
       "[data-bricks-name]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-bricks-type", "lego");
     expect(content).toHaveAttribute("data-bricks-id", "10330");
     expect(content).toHaveAttribute(
       "data-bricks-name",
@@ -525,7 +521,7 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-bricks-review-score", "9.3/10");
     expect(content).toHaveAttribute(
       "data-bricks-route",
-      "/unclejimmy/bricks/lego/10330",
+      "/unclejimmy/bricks/10330",
     );
   });
 
@@ -533,7 +529,6 @@ describe("ReleaseSection", () => {
     const ui = await ReleaseSection({
       ...baseProps,
       bricks: {
-        type: "lego",
         id: "42171",
         name: "Mercedes-AMG F1 W14",
         tag: "f1",
@@ -1120,10 +1115,7 @@ describe("ReleaseSection", () => {
           name: "Pizza Shack",
           rating: "9/10",
         },
-        bricks: {
-          type: "lego" as const,
-          id: "10330",
-        },
+        bricks: "10330",
       }),
     ).rejects.toThrow("either review or bricks");
   });
@@ -1161,10 +1153,7 @@ describe("ReleaseSection", () => {
       ReleaseSection({
         ...baseProps,
         releaseId: "12",
-        bricks: {
-          type: "lego" as const,
-          id: "10330",
-        },
+        bricks: "10330",
       }),
     ).rejects.toThrow("either releaseId or bricks");
   });
@@ -1175,10 +1164,7 @@ describe("ReleaseSection", () => {
       ReleaseSection({
         ...baseProps,
         tcdbTradeId: "359632",
-        bricks: {
-          type: "lego" as const,
-          id: "10330",
-        },
+        bricks: "10330",
       }),
     ).rejects.toThrow("either tcdbTradeId or bricks");
   });
