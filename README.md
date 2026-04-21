@@ -48,7 +48,7 @@ Supported modes and what they feed:
 - `lcs="shop-slug"`; feeds `/cardattack/lcs` and `/cardattack/lcs/[id]`.
 - `review={{ type: "table-schema", ... }}`; feeds `/unclejimmy/table-schema` and `/unclejimmy/table-schema/[id]`.
 - `review={{ type: "save-point", ... }}`; feeds `/unclejimmy/call-a-save-point` and `/unclejimmy/call-a-save-point/[id]`.
-- `bricks={{ type: "lego", ... }}`; feeds `/unclejimmy/bricks/lego` and `/unclejimmy/bricks/lego/[id]`.
+- `bricks="10330"`; feeds `/unclejimmy/bricks` and `/unclejimmy/bricks/[id]`.
 - `tournamentId` + `tournamentDate`; feeds `/unclejimmy/squad/volleyball/[id]`.
 
 Rules to remember:
@@ -60,7 +60,7 @@ Rules to remember:
 - `guestMage` can be added to any section type.
 - `divider={false}` removes the trailing divider.
 - `review.url` and `review.rating` are optional.
-- `bricks.name`, `bricks.tag`, `bricks.pieceCount`, and `bricks.reviewScore` are optional display overrides; the LEGO id is the only required bricks field in MDX.
+- `bricks` can be authored as a string id in MDX; optional `name`, `tag`, `pieceCount`, and `reviewScore` overrides are available when `ReleaseSection` is used from TSX.
 - `rainbowColour` is renderer-owned; do not hand-author it in chronicle MDX.
 
 Examples:
@@ -153,10 +153,7 @@ Bricks: LEGO build:
 ```mdx
 <ReleaseSection
   alterEgo="unclejimmy"
-  bricks={{
-    type: "lego",
-    id: "10330",
-  }}
+  bricks="10330"
 >
   Build session notes for this LEGO set.
 </ReleaseSection>

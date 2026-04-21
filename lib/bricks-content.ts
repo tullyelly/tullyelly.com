@@ -10,7 +10,6 @@ import {
   type BricksSummary,
 } from "@/lib/bricks-db";
 import {
-  isBricksSubset,
   normalizeBricksPublicId,
   type BricksSubset,
 } from "@/lib/bricks-types";
@@ -68,65 +67,27 @@ export type BricksPageData = BricksSummary & {
 
 const RELEASE_SECTION_OPEN = "<ReleaseSection";
 const RELEASE_SECTION_CLOSE = "</ReleaseSection>";
-const BRICKS_OBJECT_ATTR = /bricks\s*=\s*\{\s*\{([\s\S]*?)\}\s*\}/;
+const BRICKS_STRING_ATTR = /bricks\s*=\s*["']([^"']+)["']/;
 const FENCED_CODE_BLOCK_PATTERN =
   /(^|\n)[ \t]*```[\s\S]*?^[ \t]*```[ \t]*(?=\n|$)/gm;
 
 const stripFencedCodeBlocks = (source: string): string =>
   source.replace(FENCED_CODE_BLOCK_PATTERN, "\n");
 
-const extractBricksObject = (openingTag: string): string | undefined =>
-  openingTag.match(BRICKS_OBJECT_ATTR)?.[1];
-
-const extractObjectField = (
-  objectSource: string,
-  fieldName: string,
-): string | undefined => {
-  const doubleQuoted = objectSource.match(
-    new RegExp(`${fieldName}\\s*:\\s*"([^"]+)"`),
-  )?.[1];
-  if (doubleQuoted?.trim()) {
-    return doubleQuoted.trim();
-  }
-
-  const singleQuoted = objectSource.match(
-    new RegExp(`${fieldName}\\s*:\\s*'([^']+)'`),
-  )?.[1];
-  if (singleQuoted?.trim()) {
-    return singleQuoted.trim();
-  }
-
-  const numeric = objectSource.match(
-    new RegExp(`${fieldName}\\s*:\\s*(-?\\d+(?:\\.\\d+)?)`),
-  )?.[1];
-  if (numeric?.trim()) {
-    return numeric.trim();
-  }
-
-  return undefined;
-};
-
 function extractBricksFromOpeningTag(openingTag: string): BricksCore | null {
-  const bricksObject = extractBricksObject(openingTag);
-  if (!bricksObject) {
+  const stringMatch = openingTag.match(BRICKS_STRING_ATTR);
+  if (!stringMatch) {
     return null;
   }
 
-  const subset = extractObjectField(bricksObject, "type");
-  if (!subset || !isBricksSubset(subset)) {
-    return null;
-  }
-
-  const id = extractObjectField(bricksObject, "id");
+  const id = stringMatch[1]?.trim();
   if (!id) {
     return null;
   }
 
-  const normalizedPublicId = normalizeBricksPublicId(id);
-
   return {
-    subset,
-    publicId: normalizedPublicId,
+    subset: "lego",
+    publicId: normalizeBricksPublicId(id),
   };
 }
 
@@ -180,7 +141,8 @@ export function getBricksIdAttribute(
   subset: BricksSubset,
   publicId: string | number,
 ): string {
-  return `bricks={{ type: "${subset}", id: "${normalizeBricksPublicId(publicId)}" }}`;
+  void subset;
+  return `bricks="${normalizeBricksPublicId(publicId)}"`;
 }
 
 export function extractBricksSectionsWithOffsets(

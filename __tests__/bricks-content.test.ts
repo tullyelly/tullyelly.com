@@ -39,7 +39,7 @@ beforeEach(() => {
 describe("getBricksIdAttribute", () => {
   it("normalizes the generic bricks id attribute format", () => {
     expect(getBricksIdAttribute("lego", " 10330 ")).toBe(
-      'bricks={{ type: "lego", id: "10330" }}',
+      'bricks="10330"',
     );
   });
 });
@@ -47,11 +47,11 @@ describe("getBricksIdAttribute", () => {
 describe("extractBricksSectionsWithOffsets", () => {
   it("supports minimal bricks props and preserves bricks ordinals within a post", () => {
     const raw = [
-      '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>First build</ReleaseSection>',
+      '<ReleaseSection alterEgo="unclejimmy" bricks="10330">First build</ReleaseSection>',
       "",
       '<ReleaseSection alterEgo="unclejimmy" review={{ type: "save-point", id: "mewgenics" }}>Ignore me</ReleaseSection>',
       "",
-      '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: 42171 }}>Second build</ReleaseSection>',
+      '<ReleaseSection alterEgo="unclejimmy" bricks="42171">Second build</ReleaseSection>',
     ].join("\n");
 
     const sections = extractBricksSectionsWithOffsets(raw);
@@ -86,7 +86,7 @@ describe("getBricksSections", () => {
         url: "/shaolin/later-build",
         date: "2026-04-03T06:00:00Z",
         body: {
-          raw: '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Later</ReleaseSection>',
+          raw: '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Later</ReleaseSection>',
         },
       },
       {
@@ -96,9 +96,9 @@ describe("getBricksSections", () => {
         date: "2026-04-01",
         body: {
           raw: [
-            '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>First</ReleaseSection>',
+            '<ReleaseSection alterEgo="unclejimmy" bricks="10330">First</ReleaseSection>',
             "",
-            '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Second</ReleaseSection>',
+            '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Second</ReleaseSection>',
           ].join("\n"),
         },
       },
@@ -140,9 +140,9 @@ describe("getBricksNarrativeDays", () => {
         date: "2026-04-01T05:00:00Z",
         body: {
           raw: [
-            '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Bag 1</ReleaseSection>',
+            '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Bag 1</ReleaseSection>',
             "",
-            '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Bag 2</ReleaseSection>',
+            '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Bag 2</ReleaseSection>',
           ].join("\n"),
         },
       },
@@ -152,7 +152,7 @@ describe("getBricksNarrativeDays", () => {
         url: "/shaolin/second-day",
         date: "2026-04-03",
         body: {
-          raw: '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Bag 4</ReleaseSection>',
+          raw: '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Bag 4</ReleaseSection>',
         },
       },
       {
@@ -161,7 +161,7 @@ describe("getBricksNarrativeDays", () => {
         url: "/shaolin/other-set",
         date: "2026-04-03",
         body: {
-          raw: '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "42171" }}>Ignore me</ReleaseSection>',
+          raw: '<ReleaseSection alterEgo="unclejimmy" bricks="42171">Ignore me</ReleaseSection>',
         },
       },
     ];
@@ -275,7 +275,7 @@ describe("getBricksPageData", () => {
         url: "/shaolin/timeout",
         date: "2026-04-01",
         body: {
-          raw: '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Opening bags</ReleaseSection>',
+          raw: '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Opening bags</ReleaseSection>',
         },
       },
       {
@@ -284,7 +284,7 @@ describe("getBricksPageData", () => {
         url: "/shaolin/saturday-oooh-ooooh",
         date: "2026-04-03",
         body: {
-          raw: '<ReleaseSection alterEgo="unclejimmy" bricks={{ type: "lego", id: "10330" }}>Finishing touches</ReleaseSection>',
+          raw: '<ReleaseSection alterEgo="unclejimmy" bricks="10330">Finishing touches</ReleaseSection>',
         },
       },
     ];

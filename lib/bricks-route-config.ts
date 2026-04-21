@@ -75,7 +75,7 @@ export const BRICKS_ROUTE_CONFIG: Record<BricksSubset, BricksRouteConfig> = {
       "Each session below is grouped by the DB-backed build day while the narrative content stays in the original chronicle MDX.",
     pageThemeVars: bricksPageThemeVarsBySubset.lego,
     tableThemeStyle: bricksTableThemeStyleBySubset.lego,
-    collectionPath: "/unclejimmy/bricks/lego",
+    collectionPath: "/unclejimmy/bricks",
   },
 };
 

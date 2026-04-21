@@ -16,7 +16,6 @@ import { getReviewSummaryFromDb } from "@/lib/review-db";
 import {
   formatBricksReviewScore as formatNormalizedBricksReviewScore,
   normalizeBricksPublicId,
-  type BricksSubset,
 } from "@/lib/bricks-types";
 import { getLcsSummaryFromDb } from "@/lib/lcs-db";
 import { normalizeLcsSlug } from "@/lib/lcs-types";
@@ -49,14 +48,16 @@ export type ReviewProps = {
   rating?: string | number;
 };
 
-export type BricksProps = {
-  type: BricksSubset;
-  id: string | number;
-  name?: string;
-  tag?: string;
-  pieceCount?: string | number;
-  reviewScore?: string | number;
-};
+export type BricksIdentifier =
+  | string
+  | number
+  | {
+      id: string | number;
+      name?: string;
+      tag?: string;
+      pieceCount?: string | number;
+      reviewScore?: string | number;
+    };
 
 const TOURNAMENT_TROPHY_ICON_SRC = "/images/optimus/ccvbc-trophy.webp";
 
@@ -98,7 +99,7 @@ type ReleaseSectionWithReview = ReleaseSectionBaseProps & {
 };
 
 type ReleaseSectionWithBricks = ReleaseSectionBaseProps & {
-  bricks: BricksProps;
+  bricks: BricksIdentifier;
   releaseId?: never;
   tcdbTradeId?: never;
   review?: never;
@@ -209,17 +210,10 @@ function formatBricksReviewScoreOverride(
   return formatNormalizedBricksReviewScore(parsed);
 }
 
-function getBricksReferenceUrl(
-  type: BricksSubset,
-  publicId: string,
-): string | undefined {
-  if (type === "lego") {
-    return `https://www.lego.com/en-ch/service/building-instructions/${encodeURIComponent(
-      publicId,
-    )}`;
-  }
-
-  return undefined;
+function getBricksReferenceUrl(publicId: string): string {
+  return `https://www.lego.com/en-ch/service/building-instructions/${encodeURIComponent(
+    publicId,
+  )}`;
 }
 
 // ReleaseSection acts as a no-op wrapper for MDX content and optionally renders a
@@ -372,37 +366,50 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
         ? `${reviewSummary.averageRating.toFixed(1)}/10`
         : undefined;
 
-  const bricksSummary = bricks
-    ? await getBricksSummaryFromDb(bricks.type, bricks.id)
+  const bricksId =
+    typeof bricks === "string" || typeof bricks === "number"
+      ? bricks
+      : bricks?.id;
+  const bricksSummary = bricksId
+    ? await getBricksSummaryFromDb("lego", bricksId)
     : null;
-  resolvedBricksPublicId = bricks
-    ? normalizeBricksPublicId(bricks.id)
+  resolvedBricksPublicId = bricksId
+    ? normalizeBricksPublicId(bricksId)
     : undefined;
   resolvedBricksName =
-    toOptionalText(bricks?.name) ||
+    (typeof bricks === "object" ? toOptionalText(bricks.name) : undefined) ||
     bricksSummary?.setName ||
     resolvedBricksPublicId ||
     undefined;
-  resolvedBricksTag = toOptionalText(bricks?.tag) || bricksSummary?.tag;
+  resolvedBricksTag =
+    typeof bricks === "object"
+      ? toOptionalText(bricks.tag) || bricksSummary?.tag
+      : bricksSummary?.tag;
   resolvedBricksPieceCount =
-    toOptionalText(bricks?.pieceCount) ||
-    (bricksSummary?.pieceCount !== undefined
-      ? String(bricksSummary.pieceCount)
-      : undefined);
+    typeof bricks === "object"
+      ? toOptionalText(bricks.pieceCount) ||
+        (bricksSummary?.pieceCount !== undefined
+          ? String(bricksSummary.pieceCount)
+          : undefined)
+      : bricksSummary?.pieceCount !== undefined
+        ? String(bricksSummary.pieceCount)
+        : undefined;
   resolvedBricksReviewScore =
-    formatBricksReviewScoreOverride(bricks?.reviewScore) ||
-    (bricksSummary?.reviewScore !== undefined
-      ? formatNormalizedBricksReviewScore(bricksSummary.reviewScore)
-      : undefined);
+    typeof bricks === "object"
+      ? formatBricksReviewScoreOverride(bricks.reviewScore) ||
+        (bricksSummary?.reviewScore !== undefined
+          ? formatNormalizedBricksReviewScore(bricksSummary.reviewScore)
+          : undefined)
+      : bricksSummary?.reviewScore !== undefined
+        ? formatNormalizedBricksReviewScore(bricksSummary.reviewScore)
+        : undefined;
   resolvedBricksRoute =
-    bricks && resolvedBricksPublicId
-      ? `/unclejimmy/bricks/${bricks.type}/${encodeURIComponent(
-          resolvedBricksPublicId,
-        )}`
+    resolvedBricksPublicId
+      ? `/unclejimmy/bricks/${encodeURIComponent(resolvedBricksPublicId)}`
       : undefined;
   resolvedBricksReferenceUrl =
-    bricks && resolvedBricksPublicId
-      ? getBricksReferenceUrl(bricks.type, resolvedBricksPublicId)
+    resolvedBricksPublicId
+      ? getBricksReferenceUrl(resolvedBricksPublicId)
       : undefined;
   resolvedUspsCitySlug = usps ? normalizeUspsCitySlug(usps) : undefined;
   const uspsSummary = resolvedUspsCitySlug
@@ -676,7 +683,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-review-id={review !== undefined ? String(review.id) : undefined}
       data-review-name={resolvedReviewName ?? undefined}
       data-review-rating={resolvedReviewRating ?? undefined}
-      data-bricks-type={bricks?.type ?? undefined}
       data-bricks-id={resolvedBricksPublicId ?? undefined}
       data-bricks-name={resolvedBricksName ?? undefined}
       data-bricks-tag={resolvedBricksTag ?? undefined}
