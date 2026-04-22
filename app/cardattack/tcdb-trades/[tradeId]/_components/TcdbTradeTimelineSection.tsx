@@ -30,6 +30,7 @@ type RenderableTradeDay = TradeChronicleDay & {
 const DAY_LABEL: Record<TradeChronicleDay["side"], string> = {
   sent: "Package Sent",
   received: "Package Received",
+  archived: "Trade Archived",
 };
 
 const SIDE_STYLES: Record<
@@ -50,6 +51,12 @@ const SIDE_STYLES: Record<
       "bg-[color:var(--trade-blue)] text-[color:var(--trade-off-white)]",
     sourceLinkClassName:
       "text-[color:var(--trade-blue)] hover:text-[color:var(--trade-blue)]",
+  },
+  archived: {
+    chipClassName:
+      "bg-[color:var(--trade-charcoal)] text-[color:var(--trade-off-white)]",
+    sourceLinkClassName:
+      "text-[color:var(--trade-charcoal)] hover:text-[color:var(--trade-blue)]",
   },
 };
 
@@ -280,11 +287,15 @@ export default async function TcdbTradeChronicleFeed({
                         ["--mdx-divider-color" as string]:
                           day.side === "received"
                             ? "var(--trade-blue)"
-                            : "var(--trade-rust)",
+                            : day.side === "archived"
+                              ? "var(--trade-charcoal)"
+                              : "var(--trade-rust)",
                         ["--mdx-marker-color" as string]:
                           day.side === "received"
                             ? "var(--trade-blue)"
-                            : "var(--trade-rust)",
+                            : day.side === "archived"
+                              ? "var(--trade-charcoal)"
+                              : "var(--trade-rust)",
                       }}
                     >
                       <ChronicleSectionMdxRenderer

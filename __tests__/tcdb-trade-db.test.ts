@@ -55,7 +55,11 @@ describe("tcdb trade db helper", () => {
     });
 
     expect(mockSql).toHaveBeenCalledTimes(1);
-    const [, values] = mockSql.mock.calls[0] as [TemplateStringsArray, unknown[]];
+    const [strings, values] = mockSql.mock.calls[0] as [
+      TemplateStringsArray,
+      unknown[],
+    ];
+    expect(strings.join("")).toContain("day.side IN ('received', 'archived')");
     expect(values).toEqual(["960943"]);
   });
 
@@ -63,11 +67,13 @@ describe("tcdb trade db helper", () => {
     mockSql.mockResolvedValue([
       { trade_date: "2026-01-24", side: "sent" },
       { trade_date: "2026-01-31", side: "received" },
+      { trade_date: "2026-02-07", side: "archived" },
     ]);
 
     await expect(listTcdbTradeDaysFromDb("960943")).resolves.toEqual([
       { tradeDate: "2026-01-24", side: "sent" },
       { tradeDate: "2026-01-31", side: "received" },
+      { tradeDate: "2026-02-07", side: "archived" },
     ]);
   });
 

@@ -3,7 +3,7 @@ import "server-only";
 import { sql } from "@/lib/db";
 
 export type TcdbTradeStatus = "Open" | "Completed";
-export type TcdbTradeDaySide = "sent" | "received";
+export type TcdbTradeDaySide = "sent" | "received" | "archived";
 
 type TcdbTradeCardCountsRow = {
   received: number | string | null;
@@ -48,9 +48,7 @@ export function normalizeTcdbTradeId(tradeId: string): string {
   const normalized = tradeId.trim();
 
   if (!normalized) {
-    throw new Error(
-      "TCDb trade lookup: tradeId must be a non-empty string.",
-    );
+    throw new Error("TCDb trade lookup: tradeId must be a non-empty string.");
   }
 
   return normalized;
@@ -86,8 +84,7 @@ function toTradeCardCounts(
 }
 
 function toTcdbTradeSummary(row: TcdbTradeSummaryRow): TcdbTradeSummary {
-  const received =
-    row.received === null ? undefined : toInteger(row.received);
+  const received = row.received === null ? undefined : toInteger(row.received);
   const sent = row.sent === null ? undefined : toInteger(row.sent);
 
   return {
@@ -112,11 +109,11 @@ export async function getTcdbTradeSummaryFromDb(
       trade.partner,
       TO_CHAR(MIN(day.trade_date), 'YYYY-MM-DD') AS start_date,
       TO_CHAR(
-        MAX(day.trade_date) FILTER (WHERE day.side = 'received'),
+        MAX(day.trade_date) FILTER (WHERE day.side IN ('received', 'archived')),
         'YYYY-MM-DD'
       ) AS end_date,
       COUNT(day.id) AS section_count,
-      COALESCE(BOOL_OR(day.side = 'received'), FALSE) AS has_completed,
+      COALESCE(BOOL_OR(day.side IN ('received', 'archived')), FALSE) AS has_completed,
       trade.received AS received,
       trade.sent AS sent
     FROM dojo.tcdb_trade AS trade
@@ -141,11 +138,11 @@ export async function listTcdbTradesFromDb(): Promise<TcdbTradeSummary[]> {
       trade.partner,
       TO_CHAR(MIN(day.trade_date), 'YYYY-MM-DD') AS start_date,
       TO_CHAR(
-        MAX(day.trade_date) FILTER (WHERE day.side = 'received'),
+        MAX(day.trade_date) FILTER (WHERE day.side IN ('received', 'archived')),
         'YYYY-MM-DD'
       ) AS end_date,
       COUNT(day.id) AS section_count,
-      COALESCE(BOOL_OR(day.side = 'received'), FALSE) AS has_completed,
+      COALESCE(BOOL_OR(day.side IN ('received', 'archived')), FALSE) AS has_completed,
       trade.received AS received,
       trade.sent AS sent
     FROM dojo.tcdb_trade AS trade

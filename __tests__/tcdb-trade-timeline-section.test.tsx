@@ -116,4 +116,25 @@ describe("TcdbTradeChronicleFeed", () => {
     expect(secondRendererProps?.postDate).toBe("2026-04-03");
     expect(secondRendererProps?.components?.ReleaseSection).toBeDefined();
   });
+
+  it("renders archived trade days", async () => {
+    const ui = await TcdbTradeChronicleFeed({
+      days: [
+        {
+          tradeDate: "2026-04-05",
+          side: "archived" as const,
+          anchorId: "2026-04-05-archived",
+          sourcePosts: [],
+          sections: [],
+        },
+      ],
+      emptyMessage: "No trade days yet.",
+      missingContentMessage: "Missing content.",
+    });
+    render(ui);
+
+    expect(screen.getByText("Trade Archived")).toBeInTheDocument();
+    expect(screen.getByText("Missing content.")).toBeInTheDocument();
+    expect(compileMdxToCodeMock).not.toHaveBeenCalled();
+  });
 });
