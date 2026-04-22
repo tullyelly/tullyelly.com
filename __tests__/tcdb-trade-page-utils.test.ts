@@ -187,6 +187,28 @@ describe("getTcdbTradeSections", () => {
     expect(sections[0]?.kind).toBe("completed");
     expect(sections[1]?.kind).toBe("completed");
   });
+
+  it("treats archived DB trade-day sides as completed sections", async () => {
+    const tradeId = "667";
+    listTcdbTradeDaysFromDbMock.mockResolvedValue([
+      { tradeDate: "2024-03-20", side: "archived" },
+    ]);
+
+    const post = {
+      slug: "archived-trade",
+      url: "/shaolin/archived-trade",
+      date: "2024-03-20",
+      body: {
+        raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">Archived</ReleaseSection>`,
+      },
+    };
+
+    const sections = await getTcdbTradeSections(tradeId, [post]);
+
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.kind).toBe("completed");
+    expect(sections[0]?.postSlug).toBe("archived-trade");
+  });
 });
 
 describe("getTcdbTradeNarrativeDays", () => {
@@ -252,6 +274,43 @@ describe("getTcdbTradeNarrativeDays", () => {
         title: "Received Day",
         url: "/shaolin/received-day",
         date: "2024-01-18",
+      },
+    ]);
+  });
+
+  it("groups archived chronicle sections into archived day buckets", async () => {
+    const tradeId = "778";
+    listTcdbTradeDaysFromDbMock.mockResolvedValue([
+      { tradeDate: "2024-03-20", side: "archived" },
+    ]);
+
+    const posts = [
+      {
+        slug: "archived-trade",
+        title: "Archived Trade",
+        url: "/shaolin/archived-trade",
+        date: "2024-03-20T06:00:00Z",
+        body: {
+          raw: `<ReleaseSection alterEgo="mark2" tcdbTradeId="${tradeId}">Archived</ReleaseSection>`,
+        },
+      },
+    ];
+
+    const days = await getTcdbTradeNarrativeDays(tradeId, posts);
+
+    expect(days).toHaveLength(1);
+    expect(days[0]).toMatchObject({
+      tradeDate: "2024-03-20",
+      side: "archived",
+    });
+    expect(days[0]?.sections).toHaveLength(1);
+    expect(days[0]?.sections[0]?.kind).toBe("completed");
+    expect(days[0]?.sourcePosts).toEqual([
+      {
+        slug: "archived-trade",
+        title: "Archived Trade",
+        url: "/shaolin/archived-trade",
+        date: "2024-03-20",
       },
     ]);
   });

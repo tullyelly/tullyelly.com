@@ -169,12 +169,12 @@ export const extractTradeSectionsFromRaw = (
 
 function getResolvedTradeSectionKind(
   fallbackKind: TradeSectionKind,
-  sideByDate: Map<string, "sent" | "received">,
+  sideByDate: Map<string, TcdbTradeDaySide>,
   tradeDate: string,
 ): TradeSectionKind {
   const side = sideByDate.get(tradeDate);
 
-  if (side === "received") {
+  if (side === "received" || side === "archived") {
     return "completed";
   }
 
@@ -183,6 +183,20 @@ function getResolvedTradeSectionKind(
   }
 
   return fallbackKind;
+}
+
+function getResolvedTradeSectionSide(
+  fallbackKind: TradeSectionKind,
+  sideByDate: Map<string, TcdbTradeDaySide>,
+  tradeDate: string,
+): TcdbTradeDaySide {
+  const side = sideByDate.get(tradeDate);
+
+  if (side) {
+    return side;
+  }
+
+  return fallbackKind === "completed" ? "received" : "sent";
 }
 
 function getTradeDayKey(
@@ -258,6 +272,9 @@ export async function getTcdbTradeNarrativeDays(
 
   const tradeDays = await listTcdbTradeDaysFromDb(tradeId);
   if (tradeDays.length === 0) return [];
+  const sideByDate = new Map(
+    tradeDays.map((tradeDay) => [tradeDay.tradeDate, tradeDay.side]),
+  );
 
   const extracted = collectTcdbTradeSections(tradeId, tradeDays, posts).sort(
     compareByDateAsc,
@@ -268,7 +285,7 @@ export async function getTcdbTradeNarrativeDays(
   for (const { offset: _offset, ...section } of extracted) {
     const key = getTradeDayKey(
       section.postDate,
-      section.kind === "completed" ? "received" : "sent",
+      getResolvedTradeSectionSide(section.kind, sideByDate, section.postDate),
     );
 
     const sections = sectionsByDay.get(key);

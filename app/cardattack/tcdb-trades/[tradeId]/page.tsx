@@ -5,7 +5,10 @@ import { notFound } from "next/navigation";
 import FullBleedPage from "@/components/layout/FullBleedPage";
 import { fmtDate } from "@/lib/datetime";
 import { tcdbTradePageThemeVars } from "@/lib/tcdb-theme";
-import { getTcdbTradeSummaryFromDb } from "@/lib/tcdb-trade-db";
+import {
+  getTcdbTradeSummaryFromDb,
+  type TcdbTradeDaySide,
+} from "@/lib/tcdb-trade-db";
 import {
   getTcdbProfileUrl,
   getTcdbTradeNarrativeDays,
@@ -34,7 +37,7 @@ function formatTradeDate(value?: string): string {
   return value ? fmtDate(value, "America/Chicago", "long") : "Not available";
 }
 
-function getDayAnchorId(tradeDate: string, side: "sent" | "received"): string {
+function getDayAnchorId(tradeDate: string, side: TcdbTradeDaySide): string {
   return `${tradeDate}-${side}`;
 }
 
@@ -162,10 +165,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       valueContainerClassName: "flex min-h-[2.25rem] items-center",
     },
     {
-      label: "Last Received",
+      label: "Completed",
       value: summary.endDate
         ? formatTradeDate(summary.endDate)
-        : "Not received yet",
+        : "Not completed yet",
       valueContainerClassName: "flex min-h-[2.25rem] items-center",
     },
   ];
