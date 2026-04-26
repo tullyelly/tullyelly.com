@@ -14,10 +14,10 @@ describe("ScrollAmendment", () => {
     expect(wrapper).toHaveClass("block");
     expect(wrapper).toHaveClass("w-full");
     expect(wrapper.className).toContain("bg-[var(--blue)]");
-    expect(wrapper.className).toContain("text-[var(--text-on-blue)]");
+    expect(wrapper.className).toContain("text-[color:var(--text-on-blue)]");
     expect(wrapper.className).toContain("[&_a]:!text-white");
     expect(wrapper.className).toContain("[&_a:hover]:bg-white");
-    expect(wrapper.className).toContain("[&_a:hover]:!text-[var(--blue)]");
+    expect(wrapper.className).toContain("[&_a:hover]:!text-[color:var(--blue)]");
     expect(wrapper.className).not.toContain("border-[var(--blue-contrast)]");
     expect(wrapper.className).toContain(
       "[&_ul>li]:marker:text-[color:var(--text-on-blue)]",
@@ -45,7 +45,7 @@ describe("ScrollAmendment", () => {
 
     const wrapper = screen.getByRole("note");
     expect(wrapper.className).toContain(
-      "[&_[data-person-tag]]:!text-[var(--text-on-blue)]",
+      "[&_[data-person-tag]]:!text-[color:var(--text-on-blue)]",
     );
 
     expect(screen.getByText("nikkigirl")).toHaveAttribute(
