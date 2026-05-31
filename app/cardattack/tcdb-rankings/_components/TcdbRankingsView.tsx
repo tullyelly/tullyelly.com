@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import PageIntro from "@/components/layout/PageIntro";
-import TCDBRankingTable from "@/components/tcdb/TCDBRankingTable";
+import RankingListNav from "@/components/tcdb/RankingListNav";
+import TCDBRankingTable, {
+  homieRankingsToTableData,
+} from "@/components/tcdb/TCDBRankingTable";
 import type { RankingResponse } from "@/lib/data/tcdb";
-import {
-  tcdbTradeInspiredRankingsTheme,
-  tcdbTradeTableThemeStyle,
-} from "@/lib/tcdb-theme";
+import { tcdbTradeTableThemeStyle } from "@/lib/tcdb-theme";
 import type { HomieOption } from "../_lib/getHomieOptions";
 import AddSnapshotButton from "./AddSnapshotButton";
 
@@ -50,11 +50,11 @@ export default function TcdbRankingsView({
   return (
     <div className="space-y-8">
       <PageIntro
-        title="TCDB Rankings"
+        title="TCDB Homie Rankings"
         accessory={
           showRefreshing ? (
             <span className="inline-flex items-center rounded-full bg-[var(--cream)] px-3 py-1 text-xs font-semibold uppercase text-ink/80">
-              Refreshing…
+              Refreshing...
             </span>
           ) : null
         }
@@ -68,6 +68,7 @@ export default function TcdbRankingsView({
           ) : null
         }
       >
+        <RankingListNav current="homies" />
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           I love me some{" "}
           <a
@@ -77,12 +78,8 @@ export default function TcdbRankingsView({
           >
             TCDb
           </a>
-          , and as part of that I started to take snapshots of various portions
-          of my PC so that I can keep an eye on if I am trending up or down on
-          any given player when compared to the other wonderful collectors on
-          TCDb. Eventually this will include more players and teams, and this is
-          not a full list of players I PC; just an initial list of players that
-          another project I am working on has come across.
+          , and these homie snapshots keep an eye on whether my player
+          collections are trending up or down against other collectors.
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           This is in the early MVP (minimum viable product) stages, so please
@@ -91,9 +88,15 @@ export default function TcdbRankingsView({
       </PageIntro>
 
       <TCDBRankingTable
-        serverData={data}
+        serverData={homieRankingsToTableData(data)}
+        labels={{
+          searchPlaceholder: "Search homies",
+          searchAriaLabel: "Search homies",
+          identifierColumn: "Jersey",
+          emptyMessage: "No homie rankings match your filters.",
+          tableAriaLabel: "TCDB homie rankings table",
+        }}
         theme={{
-          ...tcdbTradeInspiredRankingsTheme,
           tableThemeStyle: tcdbTradeTableThemeStyle,
         }}
       />

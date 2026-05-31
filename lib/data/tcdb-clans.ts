@@ -1,28 +1,14 @@
 import "server-only";
+
 import { asDateString } from "@/lib/dates";
 import { withDbRetry } from "@/lib/db/retry";
 import { sqlQueryOne, sqlQueryRows } from "@/lib/db-sql-helpers";
+import type { RankingMeta, Trend } from "@/lib/data/tcdb";
 
-export type Trend = "up" | "down" | "flat";
-
-export const TCDB_RANKING_TRENDS = ["up", "down", "flat"] as const;
-
-export function isTrend(value: string | null | undefined): value is Trend {
-  return TCDB_RANKING_TRENDS.includes(value as Trend);
-}
-
-export type RankingMeta = {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-  q?: string;
-  trend?: Trend;
-};
-
-export type RankingRow = {
-  homie_id: number;
+export type ClanRankingRow = {
+  clan_id: number;
   name: string;
+  slug: string;
   card_count: number;
   ranking: number;
   ranking_at: string;
@@ -34,48 +20,17 @@ export type RankingRow = {
   diff_sign_changed: boolean;
 };
 
-export type RankingResponse = {
-  data: RankingRow[];
+export type ClanRankingResponse = {
+  data: ClanRankingRow[];
   meta: RankingMeta;
 };
 
-const TCDB_TABLE = "dojo.homie_tcdb_ranking_rt" as const;
+const TCDB_CLAN_TABLE = "dojo.clan_tcdb_ranking_rt" as const;
+const CLAN_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
-  void (async () => {
-    try {
-      const reg = await withDbRetry(() =>
-        sqlQueryOne<{ r: string | null }>("SELECT to_regclass($1::text) AS r", [
-          TCDB_TABLE,
-        ]),
-      );
+type DbClanRankingRow = ClanRankingRow;
 
-      if (!reg?.r) {
-        console.warn(
-          `[tcdb] Missing relation for ${TCDB_TABLE}; update tcdb rankings queries or schema.`,
-        );
-      }
-    } catch (error) {
-      console.warn(`[tcdb] Sanity check failed for ${TCDB_TABLE}`, error);
-    }
-  })();
-}
-
-export type DbRankingRow = {
-  homie_id: number;
-  name: string;
-  card_count: number;
-  ranking: number;
-  ranking_at: string;
-  difference: number;
-  rank_delta: number | null;
-  diff_delta: number | null;
-  trend_rank: Trend;
-  trend_overall: Trend;
-  diff_sign_changed: boolean;
-};
-
-function normalizeRankingRow(row: DbRankingRow): RankingRow {
+function normalizeClanRankingRow(row: DbClanRankingRow): ClanRankingRow {
   const ranking_at = asDateString(row.ranking_at);
   if (!ranking_at) {
     throw new Error("Invalid ranking_at value from database");
@@ -83,12 +38,17 @@ function normalizeRankingRow(row: DbRankingRow): RankingRow {
   return { ...row, ranking_at };
 }
 
-export async function listTcdbRankings(opts: {
+function normalizeSlug(slug: string): string | null {
+  const normalized = slug.trim().toLowerCase();
+  return CLAN_SLUG_PATTERN.test(normalized) ? normalized : null;
+}
+
+export async function listTcdbClanRankings(opts: {
   page: number;
   pageSize: number;
   q?: string;
   trend?: Trend;
-}): Promise<RankingResponse> {
+}): Promise<ClanRankingResponse> {
   const page = Math.max(1, Number(opts.page ?? 1));
   const pageSize = Math.max(1, Math.min(200, Number(opts.pageSize ?? 50)));
   const q = (opts.q ?? "").trim();
@@ -110,10 +70,11 @@ export async function listTcdbRankings(opts: {
   const offset = (page - 1) * pageSize;
 
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    sqlQueryRows<DbClanRankingRow>(
       `
-        SELECT homie_id,
+        SELECT clan_id,
                name,
+               slug,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -123,7 +84,7 @@ export async function listTcdbRankings(opts: {
                trend_rank,
                trend_overall,
                diff_sign_changed
-        FROM ${TCDB_TABLE}
+        FROM ${TCDB_CLAN_TABLE}
         ${whereSql}
         ORDER BY card_count DESC, ranking ASC, ranking_at DESC
         LIMIT $${i++} OFFSET $${i++}
@@ -132,11 +93,11 @@ export async function listTcdbRankings(opts: {
     ),
   );
 
-  const data = rows.map(normalizeRankingRow);
+  const data = rows.map(normalizeClanRankingRow);
 
   const [{ c: totalStr } = { c: "0" }] = await withDbRetry(() =>
     sqlQueryRows<{ c: string }>(
-      `SELECT COUNT(*)::text AS c FROM ${TCDB_TABLE} ${whereSql}`,
+      `SELECT COUNT(*)::text AS c FROM ${TCDB_CLAN_TABLE} ${whereSql}`,
       params,
     ),
   );
@@ -149,16 +110,18 @@ export async function listTcdbRankings(opts: {
   };
 }
 
-export async function getTcdbRanking(
-  id: string | number,
-): Promise<RankingRow | null> {
-  const numericId = Number(id);
-  if (!Number.isInteger(numericId)) return null;
+export async function getTcdbClanRanking(
+  slug: string,
+): Promise<ClanRankingRow | null> {
+  const normalizedSlug = normalizeSlug(slug);
+  if (!normalizedSlug) return null;
+
   const row = await withDbRetry(() =>
-    sqlQueryOne<DbRankingRow>(
+    sqlQueryOne<DbClanRankingRow>(
       `
-        SELECT homie_id,
+        SELECT clan_id,
                name,
+               slug,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -168,23 +131,26 @@ export async function getTcdbRanking(
                trend_rank,
                trend_overall,
                diff_sign_changed
-        FROM ${TCDB_TABLE}
-        WHERE homie_id = $1
+        FROM ${TCDB_CLAN_TABLE}
+        WHERE slug = $1
         LIMIT 1
       `,
-      [numericId],
+      [normalizedSlug],
     ),
   );
-  if (!row) return null;
-  return normalizeRankingRow(row);
+
+  return row ? normalizeClanRankingRow(row) : null;
 }
 
-export async function listNumberOneTcdbHomieRankings(): Promise<RankingRow[]> {
+export async function listNumberOneTcdbClanRankings(): Promise<
+  ClanRankingRow[]
+> {
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    sqlQueryRows<DbClanRankingRow>(
       `
-        SELECT homie_id,
+        SELECT clan_id,
                name,
+               slug,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -194,25 +160,26 @@ export async function listNumberOneTcdbHomieRankings(): Promise<RankingRow[]> {
                trend_rank,
                trend_overall,
                diff_sign_changed
-        FROM ${TCDB_TABLE}
+        FROM ${TCDB_CLAN_TABLE}
         WHERE ranking = 1
         ORDER BY card_count DESC, name ASC
       `,
     ),
   );
 
-  return rows.map(normalizeRankingRow);
+  return rows.map(normalizeClanRankingRow);
 }
 
-export async function listTopTcdbHomieRankings(
+export async function listTopTcdbClanRankings(
   limit = 5,
-): Promise<RankingRow[]> {
+): Promise<ClanRankingRow[]> {
   const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    sqlQueryRows<DbClanRankingRow>(
       `
-        SELECT homie_id,
+        SELECT clan_id,
                name,
+               slug,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -222,7 +189,7 @@ export async function listTopTcdbHomieRankings(
                trend_rank,
                trend_overall,
                diff_sign_changed
-        FROM ${TCDB_TABLE}
+        FROM ${TCDB_CLAN_TABLE}
         ORDER BY card_count DESC, ranking ASC, ranking_at DESC
         LIMIT $1
       `,
@@ -230,20 +197,21 @@ export async function listTopTcdbHomieRankings(
     ),
   );
 
-  return rows.map(normalizeRankingRow);
+  return rows.map(normalizeClanRankingRow);
 }
 
-async function listRecentTcdbHomieMovers(
+async function listRecentTcdbClanMovers(
   trend: Extract<Trend, "up" | "down">,
   limit = 5,
-): Promise<RankingRow[]> {
+): Promise<ClanRankingRow[]> {
   const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
   const direction = trend === "up" ? "DESC" : "ASC";
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    sqlQueryRows<DbClanRankingRow>(
       `
-        SELECT homie_id,
+        SELECT clan_id,
                name,
+               slug,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -253,7 +221,7 @@ async function listRecentTcdbHomieMovers(
                trend_rank,
                trend_overall,
                diff_sign_changed
-        FROM ${TCDB_TABLE}
+        FROM ${TCDB_CLAN_TABLE}
         WHERE trend_overall = $1
         ORDER BY ranking_at DESC,
                  rank_delta ${direction} NULLS LAST,
@@ -266,17 +234,17 @@ async function listRecentTcdbHomieMovers(
     ),
   );
 
-  return rows.map(normalizeRankingRow);
+  return rows.map(normalizeClanRankingRow);
 }
 
-export async function listRecentTcdbHomieRisers(
+export async function listRecentTcdbClanRisers(
   limit = 5,
-): Promise<RankingRow[]> {
-  return listRecentTcdbHomieMovers("up", limit);
+): Promise<ClanRankingRow[]> {
+  return listRecentTcdbClanMovers("up", limit);
 }
 
-export async function listRecentTcdbHomieFallers(
+export async function listRecentTcdbClanFallers(
   limit = 5,
-): Promise<RankingRow[]> {
-  return listRecentTcdbHomieMovers("down", limit);
+): Promise<ClanRankingRow[]> {
+  return listRecentTcdbClanMovers("down", limit);
 }

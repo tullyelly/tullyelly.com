@@ -6,7 +6,7 @@ import RankingDetailPage, {
   formatRankingSigned,
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
-import { getTcdbRanking } from "@/lib/data/tcdb";
+import { getTcdbClanRanking } from "@/lib/data/tcdb-clans";
 import { makeDetailGenerateMetadata } from "@/lib/seo/factories";
 
 export const dynamic = "force-dynamic";
@@ -14,37 +14,37 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 export const generateMetadata = makeDetailGenerateMetadata({
-  pathBase: "/cardattack/tcdb-rankings",
-  fetcher: async (id: string) => await getTcdbRanking(id),
+  pathBase: "/cardattack/tcdb-rankings/clans",
+  paramKey: "slug",
+  fetcher: async (slug: string) => await getTcdbClanRanking(slug),
   resolve: (ranking) => {
-    const id = String(ranking.homie_id);
-    const title = `${ranking.name}; Jersey ${id}`;
-    const description = `TCDB ranking for ${ranking.name}; rank ${ranking.ranking} with ${ranking.card_count} cards as of ${ranking.ranking_at}.`;
+    const title = `${ranking.name}; ${ranking.slug}`;
+    const description = `TCDB clan ranking for ${ranking.name}; rank ${ranking.ranking} with ${ranking.card_count} cards as of ${ranking.ranking_at}.`;
     return {
       title,
       description,
-      canonicalPath: `/cardattack/tcdb-rankings/${id}`,
+      canonicalPath: `/cardattack/tcdb-rankings/clans/${ranking.slug}`,
       index: true,
     };
   },
 });
 
 type PageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export default async function Page({ params }: PageProps) {
-  const { id } = await params;
-  const ranking = await getTcdbRanking(id);
+  const { slug } = await params;
+  const ranking = await getTcdbClanRanking(slug);
   if (!ranking) return notFound();
 
   return (
     <RankingDetailPage
-      current="homies"
+      current="clans"
       title={ranking.name}
-      eyebrow={`Homie ${ranking.homie_id}`}
-      listHref="/cardattack/tcdb-rankings/homies"
-      listLabel="Homie rankings"
+      eyebrow={`Clan ${ranking.slug}`}
+      listHref="/cardattack/tcdb-rankings/clans"
+      listLabel="Clan rankings"
       fields={[
         {
           label: "Current Rank",
@@ -55,8 +55,8 @@ export default async function Page({ params }: PageProps) {
           value: formatRankingNumber(ranking.card_count),
         },
         {
-          label: "Jersey / Homie ID",
-          value: ranking.homie_id,
+          label: "Slug",
+          value: ranking.slug,
         },
         {
           label: "Difference",

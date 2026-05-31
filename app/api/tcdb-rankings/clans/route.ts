@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { isTrend, listTcdbRankings } from "@/lib/data/tcdb";
+import { listTcdbClanRankings } from "@/lib/data/tcdb-clans";
+import { isTrend } from "@/lib/data/tcdb";
 
-// Neon supports edge, but use Node for parity with other data entrypoints if preferred.
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
@@ -12,6 +12,6 @@ export async function GET(req: Request) {
   const trendParam = searchParams.get("trend");
   const trend = isTrend(trendParam) ? trendParam : undefined;
 
-  const data = await listTcdbRankings({ page, pageSize, q, trend });
+  const data = await listTcdbClanRankings({ page, pageSize, q, trend });
   return NextResponse.json(data, { headers: { "Cache-Tag": "tcdb-rankings" } });
 }

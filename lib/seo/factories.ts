@@ -39,6 +39,7 @@ export function makeListGenerateMetadata({
 
 type DetailMetaOpts<T> = {
   pathBase: string; // e.g., "/mark2/shaolin-scrolls"
+  paramKey?: string;
   fetcher: (id: string) => Promise<T | null>;
   resolve: (entity: T) => {
     title: string;
@@ -50,15 +51,17 @@ type DetailMetaOpts<T> = {
 
 export function makeDetailGenerateMetadata<T>({
   pathBase,
+  paramKey = "id",
   fetcher,
   resolve,
 }: DetailMetaOpts<T>) {
   return async function generateMetadata({
     params,
   }: {
-    params: Promise<{ id: string }>;
+    params: Promise<Record<string, string | undefined>>;
   }): Promise<Metadata> {
-    const { id } = await params;
+    const resolvedParams = await params;
+    const id = resolvedParams[paramKey] ?? "";
     const entity = await fetcher(id);
     if (!entity) {
       return buildMetadata({
