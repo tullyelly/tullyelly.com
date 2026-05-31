@@ -6,28 +6,44 @@ import RankingDetailPage, {
   formatRankingSigned,
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
-import { getTcdbClanRanking } from "@/lib/data/tcdb-clans";
-import { makeDetailGenerateMetadata } from "@/lib/seo/factories";
+import { getTcdbClanRankingsBySlug } from "@/lib/data/tcdb-clans";
+import { buildMetadata } from "@/lib/seo/builders";
+import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
+import { canonicalFor } from "@/lib/seo/url";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
 
-export const generateMetadata = makeDetailGenerateMetadata({
-  pathBase: "/cardattack/tcdb-rankings/clans",
-  paramKey: "slug",
-  fetcher: async (slug: string) => await getTcdbClanRanking(slug),
-  resolve: (ranking) => {
-    const title = `${ranking.name}; ${ranking.slug}`;
-    const description = `TCDB clan ranking for ${ranking.name}; rank ${ranking.ranking} with ${ranking.card_count} cards as of ${ranking.ranking_at}.`;
-    return {
-      title,
-      description,
-      canonicalPath: `/cardattack/tcdb-rankings/clans/${ranking.slug}`,
-      index: true,
-    };
-  },
-});
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const rankings = await getTcdbClanRankingsBySlug(slug);
+
+  if (rankings.length === 0) {
+    return buildMetadata({
+      title: "Not found",
+      description: "The requested clan ranking could not be located.",
+      canonical: canonicalFor(`/cardattack/tcdb-rankings/clans/${slug}`),
+      robots: { index: false, follow: false },
+    });
+  }
+
+  const ranking = rankings[0];
+  const sports = rankings.map((row) => formatClanSportLabel(row.sport));
+
+  return buildMetadata({
+    title: `${ranking.name}; ${ranking.slug}`,
+    description: `TCDB clan rankings for ${ranking.name}; current sports include ${sports.join(", ")}.`,
+    canonical: canonicalFor(`/cardattack/tcdb-rankings/clans/${ranking.slug}`),
+    robots: { index: true, follow: true },
+    type: "website",
+    twitterCard: "summary",
+  });
+}
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -35,8 +51,10 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
-  const ranking = await getTcdbClanRanking(slug);
-  if (!ranking) return notFound();
+  const rankings = await getTcdbClanRankingsBySlug(slug);
+  if (rankings.length === 0) return notFound();
+
+  const ranking = rankings[0];
 
   return (
     <RankingDetailPage
@@ -45,48 +63,55 @@ export default async function Page({ params }: PageProps) {
       eyebrow={`Clan ${ranking.slug}`}
       listHref="/cardattack/tcdb-rankings/clans"
       listLabel="Clan rankings"
-      fields={[
-        {
-          label: "Current Rank",
-          value: formatRankingNumber(ranking.ranking),
-        },
-        {
-          label: "Total Cards",
-          value: formatRankingNumber(ranking.card_count),
-        },
-        {
-          label: "Slug",
-          value: ranking.slug,
-        },
-        {
-          label: "Difference",
-          value: formatRankingSigned(ranking.difference),
-        },
-        {
-          label: "Rank Delta",
-          value: formatRankingSigned(ranking.rank_delta),
-        },
-        {
-          label: "Difference Delta",
-          value: formatRankingSigned(ranking.diff_delta),
-        },
-        {
-          label: "Ranking Updated",
-          value: formatRankingDate(ranking.ranking_at),
-        },
-        {
-          label: "Overall Trend",
-          value: rankingTrendField(ranking.trend_overall),
-        },
-        {
-          label: "Rank Trend",
-          value: rankingTrendField(ranking.trend_rank),
-        },
-        {
-          label: "Diff Sign Changed",
-          value: formatBoolean(ranking.diff_sign_changed),
-        },
-      ]}
+      fieldGroups={rankings.map((row) => ({
+        title: formatClanSportLabel(row.sport),
+        fields: [
+          {
+            label: "Sport",
+            value: formatClanSportLabel(row.sport),
+          },
+          {
+            label: "Current Rank",
+            value: formatRankingNumber(row.ranking),
+          },
+          {
+            label: "Total Cards",
+            value: formatRankingNumber(row.card_count),
+          },
+          {
+            label: "Slug",
+            value: row.slug,
+          },
+          {
+            label: "Difference",
+            value: formatRankingSigned(row.difference),
+          },
+          {
+            label: "Rank Delta",
+            value: formatRankingSigned(row.rank_delta),
+          },
+          {
+            label: "Difference Delta",
+            value: formatRankingSigned(row.diff_delta),
+          },
+          {
+            label: "Ranking Updated",
+            value: formatRankingDate(row.ranking_at),
+          },
+          {
+            label: "Overall Trend",
+            value: rankingTrendField(row.trend_overall),
+          },
+          {
+            label: "Rank Trend",
+            value: rankingTrendField(row.trend_rank),
+          },
+          {
+            label: "Diff Sign Changed",
+            value: formatBoolean(row.diff_sign_changed),
+          },
+        ],
+      }))}
     />
   );
 }

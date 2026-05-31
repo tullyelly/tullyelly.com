@@ -1,7 +1,6 @@
 /** @jest-environment node */
 
 const sqlQueryRowsMock = jest.fn();
-const sqlQueryOneMock = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("@/lib/db/retry", () => ({
@@ -9,11 +8,10 @@ jest.mock("@/lib/db/retry", () => ({
 }));
 jest.mock("@/lib/db-sql-helpers", () => ({
   sqlQueryRows: (...args: unknown[]) => sqlQueryRowsMock(...args),
-  sqlQueryOne: (...args: unknown[]) => sqlQueryOneMock(...args),
 }));
 
 import {
-  getTcdbClanRanking,
+  getTcdbClanRankingsBySlug,
   listNumberOneTcdbClanRankings,
   listRecentTcdbClanFallers,
   listRecentTcdbClanRisers,
@@ -25,6 +23,7 @@ const clanRow = {
   clan_id: 12,
   name: "Milwaukee Bucks",
   slug: "milwaukee-bucks",
+  sport: "basketball",
   card_count: 400,
   ranking: 1,
   ranking_at: "2026-05-01",
@@ -53,7 +52,6 @@ const homieRow = {
 describe("tcdb clan ranking data helpers", () => {
   beforeEach(() => {
     sqlQueryRowsMock.mockReset();
-    sqlQueryOneMock.mockReset();
   });
 
   it("lists clan rankings with pagination, search, and trend filters", async () => {
@@ -91,29 +89,42 @@ describe("tcdb clan ranking data helpers", () => {
     expect(values).toEqual(["%bucks%", "up", 20, 20]);
   });
 
-  it("gets a clan ranking by slug", async () => {
-    sqlQueryOneMock.mockResolvedValue(clanRow);
-
-    await expect(getTcdbClanRanking("Milwaukee-Bucks")).resolves.toEqual({
+  it("gets all current sport rankings for a clan slug", async () => {
+    const footballRow = {
       ...clanRow,
-      ranking_at: "2026-05-01",
-    });
+      sport: "football",
+      card_count: 250,
+      ranking: 4,
+    };
+    sqlQueryRowsMock.mockResolvedValue([clanRow, footballRow]);
 
-    const [query, values] = sqlQueryOneMock.mock.calls[0] as [
+    await expect(getTcdbClanRankingsBySlug("Milwaukee-Bucks")).resolves.toEqual(
+      [
+        { ...clanRow, ranking_at: "2026-05-01" },
+        { ...footballRow, ranking_at: "2026-05-01" },
+      ],
+    );
+
+    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
       string,
       unknown[],
     ];
     expect(query).toContain("WHERE slug = $1");
+    expect(query).toContain("ORDER BY sport ASC");
     expect(values).toEqual(["milwaukee-bucks"]);
   });
 
-  it("returns null for missing or invalid clan slugs", async () => {
-    sqlQueryOneMock.mockResolvedValue(null);
+  it("returns an empty list for missing or invalid clan slugs", async () => {
+    sqlQueryRowsMock.mockResolvedValue([]);
 
-    await expect(getTcdbClanRanking("missing-clan")).resolves.toBeNull();
-    await expect(getTcdbClanRanking("Missing Clan")).resolves.toBeNull();
+    await expect(getTcdbClanRankingsBySlug("missing-clan")).resolves.toEqual(
+      [],
+    );
+    await expect(getTcdbClanRankingsBySlug("Missing Clan")).resolves.toEqual(
+      [],
+    );
 
-    expect(sqlQueryOneMock).toHaveBeenCalledTimes(1);
+    expect(sqlQueryRowsMock).toHaveBeenCalledTimes(1);
   });
 
   it("returns #1 homie and clan summary rows", async () => {

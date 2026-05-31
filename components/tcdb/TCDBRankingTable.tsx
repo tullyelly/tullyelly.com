@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import type { CSSProperties } from "react";
 import type { RankingResponse } from "@/lib/data/tcdb";
 import type { ClanRankingResponse } from "@/lib/data/tcdb-clans";
+import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
 
 export type TCDBRankingTableTheme = {
   tableThemeStyle?: CSSProperties;
@@ -77,11 +78,11 @@ export function clanRankingsToTableData(
 ): TCDBRankingTableData {
   return {
     data: serverData.data.map((row) => ({
-      key: `clan-${row.slug}`,
+      key: `clan-${row.slug}-${row.sport}`,
       name: row.name,
       href: `/cardattack/tcdb-rankings/clans/${row.slug}`,
-      identifierLabel: "Slug",
-      identifierValue: row.slug,
+      identifierLabel: "Sport",
+      identifierValue: formatClanSportLabel(row.sport),
       card_count: row.card_count,
       ranking: row.ranking,
       ranking_at: row.ranking_at,

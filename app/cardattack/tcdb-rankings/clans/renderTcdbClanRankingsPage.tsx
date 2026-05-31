@@ -77,7 +77,7 @@ export async function renderTcdbClanRankingsPage(
             labels={{
               searchPlaceholder: "Search clans",
               searchAriaLabel: "Search clans",
-              identifierColumn: "Slug",
+              identifierColumn: "Sport",
               emptyMessage: "No clan rankings match your filters.",
               tableAriaLabel: "TCDB clan rankings table",
             }}

@@ -12,11 +12,17 @@ type RankingDetailField = {
   value: ReactNode;
 };
 
+type RankingDetailFieldGroup = {
+  title?: string;
+  fields: RankingDetailField[];
+};
+
 type RankingDetailPageProps = {
   current: "homies" | "clans";
   title: string;
   eyebrow: string;
-  fields: RankingDetailField[];
+  fields?: RankingDetailField[];
+  fieldGroups?: RankingDetailFieldGroup[];
   listHref: string;
   listLabel: string;
 };
@@ -57,9 +63,15 @@ export default function RankingDetailPage({
   title,
   eyebrow,
   fields,
+  fieldGroups,
   listHref,
   listLabel,
 }: RankingDetailPageProps) {
+  const groups =
+    fieldGroups && fieldGroups.length > 0
+      ? fieldGroups
+      : [{ fields: fields ?? [] }];
+
   return (
     <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
       <div
@@ -95,24 +107,34 @@ export default function RankingDetailPage({
           </div>
         </section>
 
-        <Card
-          as="section"
-          className="border-[color:var(--trade-border)] bg-[color:var(--trade-off-white)]"
-        >
-          <dl className="grid gap-px overflow-hidden rounded-xl border border-[color:var(--trade-border)] bg-[color:var(--trade-border)] sm:grid-cols-2 xl:grid-cols-5">
-            {fields.map((field) => (
-              <div
-                key={field.label}
-                className="min-w-0 bg-[color:var(--trade-off-white)] px-3.5 py-3 md:px-4 md:py-3.5"
-              >
-                <dt className={summaryLabelClassName}>{field.label}</dt>
-                <dd className="mt-2 flex min-h-[2.25rem] min-w-0 items-center text-sm font-semibold leading-snug text-[color:var(--trade-charcoal)]">
-                  {field.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </Card>
+        <div className="space-y-5">
+          {groups.map((group, index) => (
+            <Card
+              as="section"
+              key={group.title ?? index}
+              className="border-[color:var(--trade-border)] bg-[color:var(--trade-off-white)]"
+            >
+              {group.title ? (
+                <h2 className="mb-3 text-xl font-semibold text-[color:var(--trade-charcoal)]">
+                  {group.title}
+                </h2>
+              ) : null}
+              <dl className="grid gap-px overflow-hidden rounded-xl border border-[color:var(--trade-border)] bg-[color:var(--trade-border)] sm:grid-cols-2 xl:grid-cols-5">
+                {group.fields.map((field) => (
+                  <div
+                    key={field.label}
+                    className="min-w-0 bg-[color:var(--trade-off-white)] px-3.5 py-3 md:px-4 md:py-3.5"
+                  >
+                    <dt className={summaryLabelClassName}>{field.label}</dt>
+                    <dd className="mt-2 flex min-h-[2.25rem] min-w-0 items-center text-sm font-semibold leading-snug text-[color:var(--trade-charcoal)]">
+                      {field.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Card>
+          ))}
+        </div>
       </div>
     </FullBleedPage>
   );

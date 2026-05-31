@@ -7,6 +7,7 @@ import TrendPill from "@/components/tcdb/TrendPill";
 import type { RankingRow } from "@/lib/data/tcdb";
 import type { ClanRankingRow } from "@/lib/data/tcdb-clans";
 import { fmtDate } from "@/lib/datetime";
+import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
 import { tcdbTradePageThemeVars } from "@/lib/tcdb-theme";
 
 export type RankingLandingSummary = {
@@ -55,10 +56,10 @@ function homieItem(row: RankingRow): LandingItem {
 
 function clanItem(row: ClanRankingRow): LandingItem {
   return {
-    key: `clan-${row.slug}`,
+    key: `clan-${row.slug}-${row.sport}`,
     name: row.name,
     href: `/cardattack/tcdb-rankings/clans/${row.slug}`,
-    detail: row.slug,
+    detail: `${row.slug}; ${formatClanSportLabel(row.sport)}`,
     cardCount: row.card_count,
     ranking: row.ranking,
     rankingAt: row.ranking_at,

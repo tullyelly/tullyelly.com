@@ -9,7 +9,7 @@ const mockListNumberOneTcdbClanRankings = jest.fn();
 const mockListRecentTcdbClanFallers = jest.fn();
 const mockListRecentTcdbClanRisers = jest.fn();
 const mockListTopTcdbClanRankings = jest.fn();
-const mockGetTcdbClanRanking = jest.fn();
+const mockGetTcdbClanRankingsBySlug = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("next/cache", () => ({
@@ -32,7 +32,14 @@ jest.mock("@/lib/data/tcdb", () => ({
     mockListTopTcdbHomieRankings(...args),
 }));
 jest.mock("@/lib/data/tcdb-clans", () => ({
-  getTcdbClanRanking: (...args: unknown[]) => mockGetTcdbClanRanking(...args),
+  formatClanSportLabel: (sport: string) =>
+    sport
+      .split("-")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" "),
+  getTcdbClanRankingsBySlug: (...args: unknown[]) =>
+    mockGetTcdbClanRankingsBySlug(...args),
   listNumberOneTcdbClanRankings: (...args: unknown[]) =>
     mockListNumberOneTcdbClanRankings(...args),
   listRecentTcdbClanFallers: (...args: unknown[]) =>
@@ -66,6 +73,7 @@ const clanRanking = {
   clan_id: 12,
   name: "Milwaukee Bucks",
   slug: "milwaukee-bucks",
+  sport: "basketball",
   card_count: 400,
   ranking: 1,
   ranking_at: "2026-05-01",
@@ -88,7 +96,7 @@ describe("TCDB rankings pages", () => {
     mockListRecentTcdbClanFallers.mockReset();
     mockListRecentTcdbClanRisers.mockReset();
     mockListTopTcdbClanRankings.mockReset();
-    mockGetTcdbClanRanking.mockReset();
+    mockGetTcdbClanRankingsBySlug.mockReset();
   });
 
   it("renders the consolidated landing sections and detail links", async () => {
@@ -149,7 +157,10 @@ describe("TCDB rankings pages", () => {
   });
 
   it("renders clan detail as a page", async () => {
-    mockGetTcdbClanRanking.mockResolvedValue(clanRanking);
+    mockGetTcdbClanRankingsBySlug.mockResolvedValue([
+      clanRanking,
+      { ...clanRanking, sport: "football", card_count: 250 },
+    ]);
 
     render(
       await ClanDetailPage({
@@ -160,7 +171,13 @@ describe("TCDB rankings pages", () => {
     expect(
       screen.getByRole("heading", { name: "Milwaukee Bucks" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Slug")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Basketball" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Football" }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Sport")).toHaveLength(2);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 

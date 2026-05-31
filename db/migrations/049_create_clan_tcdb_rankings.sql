@@ -30,6 +30,7 @@ EXECUTE FUNCTION dojo.audit_stamp_generic();
 CREATE TABLE IF NOT EXISTS dojo.clan_tcdb_snapshot (
   id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   clan_id      BIGINT NOT NULL REFERENCES dojo.clan(id),
+  sport        VARCHAR(100) NOT NULL,
   card_count   INTEGER NOT NULL CHECK (card_count >= 0),
   ranking      INTEGER NOT NULL CHECK (ranking >= 0),
   difference   INTEGER NOT NULL,
@@ -37,14 +38,16 @@ CREATE TABLE IF NOT EXISTS dojo.clan_tcdb_snapshot (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_by   VARCHAR(100) DEFAULT CURRENT_USER,
   updated_at   TIMESTAMPTZ,
-  updated_by   VARCHAR(100)
+  updated_by   VARCHAR(100),
+  CONSTRAINT clan_tcdb_snapshot_sport_check
+    CHECK (sport ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
 
 ALTER TABLE dojo.clan_tcdb_snapshot
   OWNER TO tullyelly_admin;
 
-CREATE UNIQUE INDEX IF NOT EXISTS clan_tcdb_snapshot_unique_ranking_at
-  ON dojo.clan_tcdb_snapshot (clan_id, ranking_at);
+CREATE UNIQUE INDEX IF NOT EXISTS clan_tcdb_snapshot_unique_sport_ranking_at
+  ON dojo.clan_tcdb_snapshot (clan_id, sport, ranking_at);
 
 DROP TRIGGER IF EXISTS trg_audit_clan_tcdb_snapshot ON dojo.clan_tcdb_snapshot;
 CREATE TRIGGER trg_audit_clan_tcdb_snapshot
@@ -56,6 +59,7 @@ CREATE TABLE IF NOT EXISTS dojo.clan_tcdb_snapshot_rt (
   clan_id          BIGINT NOT NULL,
   name             TEXT NOT NULL,
   slug             TEXT NOT NULL,
+  sport            TEXT NOT NULL CHECK (sport ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
   card_count       INTEGER NOT NULL,
   ranking          INTEGER NOT NULL,
   ranking_at       DATE NOT NULL,
@@ -75,7 +79,7 @@ CREATE TABLE IF NOT EXISTS dojo.clan_tcdb_snapshot_rt (
 
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-  PRIMARY KEY (clan_id, ranking_at)
+  PRIMARY KEY (clan_id, sport, ranking_at)
 );
 
 ALTER TABLE dojo.clan_tcdb_snapshot_rt
@@ -84,13 +88,14 @@ ALTER TABLE dojo.clan_tcdb_snapshot_rt
 CREATE INDEX IF NOT EXISTS idx_clan_tcdb_snapshot_rt_rank
   ON dojo.clan_tcdb_snapshot_rt (ranking_at DESC, ranking ASC);
 
-CREATE INDEX IF NOT EXISTS idx_clan_tcdb_snapshot_rt_slug
-  ON dojo.clan_tcdb_snapshot_rt (slug, ranking_at DESC);
+CREATE INDEX IF NOT EXISTS idx_clan_tcdb_snapshot_rt_slug_sport
+  ON dojo.clan_tcdb_snapshot_rt (slug, sport, ranking_at DESC);
 
 CREATE TABLE IF NOT EXISTS dojo.clan_tcdb_ranking_rt (
-  clan_id           BIGINT PRIMARY KEY,
+  clan_id           BIGINT NOT NULL,
   name              TEXT NOT NULL,
   slug              TEXT NOT NULL,
+  sport             TEXT NOT NULL CHECK (sport ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
   card_count        INTEGER NOT NULL,
   ranking           INTEGER NOT NULL,
   ranking_at        DATE NOT NULL,
@@ -106,14 +111,16 @@ CREATE TABLE IF NOT EXISTS dojo.clan_tcdb_ranking_rt (
   trend_overall     TEXT CHECK (trend_overall IN ('up','down','flat')),
   diff_sign_changed BOOLEAN NOT NULL DEFAULT FALSE,
 
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  PRIMARY KEY (clan_id, sport)
 );
 
 ALTER TABLE dojo.clan_tcdb_ranking_rt
   OWNER TO tullyelly_admin;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_clan_tcdb_ranking_rt_slug
-  ON dojo.clan_tcdb_ranking_rt (slug);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_clan_tcdb_ranking_rt_slug_sport
+  ON dojo.clan_tcdb_ranking_rt (slug, sport);
 
 CREATE INDEX IF NOT EXISTS idx_clan_tcdb_ranking_rt_rank
   ON dojo.clan_tcdb_ranking_rt (ranking ASC, ranking_at DESC);
@@ -126,7 +133,7 @@ BEGIN
   TRUNCATE TABLE dojo.clan_tcdb_snapshot_rt;
 
   INSERT INTO dojo.clan_tcdb_snapshot_rt (
-    clan_id, name, slug, card_count, ranking, ranking_at, difference,
+    clan_id, name, slug, sport, card_count, ranking, ranking_at, difference,
     prev_card_count, prev_ranking, prev_difference, prev_ranking_at,
     card_count_delta, rank_delta, diff_delta,
     trend_rank, trend_overall, diff_sign_changed, updated_at
@@ -134,14 +141,15 @@ BEGIN
   WITH snapshot_history AS (
     SELECT
       s.clan_id,
+      s.sport,
       s.card_count,
       s.ranking,
       s.difference,
       s.ranking_at,
-      LAG(s.card_count) OVER (PARTITION BY s.clan_id ORDER BY s.ranking_at) AS prev_card_count,
-      LAG(s.ranking) OVER (PARTITION BY s.clan_id ORDER BY s.ranking_at) AS prev_ranking,
-      LAG(s.difference) OVER (PARTITION BY s.clan_id ORDER BY s.ranking_at) AS prev_difference,
-      LAG(s.ranking_at) OVER (PARTITION BY s.clan_id ORDER BY s.ranking_at) AS prev_ranking_at
+      LAG(s.card_count) OVER (PARTITION BY s.clan_id, s.sport ORDER BY s.ranking_at) AS prev_card_count,
+      LAG(s.ranking) OVER (PARTITION BY s.clan_id, s.sport ORDER BY s.ranking_at) AS prev_ranking,
+      LAG(s.difference) OVER (PARTITION BY s.clan_id, s.sport ORDER BY s.ranking_at) AS prev_difference,
+      LAG(s.ranking_at) OVER (PARTITION BY s.clan_id, s.sport ORDER BY s.ranking_at) AS prev_ranking_at
     FROM dojo.clan_tcdb_snapshot s
   ),
   final AS (
@@ -149,6 +157,7 @@ BEGIN
       c.id AS clan_id,
       c.name,
       c.slug,
+      sh.sport,
       sh.card_count,
       sh.ranking,
       sh.ranking_at,
@@ -186,7 +195,7 @@ BEGIN
     JOIN dojo.clan c ON c.id = sh.clan_id
   )
   SELECT
-    clan_id, name, slug, card_count, ranking, ranking_at, difference,
+    clan_id, name, slug, sport, card_count, ranking, ranking_at, difference,
     prev_card_count, prev_ranking, prev_difference, prev_ranking_at,
     card_count_delta, rank_delta, diff_delta,
     trend_rank, trend_overall, diff_sign_changed, now()
@@ -204,18 +213,18 @@ BEGIN
   TRUNCATE TABLE dojo.clan_tcdb_ranking_rt;
 
   INSERT INTO dojo.clan_tcdb_ranking_rt (
-    clan_id, name, slug, card_count, ranking, ranking_at, difference,
+    clan_id, name, slug, sport, card_count, ranking, ranking_at, difference,
     prev_ranking, prev_difference, prev_ranking_at,
     rank_delta, diff_delta, trend_rank, trend_overall, diff_sign_changed, updated_at
   )
   WITH ranked AS (
     SELECT
       s.*,
-      ROW_NUMBER() OVER (PARTITION BY s.clan_id ORDER BY s.ranking_at DESC) AS rn
+      ROW_NUMBER() OVER (PARTITION BY s.clan_id, s.sport ORDER BY s.ranking_at DESC) AS rn
     FROM dojo.clan_tcdb_snapshot_rt s
   )
   SELECT
-    clan_id, name, slug, card_count, ranking, ranking_at, difference,
+    clan_id, name, slug, sport, card_count, ranking, ranking_at, difference,
     prev_ranking, prev_difference, prev_ranking_at,
     rank_delta, diff_delta, trend_rank, trend_overall, diff_sign_changed, now()
   FROM ranked

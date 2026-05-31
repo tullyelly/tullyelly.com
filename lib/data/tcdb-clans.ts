@@ -2,13 +2,14 @@ import "server-only";
 
 import { asDateString } from "@/lib/dates";
 import { withDbRetry } from "@/lib/db/retry";
-import { sqlQueryOne, sqlQueryRows } from "@/lib/db-sql-helpers";
+import { sqlQueryRows } from "@/lib/db-sql-helpers";
 import type { RankingMeta, Trend } from "@/lib/data/tcdb";
 
 export type ClanRankingRow = {
   clan_id: number;
   name: string;
   slug: string;
+  sport: string;
   card_count: number;
   ranking: number;
   ranking_at: string;
@@ -75,6 +76,7 @@ export async function listTcdbClanRankings(opts: {
         SELECT clan_id,
                name,
                slug,
+               sport,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -110,18 +112,19 @@ export async function listTcdbClanRankings(opts: {
   };
 }
 
-export async function getTcdbClanRanking(
+export async function getTcdbClanRankingsBySlug(
   slug: string,
-): Promise<ClanRankingRow | null> {
+): Promise<ClanRankingRow[]> {
   const normalizedSlug = normalizeSlug(slug);
-  if (!normalizedSlug) return null;
+  if (!normalizedSlug) return [];
 
-  const row = await withDbRetry(() =>
-    sqlQueryOne<DbClanRankingRow>(
+  const rows = await withDbRetry(() =>
+    sqlQueryRows<DbClanRankingRow>(
       `
         SELECT clan_id,
                name,
                slug,
+               sport,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -133,13 +136,13 @@ export async function getTcdbClanRanking(
                diff_sign_changed
         FROM ${TCDB_CLAN_TABLE}
         WHERE slug = $1
-        LIMIT 1
+        ORDER BY sport ASC
       `,
       [normalizedSlug],
     ),
   );
 
-  return row ? normalizeClanRankingRow(row) : null;
+  return rows.map(normalizeClanRankingRow);
 }
 
 export async function listNumberOneTcdbClanRankings(): Promise<
@@ -151,6 +154,7 @@ export async function listNumberOneTcdbClanRankings(): Promise<
         SELECT clan_id,
                name,
                slug,
+               sport,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -162,7 +166,7 @@ export async function listNumberOneTcdbClanRankings(): Promise<
                diff_sign_changed
         FROM ${TCDB_CLAN_TABLE}
         WHERE ranking = 1
-        ORDER BY card_count DESC, name ASC
+        ORDER BY card_count DESC, name ASC, sport ASC
       `,
     ),
   );
@@ -180,6 +184,7 @@ export async function listTopTcdbClanRankings(
         SELECT clan_id,
                name,
                slug,
+               sport,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -190,7 +195,7 @@ export async function listTopTcdbClanRankings(
                trend_overall,
                diff_sign_changed
         FROM ${TCDB_CLAN_TABLE}
-        ORDER BY card_count DESC, ranking ASC, ranking_at DESC
+        ORDER BY card_count DESC, ranking ASC, ranking_at DESC, sport ASC
         LIMIT $1
       `,
       [safeLimit],
@@ -212,6 +217,7 @@ async function listRecentTcdbClanMovers(
         SELECT clan_id,
                name,
                slug,
+               sport,
                card_count,
                ranking,
                ranking_at::text AS ranking_at,
@@ -227,7 +233,8 @@ async function listRecentTcdbClanMovers(
                  rank_delta ${direction} NULLS LAST,
                  diff_delta ${direction} NULLS LAST,
                  card_count DESC,
-                 name ASC
+                 name ASC,
+                 sport ASC
         LIMIT $2
       `,
       [trend, safeLimit],
