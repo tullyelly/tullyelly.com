@@ -1,8 +1,8 @@
-import dynamic from "next/dynamic";
 import type { CSSProperties } from "react";
 import type { RankingResponse } from "@/lib/data/tcdb";
 import type { ClanRankingResponse } from "@/lib/data/tcdb-clans";
 import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
+import TCDBRankingTableClient from "./TCDBRankingTableClient";
 
 export type TCDBRankingTableTheme = {
   tableThemeStyle?: CSSProperties;
@@ -43,11 +43,6 @@ type TCDBRankingTableProps = {
   theme?: TCDBRankingTableTheme;
   labels: TCDBRankingTableLabels;
 };
-
-const TCDBRankingTableClient = dynamic(
-  () => import("./TCDBRankingTableClient"),
-  { ssr: false },
-);
 
 export function homieRankingsToTableData(
   serverData: RankingResponse,

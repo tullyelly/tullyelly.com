@@ -7,13 +7,50 @@ CREATE TABLE IF NOT EXISTS dojo.clan (
   id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name        VARCHAR(100) NOT NULL,
   slug        VARCHAR(100) NOT NULL,
+  tag_slug    VARCHAR(100),
   created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_by  VARCHAR(100) DEFAULT CURRENT_USER,
   updated_at  TIMESTAMPTZ,
   updated_by  VARCHAR(100),
   CONSTRAINT clan_slug_key UNIQUE (slug),
+  CONSTRAINT clan_tag_slug_key UNIQUE (tag_slug),
+  CONSTRAINT clan_tag_slug_check
+    CHECK (tag_slug IS NULL OR tag_slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
   CONSTRAINT clan_slug_check CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
+
+ALTER TABLE dojo.clan
+  ADD COLUMN IF NOT EXISTS tag_slug VARCHAR(100);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'clan_tag_slug_key'
+      AND conrelid = 'dojo.clan'::regclass
+  ) THEN
+    ALTER TABLE dojo.clan
+    ADD CONSTRAINT clan_tag_slug_key
+    UNIQUE (tag_slug);
+  END IF;
+END
+$$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'clan_tag_slug_check'
+      AND conrelid = 'dojo.clan'::regclass
+  ) THEN
+    ALTER TABLE dojo.clan
+    ADD CONSTRAINT clan_tag_slug_check
+    CHECK (tag_slug IS NULL OR tag_slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$');
+  END IF;
+END
+$$;
 
 ALTER TABLE dojo.clan
   OWNER TO tullyelly_admin;
