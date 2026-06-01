@@ -189,7 +189,11 @@ describe("POST /api/tcdb/snapshot", () => {
       expect(query).toHaveBeenCalledWith("COMMIT");
       expect(release).toHaveBeenCalled();
       expect(mockRevalidateTag).toHaveBeenCalledWith("tcdb-rankings", "max");
-      expect(mockRevalidateTag).toHaveBeenCalledTimes(1);
+      expect(mockRevalidateTag).toHaveBeenCalledWith(
+        "tcdb-rankings-homies",
+        "max",
+      );
+      expect(mockRevalidateTag).toHaveBeenCalledTimes(2);
       expect(mockWriteAudit).toHaveBeenCalledWith({
         action: "tcdb.snapshot.create",
         actorId: "user-789",

@@ -26,28 +26,3 @@ export const tcdbTradeTableThemeStyle: CSSProperties = {
   ["--table-row-divider" as string]:
     "color-mix(in srgb, var(--trade-rust) 14%, transparent)",
 };
-
-export const tcdbTradeInspiredRankingsTheme = {
-  tableThemeStyle: {
-    ...tcdbTradeTableThemeStyle,
-  },
-  detailDialogStyle: {
-    ...tcdbTradeThemeVars,
-    ["--ranking-dialog-shell-bg" as string]: "#FBF7F4",
-    ["--ranking-dialog-text" as string]: "var(--trade-charcoal)",
-    ["--ranking-dialog-border" as string]: "var(--trade-rust-soft)",
-    ["--ranking-dialog-ring" as string]: "var(--trade-rust)",
-    ["--ranking-dialog-header-background" as string]:
-      "linear-gradient(135deg, var(--trade-rust) 0%, var(--trade-rust-deep) 100%)",
-    ["--ranking-dialog-header-fg" as string]: "var(--trade-off-white)",
-    ["--ranking-dialog-header-button-bg" as string]:
-      "rgba(255, 255, 255, 0.16)",
-    ["--ranking-dialog-header-button-hover-bg" as string]:
-      "rgba(255, 255, 255, 0.28)",
-    ["--ranking-dialog-header-ring-offset" as string]: "var(--trade-rust-deep)",
-    ["--ranking-dialog-surface-bg" as string]: "var(--trade-off-white)",
-    ["--ranking-dialog-surface-border" as string]: "var(--trade-border)",
-    ["--ranking-dialog-label" as string]:
-      "color-mix(in srgb, var(--trade-charcoal) 72%, white)",
-  },
-} as const;

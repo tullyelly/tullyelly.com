@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
+import RankingDetailPage, {
+  formatBoolean,
+  formatRankingDate,
+  formatRankingNumber,
+  formatRankingSigned,
+  rankingTrendField,
+} from "@/components/tcdb/RankingDetailPage";
 import { getTcdbRanking } from "@/lib/data/tcdb";
 import { makeDetailGenerateMetadata } from "@/lib/seo/factories";
-import { renderTcdbRankingsPage } from "../renderTcdbRankingsPage";
-import type { SearchParams } from "../renderTcdbRankingsPage";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -26,12 +31,62 @@ export const generateMetadata = makeDetailGenerateMetadata({
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<SearchParams | undefined>;
 };
 
-export default async function Page({ params, searchParams }: PageProps) {
+export default async function Page({ params }: PageProps) {
   const { id } = await params;
   const ranking = await getTcdbRanking(id);
   if (!ranking) return notFound();
-  return renderTcdbRankingsPage(searchParams);
+
+  return (
+    <RankingDetailPage
+      current="homies"
+      title={ranking.name}
+      eyebrow={`Homie ${ranking.homie_id}`}
+      listHref="/cardattack/tcdb-rankings/homies"
+      listLabel="Homie rankings"
+      fields={[
+        {
+          label: "Current Rank",
+          value: formatRankingNumber(ranking.ranking),
+        },
+        {
+          label: "Total Cards",
+          value: formatRankingNumber(ranking.card_count),
+        },
+        {
+          label: "Jersey / Homie ID",
+          value: ranking.homie_id,
+        },
+        {
+          label: "Difference",
+          value: formatRankingSigned(ranking.difference),
+        },
+        {
+          label: "Rank Delta",
+          value: formatRankingSigned(ranking.rank_delta),
+        },
+        {
+          label: "Difference Delta",
+          value: formatRankingSigned(ranking.diff_delta),
+        },
+        {
+          label: "Ranking Updated",
+          value: formatRankingDate(ranking.ranking_at),
+        },
+        {
+          label: "Overall Trend",
+          value: rankingTrendField(ranking.trend_overall),
+        },
+        {
+          label: "Rank Trend",
+          value: rankingTrendField(ranking.trend_rank),
+        },
+        {
+          label: "Diff Sign Changed",
+          value: formatBoolean(ranking.diff_sign_changed),
+        },
+      ]}
+    />
+  );
 }

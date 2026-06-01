@@ -1,5 +1,8 @@
 import type { MDXComponents } from "mdx/types";
 
+import ClanSnapshot, {
+  type ClanSnapshotProps,
+} from "@/components/mdx/ClanSnapshot";
 import SetCollector, {
   type SetCollectorProps,
 } from "@/components/mdx/SetCollector";
@@ -15,6 +18,7 @@ type ChronicleSectionMdxRendererProps = {
 };
 
 type BoundSetCollectorProps = Pick<SetCollectorProps, "set">;
+type BoundClanSnapshotProps = Pick<ClanSnapshotProps, "tag" | "sport">;
 type BoundTcdbSnapshotProps = Pick<TcdbSnapshotProps, "tag">;
 
 export function ChronicleSectionMdxRenderer({
@@ -26,6 +30,10 @@ export function ChronicleSectionMdxRenderer({
     return <SetCollector set={set} snapshotDate={postDate} />;
   }
 
+  function BoundClanSnapshot({ tag, sport }: BoundClanSnapshotProps) {
+    return <ClanSnapshot tag={tag} sport={sport} snapshotDate={postDate} />;
+  }
+
   function BoundTcdbSnapshot({ tag }: BoundTcdbSnapshotProps) {
     return <TcdbSnapshot tag={tag} snapshotDate={postDate} />;
   }
@@ -35,6 +43,7 @@ export function ChronicleSectionMdxRenderer({
       code={code}
       components={{
         ...(components ?? {}),
+        ClanSnapshot: BoundClanSnapshot,
         SetCollector: BoundSetCollector,
         TcdbSnapshot: BoundTcdbSnapshot,
       }}

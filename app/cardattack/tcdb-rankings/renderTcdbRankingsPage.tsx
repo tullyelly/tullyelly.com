@@ -38,7 +38,7 @@ const readRankings = (
       `q:${q ?? ""}`,
       `t:${trend ?? ""}`,
     ],
-    { revalidate: 300, tags: ["tcdb-rankings"] },
+    { revalidate: 300, tags: ["tcdb-rankings", "tcdb-rankings-homies"] },
   )();
 
 export async function renderTcdbRankingsPage(

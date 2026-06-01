@@ -12,5 +12,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
   revalidateTag("tcdb-rankings", "max");
+  revalidateTag("tcdb-rankings-homies", "max");
+  revalidateTag("tcdb-rankings-clans", "max");
   return NextResponse.json({ ok: true });
 }

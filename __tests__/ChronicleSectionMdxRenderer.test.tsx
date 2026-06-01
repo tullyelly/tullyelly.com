@@ -11,6 +11,21 @@ const tcdbSnapshotMock = jest.fn(
     <div data-testid="tcdb-snapshot">{`${tag}@${snapshotDate}`}</div>
   ),
 );
+const clanSnapshotMock = jest.fn(
+  ({
+    tag,
+    snapshotDate,
+    sport,
+  }: {
+    tag: string;
+    snapshotDate: string;
+    sport?: string;
+  }) => (
+    <div data-testid="clan-snapshot">
+      {`${tag}:${sport ?? "all"}@${snapshotDate}`}
+    </div>
+  ),
+);
 const setCollectorMock = jest.fn(
   ({ set, snapshotDate }: { set: string; snapshotDate?: string }) => (
     <div data-testid="set-collector">{`${set}@${snapshotDate ?? "latest"}`}</div>
@@ -32,6 +47,14 @@ jest.mock("@/components/mdx/TcdbSnapshot", () => ({
   default: (props: { tag: string; snapshotDate: string }) =>
     tcdbSnapshotMock(props),
 }));
+jest.mock("@/components/mdx/ClanSnapshot", () => ({
+  __esModule: true,
+  default: (props: {
+    tag: string;
+    snapshotDate: string;
+    sport?: string;
+  }) => clanSnapshotMock(props),
+}));
 jest.mock("@/components/mdx/SetCollector", () => ({
   __esModule: true,
   default: (props: { set: string; snapshotDate?: string }) =>
@@ -43,6 +66,7 @@ import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSe
 describe("ChronicleSectionMdxRenderer", () => {
   beforeEach(() => {
     mdxRendererMock.mockClear();
+    clanSnapshotMock.mockClear();
     setCollectorMock.mockClear();
     tcdbSnapshotMock.mockClear();
   });
@@ -62,13 +86,23 @@ describe("ChronicleSectionMdxRenderer", () => {
     const BoundSetCollector = props?.components?.SetCollector as
       | ComponentType<{ set: string }>
       | undefined;
+    const BoundClanSnapshot = props?.components?.ClanSnapshot as
+      | ComponentType<{ tag: string; sport?: string }>
+      | undefined;
     const BoundTcdbSnapshot = props?.components?.TcdbSnapshot as
       | ComponentType<{ tag: string }>
       | undefined;
 
     expect(props?.components?.CustomThing).toBe(CustomThing);
+    expect(BoundClanSnapshot).toBeDefined();
     expect(BoundSetCollector).toBeDefined();
     expect(BoundTcdbSnapshot).toBeDefined();
+
+    if (!BoundClanSnapshot) {
+      throw new Error(
+        "Expected ClanSnapshot to be bound in ChronicleSectionMdxRenderer",
+      );
+    }
 
     if (!BoundSetCollector) {
       throw new Error(
@@ -83,16 +117,25 @@ describe("ChronicleSectionMdxRenderer", () => {
     }
 
     render(<BoundSetCollector set="1992-courtside-draft-pix" />);
+    render(<BoundClanSnapshot tag="noles" sport="football" />);
     render(<BoundTcdbSnapshot tag="shaq" />);
 
     expect(screen.getByTestId("set-collector")).toHaveTextContent(
       "1992-courtside-draft-pix@2026-04-10",
+    );
+    expect(screen.getByTestId("clan-snapshot")).toHaveTextContent(
+      "noles:football@2026-04-10",
     );
     expect(screen.getByTestId("tcdb-snapshot")).toHaveTextContent(
       "shaq@2026-04-10",
     );
     expect(setCollectorMock.mock.calls[0]?.[0]).toEqual({
       set: "1992-courtside-draft-pix",
+      snapshotDate: "2026-04-10",
+    });
+    expect(clanSnapshotMock.mock.calls[0]?.[0]).toEqual({
+      tag: "noles",
+      sport: "football",
       snapshotDate: "2026-04-10",
     });
     expect(tcdbSnapshotMock.mock.calls[0]?.[0]).toEqual({
