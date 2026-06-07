@@ -29,3 +29,9 @@ CREATE TRIGGER trg_audit_homie_tcdb_snapshot
     ON homie_tcdb_snapshot
     FOR EACH ROW
 EXECUTE PROCEDURE audit_stamp_generic();
+
+CREATE TRIGGER trg_refresh_homie_tcdb_rankings_after_snapshot_write
+    AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
+    ON homie_tcdb_snapshot
+    FOR EACH STATEMENT
+EXECUTE PROCEDURE refresh_homie_tcdb_rankings_after_snapshot_write();

@@ -118,7 +118,6 @@ export async function POST(req: Request) {
       throw new Error("Snapshot insert did not return an id");
     }
 
-    await client.query("SELECT refresh_homie_tcdb_ranking_rt();");
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK").catch((rollbackError: unknown) => {

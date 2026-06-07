@@ -166,9 +166,6 @@ describe("POST /api/tcdb/snapshot", () => {
           ]);
           return Promise.resolve({ rows: [{ id: insertedId }] });
         }
-        if (sql === "SELECT refresh_homie_tcdb_ranking_rt();") {
-          return Promise.resolve({ rows: [] });
-        }
         if (sql === "COMMIT") {
           return Promise.resolve({ rows: [] });
         }
@@ -183,7 +180,7 @@ describe("POST /api/tcdb/snapshot", () => {
         status: "ok",
       });
       expect(query).toHaveBeenCalledWith("BEGIN");
-      expect(query).toHaveBeenCalledWith(
+      expect(query).not.toHaveBeenCalledWith(
         "SELECT refresh_homie_tcdb_ranking_rt();",
       );
       expect(query).toHaveBeenCalledWith("COMMIT");
