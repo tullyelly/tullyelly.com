@@ -141,19 +141,49 @@ export async function getClanSnapshotsForTagOnDate(
   const rows = await withDbRetry(() =>
     sqlQueryRows<DbClanSnapshotRow>(
       `
-        WITH matched_clan AS (
+        WITH matched_clans AS (
           SELECT
-            c.id::text AS clan_id
+            c.id::text AS clan_id,
+            CASE WHEN to_jsonb(c) ->> 'tag_slug' = $2 THEN 0 ELSE 1 END AS match_rank
           FROM dojo.clan AS c
           WHERE to_jsonb(c) ->> 'tag_slug' = $2
              OR c.slug = $2
-          ORDER BY
-            CASE WHEN to_jsonb(c) ->> 'tag_slug' = $2 THEN 0 ELSE 1 END,
-            c.id ASC
-          LIMIT 1
+        ),
+        snapshot_history AS (
+          SELECT
+            c.match_rank,
+            snapshot.clan_id::text AS clan_id,
+            clan.name,
+            clan.slug,
+            snapshot.sport,
+            snapshot.card_count,
+            snapshot.ranking,
+            snapshot.ranking_at,
+            snapshot.difference,
+            LAG(snapshot.card_count) OVER (
+              PARTITION BY snapshot.clan_id, snapshot.sport
+              ORDER BY snapshot.ranking_at
+            ) AS prev_card_count,
+            LAG(snapshot.ranking) OVER (
+              PARTITION BY snapshot.clan_id, snapshot.sport
+              ORDER BY snapshot.ranking_at
+            ) AS prev_ranking,
+            LAG(snapshot.difference) OVER (
+              PARTITION BY snapshot.clan_id, snapshot.sport
+              ORDER BY snapshot.ranking_at
+            ) AS prev_difference,
+            LAG(snapshot.ranking_at) OVER (
+              PARTITION BY snapshot.clan_id, snapshot.sport
+              ORDER BY snapshot.ranking_at
+            ) AS prev_ranking_at
+          FROM dojo.clan_tcdb_snapshot AS snapshot
+          JOIN dojo.clan AS clan
+            ON clan.id = snapshot.clan_id
+          JOIN matched_clans AS c
+            ON c.clan_id = snapshot.clan_id::text
         )
         SELECT
-          s.clan_id::text AS clan_id,
+          s.clan_id,
           s.name,
           s.slug,
           s.sport,
@@ -164,18 +194,35 @@ export async function getClanSnapshotsForTagOnDate(
           s.prev_ranking,
           s.prev_difference,
           s.prev_ranking_at::text AS prev_ranking_at,
-          s.card_count_delta,
-          s.rank_delta,
-          s.diff_delta,
-          s.trend_rank,
-          s.trend_overall,
-          s.diff_sign_changed
-        FROM dojo.clan_tcdb_snapshot_rt AS s
-        JOIN matched_clan AS c
-          ON c.clan_id = s.clan_id::text
+          (s.card_count - s.prev_card_count) AS card_count_delta,
+          (s.prev_ranking - s.ranking) AS rank_delta,
+          (s.difference - s.prev_difference) AS diff_delta,
+          CASE
+            WHEN s.prev_ranking IS NULL THEN 'flat'
+            WHEN (s.prev_ranking - s.ranking) > 0 THEN 'up'
+            WHEN (s.prev_ranking - s.ranking) < 0 THEN 'down'
+            ELSE 'flat'
+          END AS trend_rank,
+          CASE
+            WHEN s.prev_ranking IS NULL THEN 'flat'
+            WHEN (s.prev_ranking - s.ranking) <> 0 THEN
+              CASE WHEN (s.prev_ranking - s.ranking) > 0 THEN 'up' ELSE 'down' END
+            WHEN (s.difference - s.prev_difference) IS NOT NULL
+              AND (s.difference - s.prev_difference) <> 0 THEN
+              CASE WHEN (s.difference - s.prev_difference) > 0 THEN 'up' ELSE 'down' END
+            ELSE 'flat'
+          END AS trend_overall,
+          CASE
+            WHEN s.prev_difference IS NULL THEN FALSE
+            WHEN (s.prev_difference < 0 AND s.difference >= 0)
+              OR (s.prev_difference >= 0 AND s.difference < 0)
+            THEN TRUE
+            ELSE FALSE
+          END AS diff_sign_changed
+        FROM snapshot_history AS s
         WHERE s.ranking_at = $1::date
         ${sportFilter}
-        ORDER BY s.sport ASC
+        ORDER BY s.match_rank ASC, s.sport ASC, s.ranking ASC, s.slug ASC
       `,
       values,
     ),

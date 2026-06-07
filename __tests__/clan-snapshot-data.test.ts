@@ -103,12 +103,20 @@ describe("clan snapshot data helper", () => {
       string[],
     ];
 
+    expect(query).toContain("WITH matched_clans AS");
+    expect(query).toContain("snapshot_history AS");
     expect(query).toContain("FROM dojo.clan AS c");
-    expect(query).toContain("FROM dojo.clan_tcdb_snapshot_rt AS s");
+    expect(query).toContain("FROM dojo.clan_tcdb_snapshot AS snapshot");
+    expect(query).toContain(
+      "PARTITION BY snapshot.clan_id, snapshot.sport",
+    );
     expect(query).toContain("WHERE to_jsonb(c) ->> 'tag_slug' = $2");
     expect(query).toContain("OR c.slug = $2");
+    expect(query).not.toContain("LIMIT 1");
     expect(query).toContain("WHERE s.ranking_at = $1::date");
-    expect(query).toContain("ORDER BY s.sport ASC");
+    expect(query).toContain(
+      "ORDER BY s.match_rank ASC, s.sport ASC, s.ranking ASC, s.slug ASC",
+    );
     expect(values).toEqual(["2026-04-10", "noles"]);
   });
 
