@@ -92,8 +92,10 @@ describe("set collector db helpers", () => {
         set_name: "1991-92 Upper Deck",
         release_year: "1991",
         manufacturer: "Upper Deck",
-        tcdb_set_url: "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
-        completed_set_photo_path: "/images/optimus/1991-92-upper-deck/hero.webp",
+        tcdb_set_url:
+          "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
+        completed_set_photo_path:
+          "/images/optimus/1991-92-upper-deck/hero.webp",
         category_tag: "basketball",
         rating: "9.50",
         cards_owned: "456",
@@ -127,6 +129,14 @@ describe("set collector db helpers", () => {
         snapshotCount: 3,
       },
     ]);
+
+    const [strings] = mockSql.mock.calls[0] as [
+      TemplateStringsArray,
+      unknown[],
+    ];
+    expect(strings.join("")).toContain(
+      "FROM dojo.v_set_collector_header_snapshot",
+    );
   });
 
   it("returns a normalized set collector summary by numeric id", async () => {
@@ -185,7 +195,8 @@ describe("set collector db helpers", () => {
         set_name: "1993 Topps Finest",
         release_year: "1993",
         manufacturer: "Topps",
-        tcdb_set_url: "https://www.tcdb.com/ViewSet.cfm/sid/9999/1993-Topps-Finest",
+        tcdb_set_url:
+          "https://www.tcdb.com/ViewSet.cfm/sid/9999/1993-Topps-Finest",
         completed_set_photo_path: null,
         category_tag: "baseball",
         rating: null,
@@ -198,7 +209,9 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getSetCollectorSummaryFromDb("1993-topps-finest")).resolves.toEqual({
+    await expect(
+      getSetCollectorSummaryFromDb("1993-topps-finest"),
+    ).resolves.toEqual({
       id: 8,
       setSlug: "1993-topps-finest",
       setName: "1993 Topps Finest",
@@ -224,7 +237,8 @@ describe("set collector db helpers", () => {
         set_name: "1992 Courtside Draft Pix",
         release_year: "1992",
         manufacturer: "Courtside",
-        tcdb_set_url: "https://www.tcdb.com/ViewSet.cfm/sid/56520/1992-Courtside-Draft-Pix",
+        tcdb_set_url:
+          "https://www.tcdb.com/ViewSet.cfm/sid/56520/1992-Courtside-Draft-Pix",
         completed_set_photo_path: null,
         category_tag: "basketball",
         rating: "8.00",
@@ -262,11 +276,14 @@ describe("set collector db helpers", () => {
       snapshotCount: 4,
     });
 
-    const [, values] = mockSql.mock.calls[0] as [
+    const [strings, values] = mockSql.mock.calls[0] as [
       TemplateStringsArray,
       unknown[],
     ];
-    expect(values).toEqual(["2026-04-10", "1992-courtside-draft-pix"]);
+    expect(strings.join("")).toContain(
+      "LEFT JOIN dojo.v_set_collector_header_snapshot AS snapshot",
+    );
+    expect(values).toEqual(["1992-courtside-draft-pix", "2026-04-10"]);
   });
 
   it("returns null for invalid dated summary lookups without querying", async () => {
@@ -324,10 +341,16 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    const [, values] = mockSql.mock.calls[0] as [
+    const [strings, values] = mockSql.mock.calls[0] as [
       TemplateStringsArray,
       unknown[],
     ];
+    expect(strings.join("")).toContain(
+      "FROM dojo.v_set_collector_header_snapshot AS collector",
+    );
+    expect(strings.join("")).toContain(
+      "collector.set_collector_snapshot_id IS NOT NULL",
+    );
     expect(values).toEqual(["1991-92-upper-deck"]);
   });
 
@@ -386,7 +409,9 @@ describe("set collector db helpers", () => {
     process.env.SKIP_DB = "true";
 
     await expect(listSetCollectorSummariesFromDb()).resolves.toEqual([]);
-    await expect(getSetCollectorSummaryFromDb("1991-92-upper-deck")).resolves.toBeNull();
+    await expect(
+      getSetCollectorSummaryFromDb("1991-92-upper-deck"),
+    ).resolves.toBeNull();
     await expect(
       listSetCollectorSnapshotsFromDb("1991-92-upper-deck"),
     ).resolves.toEqual([]);
@@ -404,8 +429,10 @@ describe("set collector db helpers", () => {
         set_name: "1991-92 Upper Deck",
         release_year: "1991",
         manufacturer: "Upper Deck",
-        tcdb_set_url: "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
-        completed_set_photo_path: "/images/optimus/1991-92-upper-deck/hero.webp",
+        tcdb_set_url:
+          "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
+        completed_set_photo_path:
+          "/images/optimus/1991-92-upper-deck/hero.webp",
         category_tag: "basketball",
         rating: "9.50",
         cards_owned: "600",
@@ -417,7 +444,9 @@ describe("set collector db helpers", () => {
       },
     ]);
 
-    await expect(getSetCollectorSummaryFromDb("1991-92-upper-deck")).resolves.toBeNull();
+    await expect(
+      getSetCollectorSummaryFromDb("1991-92-upper-deck"),
+    ).resolves.toBeNull();
   });
 
   it("falls back cleanly when a snapshot row contains invalid progress counts", async () => {
