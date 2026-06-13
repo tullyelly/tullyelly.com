@@ -88,7 +88,10 @@ describe("tcdb trade hall of fame db helper", () => {
       },
     ]);
 
-    const [strings] = mockSql.mock.calls[0] as [TemplateStringsArray, unknown[]];
+    const [strings] = mockSql.mock.calls[0] as [
+      TemplateStringsArray,
+      unknown[],
+    ];
     const queryText = strings.join("");
     expect(queryText).toContain(
       "FROM dojo.v_tcdb_trade_hall_of_fame_induction",
@@ -127,12 +130,13 @@ describe("tcdb trade hall of fame db helper", () => {
       },
     ]);
 
-    const [strings] = mockSql.mock.calls[0] as [TemplateStringsArray, unknown[]];
+    const [strings] = mockSql.mock.calls[0] as [
+      TemplateStringsArray,
+      unknown[],
+    ];
     const queryText = strings.join("");
     expect(queryText).toContain("FROM dojo.v_tcdb_trade_hall_of_famer");
-    expect(queryText).toContain(
-      "TO_CHAR(latest_inducted_date, 'YYYY-MM-DD')",
-    );
+    expect(queryText).toContain("TO_CHAR(latest_inducted_date, 'YYYY-MM-DD')");
     expect(queryText).toContain("ORDER BY induction_count DESC");
   });
 
@@ -162,25 +166,42 @@ describe("tcdb trade hall of fame db helper", () => {
     await listTcdbTradeHallOfFamersFromDb();
 
     const migration = readFileSync(
-      "db/migrations/048_create_tcdb_trade_hall_of_fame_views.sql",
+      "db/migrations/053_create_set_collector_header_snapshot_view.sql",
       "utf8",
+    );
+    const inductionView = readFileSync(
+      "db/schema/views/v_tcdb_trade_hall_of_fame_induction.sql",
+      "utf8",
+    );
+    const famerView = readFileSync(
+      "db/schema/views/v_tcdb_trade_hall_of_famer.sql",
+      "utf8",
+    );
+    expect(migration).toContain(
+      "CREATE OR REPLACE VIEW dojo.v_set_collector_header_snapshot",
     );
     expect(migration).toContain(
       "CREATE OR REPLACE VIEW dojo.v_tcdb_trade_hall_of_fame_induction",
     );
-    expect(migration).toContain(
-      "SELECT DISTINCT ON (snapshot.set_collector_header_id)",
+    expect(inductionView).toContain(
+      "SELECT DISTINCT ON (collector.set_collector_header_id)",
     );
-    expect(migration).toContain("latest_snapshot.cards_owned = header.total_cards");
-    expect(migration).toContain("NULLIF(BTRIM(header.category_tag), '')");
-    expect(migration).toContain("day.side IN ('received', 'archived')");
-    expect(migration).toContain("GROUP BY\n    header.id");
-    expect(migration).toContain(
-      "CREATE OR REPLACE VIEW dojo.v_tcdb_trade_hall_of_famer",
+    expect(inductionView).toContain(
+      "FROM dojo.v_set_collector_header_snapshot AS collector",
     );
-    expect(migration).toContain("COUNT(*) AS induction_count");
-    expect(migration).toContain("ARRAY_AGG(DISTINCT induction.category_tag");
-    expect(migration).toContain(
+    expect(inductionView).toContain(
+      "latest_snapshot.cards_owned = latest_snapshot.total_cards",
+    );
+    expect(inductionView).toContain(
+      "NULLIF(BTRIM(latest_snapshot.category_tag), '')",
+    );
+    expect(inductionView).toContain("day.side IN ('received', 'archived')");
+    expect(inductionView).toContain(
+      "GROUP BY\n    latest_snapshot.set_collector_header_id",
+    );
+    expect(famerView).toContain("COUNT(*) AS induction_count");
+    expect(famerView).toContain("ARRAY_AGG(DISTINCT induction.category_tag");
+    expect(famerView).toContain(
       "FROM dojo.v_tcdb_trade_hall_of_fame_induction AS induction",
     );
   });
@@ -188,7 +209,9 @@ describe("tcdb trade hall of fame db helper", () => {
   it("returns defensive fallbacks when DB access is explicitly skipped", async () => {
     process.env.SKIP_DB = "true";
 
-    await expect(listTcdbTradeHallOfFameInductionsFromDb()).resolves.toEqual([]);
+    await expect(listTcdbTradeHallOfFameInductionsFromDb()).resolves.toEqual(
+      [],
+    );
     await expect(listTcdbTradeHallOfFamersFromDb()).resolves.toEqual([]);
     expect(mockSql).not.toHaveBeenCalled();
   });
