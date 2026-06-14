@@ -25,7 +25,12 @@ function formatLatestProgress(
     return undefined;
   }
 
-  return `${cardsOwned}/${totalCards}; ${formatSetCollectorPercentComplete(percentComplete)}`;
+  const percentLabel =
+    cardsOwned >= totalCards
+      ? "💯"
+      : formatSetCollectorPercentComplete(percentComplete);
+
+  return `${cardsOwned}/${totalCards}; ${percentLabel}`;
 }
 
 export default async function SetCollector({
