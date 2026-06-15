@@ -72,6 +72,50 @@ describe("SetCollector", () => {
     expect(container.querySelector("li > p")).toBeNull();
   });
 
+  it("renders the 100 emoji for a completed tracked set", async () => {
+    getSetCollectorSummaryRowMock.mockResolvedValue({
+      id: 12,
+      setSlug: "1991-92-upper-deck",
+      setName: "1991-92 Upper Deck",
+      releaseYear: 1991,
+      manufacturer: "Upper Deck",
+      tcdbSetUrl: "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
+      cardsOwned: 500,
+      totalCards: 500,
+      cardsMissing: 0,
+      percentComplete: 100,
+      snapshotCount: 3,
+    });
+
+    const ui = await SetCollector({ set: "1991-92-upper-deck" });
+    render(ui);
+
+    expect(screen.getByText("(500/500; 💯)")).toBeInTheDocument();
+    expect(screen.queryByText("(500/500; 100%)")).not.toBeInTheDocument();
+  });
+
+  it("keeps rounded 100 percent incomplete sets as percentages", async () => {
+    getSetCollectorSummaryRowMock.mockResolvedValue({
+      id: 12,
+      setSlug: "large-rounded-set",
+      setName: "Large Rounded Set",
+      releaseYear: 2026,
+      manufacturer: "Upper Deck",
+      tcdbSetUrl: "https://www.tcdb.com/ViewSet.cfm/sid/1/Large-Rounded-Set",
+      cardsOwned: 2999,
+      totalCards: 3000,
+      cardsMissing: 1,
+      percentComplete: 100,
+      snapshotCount: 3,
+    });
+
+    const ui = await SetCollector({ set: "large-rounded-set" });
+    render(ui);
+
+    expect(screen.getByText("(2999/3000; 100%)")).toBeInTheDocument();
+    expect(screen.queryByText("(2999/3000; 💯)")).not.toBeInTheDocument();
+  });
+
   it("uses the provided snapshot date for chronicle-bound rendering", async () => {
     getSetCollectorSummaryRowMock.mockResolvedValue({
       id: 12,
