@@ -3,7 +3,11 @@ import type { Route } from "next";
 
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { sql } from "@/lib/db";
-import { squadMembers } from "@/lib/unclejimmy/squadMembers";
+import {
+  getSquadPageContent,
+  getSquadPageItemHref,
+  type SquadPageSection,
+} from "@/lib/unclejimmy/squadPageContent";
 
 import SquadCommentaryChart from "./_components/SquadCommentaryChart";
 
@@ -37,16 +41,68 @@ type SecretIdentityCommentSummaryRow = {
   comment_count: number | string;
 };
 
+function SquadContentSection({
+  section,
+}: {
+  section: SquadPageSection | null;
+}) {
+  if (!section) {
+    return null;
+  }
+
+  const linkClassName =
+    section.sectionKey === "trackers"
+      ? "link-blue"
+      : "underline hover:no-underline";
+
+  return (
+    <section className="space-y-4">
+      <h2 className="text-xl md:text-2xl font-semibold leading-snug">
+        {section.title}
+      </h2>
+      {section.description ? (
+        <p className="text-[16px] md:text-[18px] text-muted-foreground">
+          {section.description}
+        </p>
+      ) : null}
+      {section.items.length > 0 ? (
+        <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
+          {section.items.map((item) => {
+            const href = getSquadPageItemHref(item);
+            return (
+              <li key={item.slug}>
+                {href ? (
+                  <Link href={href as Route} className={linkClassName}>
+                    {item.label}
+                  </Link>
+                ) : (
+                  item.label
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
 export default async function UncleJimmySquadPage() {
-  const commentaryRows = await sql<SecretIdentityCommentSummaryRow>`
-    SELECT *
-    FROM dojo.v_secret_identity_comment_summary;
-  `;
+  const [commentaryRows, squadSections] = await Promise.all([
+    sql<SecretIdentityCommentSummaryRow>`
+      SELECT *
+      FROM dojo.v_secret_identity_comment_summary;
+    `,
+    getSquadPageContent(),
+  ]);
 
   const commentaryData = commentaryRows.map((row) => ({
     tag_name: row.tag_name ?? row.tag_slug ?? "No identity",
     comment_count: Number(row.comment_count),
   }));
+  const squadSectionByKey = new Map(
+    squadSections.map((section) => [section.sectionKey, section]),
+  );
 
   return (
     <div className="space-y-12">
@@ -59,47 +115,12 @@ export default async function UncleJimmySquadPage() {
           unveiled over time. Baby steps.
         </p>
       </section>
-      <section className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          nuclear reactor
-        </h2>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Primary sources of energy:
-        </p>
-        <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
-          {squadMembers.map((member) => {
-            const href = (member.href ??
-              `/unclejimmy/squad/${member.slug}`) as Route;
-            return (
-              <li key={member.slug}>
-                <Link href={href} className="underline hover:no-underline">
-                  {member.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-      <section className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          trackers
-        </h2>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Follow active logs and summaries:
-        </p>
-        <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
-          <li>
-            <Link href="/unclejimmy/table-schema" className="link-blue">
-              Table Schema
-            </Link>
-          </li>
-          <li>
-            <Link href="/unclejimmy/squad/volleyball" className="link-blue">
-              Volleyball Tournaments
-            </Link>
-          </li>
-        </ul>
-      </section>
+      <SquadContentSection
+        section={squadSectionByKey.get("nuclear-reactor") ?? null}
+      />
+      <SquadContentSection
+        section={squadSectionByKey.get("trackers") ?? null}
+      />
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           Squad Commentary
@@ -110,16 +131,9 @@ export default async function UncleJimmySquadPage() {
         </p>
         <SquadCommentaryChart rows={commentaryData} />
       </section>
-      <section className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          coming soon....
-        </h2>
-        <ul className="list-disc list-inside pl-6 text-[16px] md:text-[18px] text-muted-foreground">
-          <li>g-league</li>
-          <li>bench mob</li>
-          <li>key personnel</li>
-        </ul>
-      </section>
+      <SquadContentSection
+        section={squadSectionByKey.get("coming-soon") ?? null}
+      />
     </div>
   );
 }
