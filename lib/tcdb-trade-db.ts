@@ -1,6 +1,14 @@
 import "server-only";
 
+import {
+  buildTcdbCardTrafficRows,
+  buildTcdbCardTrafficWindow,
+  getServerTodayDateString,
+  normalizeTcdbCardTrafficDate,
+  type TcdbCardTrafficDay,
+} from "@/lib/tcdb-card-traffic";
 import { sql } from "@/lib/db";
+import { isNextBuild } from "@/lib/env";
 
 export type TcdbTradeStatus = "Open" | "Completed";
 export type TcdbTradeDaySide = "sent" | "received" | "archived";
@@ -22,6 +30,16 @@ type TcdbTradeSummaryRow = TcdbTradeCardCountsRow & {
 type TcdbTradeDayRow = {
   trade_date: string;
   side: TcdbTradeDaySide;
+};
+
+type TcdbCardTrafficDayRow = {
+  traffic_date: string;
+  trade_count: number | string | null;
+  card_total: number | string | null;
+};
+
+type TcdbCardTrafficOldestRow = {
+  oldest_traffic_date: string | null;
 };
 
 export type TcdbTradeCardCounts = {
@@ -60,6 +78,22 @@ function toInteger(value: number | string): number {
   }
 
   return Number.parseInt(value, 10);
+}
+
+function toIntegerWithFallback(
+  value: number | string | null | undefined,
+  fallback = 0,
+): number {
+  if (value === null || value === undefined) {
+    return fallback;
+  }
+
+  const parsed = typeof value === "number" ? value : Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+function shouldSkipTcdbCardTrafficDb(): boolean {
+  return isNextBuild() || process.env.SKIP_DB === "true";
 }
 
 function toTradeCardCounts(
@@ -198,4 +232,84 @@ export async function countTcdbTradeSections(tradeId: string): Promise<number> {
 export async function hasCompletedTcdbTrade(tradeId: string): Promise<boolean> {
   const summary = await getTcdbTradeSummaryFromDb(tradeId);
   return summary?.status === "Completed";
+}
+
+export async function listTcdbCardTrafficDaysForChronicleFromDb(
+  chronicleDate: string,
+  todayDate = getServerTodayDateString(),
+): Promise<TcdbCardTrafficDay[]> {
+  const trafficWindow = buildTcdbCardTrafficWindow(chronicleDate, todayDate);
+  const fallback = buildTcdbCardTrafficRows(chronicleDate, todayDate);
+
+  if (shouldSkipTcdbCardTrafficDb()) {
+    return fallback;
+  }
+
+  try {
+    const rows = await sql<TcdbCardTrafficDayRow>`
+      SELECT
+        TO_CHAR(traffic_date, 'YYYY-MM-DD') AS traffic_date,
+        trade_count,
+        card_total
+      FROM dojo.v_tcdb_trade_card_traffic_day
+      WHERE traffic_date BETWEEN ${trafficWindow.startDate}::date
+        AND ${trafficWindow.endDate}::date
+      ORDER BY traffic_date ASC
+    `;
+
+    const trafficByDate = new Map(
+      rows.map((row) => [
+        row.traffic_date,
+        {
+          cardTotal: toIntegerWithFallback(row.card_total),
+          tradeCount: toIntegerWithFallback(row.trade_count),
+        },
+      ]),
+    );
+
+    return buildTcdbCardTrafficRows(
+      trafficWindow.chronicleDate,
+      trafficWindow.todayDate,
+      trafficByDate,
+    );
+  } catch {
+    return fallback;
+  }
+}
+
+export async function getTcdbCardTrafficChartRowsForChronicleFromDb(
+  chronicleDate: string,
+  todayDate = getServerTodayDateString(),
+): Promise<TcdbCardTrafficDay[] | null> {
+  const normalizedChronicleDate = normalizeTcdbCardTrafficDate(chronicleDate);
+
+  if (shouldSkipTcdbCardTrafficDb()) {
+    return null;
+  }
+
+  try {
+    const [oldestRow] = await sql<TcdbCardTrafficOldestRow>`
+      SELECT
+        TO_CHAR(MIN(traffic_date), 'YYYY-MM-DD') AS oldest_traffic_date
+      FROM dojo.v_tcdb_trade_card_traffic_trade
+      WHERE traffic_date IS NOT NULL
+    `;
+    const oldestTrafficDate = oldestRow?.oldest_traffic_date
+      ? normalizeTcdbCardTrafficDate(oldestRow.oldest_traffic_date)
+      : null;
+
+    if (
+      oldestTrafficDate === null ||
+      normalizedChronicleDate < oldestTrafficDate
+    ) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  return listTcdbCardTrafficDaysForChronicleFromDb(
+    normalizedChronicleDate,
+    todayDate,
+  );
 }
