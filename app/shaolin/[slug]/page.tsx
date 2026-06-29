@@ -8,6 +8,7 @@ import { ChroniclePostTailCards } from "@/components/chronicles/ChroniclePostTai
 import { ChroniclePrevNextNav } from "@/components/chronicles/ChroniclePrevNextNav";
 import { CommentsSection } from "@/components/chronicles/CommentsSection";
 import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
+import { TcdbCardTrafficChart } from "@/components/chronicles/TcdbCardTrafficChart";
 import PageIntro from "@/components/layout/PageIntro";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
@@ -69,6 +70,8 @@ function PostContent({ slug }: { slug: string }) {
         </Card>
 
         <CommentsSection postSlug={post.slug} />
+
+        <TcdbCardTrafficChart chronicleDate={post.date} />
 
         <SectionDivider />
 
