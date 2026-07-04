@@ -1,0 +1,13 @@
+.next/
+.contentlayer/
+.cache/
+.turbo/
+.vercel/
+.pw-browsers/
+coverage/
+dist/
+build/
+node_modules/
+playwright-report/
+test-results/
+lib/build-info.ts

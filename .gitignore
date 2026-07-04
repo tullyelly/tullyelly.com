@@ -23,15 +23,16 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# VS Code (ignore personal settings, keep useful project configs)
-.vscode/settings.json
+# VS Code (keep focused project config, ignore personal files)
 .vscode/tasks.json
 .vscode/*.code-snippets
+.vscode/*:Zone.Identifier
 .vscode/history/
 
 # Allow sharing of recommended extensions & launch configs
 !.vscode/extensions.json
 !.vscode/launch.json
+!.vscode/settings.json
 
 # Prisma generated
 /app/generated/prisma

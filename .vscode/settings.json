@@ -1,0 +1,65 @@
+{
+  "editor.formatOnSave": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "mdx"
+  ],
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "files.watcherExclude": {
+    "**/.cache/**": true,
+    "**/.contentlayer/**": true,
+    "**/.next/**": true,
+    "**/.pw-browsers/**": true,
+    "**/.turbo/**": true,
+    "**/.vercel/**": true,
+    "**/coverage/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/node_modules/**": true,
+    "**/playwright-report/**": true,
+    "**/test-results/**": true
+  },
+  "mdx.server.enable": true,
+  "search.exclude": {
+    "**/.cache": true,
+    "**/.contentlayer": true,
+    "**/.next": true,
+    "**/.pw-browsers": true,
+    "**/.turbo": true,
+    "**/.vercel": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/node_modules": true,
+    "**/playwright-report": true,
+    "**/test-results": true
+  },
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.tsserver.watchOptions": {
+    "excludeDirectories": [
+      "**/.cache",
+      "**/.contentlayer",
+      "**/.next",
+      "**/.pw-browsers",
+      "**/.turbo",
+      "**/.vercel",
+      "**/coverage",
+      "**/dist",
+      "**/build",
+      "**/node_modules",
+      "**/playwright-report",
+      "**/test-results"
+    ],
+    "fallbackPolling": "dynamicPriority",
+    "synchronousWatchDirectory": false,
+    "watchDirectory": "useFsEvents",
+    "watchFile": "useFsEvents"
+  },
+  "[mdx]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

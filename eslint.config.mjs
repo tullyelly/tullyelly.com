@@ -1,13 +1,6 @@
 // eslint.config.mjs
-import { FlatCompat } from "@eslint/eslintrc";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import noEmdashInJsx from "./eslint-rules/no-emdash-in-jsx.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const baseRestrictedSyntax = [
   // Date.now()
@@ -95,15 +88,23 @@ const config = [
   {
     ignores: [
       ".next/**",
+      ".contentlayer/**",
+      ".cache/**",
+      ".turbo/**",
+      ".vercel/**",
+      ".pw-browsers/**",
       "node_modules/**",
       "dist/**",
+      "build/**",
       "coverage/**",
       "playwright-report/**",
+      "test-results/**",
+      "lib/build-info.ts",
     ],
   },
 
-  // Next's recommended rules (includes react + react-hooks)
-  ...compat.extends("next/core-web-vitals"),
+  // Next's recommended flat rules (includes react + react-hooks)
+  ...nextCoreWebVitals,
 
   // Disable JSX entity escaping warnings globally
   {
