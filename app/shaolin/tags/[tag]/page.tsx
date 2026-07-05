@@ -12,7 +12,7 @@ import { getPublishedPosts, byDateDesc } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
 import {
   getHashtagDisplayName,
-  getTagDisplayName,
+  getKnownTagDisplayName,
   normalizeTagSlug,
 } from "@/lib/tags";
 
@@ -34,7 +34,7 @@ export async function generateMetadata({
 }) {
   const { tag: rawTag } = await params;
   const tag = normalizeTagSlug(rawTag);
-  const displayTag = getTagDisplayName(tag);
+  const displayTag = getKnownTagDisplayName(tag);
   return {
     title: `${getHashtagDisplayName(tag)} · chronicles`,
     description: `Posts tagged ${displayTag}`,
@@ -44,7 +44,7 @@ export async function generateMetadata({
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { tag: rawTag } = await params;
   const tag = normalizeTagSlug(rawTag);
-  const displayTag = getTagDisplayName(tag);
+  const displayTag = getKnownTagDisplayName(tag);
   const posts = getPublishedPosts()
     .filter((p) => (p.tags ?? []).map((t) => normalizeTagSlug(t)).includes(tag))
     .sort(byDateDesc);

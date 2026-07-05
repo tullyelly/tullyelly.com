@@ -74,9 +74,14 @@ const nextConfig = {
       if (process.env.NEXT_DISABLE_FS_CACHE === "1") {
         config.cache = false;
       }
-      const extraIgnored = ["**/.contentlayer/**", "**/.next/**"];
-      const extraIgnoredRegexSource =
-        "[\\\\/]\\.contentlayer[\\\\/]|[\\\\/]\\.next[\\\\/]";
+      const watchContentlayerOutput =
+        process.env.NEXT_WATCH_CONTENTLAYER === "1";
+      const extraIgnored = watchContentlayerOutput
+        ? ["**/.next/**"]
+        : ["**/.contentlayer/**", "**/.next/**"];
+      const extraIgnoredRegexSource = watchContentlayerOutput
+        ? "[\\\\/]\\.next[\\\\/]"
+        : "[\\\\/]\\.contentlayer[\\\\/]|[\\\\/]\\.next[\\\\/]";
       const currentIgnored = config.watchOptions?.ignored;
       if (currentIgnored instanceof RegExp) {
         const combinedIgnored = new RegExp(

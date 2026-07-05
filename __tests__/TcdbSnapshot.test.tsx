@@ -59,7 +59,7 @@ describe("TcdbSnapshot", () => {
     },
   );
 
-  it("falls back to a plain PersonTag when no dated snapshot exists", async () => {
+  it("falls back to a smart PersonTag when no dated snapshot exists", async () => {
     getTcdbSnapshotForTagOnDateMock.mockResolvedValue(null);
 
     const ui = await TcdbSnapshot({
@@ -69,7 +69,10 @@ describe("TcdbSnapshot", () => {
     render(ui);
 
     expect(screen.getByText("shaq")).toHaveAttribute("data-person-tag", "shaq");
-    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "shaq" })).toHaveAttribute(
+      "href",
+      "/shaolin/tags/shaq",
+    );
     expect(screen.queryByText("(178 cards)")).not.toBeInTheDocument();
   });
 });
