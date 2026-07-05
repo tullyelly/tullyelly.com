@@ -7,6 +7,11 @@ import {
   listTcdbClanRankings,
 } from "@/lib/data/tcdb-clans";
 
+jest.mock("@/lib/data/tcdb", () => ({
+  isTrend: (value: string | null | undefined) =>
+    value === "up" || value === "down" || value === "flat",
+}));
+
 jest.mock("@/lib/data/tcdb-clans", () => ({
   getTcdbClanRankingsBySlug: jest.fn(),
   listTcdbClanRankings: jest.fn(),
