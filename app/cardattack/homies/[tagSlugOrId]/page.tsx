@@ -45,7 +45,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <RankingDetailPage
       title={ranking.name}
-      eyebrow={`Jersey: ${ranking.homie_id}`}
+      eyebrow={`Jersey ${ranking.homie_id}`}
       fields={[
         {
           label: "Current Rank",

@@ -33,7 +33,9 @@ const signedFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const topLinkClassName =
-  "inline-flex items-center rounded-full border border-white bg-white px-3 py-1.5 text-sm font-semibold leading-snug text-[color:var(--trade-blue)] shadow-sm transition hover:bg-[color:var(--trade-blue-soft)]";
+  "inline-flex shrink-0 items-center rounded-full border border-white bg-white px-3 py-1.5 text-sm font-semibold leading-snug text-[color:var(--trade-blue)] shadow-sm transition hover:bg-[color:var(--trade-blue-soft)]";
+const headerMetaClassName =
+  "inline-flex shrink-0 items-center rounded-full border border-white/35 px-3 py-1 text-xs font-semibold uppercase leading-snug text-white/80";
 const summaryLabelClassName =
   "text-[0.68rem] font-semibold uppercase leading-tight opacity-75 md:text-[0.72rem] xl:whitespace-nowrap";
 
@@ -82,11 +84,17 @@ export default function RankingDetailPage({
         style={tcdbTradePageThemeVars}
       >
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--trade-rust)_0%,var(--trade-rust-deep)_100%)] text-[color:var(--trade-off-white)] shadow-sm">
-          <div className="relative min-h-[9rem] px-4 py-4 md:min-h-[10rem] md:px-6 md:py-6">
-            <div className="relative z-10 flex flex-wrap items-start justify-between gap-3">
+          <div className="grid min-h-[6.5rem] grid-cols-1 items-center gap-3 px-4 py-4 text-center md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:px-6 md:text-left">
+            <div className="flex min-w-0 justify-center md:justify-start">
               <Link href={topHref} className={topLinkClassName}>
                 {topLabel}
               </Link>
+            </div>
+            <h1 className="min-w-0 text-center text-[1.45rem] font-bold leading-tight md:text-[1.8rem]">
+              {title}
+            </h1>
+            <div className="flex min-w-0 flex-wrap items-center justify-center gap-3 md:justify-end">
+              <p className={headerMetaClassName}>{eyebrow}</p>
               {listLink ? (
                 <Link
                   href={listLink.href}
@@ -95,14 +103,6 @@ export default function RankingDetailPage({
                   {listLink.label}
                 </Link>
               ) : null}
-            </div>
-            <div className="mx-auto mt-5 flex max-w-[48rem] flex-col items-center justify-center gap-2 text-center md:absolute md:inset-0 md:mt-0 md:px-48">
-              <p className="text-xs font-semibold uppercase text-white/72">
-                {eyebrow}
-              </p>
-              <h1 className="text-[1.45rem] font-bold leading-none md:text-[1.8rem]">
-                {title}
-              </h1>
             </div>
           </div>
         </section>
