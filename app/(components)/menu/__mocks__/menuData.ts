@@ -38,10 +38,10 @@ export const mockPersonaMenus: PersonaItem[] = [
     icon: "GalleryHorizontalEnd",
     children: [
       {
-        id: "cardattack-rankings",
+        id: "cardattack-homies",
         kind: "link",
-        label: "Rankings",
-        href: "/cardattack/rankings",
+        label: "Homies",
+        href: "/cardattack/homies",
       },
       {
         id: "cardattack-sets",

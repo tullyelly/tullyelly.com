@@ -3,7 +3,7 @@ import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 const pageTitle = "🃏cardattack vault | tullyelly";
 const pageDescription =
-  "Home base for the cardattack vault; cataloging Bucks memorabilia, TCDb rankings, and every over-engineered collecting experiment.";
+  "Home base for the cardattack vault; cataloging Bucks memorabilia, homies, and every over-engineered collecting experiment.";
 
 export const metadata = {
   title: pageTitle,

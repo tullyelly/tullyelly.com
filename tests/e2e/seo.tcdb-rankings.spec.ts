@@ -1,9 +1,9 @@
 import { test, expect } from "./fixtures";
 
-test("tcdb rankings list emits metadata", async ({ page }) => {
-  await page.goto("/cardattack/tcdb-rankings/homies?q=giannis&page=2");
+test("homies list emits metadata", async ({ page }) => {
+  await page.goto("/cardattack/homies?q=giannis&page=2");
   await expect(page).toHaveTitle(
-    /cardattack; TCDb homie rankings; search: "giannis"; page 2/i,
+    /cardattack; homies; search: "giannis"; page 2/i,
   );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
@@ -15,12 +15,12 @@ test("tcdb rankings list emits metadata", async ({ page }) => {
   );
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
     "content",
-    /TCDb rankings/i,
+    /homies/i,
   );
 });
 
-test("tcdb rankings detail emits metadata", async ({ page }) => {
-  await page.goto("/cardattack/tcdb-rankings/homies");
+test("homie detail emits metadata", async ({ page }) => {
+  await page.goto("/cardattack/homies");
   const href = await page
     .locator('[data-testid="ranking-detail-trigger"]')
     .first()

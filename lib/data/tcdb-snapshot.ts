@@ -9,6 +9,7 @@ export type TcdbSnapshotTrend = "up" | "down" | "flat";
 
 type DbTcdbSnapshotRow = {
   homie_id: string | number;
+  route_slug: string;
   name: string;
   card_count: number | string;
   ranking: number | string;
@@ -27,6 +28,7 @@ type DbTcdbSnapshotRow = {
 
 export type TcdbSnapshotRecord = {
   homieId: string;
+  routeSlug: string;
   displayName: string;
   cardCount: number;
   ranking: number;
@@ -82,7 +84,8 @@ export async function getTcdbSnapshotForTagOnDate(
       `
         WITH matched_homie AS (
           SELECT
-            h.id::text AS homie_id
+            h.id::text AS homie_id,
+            COALESCE(NULLIF(btrim(h.tag_slug), ''), h.id::text) AS route_slug
           FROM dojo.homie AS h
           WHERE h.tag_slug = $2
           ORDER BY h.id ASC
@@ -90,6 +93,7 @@ export async function getTcdbSnapshotForTagOnDate(
         )
         SELECT
           s.homie_id::text AS homie_id,
+          h.route_slug,
           s.name,
           s.card_count,
           s.ranking,
@@ -134,6 +138,7 @@ export async function getTcdbSnapshotForTagOnDate(
 
   return {
     homieId: String(row.homie_id),
+    routeSlug: row.route_slug,
     displayName: row.name.toLowerCase(),
     cardCount: toInteger(row.card_count),
     ranking: toInteger(row.ranking),

@@ -20,6 +20,7 @@ describe("tcdb snapshot data helper", () => {
   it("resolves a dated homie snapshot from a chronicle tag", async () => {
     sqlQueryOneMock.mockResolvedValue({
       homie_id: "432",
+      route_slug: "shaq",
       name: "Shaquille O'Neal",
       card_count: "178",
       ranking: "149",
@@ -40,6 +41,7 @@ describe("tcdb snapshot data helper", () => {
       getTcdbSnapshotForTagOnDate(" SHAQ ", "2026-04-10"),
     ).resolves.toEqual({
       homieId: "432",
+      routeSlug: "shaq",
       displayName: "shaquille o'neal",
       cardCount: 178,
       ranking: 149,
@@ -65,6 +67,7 @@ describe("tcdb snapshot data helper", () => {
 
     expect(query).toContain("FROM dojo.homie AS h");
     expect(query).toContain("FROM dojo.homie_tcdb_snapshot_rt AS s");
+    expect(query).toContain("COALESCE(NULLIF(btrim(h.tag_slug), '')");
     expect(query).toContain("WHERE h.tag_slug = $2");
     expect(values[0]).toBe("2026-04-10");
     expect(values[1]).toBe("shaq");
@@ -81,6 +84,7 @@ describe("tcdb snapshot data helper", () => {
   it("uses rank trend for snapshot rendering semantics", async () => {
     sqlQueryOneMock.mockResolvedValue({
       homie_id: "432",
+      route_slug: "shaq",
       name: "Shaquille O'Neal",
       card_count: "178",
       ranking: "149",

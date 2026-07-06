@@ -4,7 +4,8 @@ const mockListNumberOneTcdbHomieRankings = jest.fn();
 const mockListRecentTcdbHomieFallers = jest.fn();
 const mockListRecentTcdbHomieRisers = jest.fn();
 const mockListTopTcdbHomieRankings = jest.fn();
-const mockGetTcdbRanking = jest.fn();
+const mockListTcdbRankings = jest.fn();
+const mockGetHomieTcdbRankingByRouteKey = jest.fn();
 const mockListNumberOneTcdbClanRankings = jest.fn();
 const mockListRecentTcdbClanFallers = jest.fn();
 const mockListRecentTcdbClanRisers = jest.fn();
@@ -19,9 +20,25 @@ jest.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("not found");
   },
+  usePathname: () => "/cardattack/homies",
+  useRouter: () => ({
+    replace: jest.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+jest.mock("@/lib/authz", () => ({
+  canCurrentUser: jest.fn().mockResolvedValue(false),
+}));
+jest.mock("@/app/cardattack/tcdb-rankings/_lib/getCurrentDate", () => ({
+  getCurrentDateIso: jest.fn().mockResolvedValue("2026-05-01"),
+}));
+jest.mock("@/app/cardattack/tcdb-rankings/_lib/getHomieOptions", () => ({
+  getHomieOptions: jest.fn().mockResolvedValue([]),
 }));
 jest.mock("@/lib/data/tcdb", () => ({
-  getTcdbRanking: (...args: unknown[]) => mockGetTcdbRanking(...args),
+  getHomieTcdbRankingByRouteKey: (...args: unknown[]) =>
+    mockGetHomieTcdbRankingByRouteKey(...args),
+  listTcdbRankings: (...args: unknown[]) => mockListTcdbRankings(...args),
   listNumberOneTcdbHomieRankings: (...args: unknown[]) =>
     mockListNumberOneTcdbHomieRankings(...args),
   listRecentTcdbHomieFallers: (...args: unknown[]) =>
@@ -50,13 +67,15 @@ jest.mock("@/lib/data/tcdb-clans", () => ({
     mockListTopTcdbClanRankings(...args),
 }));
 
-import RootPage from "@/app/cardattack/tcdb-rankings/page";
-import HomieDetailPage from "@/app/cardattack/tcdb-rankings/[id]/page";
+import HomiesPage from "@/app/cardattack/homies/page";
+import HomieDetailPage from "@/app/cardattack/homies/[tagSlugOrId]/page";
 import ClanDetailPage from "@/app/cardattack/tcdb-rankings/clans/[slug]/page";
 import TCDBRankingRowClient from "@/components/tcdb/TCDBRankingRowClient";
 
 const homieRanking = {
   homie_id: 34,
+  tag_slug: "freak",
+  route_slug: "freak",
   name: "Giannis Antetokounmpo",
   card_count: 500,
   ranking: 1,
@@ -91,7 +110,8 @@ describe("TCDB rankings pages", () => {
     mockListRecentTcdbHomieFallers.mockReset();
     mockListRecentTcdbHomieRisers.mockReset();
     mockListTopTcdbHomieRankings.mockReset();
-    mockGetTcdbRanking.mockReset();
+    mockListTcdbRankings.mockReset();
+    mockGetHomieTcdbRankingByRouteKey.mockReset();
     mockListNumberOneTcdbClanRankings.mockReset();
     mockListRecentTcdbClanFallers.mockReset();
     mockListRecentTcdbClanRisers.mockReset();
@@ -99,61 +119,72 @@ describe("TCDB rankings pages", () => {
     mockGetTcdbClanRankingsBySlug.mockReset();
   });
 
-  it("renders the consolidated landing sections and detail links", async () => {
-    mockListNumberOneTcdbHomieRankings.mockResolvedValue([homieRanking]);
-    mockListNumberOneTcdbClanRankings.mockResolvedValue([clanRanking]);
-    mockListTopTcdbHomieRankings.mockResolvedValue([homieRanking]);
-    mockListTopTcdbClanRankings.mockResolvedValue([clanRanking]);
-    mockListRecentTcdbHomieRisers.mockResolvedValue([homieRanking]);
-    mockListRecentTcdbHomieFallers.mockResolvedValue([homieRanking]);
-    mockListRecentTcdbClanRisers.mockResolvedValue([clanRanking]);
-    mockListRecentTcdbClanFallers.mockResolvedValue([clanRanking]);
+  it("renders the homies list page and preferred detail links", async () => {
+    mockListTcdbRankings.mockResolvedValue({
+      data: [homieRanking],
+      meta: { page: 1, pageSize: 50, total: 1, totalPages: 1 },
+    });
 
-    render(await RootPage());
-
-    expect(
-      screen.getByRole("heading", { name: "#1 Homies" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "#1 Clans" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Top 5 Homies" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Top 5 Clans" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Homie Risers" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Clan Fallers" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByRole("link", { name: "Giannis Antetokounmpo" })[0],
-    ).toHaveAttribute("href", "/cardattack/tcdb-rankings/34");
-    expect(
-      screen.getAllByRole("link", { name: "Milwaukee Bucks" })[0],
-    ).toHaveAttribute(
-      "href",
-      "/cardattack/tcdb-rankings/clans/milwaukee-bucks",
+    render(
+      await HomiesPage({
+        searchParams: Promise.resolve(undefined),
+      }),
     );
+
+    expect(screen.getByRole("heading", { name: "Homies" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Overview" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Clans" }),
+    ).not.toBeInTheDocument();
+    for (const link of screen.getAllByTestId("ranking-detail-trigger")) {
+      expect(link).toHaveAttribute("href", "/cardattack/homies/freak");
+    }
   });
 
   it("renders homie detail as a page", async () => {
-    mockGetTcdbRanking.mockResolvedValue(homieRanking);
+    mockGetHomieTcdbRankingByRouteKey.mockResolvedValue(homieRanking);
 
     render(
       await HomieDetailPage({
-        params: Promise.resolve({ id: "34" }),
+        params: Promise.resolve({ tagSlugOrId: "freak" }),
       }),
     );
 
     expect(
       screen.getByRole("heading", { name: "Giannis Antetokounmpo" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Jersey 34")).toBeInTheDocument();
+    expect(screen.queryByText("Homie 34")).not.toBeInTheDocument();
     expect(screen.getByText("Jersey / Homie ID")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Back to homies" }),
+    ).toHaveAttribute("href", "/cardattack/homies");
+    expect(
+      screen.queryByRole("link", { name: "Homie rankings" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(mockGetHomieTcdbRankingByRouteKey).toHaveBeenCalledWith("freak");
+  });
+
+  it("renders homie detail with numeric fallback when no tag slug exists", async () => {
+    mockGetHomieTcdbRankingByRouteKey.mockResolvedValue({
+      ...homieRanking,
+      tag_slug: null,
+      route_slug: "34",
+    });
+
+    render(
+      await HomieDetailPage({
+        params: Promise.resolve({ tagSlugOrId: "34" }),
+      }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Giannis Antetokounmpo" }),
+    ).toBeInTheDocument();
+    expect(mockGetHomieTcdbRankingByRouteKey).toHaveBeenCalledWith("34");
   });
 
   it("renders clan detail as a page", async () => {
@@ -184,13 +215,13 @@ describe("TCDB rankings pages", () => {
   it("renders TCDB ranking row links without dialog attributes", () => {
     render(
       <TCDBRankingRowClient
-        href="/cardattack/tcdb-rankings/34"
+        href="/cardattack/homies/freak"
         name="Giannis Antetokounmpo"
       />,
     );
 
     const link = screen.getByTestId("ranking-detail-trigger");
-    expect(link).toHaveAttribute("href", "/cardattack/tcdb-rankings/34");
+    expect(link).toHaveAttribute("href", "/cardattack/homies/freak");
     expect(link).not.toHaveAttribute("aria-haspopup");
   });
 });

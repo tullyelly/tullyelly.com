@@ -58,11 +58,12 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <RankingDetailPage
-      current="clans"
       title={ranking.name}
       eyebrow={`Clan ${ranking.slug}`}
       listHref="/cardattack/tcdb-rankings/clans"
       listLabel="Clan rankings"
+      topHref="/cardattack/tcdb-rankings/clans"
+      topLabel="Back to clans"
       fieldGroups={rankings.map((row) => ({
         title: formatClanSportLabel(row.sport),
         fields: [

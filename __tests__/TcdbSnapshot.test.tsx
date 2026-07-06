@@ -24,6 +24,7 @@ describe("TcdbSnapshot", () => {
     async ({ trend, emoji, label }) => {
       getTcdbSnapshotForTagOnDateMock.mockResolvedValue({
         homieId: "432",
+        routeSlug: "shaq",
         displayName: "Shaquille O'Neal",
         cardCount: 178,
         ranking: 149,
@@ -47,7 +48,7 @@ describe("TcdbSnapshot", () => {
       );
       expect(screen.getByRole("link", { name: "149th" })).toHaveAttribute(
         "href",
-        "/cardattack/tcdb-rankings/432",
+        "/cardattack/homies/shaq",
       );
       expect(screen.getByText("[")).toBeInTheDocument();
       expect(screen.getByText("]")).toBeInTheDocument();

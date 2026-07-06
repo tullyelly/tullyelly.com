@@ -15,7 +15,7 @@ export function RelationalRuckusCard() {
       </p>
       <p className="m-0 mt-2">
         Check out shaolin scrolls to see how all of my projects evovle, and hit
-        up tcdb rankings to see just how obsessed I am with giannis at any given
+        up homies to see just how obsessed I am with giannis at any given
         movement.
       </p>
     </CardInfoPopover>
@@ -39,14 +39,14 @@ export function RelationalRuckusCard() {
           </span>
         </HomeCardRowLink>
         <HomeCardRowLink
-          href="/cardattack/tcdb-rankings"
+          href="/cardattack/homies"
           className="flex items-center gap-2 text-base"
         >
           <span aria-hidden className="no-underline">
             🏀
           </span>
           <span className="underline decoration-current underline-offset-2">
-            TCDB Rankings
+            Homies
           </span>
           <span className="ml-auto flex h-4 w-4 items-center justify-center">
             <HomeCardRowSpinner />
