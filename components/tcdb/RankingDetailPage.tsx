@@ -21,6 +21,7 @@ type RankingDetailPageProps = {
   eyebrow: string;
   fields?: RankingDetailField[];
   fieldGroups?: RankingDetailFieldGroup[];
+  children?: ReactNode;
   listHref?: string;
   listLabel?: string;
   topHref?: string;
@@ -65,6 +66,7 @@ export default function RankingDetailPage({
   eyebrow,
   fields,
   fieldGroups,
+  children,
   listHref,
   listLabel,
   topHref = "/cardattack/homies",
@@ -136,6 +138,7 @@ export default function RankingDetailPage({
               </dl>
             </Card>
           ))}
+          {children}
         </div>
       </div>
     </FullBleedPage>

@@ -21,6 +21,11 @@ export type MdxNode = {
   children?: MdxNode[];
 };
 
+export type PersonTagUsage = {
+  tag: string;
+  displayName: string;
+};
+
 export type InferOptions = {
   errorPrefix?: string;
   allowedAlterEgos?: readonly string[];
@@ -91,7 +96,15 @@ export function inferPersonTagsFromTree(
   tree: MdxNode,
   { errorPrefix = "Chronicle" }: InferOptions = {},
 ): string[] {
-  const foundTags: string[] = [];
+  const usages = inferPersonTagUsagesFromTree(tree, { errorPrefix });
+  return Array.from(new Set(usages.map((usage) => usage.tag)));
+}
+
+export function inferPersonTagUsagesFromTree(
+  tree: MdxNode,
+  { errorPrefix = "Chronicle" }: InferOptions = {},
+): PersonTagUsage[] {
+  const foundUsages: PersonTagUsage[] = [];
 
   const visitNode = (node: MdxNode | undefined) => {
     if (!node) return;
@@ -125,7 +138,36 @@ export function inferPersonTagsFromTree(
         );
       }
 
-      foundTags.push(tagAttr.value);
+      const displayNameAttrs = (node.attributes ?? []).filter(
+        (attr) =>
+          attr?.type === "mdxJsxAttribute" && attr.name === "displayName",
+      );
+
+      if (displayNameAttrs.length > 1) {
+        throw new Error(
+          `${errorPrefix}: PersonTag should declare at most one displayName prop.`,
+        );
+      }
+
+      const displayNameAttr = displayNameAttrs[0];
+
+      if (
+        displayNameAttr &&
+        displayNameAttr.value !== undefined &&
+        typeof displayNameAttr.value !== "string"
+      ) {
+        throw new Error(
+          `${errorPrefix}: PersonTag displayName must be a string literal.`,
+        );
+      }
+
+      const displayName =
+        typeof displayNameAttr?.value === "string" &&
+        displayNameAttr.value.trim().length > 0
+          ? displayNameAttr.value.trim()
+          : tagAttr.value;
+
+      foundUsages.push({ tag: tagAttr.value, displayName });
     }
 
     if (node.children) {
@@ -136,7 +178,7 @@ export function inferPersonTagsFromTree(
   };
 
   visitNode(tree);
-  return Array.from(new Set(foundTags));
+  return foundUsages;
 }
 
 export function inferYouTubeVideoArtistTagsFromTree(

@@ -1,6 +1,8 @@
 import {
   ALTER_EGO_OPTIONS,
   inferAlterEgosFromTree,
+  inferPersonTagUsagesFromTree,
+  inferPersonTagsFromTree,
   mergeTagsWithAlterEgo,
 } from "@/lib/alterEgo";
 
@@ -26,6 +28,24 @@ const releaseNode = (
 
 const root = (children: TestNode[] = []): TestNode => ({
   type: "root",
+  children,
+});
+
+const personTagNode = (
+  tag?: unknown,
+  displayName?: unknown,
+  children: TestNode[] = [],
+): TestNode => ({
+  type: "mdxJsxTextElement",
+  name: "PersonTag",
+  attributes: [
+    ...(tag === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "tag", value: tag }]),
+    ...(displayName === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "displayName", value: displayName }]),
+  ],
   children,
 });
 
@@ -82,6 +102,45 @@ describe("inferAlterEgosFromTree", () => {
   it("returns undefined when no ReleaseSection is present", () => {
     const tree = root([{ type: "paragraph", children: [] }]);
     expect(inferAlterEgosFromTree(tree, { errorPrefix })).toEqual([]);
+  });
+});
+
+describe("inferPersonTagUsagesFromTree", () => {
+  const errorPrefix = "Chronicle sample.mdx";
+
+  it("extracts PersonTag display names and tag fallbacks", () => {
+    const tree = root([
+      personTagNode("freak", "the greek freak"),
+      personTagNode("freak"),
+      personTagNode("bucks-n-six", "bucks"),
+    ]);
+
+    expect(inferPersonTagUsagesFromTree(tree, { errorPrefix })).toEqual([
+      { tag: "freak", displayName: "the greek freak" },
+      { tag: "freak", displayName: "freak" },
+      { tag: "bucks-n-six", displayName: "bucks" },
+    ]);
+  });
+
+  it("deduplicates inferred PersonTag tag slugs", () => {
+    const tree = root([
+      personTagNode("freak", "giannis"),
+      personTagNode("freak", "antetokounmpo"),
+      personTagNode("bucks-n-six", "bucks"),
+    ]);
+
+    expect(inferPersonTagsFromTree(tree, { errorPrefix })).toEqual([
+      "freak",
+      "bucks-n-six",
+    ]);
+  });
+
+  it("throws when displayName is not a string literal", () => {
+    const tree = root([personTagNode("freak", { expression: "name" })]);
+
+    expect(() => inferPersonTagUsagesFromTree(tree, { errorPrefix })).toThrow(
+      `${errorPrefix}: PersonTag displayName must be a string literal.`,
+    );
   });
 });
 

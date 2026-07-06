@@ -17,7 +17,7 @@ export default function PersonTag({ displayName, href, tag }: PersonTagProps) {
   return (
     <Link
       href={resolvedHref as Route}
-      className="font-bold italic !text-[var(--blue)] !no-underline hover:!bg-[var(--blue)] hover:!text-white hover:!no-underline"
+      className="font-bold italic !text-[var(--person-tag-color,var(--blue))] !no-underline hover:!bg-[var(--person-tag-hover-bg,var(--blue))] hover:!text-[var(--person-tag-hover-color,var(--white))] hover:!no-underline"
       data-person-tag={tag}
       prefetch={false}
     >

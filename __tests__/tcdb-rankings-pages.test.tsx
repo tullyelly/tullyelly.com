@@ -6,6 +6,8 @@ const mockListRecentTcdbHomieRisers = jest.fn();
 const mockListTopTcdbHomieRankings = jest.fn();
 const mockListTcdbRankings = jest.fn();
 const mockGetHomieTcdbRankingByRouteKey = jest.fn();
+const mockGetStoredTagMetadataForHrefKind = jest.fn();
+const mockListChronicleTagDisplayNames = jest.fn();
 const mockListNumberOneTcdbClanRankings = jest.fn();
 const mockListRecentTcdbClanFallers = jest.fn();
 const mockListRecentTcdbClanRisers = jest.fn();
@@ -47,6 +49,14 @@ jest.mock("@/lib/data/tcdb", () => ({
     mockListRecentTcdbHomieRisers(...args),
   listTopTcdbHomieRankings: (...args: unknown[]) =>
     mockListTopTcdbHomieRankings(...args),
+}));
+jest.mock("@/lib/tags-server", () => ({
+  getStoredTagMetadataForHrefKind: (...args: unknown[]) =>
+    mockGetStoredTagMetadataForHrefKind(...args),
+}));
+jest.mock("@/lib/chronicle-person-tags", () => ({
+  listChronicleTagDisplayNames: (...args: unknown[]) =>
+    mockListChronicleTagDisplayNames(...args),
 }));
 jest.mock("@/lib/data/tcdb-clans", () => ({
   formatClanSportLabel: (sport: string) =>
@@ -112,6 +122,10 @@ describe("TCDB rankings pages", () => {
     mockListTopTcdbHomieRankings.mockReset();
     mockListTcdbRankings.mockReset();
     mockGetHomieTcdbRankingByRouteKey.mockReset();
+    mockGetStoredTagMetadataForHrefKind.mockReset();
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue(null);
+    mockListChronicleTagDisplayNames.mockReset();
+    mockListChronicleTagDisplayNames.mockReturnValue([]);
     mockListNumberOneTcdbClanRankings.mockReset();
     mockListRecentTcdbClanFallers.mockReset();
     mockListRecentTcdbClanRisers.mockReset();
@@ -168,6 +182,71 @@ describe("TCDB rankings pages", () => {
     expect(mockGetHomieTcdbRankingByRouteKey).toHaveBeenCalledWith("freak");
   });
 
+  it("renders Chronicle display names for homie tag metadata", async () => {
+    mockGetHomieTcdbRankingByRouteKey.mockResolvedValue(homieRanking);
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
+      slug: "freak",
+      displayName: "Giannis Antetokounmpo",
+      href: "/cardattack/homies/freak",
+      hrefKind: "homie",
+      isClickable: true,
+      meta: {},
+    });
+    mockListChronicleTagDisplayNames.mockReturnValue([
+      { displayName: "giannis", count: 2, chronicleCount: 2 },
+      { displayName: "the greek freak", count: 1, chronicleCount: 1 },
+    ]);
+
+    render(
+      await HomieDetailPage({
+        params: Promise.resolve({ tagSlugOrId: "freak" }),
+      }),
+    );
+
+    expect(screen.getByText("Chronicle names")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Display names for Giannis Antetokounmpo",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("giannis")).toBeInTheDocument();
+    expect(screen.getByText("the greek freak")).toBeInTheDocument();
+    expect(
+      screen.getByText("2 mentions across 2 chronicles"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Chronicle tag" })).toHaveAttribute(
+      "href",
+      "/shaolin/tags/freak",
+    );
+    expect(mockGetStoredTagMetadataForHrefKind).toHaveBeenCalledWith({
+      slug: "freak",
+      href: "/cardattack/homies/freak",
+      hrefKind: "homie",
+    });
+    expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith("freak");
+  });
+
+  it("does not render Chronicle display names for non-homie tag metadata", async () => {
+    mockGetHomieTcdbRankingByRouteKey.mockResolvedValue(homieRanking);
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
+      slug: "freak",
+      displayName: "freak",
+      href: "/shaolin/tags/freak",
+      hrefKind: "tag",
+      isClickable: true,
+      meta: {},
+    });
+
+    render(
+      await HomieDetailPage({
+        params: Promise.resolve({ tagSlugOrId: "freak" }),
+      }),
+    );
+
+    expect(screen.queryByText("Chronicle names")).not.toBeInTheDocument();
+    expect(mockListChronicleTagDisplayNames).not.toHaveBeenCalled();
+  });
+
   it("renders homie detail with numeric fallback when no tag slug exists", async () => {
     mockGetHomieTcdbRankingByRouteKey.mockResolvedValue({
       ...homieRanking,
@@ -185,6 +264,39 @@ describe("TCDB rankings pages", () => {
       screen.getByRole("heading", { name: "Giannis Antetokounmpo" }),
     ).toBeInTheDocument();
     expect(mockGetHomieTcdbRankingByRouteKey).toHaveBeenCalledWith("34");
+  });
+
+  it("renders Chronicle display names for numeric homie routes matched by href", async () => {
+    mockGetHomieTcdbRankingByRouteKey.mockResolvedValue({
+      ...homieRanking,
+      tag_slug: null,
+      route_slug: "34",
+    });
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
+      slug: "freak",
+      displayName: "Giannis Antetokounmpo",
+      href: "/cardattack/homies/34",
+      hrefKind: "homie",
+      isClickable: true,
+      meta: {},
+    });
+    mockListChronicleTagDisplayNames.mockReturnValue([
+      { displayName: "giannis", count: 1, chronicleCount: 1 },
+    ]);
+
+    render(
+      await HomieDetailPage({
+        params: Promise.resolve({ tagSlugOrId: "34" }),
+      }),
+    );
+
+    expect(screen.getByText("Chronicle names")).toBeInTheDocument();
+    expect(mockGetStoredTagMetadataForHrefKind).toHaveBeenCalledWith({
+      slug: null,
+      href: "/cardattack/homies/34",
+      hrefKind: "homie",
+    });
+    expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith("freak");
   });
 
   it("renders clan detail as a page", async () => {

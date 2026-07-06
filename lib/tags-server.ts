@@ -12,6 +12,7 @@ const TAG_HREF_KINDS = [
   "tag",
   "persona",
   "squad",
+  "homie",
   "custom",
   "external",
   "none",
@@ -73,6 +74,13 @@ function getFallbackHrefKind(slug: string): TagHrefKind {
   return "custom";
 }
 
+function getDefaultHrefForKind(slug: string, hrefKind: TagHrefKind): string {
+  if (hrefKind === "homie") {
+    return `/cardattack/homies/${encodeURIComponent(slug)}`;
+  }
+  return getDefaultTagHref(slug);
+}
+
 function resolveTagMetadata(
   slug: string,
   row: TagMetadataRow | undefined,
@@ -95,7 +103,9 @@ function resolveTagMetadata(
   return {
     slug,
     displayName: trimToValue(row.display_name) ?? getKnownTagDisplayName(slug),
-    href: isClickable ? (explicitHref ?? getDefaultTagHref(slug)) : null,
+    href: isClickable
+      ? (explicitHref ?? getDefaultHrefForKind(slug, hrefKind))
+      : null,
     hrefKind,
     isClickable,
     meta: normalizeMeta(row.meta),
@@ -139,4 +149,67 @@ export async function getTagMetadataBatch(
   }
 
   return metadataBySlug;
+}
+
+export async function getStoredTagMetadata(
+  tag: string,
+): Promise<TagMetadata | null> {
+  const slug = normalizeTagSlug(tag);
+  if (!slug) return null;
+
+  const rows = await sql<TagMetadataRow>`
+    SELECT
+      slug,
+      display_name,
+      href,
+      href_kind,
+      is_clickable,
+      meta
+    FROM dojo.tags
+    WHERE slug = ${slug}
+    LIMIT 1
+  `;
+
+  const row = rows[0];
+  return row ? resolveTagMetadata(slug, row) : null;
+}
+
+export async function getStoredTagMetadataForHrefKind({
+  slug,
+  href,
+  hrefKind,
+}: {
+  slug?: string | null;
+  href?: string | null;
+  hrefKind: TagHrefKind;
+}): Promise<TagMetadata | null> {
+  const normalizedSlug = slug ? normalizeTagSlug(slug) : null;
+  const normalizedHref = trimToValue(href) ?? null;
+  if (!normalizedSlug && !normalizedHref) return null;
+
+  const rows = await sql<TagMetadataRow>`
+    SELECT
+      slug,
+      display_name,
+      href,
+      href_kind,
+      is_clickable,
+      meta
+    FROM dojo.tags
+    WHERE href_kind = ${hrefKind}
+      AND (
+        (${normalizedSlug}::text IS NOT NULL AND slug = ${normalizedSlug})
+        OR href = ${normalizedHref}
+      )
+    ORDER BY
+      CASE
+        WHEN ${normalizedSlug}::text IS NOT NULL AND slug = ${normalizedSlug} THEN 0
+        WHEN href = ${normalizedHref} THEN 1
+        ELSE 2
+      END
+    LIMIT 1
+  `;
+
+  const row = rows[0];
+  return row ? resolveTagMetadata(row.slug, row) : null;
 }

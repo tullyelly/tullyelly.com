@@ -5,15 +5,17 @@ import {
   ALTER_EGO_OPTIONS,
   DEFAULT_ALTER_EGO,
   inferAlterEgosFromTree,
-  inferPersonTagsFromTree,
+  inferPersonTagUsagesFromTree,
   inferYouTubeVideoArtistTagsFromTree,
   mergeChronicleTags,
   type MdxNode,
+  type PersonTagUsage,
 } from "./lib/alterEgo";
 
 const contentDirPath = "content";
 const inferredAlterEgos = new Map<string, string[]>();
 const inferredPersonTags = new Map<string, string[]>();
+const inferredPersonTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredYouTubeVideoArtistTags = new Map<string, string[]>();
 
 function resolveInferenceSourceFilePath(file: any): string | undefined {
@@ -71,12 +73,17 @@ function remarkInferPersonTags() {
     const errorPrefix = `Chronicle ${sourceFilePath}`;
 
     // PersonTag enables inline authoring of people and concepts while feeding the shared tag system.
-    const foundTags = inferPersonTagsFromTree(tree, { errorPrefix });
+    const foundUsages = inferPersonTagUsagesFromTree(tree, { errorPrefix });
+    const foundTags = Array.from(
+      new Set(foundUsages.map((usage) => usage.tag)),
+    );
 
     if (foundTags.length > 0) {
       inferredPersonTags.set(sourceFilePath, foundTags);
+      inferredPersonTagUsages.set(sourceFilePath, foundUsages);
     } else {
       inferredPersonTags.delete(sourceFilePath);
+      inferredPersonTagUsages.delete(sourceFilePath);
     }
   };
 }
@@ -164,6 +171,11 @@ const Post = defineDocumentType(() => ({
         doc.alterEgo ??
         inferredAlterEgos.get(doc._raw.sourceFilePath)?.[0] ??
         DEFAULT_ALTER_EGO,
+    },
+    personTagUsages: {
+      type: "json",
+      resolve: (doc) =>
+        inferredPersonTagUsages.get(doc._raw.sourceFilePath) ?? [],
     },
   },
 }));
