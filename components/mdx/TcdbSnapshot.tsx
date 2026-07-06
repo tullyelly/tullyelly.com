@@ -81,7 +81,7 @@ export default async function TcdbSnapshot({
       <PersonTag displayName={displayName} tag={normalizedTag} />,{" "}
       <span>[</span>
       <Link
-        href={`/cardattack/tcdb-rankings/${encodeURIComponent(snapshot.homieId)}`}
+        href={`/cardattack/homies/${encodeURIComponent(snapshot.routeSlug)}`}
         prefetch={false}
         className={linkClassName}
       >

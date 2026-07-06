@@ -1,12 +1,14 @@
 /** @jest-environment node */
 
 const sqlQueryRowsMock = jest.fn();
+const sqlQueryOneMock = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("@/lib/db/retry", () => ({
   withDbRetry: (fn: () => Promise<unknown>) => fn(),
 }));
 jest.mock("@/lib/db-sql-helpers", () => ({
+  sqlQueryOne: (...args: unknown[]) => sqlQueryOneMock(...args),
   sqlQueryRows: (...args: unknown[]) => sqlQueryRowsMock(...args),
 }));
 
@@ -17,7 +19,10 @@ import {
   listRecentTcdbClanRisers,
   listTcdbClanRankings,
 } from "@/lib/data/tcdb-clans";
-import { listNumberOneTcdbHomieRankings } from "@/lib/data/tcdb";
+import {
+  getHomieTcdbRankingByRouteKey,
+  listNumberOneTcdbHomieRankings,
+} from "@/lib/data/tcdb";
 
 const clanRow = {
   clan_id: 12,
@@ -37,6 +42,8 @@ const clanRow = {
 
 const homieRow = {
   homie_id: 34,
+  tag_slug: "freak",
+  route_slug: "freak",
   name: "Giannis Antetokounmpo",
   card_count: 500,
   ranking: 1,
@@ -52,6 +59,7 @@ const homieRow = {
 describe("tcdb clan ranking data helpers", () => {
   beforeEach(() => {
     sqlQueryRowsMock.mockReset();
+    sqlQueryOneMock.mockReset();
   });
 
   it("lists clan rankings with pagination, search, and trend filters", async () => {
@@ -139,6 +147,42 @@ describe("tcdb clan ranking data helpers", () => {
       { ...homieRow, ranking_at: "2026-05-01" },
     ]);
     expect(sqlQueryRowsMock.mock.calls[1][0]).toContain("WHERE ranking = 1");
+  });
+
+  it("gets homie ranking detail by slug or numeric fallback", async () => {
+    sqlQueryOneMock.mockResolvedValueOnce(homieRow);
+
+    await expect(getHomieTcdbRankingByRouteKey(" Freak ")).resolves.toEqual({
+      ...homieRow,
+      ranking_at: "2026-05-01",
+    });
+
+    const [slugQuery, slugValues] = sqlQueryOneMock.mock.calls[0] as [
+      string,
+      unknown[],
+    ];
+    expect(slugQuery).toContain("FROM dojo.v_homie_tcdb_ranking_route");
+    expect(slugQuery).toContain("WHERE tag_slug = $1");
+    expect(slugValues).toEqual(["freak"]);
+
+    const fallbackRow = {
+      ...homieRow,
+      tag_slug: null,
+      route_slug: "34",
+    };
+    sqlQueryOneMock.mockResolvedValueOnce(fallbackRow);
+
+    await expect(getHomieTcdbRankingByRouteKey("34")).resolves.toEqual({
+      ...fallbackRow,
+      ranking_at: "2026-05-01",
+    });
+
+    const [idQuery, idValues] = sqlQueryOneMock.mock.calls[1] as [
+      string,
+      unknown[],
+    ];
+    expect(idQuery).toContain("WHERE homie_id = $1::bigint");
+    expect(idValues).toEqual(["34"]);
   });
 
   it("orders clan risers and fallers by recent movement", async () => {

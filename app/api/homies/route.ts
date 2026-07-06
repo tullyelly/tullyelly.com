@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { isTrend, listTcdbRankings } from "@/lib/data/tcdb";
 
-// Neon supports edge, but use Node for parity with other data entrypoints if preferred.
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {

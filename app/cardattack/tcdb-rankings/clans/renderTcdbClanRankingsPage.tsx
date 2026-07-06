@@ -2,7 +2,6 @@ import { Card } from "@ui";
 import { unstable_cache } from "next/cache";
 import FullBleedPage from "@/components/layout/FullBleedPage";
 import PageIntro from "@/components/layout/PageIntro";
-import RankingListNav from "@/components/tcdb/RankingListNav";
 import TCDBRankingTable, {
   clanRankingsToTableData,
 } from "@/components/tcdb/TCDBRankingTable";
@@ -65,7 +64,6 @@ export async function renderTcdbClanRankingsPage(
       >
         <div className="space-y-8">
           <PageIntro title="TCDB Clan Rankings">
-            <RankingListNav current="clans" />
             <p className="text-[16px] text-muted-foreground md:text-[18px]">
               Clan snapshots track clan collections by slug, card count, and
               current TCDb rank.

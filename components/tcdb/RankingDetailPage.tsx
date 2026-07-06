@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 import FullBleedPage from "@/components/layout/FullBleedPage";
-import RankingListNav from "@/components/tcdb/RankingListNav";
 import TrendPill from "@/components/tcdb/TrendPill";
 import { fmtDate } from "@/lib/datetime";
 import { tcdbTradePageThemeVars } from "@/lib/tcdb-theme";
@@ -18,13 +17,14 @@ type RankingDetailFieldGroup = {
 };
 
 type RankingDetailPageProps = {
-  current: "homies" | "clans";
   title: string;
   eyebrow: string;
   fields?: RankingDetailField[];
   fieldGroups?: RankingDetailFieldGroup[];
-  listHref: string;
-  listLabel: string;
+  listHref?: string;
+  listLabel?: string;
+  topHref?: string;
+  topLabel?: string;
 };
 
 const integerFormatter = new Intl.NumberFormat("en-US");
@@ -33,7 +33,9 @@ const signedFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const topLinkClassName =
-  "inline-flex items-center rounded-full border border-white bg-white px-3 py-1.5 text-sm font-semibold leading-snug text-[color:var(--trade-blue)] shadow-sm transition hover:bg-[color:var(--trade-blue-soft)]";
+  "inline-flex shrink-0 items-center rounded-full border border-white bg-white px-3 py-1.5 text-sm font-semibold leading-snug text-[color:var(--trade-blue)] shadow-sm transition hover:bg-[color:var(--trade-blue-soft)]";
+const headerMetaClassName =
+  "inline-flex shrink-0 items-center rounded-full border border-white/35 px-3 py-1 text-xs font-semibold uppercase leading-snug text-white/80";
 const summaryLabelClassName =
   "text-[0.68rem] font-semibold uppercase leading-tight opacity-75 md:text-[0.72rem] xl:whitespace-nowrap";
 
@@ -59,18 +61,21 @@ export function rankingTrendField(trend: "up" | "down" | "flat") {
 }
 
 export default function RankingDetailPage({
-  current,
   title,
   eyebrow,
   fields,
   fieldGroups,
   listHref,
   listLabel,
+  topHref = "/cardattack/homies",
+  topLabel = "Back to homies",
 }: RankingDetailPageProps) {
   const groups =
     fieldGroups && fieldGroups.length > 0
       ? fieldGroups
       : [{ fields: fields ?? [] }];
+  const listLink =
+    listHref && listLabel ? { href: listHref, label: listLabel } : null;
 
   return (
     <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
@@ -78,31 +83,26 @@ export default function RankingDetailPage({
         className="space-y-8 px-1 py-6 md:px-2 md:py-8"
         style={tcdbTradePageThemeVars}
       >
-        <RankingListNav current={current} />
-
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--trade-rust)_0%,var(--trade-rust-deep)_100%)] text-[color:var(--trade-off-white)] shadow-sm">
-          <div className="space-y-4 px-4 py-4 md:space-y-6 md:px-6 md:py-6">
-            <div className="space-y-2 md:grid md:grid-cols-[max-content_minmax(0,1fr)_max-content] md:items-center md:gap-x-4 md:space-y-0">
-              <Link
-                href="/cardattack/tcdb-rankings"
-                className={topLinkClassName}
-              >
-                Back to rankings
+          <div className="grid min-h-[6.5rem] grid-cols-1 items-center gap-3 px-4 py-4 text-center md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:px-6 md:text-left">
+            <div className="flex min-w-0 justify-center md:justify-start">
+              <Link href={topHref} className={topLinkClassName}>
+                {topLabel}
               </Link>
-              <div className="min-w-0 space-y-2 md:px-4 md:text-center">
-                <p className="text-xs font-semibold uppercase text-white/72">
-                  {eyebrow}
-                </p>
-                <h1 className="text-[1.45rem] font-bold leading-none md:text-[1.8rem]">
-                  {title}
-                </h1>
-              </div>
-              <Link
-                href={listHref}
-                className={`${topLinkClassName} whitespace-nowrap`}
-              >
-                {listLabel}
-              </Link>
+            </div>
+            <h1 className="min-w-0 text-center text-[1.45rem] font-bold leading-tight md:text-[1.8rem]">
+              {title}
+            </h1>
+            <div className="flex min-w-0 flex-wrap items-center justify-center gap-3 md:justify-end">
+              <p className={headerMetaClassName}>{eyebrow}</p>
+              {listLink ? (
+                <Link
+                  href={listLink.href}
+                  className={`${topLinkClassName} whitespace-nowrap`}
+                >
+                  {listLink.label}
+                </Link>
+              ) : null}
             </div>
           </div>
         </section>

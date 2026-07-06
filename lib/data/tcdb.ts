@@ -22,6 +22,8 @@ export type RankingMeta = {
 
 export type RankingRow = {
   homie_id: number;
+  tag_slug: string | null;
+  route_slug: string;
   name: string;
   card_count: number;
   ranking: number;
@@ -39,7 +41,7 @@ export type RankingResponse = {
   meta: RankingMeta;
 };
 
-const TCDB_TABLE = "dojo.homie_tcdb_ranking_rt" as const;
+const TCDB_TABLE = "dojo.v_homie_tcdb_ranking_route" as const;
 
 if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
   void (async () => {
@@ -63,6 +65,8 @@ if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
 
 export type DbRankingRow = {
   homie_id: number;
+  tag_slug: string | null;
+  route_slug: string;
   name: string;
   card_count: number;
   ranking: number;
@@ -113,6 +117,8 @@ export async function listTcdbRankings(opts: {
     sqlQueryRows<DbRankingRow>(
       `
         SELECT homie_id,
+               tag_slug,
+               route_slug,
                name,
                card_count,
                ranking,
@@ -149,15 +155,24 @@ export async function listTcdbRankings(opts: {
   };
 }
 
-export async function getTcdbRanking(
-  id: string | number,
+export async function getHomieTcdbRankingByRouteKey(
+  tagSlugOrId: string | number,
 ): Promise<RankingRow | null> {
-  const numericId = Number(id);
-  if (!Number.isInteger(numericId)) return null;
+  const routeKey = String(tagSlugOrId).trim();
+  if (!routeKey) return null;
+
+  const isNumericId = /^\d+$/.test(routeKey);
+  const whereSql = isNumericId
+    ? "homie_id = $1::bigint"
+    : "tag_slug = $1";
+  const param = isNumericId ? routeKey : routeKey.toLowerCase();
+
   const row = await withDbRetry(() =>
     sqlQueryOne<DbRankingRow>(
       `
         SELECT homie_id,
+               tag_slug,
+               route_slug,
                name,
                card_count,
                ranking,
@@ -169,10 +184,10 @@ export async function getTcdbRanking(
                trend_overall,
                diff_sign_changed
         FROM ${TCDB_TABLE}
-        WHERE homie_id = $1
+        WHERE ${whereSql}
         LIMIT 1
       `,
-      [numericId],
+      [param],
     ),
   );
   if (!row) return null;
@@ -184,6 +199,8 @@ export async function listNumberOneTcdbHomieRankings(): Promise<RankingRow[]> {
     sqlQueryRows<DbRankingRow>(
       `
         SELECT homie_id,
+               tag_slug,
+               route_slug,
                name,
                card_count,
                ranking,
@@ -212,6 +229,8 @@ export async function listTopTcdbHomieRankings(
     sqlQueryRows<DbRankingRow>(
       `
         SELECT homie_id,
+               tag_slug,
+               route_slug,
                name,
                card_count,
                ranking,
@@ -243,6 +262,8 @@ async function listRecentTcdbHomieMovers(
     sqlQueryRows<DbRankingRow>(
       `
         SELECT homie_id,
+               tag_slug,
+               route_slug,
                name,
                card_count,
                ranking,

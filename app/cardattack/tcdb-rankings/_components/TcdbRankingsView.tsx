@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import PageIntro from "@/components/layout/PageIntro";
-import RankingListNav from "@/components/tcdb/RankingListNav";
 import TCDBRankingTable, {
   homieRankingsToTableData,
 } from "@/components/tcdb/TCDBRankingTable";
@@ -50,7 +49,7 @@ export default function TcdbRankingsView({
   return (
     <div className="space-y-8">
       <PageIntro
-        title="TCDB Homie Rankings"
+        title="Homies"
         accessory={
           showRefreshing ? (
             <span className="inline-flex items-center rounded-full bg-[var(--cream)] px-3 py-1 text-xs font-semibold uppercase text-ink/80">
@@ -68,7 +67,6 @@ export default function TcdbRankingsView({
           ) : null
         }
       >
-        <RankingListNav current="homies" />
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           I love me some{" "}
           <a

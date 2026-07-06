@@ -6,7 +6,10 @@ import RankingDetailPage, {
   formatRankingSigned,
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
-import { getTcdbRanking } from "@/lib/data/tcdb";
+import {
+  getHomieTcdbRankingByRouteKey,
+} from "@/lib/data/tcdb";
+import { getHomieTcdbRankingHref } from "@/lib/tcdb-homie-routes";
 import { makeDetailGenerateMetadata } from "@/lib/seo/factories";
 
 export const dynamic = "force-dynamic";
@@ -14,37 +17,35 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 export const generateMetadata = makeDetailGenerateMetadata({
-  pathBase: "/cardattack/tcdb-rankings",
-  fetcher: async (id: string) => await getTcdbRanking(id),
+  pathBase: "/cardattack/homies",
+  paramKey: "tagSlugOrId",
+  fetcher: async (tagSlugOrId: string) =>
+    await getHomieTcdbRankingByRouteKey(tagSlugOrId),
   resolve: (ranking) => {
-    const id = String(ranking.homie_id);
-    const title = `${ranking.name}; Jersey ${id}`;
+    const title = `${ranking.name}; Jersey ${ranking.homie_id}`;
     const description = `TCDB ranking for ${ranking.name}; rank ${ranking.ranking} with ${ranking.card_count} cards as of ${ranking.ranking_at}.`;
     return {
       title,
       description,
-      canonicalPath: `/cardattack/tcdb-rankings/${id}`,
+      canonicalPath: getHomieTcdbRankingHref(ranking),
       index: true,
     };
   },
 });
 
 type PageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ tagSlugOrId: string }>;
 };
 
 export default async function Page({ params }: PageProps) {
-  const { id } = await params;
-  const ranking = await getTcdbRanking(id);
+  const { tagSlugOrId } = await params;
+  const ranking = await getHomieTcdbRankingByRouteKey(tagSlugOrId);
   if (!ranking) return notFound();
 
   return (
     <RankingDetailPage
-      current="homies"
       title={ranking.name}
-      eyebrow={`Homie ${ranking.homie_id}`}
-      listHref="/cardattack/tcdb-rankings/homies"
-      listLabel="Homie rankings"
+      eyebrow={`Jersey ${ranking.homie_id}`}
       fields={[
         {
           label: "Current Rank",

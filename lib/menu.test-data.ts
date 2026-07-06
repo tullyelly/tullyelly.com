@@ -25,9 +25,9 @@ export const TEST_MENU_ITEMS: NavItem[] = [
     icon: "GalleryHorizontalEnd",
     children: [
       {
-        id: "cardattack-rankings",
+        id: "cardattack-homies",
         kind: "link",
-        label: "TCDB Rankings",
+        label: "Homies",
         href: "/menu-test/target",
         featureKey: "menu.cardattack.tcdb.rankings",
       },
