@@ -1,15 +1,18 @@
 import { notFound } from "next/navigation";
-import type { Route } from "next";
-import Link from "next/link";
 import { Card } from "@ui";
+import HomieCardCountSparkline from "@/components/tcdb/HomieCardCountSparkline";
 import RankingDetailPage, {
-  formatBoolean,
   formatRankingDate,
   formatRankingNumber,
   formatRankingSigned,
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
-import { getHomieTcdbRankingByRouteKey } from "@/lib/data/tcdb";
+import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
+import { getTaggedPosts } from "@/lib/blog";
+import {
+  getHomieTcdbRankingByRouteKey,
+  listHomieTcdbSnapshotHistory,
+} from "@/lib/data/tcdb";
 import type { ChronicleTagDisplayName } from "@/lib/chronicle-person-tags";
 import { listChronicleTagDisplayNames } from "@/lib/chronicle-person-tags";
 import type { TagMetadata } from "@/lib/tags-server";
@@ -53,54 +56,64 @@ function HomieChronicleDisplayNamesSection({
   tagMetadata: TagMetadata;
   displayNames: ChronicleTagDisplayName[];
 }) {
-  const tagHref =
-    `/shaolin/tags/${encodeURIComponent(tagMetadata.slug)}` as Route;
+  const totalTagUses = displayNames.reduce(
+    (total, variant) => total + variant.count,
+    0,
+  );
 
   return (
     <Card
       as="section"
       className="border-[color:var(--trade-border)] bg-[color:var(--trade-off-white)]"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-[0.68rem] font-semibold uppercase leading-tight text-[color:var(--trade-rust-deep)] opacity-80 md:text-[0.72rem]">
-            Chronicle names
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-[color:var(--trade-charcoal)]">
-            Display names for {tagMetadata.displayName}
-          </h2>
-        </div>
-        <Link
-          href={tagHref}
-          className="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-[color:var(--trade-border)] px-4 text-sm font-semibold leading-none text-[color:var(--trade-blue)] transition hover:bg-[color:var(--trade-blue-soft)]"
-          prefetch={false}
-        >
-          Chronicle tag
-        </Link>
+      <div className="min-w-0">
+        <p className="text-[0.68rem] font-semibold uppercase leading-tight text-[color:var(--trade-rust-deep)] opacity-80 md:text-[0.72rem]">
+          chronicle display names for {tagMetadata.displayName.toLowerCase()}
+        </p>
       </div>
 
-      {displayNames.length > 0 ? (
-        <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {displayNames.map((variant) => (
-            <li
-              key={variant.displayName}
-              className="min-w-0 rounded-xl border border-[color:var(--trade-border)] bg-white px-3.5 py-3"
-            >
-              <div className="truncate text-sm font-semibold text-[color:var(--trade-charcoal)]">
-                {variant.displayName}
+      <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <li className="min-w-0 rounded-xl border border-[color:var(--trade-border)] bg-white px-3.5 py-3">
+          <div className="flex min-w-0 items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-[0.68rem] font-semibold uppercase leading-tight text-[color:var(--trade-rust-deep)] opacity-80 md:text-[0.72rem]">
+                Default tag
               </div>
-              <div className="mt-1 text-xs font-medium leading-snug text-[color:var(--trade-muted)]">
-                {pluralize(variant.count, "mention")} across{" "}
-                {pluralize(variant.chronicleCount, "chronicle")}
+              <div className="mt-1 truncate text-sm font-semibold leading-none text-[color:var(--trade-blue)]">
+                #{tagMetadata.slug}
               </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="text-[0.68rem] font-semibold uppercase leading-tight text-[color:var(--trade-rust-deep)] opacity-80 md:text-[0.72rem]">
+                Total uses
+              </div>
+              <div className="mt-1 text-sm font-semibold leading-none text-[color:var(--trade-charcoal)]">
+                {pluralize(totalTagUses, "mention")}
+              </div>
+            </div>
+          </div>
+        </li>
+        {displayNames.map((variant) => (
+          <li
+            key={variant.displayName}
+            className="min-w-0 rounded-xl border border-[color:var(--trade-border)] bg-white px-3.5 py-3"
+          >
+            <div className="truncate text-sm font-semibold text-[color:var(--trade-charcoal)]">
+              {variant.displayName}
+            </div>
+            <div className="mt-1 text-xs font-medium leading-snug text-[color:var(--trade-muted)]">
+              {pluralize(variant.count, "mention")} across{" "}
+              {pluralize(variant.chronicleCount, "chronicle")}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {displayNames.length === 0 ? (
         <p className="mt-4 text-sm leading-6 text-[color:var(--trade-muted)]">
           No Chronicle display names found for this homie tag yet.
         </p>
-      )}
+      ) : null}
     </Card>
   );
 }
@@ -121,14 +134,20 @@ export default async function Page({ params }: PageProps) {
   const chronicleDisplayNames = chronicleTagMetadata
     ? listChronicleTagDisplayNames(chronicleTagMetadata.slug)
     : [];
+  const taggedChronicles = chronicleTagMetadata
+    ? getTaggedPosts(chronicleTagMetadata.slug)
+    : [];
+  const rankSnapshots = await listHomieTcdbSnapshotHistory(ranking.homie_id);
 
   return (
     <RankingDetailPage
       title={ranking.name}
       eyebrow={`Jersey ${ranking.homie_id}`}
+      summaryLayout="compact"
+      summaryContent={<HomieCardCountSparkline snapshots={rankSnapshots} />}
       fields={[
         {
-          label: "Current Rank",
+          label: "TCDb Rank",
           value: formatRankingNumber(ranking.ranking),
         },
         {
@@ -136,20 +155,8 @@ export default async function Page({ params }: PageProps) {
           value: formatRankingNumber(ranking.card_count),
         },
         {
-          label: "Jersey / Homie ID",
-          value: ranking.homie_id,
-        },
-        {
           label: "Difference",
           value: formatRankingSigned(ranking.difference),
-        },
-        {
-          label: "Rank Delta",
-          value: formatRankingSigned(ranking.rank_delta),
-        },
-        {
-          label: "Difference Delta",
-          value: formatRankingSigned(ranking.diff_delta),
         },
         {
           label: "Ranking Updated",
@@ -163,16 +170,18 @@ export default async function Page({ params }: PageProps) {
           label: "Rank Trend",
           value: rankingTrendField(ranking.trend_rank),
         },
-        {
-          label: "Diff Sign Changed",
-          value: formatBoolean(ranking.diff_sign_changed),
-        },
       ]}
     >
       {chronicleTagMetadata ? (
         <HomieChronicleDisplayNamesSection
           tagMetadata={chronicleTagMetadata}
           displayNames={chronicleDisplayNames}
+        />
+      ) : null}
+      {chronicleTagMetadata ? (
+        <SquadMemberPosts
+          tag={chronicleTagMetadata.slug}
+          posts={taggedChronicles}
         />
       ) : null}
     </RankingDetailPage>

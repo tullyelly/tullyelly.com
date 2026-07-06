@@ -21,6 +21,7 @@ import {
 } from "@/lib/data/tcdb-clans";
 import {
   getHomieTcdbRankingByRouteKey,
+  listHomieTcdbSnapshotHistory,
   listNumberOneTcdbHomieRankings,
 } from "@/lib/data/tcdb";
 
@@ -183,6 +184,59 @@ describe("tcdb clan ranking data helpers", () => {
     ];
     expect(idQuery).toContain("WHERE homie_id = $1::bigint");
     expect(idValues).toEqual(["34"]);
+  });
+
+  it("lists homie snapshot history in chronological order", async () => {
+    sqlQueryRowsMock.mockResolvedValueOnce([
+      {
+        homie_id: 34,
+        card_count: 450,
+        ranking: 2,
+        ranking_at: "2026-04-01T00:00:00.000Z",
+        difference: 4,
+      },
+      {
+        homie_id: 34,
+        card_count: 500,
+        ranking: 1,
+        ranking_at: "2026-05-01T00:00:00.000Z",
+        difference: 5,
+      },
+    ]);
+
+    await expect(listHomieTcdbSnapshotHistory(34)).resolves.toEqual([
+      {
+        homie_id: 34,
+        card_count: 450,
+        ranking: 2,
+        ranking_at: "2026-04-01",
+        difference: 4,
+      },
+      {
+        homie_id: 34,
+        card_count: 500,
+        ranking: 1,
+        ranking_at: "2026-05-01",
+        difference: 5,
+      },
+    ]);
+
+    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
+      string,
+      unknown[],
+    ];
+    expect(query).toContain("FROM dojo.homie_tcdb_snapshot_rt");
+    expect(query).toContain("WHERE homie_id = $1::bigint");
+    expect(query).toContain("ORDER BY ranking_at ASC");
+    expect(values).toEqual(["34"]);
+  });
+
+  it("skips homie snapshot history for invalid ids", async () => {
+    await expect(listHomieTcdbSnapshotHistory("not-a-number")).resolves.toEqual(
+      [],
+    );
+
+    expect(sqlQueryRowsMock).not.toHaveBeenCalled();
   });
 
   it("orders clan risers and fallers by recent movement", async () => {

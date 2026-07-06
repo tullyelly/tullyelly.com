@@ -72,7 +72,7 @@ export default async function Page({ params }: PageProps) {
             value: formatClanSportLabel(row.sport),
           },
           {
-            label: "Current Rank",
+            label: "TCDb Rank",
             value: formatRankingNumber(row.ranking),
           },
           {

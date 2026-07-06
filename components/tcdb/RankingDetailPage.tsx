@@ -5,6 +5,7 @@ import FullBleedPage from "@/components/layout/FullBleedPage";
 import TrendPill from "@/components/tcdb/TrendPill";
 import { fmtDate } from "@/lib/datetime";
 import { tcdbTradePageThemeVars } from "@/lib/tcdb-theme";
+import { cn } from "@/lib/utils";
 
 type RankingDetailField = {
   label: string;
@@ -14,6 +15,7 @@ type RankingDetailField = {
 type RankingDetailFieldGroup = {
   title?: string;
   fields: RankingDetailField[];
+  content?: ReactNode;
 };
 
 type RankingDetailPageProps = {
@@ -26,6 +28,8 @@ type RankingDetailPageProps = {
   listLabel?: string;
   topHref?: string;
   topLabel?: string;
+  summaryLayout?: "default" | "compact";
+  summaryContent?: ReactNode;
 };
 
 const integerFormatter = new Intl.NumberFormat("en-US");
@@ -39,6 +43,18 @@ const headerMetaClassName =
   "inline-flex h-12 shrink-0 items-center rounded-full border border-white/35 px-4 text-sm font-semibold uppercase leading-none text-white/80";
 const summaryLabelClassName =
   "text-[0.68rem] font-semibold uppercase leading-tight opacity-75 md:text-[0.72rem] xl:whitespace-nowrap";
+
+function renderSummaryLabel(label: string) {
+  if (label === "TCDb Rank") {
+    return (
+      <>
+        <span className="normal-case">TCDb</span> RANK
+      </>
+    );
+  }
+
+  return label;
+}
 
 export function formatRankingNumber(value: number): string {
   return integerFormatter.format(value);
@@ -71,13 +87,16 @@ export default function RankingDetailPage({
   listLabel,
   topHref = "/cardattack/homies",
   topLabel = "Back to homies",
+  summaryLayout = "default",
+  summaryContent,
 }: RankingDetailPageProps) {
   const groups =
     fieldGroups && fieldGroups.length > 0
       ? fieldGroups
-      : [{ fields: fields ?? [] }];
+      : [{ fields: fields ?? [], content: summaryContent }];
   const listLink =
     listHref && listLabel ? { href: listHref, label: listLabel } : null;
+  const isCompactSummary = summaryLayout === "compact";
 
   return (
     <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
@@ -123,19 +142,34 @@ export default function RankingDetailPage({
                   {group.title}
                 </h2>
               ) : null}
-              <dl className="grid gap-px overflow-hidden rounded-xl border border-[color:var(--trade-border)] bg-[color:var(--trade-border)] sm:grid-cols-2 xl:grid-cols-5">
+              <dl
+                className={cn(
+                  "grid gap-px overflow-hidden rounded-xl border border-[color:var(--trade-border)] bg-[color:var(--trade-border)] sm:grid-cols-2",
+                  isCompactSummary ? "xl:grid-cols-6" : "xl:grid-cols-5",
+                )}
+              >
                 {group.fields.map((field) => (
                   <div
                     key={field.label}
-                    className="min-w-0 bg-[color:var(--trade-off-white)] px-3.5 py-3 md:px-4 md:py-3.5"
+                    className={cn(
+                      "min-w-0 bg-[color:var(--trade-off-white)] px-3.5 py-3 md:px-4 md:py-3.5",
+                      isCompactSummary ? "xl:px-3" : null,
+                    )}
                   >
-                    <dt className={summaryLabelClassName}>{field.label}</dt>
+                    <dt className={summaryLabelClassName}>
+                      {renderSummaryLabel(field.label)}
+                    </dt>
                     <dd className="mt-2 flex min-h-[2.25rem] min-w-0 items-center text-sm font-semibold leading-snug text-[color:var(--trade-charcoal)]">
                       {field.value}
                     </dd>
                   </div>
                 ))}
               </dl>
+              {group.content ? (
+                <div className="mt-4 border-t border-[color:var(--trade-border)] pt-4">
+                  {group.content}
+                </div>
+              ) : null}
             </Card>
           ))}
           {children}
