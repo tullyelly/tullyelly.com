@@ -17,9 +17,8 @@ import { isPersonaKey, PERSONA_KEYS } from "@/lib/menu/types";
 import { useNavController } from "@/components/nav/NavController";
 import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
 import NestableMenu from "@/app/(components)/menu/NestableMenu";
-import { AnyLink, HOME_EMOJI, isActiveHref } from "@/components/nav/menuUtils";
+import { AnyLink, Icon, isActiveHref } from "@/components/nav/menuUtils";
 import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
-import twemoji from "twemoji";
 import HeaderUser from "./HeaderUser";
 
 const TEST_MODE =
@@ -205,7 +204,6 @@ export default function NavDesktop({
   const pointerShields = React.useRef<Map<string, () => boolean>>(new Map());
   const headerRef = React.useRef<HTMLElement | null>(null);
   const navRef = React.useRef<HTMLElement | null>(null);
-  const twemojiFrameRef = React.useRef<number | null>(null);
 
   React.useLayoutEffect(() => {
     if (!navRef.current) return;
@@ -295,25 +293,6 @@ export default function NavDesktop({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [forceCloseAll, isPersonaMenuNode, openId]);
-
-  React.useEffect(() => {
-    const node = navRef.current;
-    if (!node) return;
-    if (twemojiFrameRef.current !== null) {
-      window.cancelAnimationFrame(twemojiFrameRef.current);
-      twemojiFrameRef.current = null;
-    }
-    twemojiFrameRef.current = window.requestAnimationFrame(() => {
-      twemoji.parse(node, { folder: "svg", ext: ".svg" });
-      twemojiFrameRef.current = null;
-    });
-    return () => {
-      if (twemojiFrameRef.current !== null) {
-        window.cancelAnimationFrame(twemojiFrameRef.current);
-        twemojiFrameRef.current = null;
-      }
-    };
-  }, [personas]);
 
   const personaIds = React.useMemo(
     () => personas.map((persona) => persona.id),
@@ -486,7 +465,6 @@ export default function NavDesktop({
     <nav
       ref={navRef}
       data-testid="nav-desktop"
-      data-emoji-scope="nav"
       className="relative z-[var(--z-header)] hidden bg-transparent text-white shadow-sm md:block"
     >
       <div className="mx-auto flex w-full max-w-[var(--content-max)] items-center px-6 py-2 md:px-8 md:pl-[var(--bookmark-offset)] lg:px-10">
@@ -513,9 +491,7 @@ export default function NavDesktop({
             }}
           >
             <span className="flex items-center gap-2">
-              <span className="emoji text-lg leading-none" aria-hidden="true">
-                {HOME_EMOJI}
-              </span>
+              <Icon name="Home" className="size-4" />
               <span>home</span>
             </span>
           </Link>

@@ -1,20 +1,9 @@
 import * as React from "react";
 import * as Lucide from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { NavItem, Persona } from "@/types/nav";
+import type { NavItem } from "@/types/nav";
 
 export type AnyLink = Extract<NavItem, { kind: "link" | "external" }>;
-
-export const PERSONA_EMOJI: Record<Persona, string> = {
-  shaolin: "🧘",
-  mark2: "🧠",
-  tullyelly: "⚒️",
-  cardattack: "🃏",
-  theabbott: "🪶",
-  unclejimmy: "🎙",
-};
-
-export const HOME_EMOJI = "🏠";
 
 export function Icon({
   name,
