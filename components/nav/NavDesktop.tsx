@@ -355,6 +355,8 @@ function DesktopPersonaMenu({
   const panelWidthRem = getPanelWidthRem(panelLinks.length);
   const panelId = `desktop-menu-panel-${persona.persona}`;
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+  const suppressCoarseClickRef = React.useRef(false);
+  const suppressCoarseClickTimerRef = React.useRef<number | null>(null);
   const [panelLeft, setPanelLeft] = React.useState<number | null>(null);
 
   const open = React.useCallback(
@@ -364,11 +366,55 @@ function DesktopPersonaMenu({
 
   const handlePointerEnter = React.useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
-      if (event.pointerType === "touch") return;
+      if (event.pointerType === "touch" || event.pointerType === "pen") return;
       open();
     },
     [open],
   );
+
+  const clearSuppressCoarseClick = React.useCallback(() => {
+    suppressCoarseClickRef.current = false;
+    if (suppressCoarseClickTimerRef.current !== null) {
+      window.clearTimeout(suppressCoarseClickTimerRef.current);
+      suppressCoarseClickTimerRef.current = null;
+    }
+  }, []);
+
+  const handlePointerDown = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+      clearSuppressCoarseClick();
+      suppressCoarseClickRef.current = true;
+      suppressCoarseClickTimerRef.current = window.setTimeout(() => {
+        suppressCoarseClickRef.current = false;
+        suppressCoarseClickTimerRef.current = null;
+      }, 800);
+      open();
+    },
+    [clearSuppressCoarseClick, open],
+  );
+
+  const handleMouseEnter = React.useCallback(() => {
+    if (suppressCoarseClickRef.current) return;
+    open();
+  }, [open]);
+
+  const handleClick = React.useCallback(() => {
+    if (suppressCoarseClickRef.current) {
+      clearSuppressCoarseClick();
+      open();
+      return;
+    }
+
+    if (isOpen) {
+      onClose();
+      return;
+    }
+
+    open();
+  }, [clearSuppressCoarseClick, isOpen, onClose, open]);
+
+  React.useEffect(() => clearSuppressCoarseClick, [clearSuppressCoarseClick]);
 
   React.useLayoutEffect(() => {
     if (!isOpen) {
@@ -462,10 +508,11 @@ function DesktopPersonaMenu({
         data-open={isOpen ? "true" : undefined}
         data-testid={`nav-top-${persona.persona}`}
         data-persona-trigger={persona.id}
+        onPointerDown={handlePointerDown}
         onPointerEnter={handlePointerEnter}
-        onMouseEnter={open}
+        onMouseEnter={handleMouseEnter}
         onFocus={open}
-        onClick={() => (isOpen ? onClose() : open())}
+        onClick={handleClick}
         onKeyDown={handleTriggerKeyDown}
       >
         <span className="whitespace-nowrap">{persona.label}</span>
