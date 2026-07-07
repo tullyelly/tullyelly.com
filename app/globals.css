@@ -613,17 +613,28 @@ p {
 }
 
 .site-header a[data-nav-home] {
-  color: #ffffff !important;
+  color: var(--white) !important;
   opacity: 1 !important;
-  text-decoration: underline !important;
-  text-decoration-color: #ffffff !important;
-  background: transparent !important;
+  text-decoration: none !important;
 }
 
 .site-header a[data-nav-home]:hover {
   background-color: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  text-decoration: underline !important;
+  color: var(--white) !important;
+  text-decoration: none !important;
+}
+
+.site-header a[data-desktop-menu-link],
+.site-header a[data-desktop-menu-link]:hover,
+.site-header a[data-desktop-menu-link]:focus {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.site-header a[data-desktop-menu-link][data-menu-variant="primary"],
+.site-header a[data-desktop-menu-link][data-menu-variant="primary"]:hover,
+.site-header a[data-desktop-menu-link][data-menu-variant="primary"]:focus {
+  color: var(--white) !important;
 }
 
 /* Prevent closed overlays from catching pointer or scroll events */

@@ -1,6 +1,5 @@
 import * as React from "react";
 import * as Lucide from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import type { NavItem } from "@/types/nav";
 
 export type AnyLink = Extract<NavItem, { kind: "link" | "external" }>;
@@ -8,14 +7,17 @@ export type AnyLink = Extract<NavItem, { kind: "link" | "external" }>;
 export function Icon({
   name,
   className,
+  fallback,
 }: {
   name?: string;
   className?: string;
+  fallback?: string;
 }): React.ReactNode {
-  if (!name) return null;
-  const maybeIcon = Lucide[name as keyof typeof Lucide];
-  if (typeof maybeIcon !== "function") return null;
-  const IconComponent = maybeIcon as LucideIcon;
+  const iconName = name && name in Lucide ? name : fallback;
+  if (!iconName) return null;
+  const maybeIcon = Lucide[iconName as keyof typeof Lucide];
+  if (!maybeIcon) return null;
+  const IconComponent = maybeIcon as React.ElementType;
   return <IconComponent className={className} aria-hidden="true" />;
 }
 
