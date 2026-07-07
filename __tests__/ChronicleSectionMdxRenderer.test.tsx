@@ -17,6 +17,7 @@ const clanSnapshotMock = jest.fn(
     snapshotDate,
     sport,
   }: {
+    href?: string;
     tag: string;
     snapshotDate: string;
     sport?: string;
@@ -50,6 +51,7 @@ jest.mock("@/components/mdx/TcdbSnapshot", () => ({
 jest.mock("@/components/mdx/ClanSnapshot", () => ({
   __esModule: true,
   default: (props: {
+    href?: string;
     tag: string;
     snapshotDate: string;
     sport?: string;
@@ -141,6 +143,74 @@ describe("ChronicleSectionMdxRenderer", () => {
     expect(tcdbSnapshotMock.mock.calls[0]?.[0]).toEqual({
       tag: "shaq",
       snapshotDate: "2026-04-10",
+    });
+  });
+
+  it("routes ClanSnapshot through clan tag metadata while preserving explicit href overrides", () => {
+    const tagMetadataBySlug = new Map([
+      [
+        "bucks-n-six",
+        {
+          slug: "bucks-n-six",
+          displayName: "Milwaukee Bucks",
+          href: "/cardattack/clans/milwaukee-bucks",
+          hrefKind: "clan" as const,
+          isClickable: true,
+          meta: {},
+        },
+      ],
+      [
+        "tcdb",
+        {
+          slug: "tcdb",
+          displayName: "tcdb",
+          href: "/shaolin/tags/tcdb",
+          hrefKind: "tag" as const,
+          isClickable: true,
+          meta: {},
+        },
+      ],
+    ]);
+
+    render(
+      <ChronicleSectionMdxRenderer
+        code="compiled-mdx"
+        postDate="2026-07-06"
+        tagMetadataBySlug={tagMetadataBySlug}
+      />,
+    );
+
+    const props = mdxRendererMock.mock.calls[0]?.[0] as
+      | { components?: Record<string, unknown> }
+      | undefined;
+    const BoundClanSnapshot = props?.components?.ClanSnapshot as
+      | ComponentType<{ href?: string; tag: string; sport?: string }>
+      | undefined;
+
+    expect(BoundClanSnapshot).toBeDefined();
+    if (!BoundClanSnapshot) {
+      throw new Error(
+        "Expected ClanSnapshot to be bound in ChronicleSectionMdxRenderer",
+      );
+    }
+
+    render(<BoundClanSnapshot tag="bucks-n-six" />);
+    render(<BoundClanSnapshot tag="tcdb" />);
+    render(<BoundClanSnapshot tag="bucks-n-six" href="/custom-clan-route" />);
+
+    expect(clanSnapshotMock.mock.calls[0]?.[0]).toEqual({
+      tag: "bucks-n-six",
+      snapshotDate: "2026-07-06",
+      href: "/cardattack/clans/milwaukee-bucks",
+    });
+    expect(clanSnapshotMock.mock.calls[1]?.[0]).toEqual({
+      tag: "tcdb",
+      snapshotDate: "2026-07-06",
+    });
+    expect(clanSnapshotMock.mock.calls[2]?.[0]).toEqual({
+      tag: "bucks-n-six",
+      snapshotDate: "2026-07-06",
+      href: "/custom-clan-route",
     });
   });
 });

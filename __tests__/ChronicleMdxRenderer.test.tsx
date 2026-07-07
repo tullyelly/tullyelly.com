@@ -9,6 +9,7 @@ const chronicleSectionMdxRendererMock = jest.fn(
     code: string;
     postDate: string;
     components?: Record<string, unknown>;
+    tagMetadataBySlug?: ReadonlyMap<string, unknown>;
   }) => <div data-testid="chronicle-section-mdx-renderer">{code}</div>,
 );
 
@@ -17,6 +18,7 @@ jest.mock("@/components/chronicles/ChronicleSectionMdxRenderer", () => ({
     code: string;
     postDate: string;
     components?: Record<string, unknown>;
+    tagMetadataBySlug?: ReadonlyMap<string, unknown>;
   }) => chronicleSectionMdxRendererMock(props),
 }));
 jest.mock("@/components/mdx/ReleaseSection", () => ({
@@ -43,13 +45,17 @@ describe("ChronicleMdxRenderer", () => {
     );
 
     const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
-      | { components?: Record<string, unknown> }
+      | {
+          components?: Record<string, unknown>;
+          tagMetadataBySlug?: ReadonlyMap<string, unknown>;
+        }
       | undefined;
 
     expect(props).toMatchObject({
       code: "compiled-mdx",
       postDate: "2026-04-10",
     });
+    expect(props?.tagMetadataBySlug).toBeUndefined();
     expect(props?.components?.ReleaseSection).toBeDefined();
   });
 
@@ -78,13 +84,17 @@ describe("ChronicleMdxRenderer", () => {
     );
 
     const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
-      | { components?: Record<string, unknown> }
+      | {
+          components?: Record<string, unknown>;
+          tagMetadataBySlug?: ReadonlyMap<string, unknown>;
+        }
       | undefined;
     const RoutedPersonTag = props?.components?.PersonTag as
       | ComponentType<{ tag: string; href?: string }>
       | undefined;
 
     expect(RoutedPersonTag).toBeDefined();
+    expect(props?.tagMetadataBySlug).toBe(tagMetadataBySlug);
     if (!RoutedPersonTag) {
       throw new Error(
         "Expected PersonTag to be routed in ChronicleMdxRenderer",

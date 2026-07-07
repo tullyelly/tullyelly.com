@@ -31,6 +31,7 @@ describe("ClanSnapshot", () => {
           cardCount: 178,
           ranking: 149,
           rankingAt: "2026-04-10",
+          ...(trend === "flat" ? { prevRanking: 149 } : {}),
           trend,
         },
       ]);
@@ -45,9 +46,22 @@ describe("ClanSnapshot", () => {
         </ul>,
       );
 
-      expect(screen.getByText("florida state seminoles")).toHaveAttribute(
-        "data-clan-tag",
-        "noles",
+      const clanLink = screen.getByRole("link", {
+        name: "florida state seminoles",
+      });
+      expect(clanLink).toHaveAttribute("data-clan-tag", "noles");
+      expect(clanLink).toHaveAttribute(
+        "href",
+        "/cardattack/clans/florida-state-seminoles",
+      );
+      expect(clanLink).toHaveClass(
+        "font-bold",
+        "italic",
+        "!text-[var(--person-tag-color,var(--blue))]",
+        "!no-underline",
+        "hover:!bg-[var(--person-tag-hover-bg,var(--blue))]",
+        "hover:!text-[var(--person-tag-hover-color,var(--white))]",
+        "hover:!no-underline",
       );
       expect(screen.getByText("basketball")).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "149th" })).toHaveAttribute(
@@ -98,7 +112,32 @@ describe("ClanSnapshot", () => {
     expect(screen.getByText("football")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "149th" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "1st" })).toBeInTheDocument();
+    expect(screen.getByLabelText("New snapshot")).toHaveTextContent("🆕");
     expect(screen.getByText("(1 card)")).toBeInTheDocument();
+  });
+
+  it("renders the new snapshot emoji when a flat snapshot has no previous rank", async () => {
+    getClanSnapshotsForTagOnDateMock.mockResolvedValue([
+      {
+        clanId: "12",
+        slug: "florida-state-seminoles",
+        sport: "basketball",
+        displayName: "Florida State Seminoles",
+        cardCount: 178,
+        ranking: 149,
+        rankingAt: "2026-04-10",
+        trend: "flat",
+      },
+    ]);
+
+    const ui = await ClanSnapshot({
+      tag: "noles",
+      snapshotDate: "2026-04-10",
+    });
+    render(ui);
+
+    expect(screen.getByLabelText("New snapshot")).toHaveTextContent("🆕");
+    expect(screen.queryByLabelText("No change")).not.toBeInTheDocument();
   });
 
   it("passes the optional sport filter through to the data helper", async () => {
@@ -117,7 +156,7 @@ describe("ClanSnapshot", () => {
     );
   });
 
-  it("falls back to a plain clan tag when no dated snapshot exists", async () => {
+  it("falls back to a generic tag link when no dated snapshot exists", async () => {
     getClanSnapshotsForTagOnDateMock.mockResolvedValue([]);
 
     const ui = await ClanSnapshot({
@@ -126,8 +165,25 @@ describe("ClanSnapshot", () => {
     });
     render(ui);
 
-    expect(screen.getByText("noles")).toHaveAttribute("data-clan-tag", "noles");
-    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    const clanLink = screen.getByRole("link", { name: "noles" });
+    expect(clanLink).toHaveAttribute("data-clan-tag", "noles");
+    expect(clanLink).toHaveAttribute("href", "/shaolin/tags/noles");
     expect(screen.queryByText("(178 cards)")).not.toBeInTheDocument();
+  });
+
+  it("uses an explicit clan href when provided", async () => {
+    getClanSnapshotsForTagOnDateMock.mockResolvedValue([]);
+
+    const ui = await ClanSnapshot({
+      tag: "bucks-n-six",
+      snapshotDate: "2026-07-06",
+      href: "/cardattack/clans/milwaukee-bucks",
+    });
+    render(ui);
+
+    expect(screen.getByRole("link", { name: "bucks-n-six" })).toHaveAttribute(
+      "href",
+      "/cardattack/clans/milwaukee-bucks",
+    );
   });
 });

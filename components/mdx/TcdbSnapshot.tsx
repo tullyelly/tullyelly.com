@@ -17,12 +17,14 @@ const TREND_EMOJI: Record<TcdbSnapshotTrend, string> = {
   down: "↘️",
   flat: "↔️",
 };
+const NEW_SNAPSHOT_EMOJI = "🆕";
 
 const TREND_LABEL: Record<TcdbSnapshotTrend, string> = {
   up: "Trending up",
   down: "Trending down",
   flat: "No change",
 };
+const NEW_SNAPSHOT_LABEL = "New snapshot";
 
 const linkClassName = "underline hover:no-underline text-primary";
 
@@ -47,6 +49,31 @@ function formatOrdinal(value: number): string {
 
 function formatCardCount(value: number): string {
   return `${value} ${value === 1 ? "card" : "cards"}`;
+}
+
+function isNewSnapshot(snapshot: {
+  prevRanking?: number;
+  trend: TcdbSnapshotTrend;
+}): boolean {
+  return snapshot.trend === "flat" && snapshot.prevRanking === undefined;
+}
+
+function getTrendEmoji(snapshot: {
+  prevRanking?: number;
+  trend: TcdbSnapshotTrend;
+}): string {
+  return isNewSnapshot(snapshot)
+    ? NEW_SNAPSHOT_EMOJI
+    : TREND_EMOJI[snapshot.trend];
+}
+
+function getTrendLabel(snapshot: {
+  prevRanking?: number;
+  trend: TcdbSnapshotTrend;
+}): string {
+  return isNewSnapshot(snapshot)
+    ? NEW_SNAPSHOT_LABEL
+    : TREND_LABEL[snapshot.trend];
 }
 
 export default async function TcdbSnapshot({
@@ -88,8 +115,8 @@ export default async function TcdbSnapshot({
         {formatOrdinal(snapshot.ranking)}
       </Link>
       <span>]</span>{" "}
-      <span aria-label={TREND_LABEL[snapshot.trend]} role="img">
-        {TREND_EMOJI[snapshot.trend]}
+      <span aria-label={getTrendLabel(snapshot)} role="img">
+        {getTrendEmoji(snapshot)}
       </span>{" "}
       <span>{`(${formatCardCount(snapshot.cardCount)})`}</span>
     </>

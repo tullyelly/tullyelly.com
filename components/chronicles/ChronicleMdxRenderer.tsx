@@ -49,6 +49,7 @@ export function ChronicleMdxRenderer({
     <ChronicleSectionMdxRenderer
       code={code}
       postDate={postDate}
+      tagMetadataBySlug={tagMetadataBySlug}
       components={{
         PersonTag: RoutedPersonTag,
         ReleaseSection: RainbowReleaseSection,

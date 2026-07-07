@@ -29,6 +29,7 @@ describe("TcdbSnapshot", () => {
         cardCount: 178,
         ranking: 149,
         rankingAt: "2026-04-10",
+        ...(trend === "flat" ? { prevRanking: 149 } : {}),
         trend,
       });
 
@@ -59,6 +60,27 @@ describe("TcdbSnapshot", () => {
       expect(container.querySelector("li > p")).toBeNull();
     },
   );
+
+  it("renders the new snapshot emoji when a flat snapshot has no previous rank", async () => {
+    getTcdbSnapshotForTagOnDateMock.mockResolvedValue({
+      homieId: "432",
+      routeSlug: "shaq",
+      displayName: "Shaquille O'Neal",
+      cardCount: 178,
+      ranking: 149,
+      rankingAt: "2026-04-10",
+      trend: "flat",
+    });
+
+    const ui = await TcdbSnapshot({
+      tag: "shaq",
+      snapshotDate: "2026-04-10",
+    });
+    render(ui);
+
+    expect(screen.getByLabelText("New snapshot")).toHaveTextContent("🆕");
+    expect(screen.queryByLabelText("No change")).not.toBeInTheDocument();
+  });
 
   it("falls back to a smart PersonTag when no dated snapshot exists", async () => {
     getTcdbSnapshotForTagOnDateMock.mockResolvedValue(null);
