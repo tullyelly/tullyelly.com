@@ -8,13 +8,17 @@ import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { Table, TBody, THead } from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
-import type { VolleyballTournamentSummary } from "@/lib/volleyball-tournaments";
+import { formatVolleyballTournamentFinish } from "@/lib/volleyball-finish";
+import type { VolleyballTournamentListSummary } from "@/lib/volleyball-tournament-db";
 
 type Props = {
-  rows: VolleyballTournamentSummary[];
+  rows: VolleyballTournamentListSummary[];
 };
 
-export default function VolleyballTournamentListClient({ rows }: Props) {
+const getFinishLabel = (finish: number | null) =>
+  formatVolleyballTournamentFinish(finish) ?? "Not tracked";
+
+export default function VolleyballTournamentList({ rows }: Props) {
   const sortedRows = rows;
 
   return (
@@ -49,6 +53,12 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
               <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                 <div>
                   <dt className="text-xs uppercase tracking-wide text-ink/60">
+                    Finish
+                  </dt>
+                  <dd>{getFinishLabel(row.finish)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-ink/60">
                     Days
                   </dt>
                   <dd className="tabular-nums">{row.tournamentDays}</dd>
@@ -58,8 +68,8 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
                     Date
                   </dt>
                   <dd>
-                    <time dateTime={row.latestPostDate}>
-                      {fmtDate(row.latestPostDate)}
+                    <time dateTime={row.latestTournamentDate}>
+                      {fmtDate(row.latestTournamentDate)}
                     </time>
                   </dd>
                 </div>
@@ -74,7 +84,7 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
           ))
         ) : (
           <Card as="li" className="p-3 text-sm text-ink/70">
-            No volleyball tournaments have been referenced in chronicles yet.
+            No volleyball tournaments have been recorded yet.
           </Card>
         )}
       </ul>
@@ -87,12 +97,15 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
         <THead variant="bucks">
           <th scope="col">Tournament</th>
           <th scope="col" className="w-[130px] whitespace-nowrap">
+            Finish
+          </th>
+          <th scope="col" className="w-[120px] whitespace-nowrap">
             Record
           </th>
           <th scope="col" className="w-[90px] whitespace-nowrap">
             Days
           </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
+          <th scope="col" className="w-[170px] whitespace-nowrap">
             Date
           </th>
         </THead>
@@ -117,6 +130,9 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
                     {`Tournament ID ${row.tournamentId}`}
                   </p>
                 </td>
+                <td className="whitespace-nowrap font-medium">
+                  {getFinishLabel(row.finish)}
+                </td>
                 <td className="whitespace-nowrap font-medium tabular-nums">
                   {row.overallRecord}
                 </td>
@@ -124,16 +140,16 @@ export default function VolleyballTournamentListClient({ rows }: Props) {
                   {row.tournamentDays}
                 </td>
                 <td className="whitespace-nowrap">
-                  <time dateTime={row.latestPostDate}>
-                    {fmtDate(row.latestPostDate)}
+                  <time dateTime={row.latestTournamentDate}>
+                    {fmtDate(row.latestTournamentDate)}
                   </time>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={4} className="text-sm text-ink/70">
-                No volleyball tournaments have been referenced in chronicles yet.
+              <td colSpan={5} className="text-sm text-ink/70">
+                No volleyball tournaments have been recorded yet.
               </td>
             </tr>
           )}

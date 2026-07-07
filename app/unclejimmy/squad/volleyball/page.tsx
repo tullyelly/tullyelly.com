@@ -3,14 +3,13 @@ import { Card } from "@ui";
 import FullBleedPage from "@/components/layout/FullBleedPage";
 import PageIntro from "@/components/layout/PageIntro";
 import PersonCard from "@/components/mdx/PersonTag";
+import VolleyballTournamentList from "@/components/unclejimmy/VolleyballTournamentList";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
-import { getAllVolleyballTournamentSummaries } from "@/lib/volleyball-tournaments";
-
-import VolleyballTournamentListClient from "./_components/VolleyballTournamentListClient";
+import { getVolleyballTournamentListSummaries } from "@/lib/volleyball-tournament-db";
 
 const pageTitle = "Volleyball Tournaments | 🎙unclejimmy squad";
 const pageDescription =
-  "Tournament runs pulled from ReleaseSection props; records are cumulative across all published tournament days.";
+  "Tournament runs pulled from the volleyball tables; records are cumulative across all tracked tournament days.";
 
 export const metadata = {
   title: pageTitle,
@@ -32,8 +31,8 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function UncleJimmyVolleyballLandingPage() {
-  const tournaments = getAllVolleyballTournamentSummaries();
+export default async function UncleJimmyVolleyballLandingPage() {
+  const tournaments = await getVolleyballTournamentListSummaries();
 
   return (
     <FullBleedPage>
@@ -49,7 +48,7 @@ export default function UncleJimmyVolleyballLandingPage() {
           </p>
         </PageIntro>
 
-        <VolleyballTournamentListClient rows={tournaments} />
+        <VolleyballTournamentList rows={tournaments} />
       </Card>
     </FullBleedPage>
   );
