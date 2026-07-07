@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { screen } from "@testing-library/react";
+import type { ComponentType, ReactNode } from "react";
 
 const chronicleSectionMdxRendererMock = jest.fn(
   ({
@@ -50,5 +51,56 @@ describe("ChronicleMdxRenderer", () => {
       postDate: "2026-04-10",
     });
     expect(props?.components?.ReleaseSection).toBeDefined();
+  });
+
+  it("routes PersonTag through resolved tag metadata while preserving fallback behavior", () => {
+    const tagMetadataBySlug = new Map([
+      [
+        "freak",
+        {
+          slug: "freak",
+          displayName: "giannis antetokounmpo",
+          href: "/cardattack/homies/freak",
+          hrefKind: "homie" as const,
+          isClickable: true,
+          meta: {},
+        },
+      ],
+    ]);
+
+    render(
+      <ChronicleMdxRenderer
+        code="compiled-mdx"
+        postDate="2026-04-10"
+        source={'<PersonTag tag="freak" />'}
+        tagMetadataBySlug={tagMetadataBySlug}
+      />,
+    );
+
+    const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
+      | { components?: Record<string, unknown> }
+      | undefined;
+    const RoutedPersonTag = props?.components?.PersonTag as
+      | ComponentType<{ tag: string; href?: string }>
+      | undefined;
+
+    expect(RoutedPersonTag).toBeDefined();
+    if (!RoutedPersonTag) {
+      throw new Error(
+        "Expected PersonTag to be routed in ChronicleMdxRenderer",
+      );
+    }
+
+    render(<RoutedPersonTag tag="freak" />);
+    render(<RoutedPersonTag tag="lulu" />);
+    render(<RoutedPersonTag tag="freak" href="/custom-route" />);
+
+    const freakLinks = screen.getAllByRole("link", { name: "freak" });
+    expect(freakLinks[0]).toHaveAttribute("href", "/cardattack/homies/freak");
+    expect(screen.getByRole("link", { name: "lulu" })).toHaveAttribute(
+      "href",
+      "/unclejimmy/squad/lulu",
+    );
+    expect(freakLinks[1]).toHaveAttribute("href", "/custom-route");
   });
 });

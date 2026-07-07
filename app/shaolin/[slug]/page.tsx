@@ -12,6 +12,7 @@ import { TcdbCardTrafficChart } from "@/components/chronicles/TcdbCardTrafficCha
 import PageIntro from "@/components/layout/PageIntro";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
+import { getTagMetadataBatch } from "@/lib/tags-server";
 
 type Params = { slug: string };
 
@@ -40,12 +41,25 @@ export async function generateMetadata({
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  return <PostContent slug={slug} />;
+  return await PostContent({ slug });
 }
 
-function PostContent({ slug }: { slug: string }) {
+async function getChronicleTagMetadata(tags: readonly string[]) {
+  if (tags.length === 0) return new Map();
+
+  try {
+    return await getTagMetadataBatch(tags);
+  } catch (error) {
+    console.warn("[chronicles] Failed to resolve tag metadata", error);
+    return new Map();
+  }
+}
+
+async function PostContent({ slug }: { slug: string }) {
   const post = allPosts.find((p) => p.slug === slug && !p.draft);
   if (!post) notFound();
+  const tagMetadataBySlug = await getChronicleTagMetadata(post.tags);
+
   return (
     <div className="-mx-2 md:mx-0">
       <article className="w-full max-w-none space-y-10 md:mx-auto md:max-w-3xl">
@@ -58,6 +72,7 @@ function PostContent({ slug }: { slug: string }) {
               code={post.body.code}
               postDate={post.date}
               source={post.body.raw}
+              tagMetadataBySlug={tagMetadataBySlug}
             />
             <ChronicleSignature
               title={post.title}

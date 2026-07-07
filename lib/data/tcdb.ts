@@ -41,6 +41,14 @@ export type RankingResponse = {
   meta: RankingMeta;
 };
 
+export type HomieTcdbSnapshotRow = {
+  homie_id: number;
+  card_count: number;
+  ranking: number;
+  ranking_at: string;
+  difference: number;
+};
+
 const TCDB_TABLE = "dojo.v_homie_tcdb_ranking_route" as const;
 
 if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
@@ -84,6 +92,17 @@ function normalizeRankingRow(row: DbRankingRow): RankingRow {
   if (!ranking_at) {
     throw new Error("Invalid ranking_at value from database");
   }
+  return { ...row, ranking_at };
+}
+
+function normalizeSnapshotRow(
+  row: HomieTcdbSnapshotRow,
+): HomieTcdbSnapshotRow {
+  const ranking_at = asDateString(row.ranking_at);
+  if (!ranking_at) {
+    throw new Error("Invalid ranking_at value from TCDB snapshot history");
+  }
+
   return { ...row, ranking_at };
 }
 
@@ -192,6 +211,31 @@ export async function getHomieTcdbRankingByRouteKey(
   );
   if (!row) return null;
   return normalizeRankingRow(row);
+}
+
+export async function listHomieTcdbSnapshotHistory(
+  homieId: number | string,
+): Promise<HomieTcdbSnapshotRow[]> {
+  const normalizedHomieId = String(homieId).trim();
+  if (!/^\d+$/.test(normalizedHomieId)) return [];
+
+  const rows = await withDbRetry(() =>
+    sqlQueryRows<HomieTcdbSnapshotRow>(
+      `
+        SELECT homie_id,
+               card_count,
+               ranking,
+               ranking_at::text AS ranking_at,
+               difference
+        FROM dojo.homie_tcdb_snapshot_rt
+        WHERE homie_id = $1::bigint
+        ORDER BY ranking_at ASC
+      `,
+      [normalizedHomieId],
+    ),
+  );
+
+  return rows.map(normalizeSnapshotRow);
 }
 
 export async function listNumberOneTcdbHomieRankings(): Promise<RankingRow[]> {

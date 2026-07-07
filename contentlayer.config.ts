@@ -5,15 +5,20 @@ import {
   ALTER_EGO_OPTIONS,
   DEFAULT_ALTER_EGO,
   inferAlterEgosFromTree,
-  inferPersonTagsFromTree,
+  inferClanSnapshotTagUsagesFromTree,
+  inferPersonTagUsagesFromTree,
   inferYouTubeVideoArtistTagsFromTree,
   mergeChronicleTags,
   type MdxNode,
+  type PersonTagUsage,
 } from "./lib/alterEgo";
 
 const contentDirPath = "content";
 const inferredAlterEgos = new Map<string, string[]>();
+const inferredClanSnapshotTags = new Map<string, string[]>();
+const inferredClanSnapshotTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredPersonTags = new Map<string, string[]>();
+const inferredPersonTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredYouTubeVideoArtistTags = new Map<string, string[]>();
 
 function resolveInferenceSourceFilePath(file: any): string | undefined {
@@ -71,12 +76,34 @@ function remarkInferPersonTags() {
     const errorPrefix = `Chronicle ${sourceFilePath}`;
 
     // PersonTag enables inline authoring of people and concepts while feeding the shared tag system.
-    const foundTags = inferPersonTagsFromTree(tree, { errorPrefix });
+    const foundUsages = inferPersonTagUsagesFromTree(tree, { errorPrefix });
+    const foundTags = Array.from(
+      new Set(foundUsages.map((usage) => usage.tag)),
+    );
+    const foundClanSnapshotUsages = inferClanSnapshotTagUsagesFromTree(tree, {
+      errorPrefix,
+    });
+    const foundClanSnapshotTags = Array.from(
+      new Set(foundClanSnapshotUsages.map((usage) => usage.tag)),
+    );
 
     if (foundTags.length > 0) {
       inferredPersonTags.set(sourceFilePath, foundTags);
+      inferredPersonTagUsages.set(sourceFilePath, foundUsages);
     } else {
       inferredPersonTags.delete(sourceFilePath);
+      inferredPersonTagUsages.delete(sourceFilePath);
+    }
+
+    if (foundClanSnapshotTags.length > 0) {
+      inferredClanSnapshotTags.set(sourceFilePath, foundClanSnapshotTags);
+      inferredClanSnapshotTagUsages.set(
+        sourceFilePath,
+        foundClanSnapshotUsages,
+      );
+    } else {
+      inferredClanSnapshotTags.delete(sourceFilePath);
+      inferredClanSnapshotTagUsages.delete(sourceFilePath);
     }
   };
 }
@@ -145,6 +172,9 @@ const Post = defineDocumentType(() => ({
         const inferredInlinePersonTags = inferredPersonTags.get(
           doc._raw.sourceFilePath,
         );
+        const inferredInlineClanSnapshotTags = inferredClanSnapshotTags.get(
+          doc._raw.sourceFilePath,
+        );
         const inferredVideoArtistTags = inferredYouTubeVideoArtistTags.get(
           doc._raw.sourceFilePath,
         );
@@ -154,6 +184,7 @@ const Post = defineDocumentType(() => ({
           doc.tags,
           inferredAlterEgoTags ?? [],
           inferredInlinePersonTags ?? [],
+          inferredInlineClanSnapshotTags ?? [],
           inferredVideoArtistTags ?? [],
         );
       },
@@ -164,6 +195,16 @@ const Post = defineDocumentType(() => ({
         doc.alterEgo ??
         inferredAlterEgos.get(doc._raw.sourceFilePath)?.[0] ??
         DEFAULT_ALTER_EGO,
+    },
+    personTagUsages: {
+      type: "json",
+      resolve: (doc) =>
+        inferredPersonTagUsages.get(doc._raw.sourceFilePath) ?? [],
+    },
+    clanTagUsages: {
+      type: "json",
+      resolve: (doc) =>
+        inferredClanSnapshotTagUsages.get(doc._raw.sourceFilePath) ?? [],
     },
   },
 }));

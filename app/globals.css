@@ -154,6 +154,12 @@ a:focus {
   color: var(--blue-contrast);
 }
 
+[data-scroll-amendment] {
+  --person-tag-color: var(--text-on-blue);
+  --person-tag-hover-bg: var(--surface-card);
+  --person-tag-hover-color: var(--blue);
+}
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,

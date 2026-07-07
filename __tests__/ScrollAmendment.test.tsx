@@ -18,6 +18,7 @@ describe("ScrollAmendment", () => {
     expect(wrapper.className).toContain("[&_a]:!text-white");
     expect(wrapper.className).toContain("[&_a:hover]:bg-white");
     expect(wrapper.className).toContain("[&_a:hover]:!text-[color:var(--blue)]");
+    expect(wrapper).toHaveAttribute("data-scroll-amendment");
     expect(wrapper.className).not.toContain("border-[var(--blue-contrast)]");
     expect(wrapper.className).toContain(
       "[&_ul>li]:marker:text-[color:var(--text-on-blue)]",

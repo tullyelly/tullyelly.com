@@ -5,6 +5,7 @@ import FullBleedPage from "@/components/layout/FullBleedPage";
 import TrendPill from "@/components/tcdb/TrendPill";
 import { fmtDate } from "@/lib/datetime";
 import { tcdbTradePageThemeVars } from "@/lib/tcdb-theme";
+import { cn } from "@/lib/utils";
 
 type RankingDetailField = {
   label: string;
@@ -14,6 +15,7 @@ type RankingDetailField = {
 type RankingDetailFieldGroup = {
   title?: string;
   fields: RankingDetailField[];
+  content?: ReactNode;
 };
 
 type RankingDetailPageProps = {
@@ -21,10 +23,13 @@ type RankingDetailPageProps = {
   eyebrow: string;
   fields?: RankingDetailField[];
   fieldGroups?: RankingDetailFieldGroup[];
+  children?: ReactNode;
   listHref?: string;
   listLabel?: string;
   topHref?: string;
   topLabel?: string;
+  summaryLayout?: "default" | "compact";
+  summaryContent?: ReactNode;
 };
 
 const integerFormatter = new Intl.NumberFormat("en-US");
@@ -33,11 +38,23 @@ const signedFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const topLinkClassName =
-  "inline-flex shrink-0 items-center rounded-full border border-white bg-white px-3 py-1.5 text-sm font-semibold leading-snug text-[color:var(--trade-blue)] shadow-sm transition hover:bg-[color:var(--trade-blue-soft)]";
+  "inline-flex h-12 shrink-0 items-center rounded-full border border-white bg-white px-4 text-sm font-semibold leading-none text-[color:var(--trade-blue)] shadow-sm transition hover:bg-[color:var(--trade-blue-soft)]";
 const headerMetaClassName =
-  "inline-flex shrink-0 items-center rounded-full border border-white/35 px-3 py-1 text-xs font-semibold uppercase leading-snug text-white/80";
+  "inline-flex h-12 shrink-0 items-center rounded-full border border-white/35 px-4 text-sm font-semibold uppercase leading-none text-white/80";
 const summaryLabelClassName =
   "text-[0.68rem] font-semibold uppercase leading-tight opacity-75 md:text-[0.72rem] xl:whitespace-nowrap";
+
+function renderSummaryLabel(label: string) {
+  if (label === "TCDb Rank") {
+    return (
+      <>
+        <span className="normal-case">TCDb</span> RANK
+      </>
+    );
+  }
+
+  return label;
+}
 
 export function formatRankingNumber(value: number): string {
   return integerFormatter.format(value);
@@ -65,17 +82,21 @@ export default function RankingDetailPage({
   eyebrow,
   fields,
   fieldGroups,
+  children,
   listHref,
   listLabel,
   topHref = "/cardattack/homies",
   topLabel = "Back to homies",
+  summaryLayout = "default",
+  summaryContent,
 }: RankingDetailPageProps) {
   const groups =
     fieldGroups && fieldGroups.length > 0
       ? fieldGroups
-      : [{ fields: fields ?? [] }];
+      : [{ fields: fields ?? [], content: summaryContent }];
   const listLink =
     listHref && listLabel ? { href: listHref, label: listLabel } : null;
+  const isCompactSummary = summaryLayout === "compact";
 
   return (
     <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
@@ -84,17 +105,19 @@ export default function RankingDetailPage({
         style={tcdbTradePageThemeVars}
       >
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--trade-rust)_0%,var(--trade-rust-deep)_100%)] text-[color:var(--trade-off-white)] shadow-sm">
-          <div className="grid min-h-[6.5rem] grid-cols-1 items-center gap-3 px-4 py-4 text-center md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:px-6 md:text-left">
-            <div className="flex min-w-0 justify-center md:justify-start">
-              <Link href={topHref} className={topLinkClassName}>
+          <div className="relative flex min-h-[9rem] flex-col items-center justify-center gap-3 px-4 py-4 text-center md:min-h-[6.5rem] md:px-6">
+            <div className="flex min-w-0 justify-center md:absolute md:left-6 md:top-1/2 md:-translate-y-1/2 md:justify-start">
+              <Link href={topHref} className={`${topLinkClassName} m-0`}>
                 {topLabel}
               </Link>
             </div>
-            <h1 className="min-w-0 text-center text-[1.45rem] font-bold leading-tight md:text-[1.8rem]">
-              {title}
-            </h1>
-            <div className="flex min-w-0 flex-wrap items-center justify-center gap-3 md:justify-end">
-              <p className={headerMetaClassName}>{eyebrow}</p>
+            <div className="flex h-12 min-w-0 items-center justify-center md:absolute md:left-1/2 md:top-1/2 md:max-w-[calc(100%_-_28rem)] md:-translate-x-1/2 md:-translate-y-1/2">
+              <h1 className="!m-0 min-w-0 text-center text-[1.45rem] font-bold !leading-none md:text-[1.8rem]">
+                {title}
+              </h1>
+            </div>
+            <div className="flex min-w-0 flex-wrap items-center justify-center gap-3 md:absolute md:right-6 md:top-1/2 md:-translate-y-1/2 md:justify-end">
+              <span className={headerMetaClassName}>{eyebrow}</span>
               {listLink ? (
                 <Link
                   href={listLink.href}
@@ -119,21 +142,37 @@ export default function RankingDetailPage({
                   {group.title}
                 </h2>
               ) : null}
-              <dl className="grid gap-px overflow-hidden rounded-xl border border-[color:var(--trade-border)] bg-[color:var(--trade-border)] sm:grid-cols-2 xl:grid-cols-5">
+              <dl
+                className={cn(
+                  "grid gap-px overflow-hidden rounded-xl border border-[color:var(--trade-border)] bg-[color:var(--trade-border)] sm:grid-cols-2",
+                  isCompactSummary ? "xl:grid-cols-6" : "xl:grid-cols-5",
+                )}
+              >
                 {group.fields.map((field) => (
                   <div
                     key={field.label}
-                    className="min-w-0 bg-[color:var(--trade-off-white)] px-3.5 py-3 md:px-4 md:py-3.5"
+                    className={cn(
+                      "min-w-0 bg-[color:var(--trade-off-white)] px-3.5 py-3 md:px-4 md:py-3.5",
+                      isCompactSummary ? "xl:px-3" : null,
+                    )}
                   >
-                    <dt className={summaryLabelClassName}>{field.label}</dt>
+                    <dt className={summaryLabelClassName}>
+                      {renderSummaryLabel(field.label)}
+                    </dt>
                     <dd className="mt-2 flex min-h-[2.25rem] min-w-0 items-center text-sm font-semibold leading-snug text-[color:var(--trade-charcoal)]">
                       {field.value}
                     </dd>
                   </div>
                 ))}
               </dl>
+              {group.content ? (
+                <div className="mt-4 border-t border-[color:var(--trade-border)] pt-4">
+                  {group.content}
+                </div>
+              ) : null}
             </Card>
           ))}
+          {children}
         </div>
       </div>
     </FullBleedPage>

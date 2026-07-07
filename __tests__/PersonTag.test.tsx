@@ -63,10 +63,10 @@ describe("PersonTag", () => {
     expect(tag).toHaveClass(
       "font-bold",
       "italic",
-      "!text-[var(--blue)]",
+      "!text-[var(--person-tag-color,var(--blue))]",
       "!no-underline",
-      "hover:!bg-[var(--blue)]",
-      "hover:!text-white",
+      "hover:!bg-[var(--person-tag-hover-bg,var(--blue))]",
+      "hover:!text-[var(--person-tag-hover-color,var(--white))]",
       "hover:!no-underline",
     );
     expect(tag).not.toHaveClass("underline-offset-2");

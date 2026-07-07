@@ -63,7 +63,7 @@ export async function renderTcdbClanRankingsPage(
         className="border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8 md:pt-0"
       >
         <div className="space-y-8">
-          <PageIntro title="TCDB Clan Rankings">
+          <PageIntro title="Clans">
             <p className="text-[16px] text-muted-foreground md:text-[18px]">
               Clan snapshots track clan collections by slug, card count, and
               current TCDb rank.

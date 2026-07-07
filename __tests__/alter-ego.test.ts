@@ -1,6 +1,10 @@
 import {
   ALTER_EGO_OPTIONS,
+  inferClanSnapshotTagUsagesFromTree,
+  inferClanSnapshotTagsFromTree,
   inferAlterEgosFromTree,
+  inferPersonTagUsagesFromTree,
+  inferPersonTagsFromTree,
   mergeTagsWithAlterEgo,
 } from "@/lib/alterEgo";
 
@@ -26,6 +30,37 @@ const releaseNode = (
 
 const root = (children: TestNode[] = []): TestNode => ({
   type: "root",
+  children,
+});
+
+const personTagNode = (
+  tag?: unknown,
+  displayName?: unknown,
+  children: TestNode[] = [],
+): TestNode => ({
+  type: "mdxJsxTextElement",
+  name: "PersonTag",
+  attributes: [
+    ...(tag === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "tag", value: tag }]),
+    ...(displayName === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "displayName", value: displayName }]),
+  ],
+  children,
+});
+
+const clanSnapshotNode = (
+  tag?: unknown,
+  children: TestNode[] = [],
+): TestNode => ({
+  type: "mdxJsxFlowElement",
+  name: "ClanSnapshot",
+  attributes:
+    tag === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "tag", value: tag }],
   children,
 });
 
@@ -82,6 +117,81 @@ describe("inferAlterEgosFromTree", () => {
   it("returns undefined when no ReleaseSection is present", () => {
     const tree = root([{ type: "paragraph", children: [] }]);
     expect(inferAlterEgosFromTree(tree, { errorPrefix })).toEqual([]);
+  });
+});
+
+describe("inferPersonTagUsagesFromTree", () => {
+  const errorPrefix = "Chronicle sample.mdx";
+
+  it("extracts PersonTag display names and tag fallbacks", () => {
+    const tree = root([
+      personTagNode("freak", "the greek freak"),
+      personTagNode("freak"),
+      personTagNode("bucks-n-six", "bucks"),
+    ]);
+
+    expect(inferPersonTagUsagesFromTree(tree, { errorPrefix })).toEqual([
+      { tag: "freak", displayName: "the greek freak" },
+      { tag: "freak", displayName: "freak" },
+      { tag: "bucks-n-six", displayName: "bucks" },
+    ]);
+  });
+
+  it("deduplicates inferred PersonTag tag slugs", () => {
+    const tree = root([
+      personTagNode("freak", "giannis"),
+      personTagNode("freak", "antetokounmpo"),
+      personTagNode("bucks-n-six", "bucks"),
+    ]);
+
+    expect(inferPersonTagsFromTree(tree, { errorPrefix })).toEqual([
+      "freak",
+      "bucks-n-six",
+    ]);
+  });
+
+  it("throws when displayName is not a string literal", () => {
+    const tree = root([personTagNode("freak", { expression: "name" })]);
+
+    expect(() => inferPersonTagUsagesFromTree(tree, { errorPrefix })).toThrow(
+      `${errorPrefix}: PersonTag displayName must be a string literal.`,
+    );
+  });
+});
+
+describe("inferClanSnapshotTagUsagesFromTree", () => {
+  const errorPrefix = "Chronicle sample.mdx";
+
+  it("extracts ClanSnapshot tag usages for Chronicle tag sections", () => {
+    const tree = root([
+      clanSnapshotNode("noles"),
+      clanSnapshotNode("t-wolves"),
+      clanSnapshotNode("noles"),
+    ]);
+
+    expect(inferClanSnapshotTagUsagesFromTree(tree, { errorPrefix })).toEqual([
+      { tag: "noles", displayName: "noles" },
+      { tag: "t-wolves", displayName: "t-wolves" },
+      { tag: "noles", displayName: "noles" },
+    ]);
+    expect(inferClanSnapshotTagsFromTree(tree, { errorPrefix })).toEqual([
+      "noles",
+      "t-wolves",
+    ]);
+  });
+
+  it("throws when ClanSnapshot tag is missing or not literal", () => {
+    expect(() =>
+      inferClanSnapshotTagUsagesFromTree(root([clanSnapshotNode()]), {
+        errorPrefix,
+      }),
+    ).toThrow(`${errorPrefix}: ClanSnapshot is missing the required tag prop.`);
+
+    expect(() =>
+      inferClanSnapshotTagUsagesFromTree(root([clanSnapshotNode({})]), {
+        errorPrefix,
+      }),
+    ).toThrow(`${errorPrefix}: ClanSnapshot tag must be a string literal.`);
   });
 });
 

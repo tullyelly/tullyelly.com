@@ -1,4 +1,5 @@
 import {
+  inferClanSnapshotTagsFromTree,
   inferPersonTagsFromTree,
   inferYouTubeVideoArtistTagsFromTree,
   mergeChronicleTags,
@@ -31,6 +32,19 @@ const youTubeVideoNode = (
     artist === undefined
       ? []
       : [{ type: "mdxJsxAttribute", name: "artist", value: artist }],
+  children,
+});
+
+const clanSnapshotNode = (
+  tag?: unknown,
+  children: TestNode[] = [],
+): TestNode => ({
+  type: "mdxJsxFlowElement",
+  name: "ClanSnapshot",
+  attributes:
+    tag === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "tag", value: tag }],
   children,
 });
 
@@ -122,10 +136,11 @@ describe("inferYouTubeVideoArtistTagsFromTree", () => {
 });
 
 describe("mergeChronicleTags", () => {
-  it("merges inferred artist tags alongside frontmatter and person tags", () => {
+  it("merges inferred clan and artist tags alongside frontmatter and person tags", () => {
     const errorPrefix = "Chronicle sample.mdx";
     const tree = root([
       personTagNode("ron"),
+      clanSnapshotNode("noles"),
       youTubeVideoNode("Gang Starr"),
       youTubeVideoNode("gang-starr"),
     ]);
@@ -135,8 +150,16 @@ describe("mergeChronicleTags", () => {
         ["alpha", "mark2"],
         ["mark2", "cardattack"],
         inferPersonTagsFromTree(tree, { errorPrefix }),
+        inferClanSnapshotTagsFromTree(tree, { errorPrefix }),
         inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix }),
       ),
-    ).toEqual(["alpha", "mark2", "cardattack", "ron", "gang-starr"]);
+    ).toEqual([
+      "alpha",
+      "mark2",
+      "cardattack",
+      "ron",
+      "noles",
+      "gang-starr",
+    ]);
   });
 });

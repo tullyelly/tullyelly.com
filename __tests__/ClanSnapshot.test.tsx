@@ -52,7 +52,7 @@ describe("ClanSnapshot", () => {
       expect(screen.getByText("basketball")).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "149th" })).toHaveAttribute(
         "href",
-        "/cardattack/tcdb-rankings/clans/florida-state-seminoles",
+        "/cardattack/clans/florida-state-seminoles",
       );
       expect(screen.getByText("[")).toBeInTheDocument();
       expect(screen.getByText("]")).toBeInTheDocument();
