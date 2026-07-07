@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { RankingResponse } from "@/lib/data/tcdb";
 import type { ClanRankingResponse } from "@/lib/data/tcdb-clans";
 import { getHomieTcdbRankingHref } from "@/lib/tcdb-homie-routes";
+import { getTcdbClanRankingHref } from "@/lib/tcdb-clan-routes";
 import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
 import TCDBRankingTableClient from "./TCDBRankingTableClient";
 
@@ -76,7 +77,7 @@ export function clanRankingsToTableData(
     data: serverData.data.map((row) => ({
       key: `clan-${row.slug}-${row.sport}`,
       name: row.name,
-      href: `/cardattack/tcdb-rankings/clans/${row.slug}`,
+      href: getTcdbClanRankingHref(row),
       identifierLabel: "Sport",
       identifierValue: formatClanSportLabel(row.sport),
       card_count: row.card_count,

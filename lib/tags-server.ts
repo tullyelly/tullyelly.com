@@ -13,6 +13,7 @@ const TAG_HREF_KINDS = [
   "persona",
   "squad",
   "homie",
+  "clan",
   "custom",
   "external",
   "none",
@@ -77,6 +78,9 @@ function getFallbackHrefKind(slug: string): TagHrefKind {
 function getDefaultHrefForKind(slug: string, hrefKind: TagHrefKind): string {
   if (hrefKind === "homie") {
     return `/cardattack/homies/${encodeURIComponent(slug)}`;
+  }
+  if (hrefKind === "clan") {
+    return `/cardattack/clans/${encodeURIComponent(slug)}`;
   }
   return getDefaultTagHref(slug);
 }

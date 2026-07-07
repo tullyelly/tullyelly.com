@@ -181,6 +181,66 @@ export function inferPersonTagUsagesFromTree(
   return foundUsages;
 }
 
+export function inferClanSnapshotTagUsagesFromTree(
+  tree: MdxNode,
+  { errorPrefix = "Chronicle" }: InferOptions = {},
+): PersonTagUsage[] {
+  const foundUsages: PersonTagUsage[] = [];
+
+  const visitNode = (node: MdxNode | undefined) => {
+    if (!node) return;
+    const isClanSnapshot =
+      (node.type === "mdxJsxFlowElement" ||
+        node.type === "mdxJsxTextElement") &&
+      node.name === "ClanSnapshot";
+
+    if (isClanSnapshot) {
+      const tagAttrs = (node.attributes ?? []).filter(
+        (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "tag",
+      );
+
+      if (tagAttrs.length === 0) {
+        throw new Error(
+          `${errorPrefix}: ClanSnapshot is missing the required tag prop.`,
+        );
+      }
+
+      if (tagAttrs.length > 1) {
+        throw new Error(
+          `${errorPrefix}: ClanSnapshot should declare exactly one tag prop.`,
+        );
+      }
+
+      const tagAttr = tagAttrs[0];
+
+      if (typeof tagAttr.value !== "string") {
+        throw new Error(
+          `${errorPrefix}: ClanSnapshot tag must be a string literal.`,
+        );
+      }
+
+      foundUsages.push({ tag: tagAttr.value, displayName: tagAttr.value });
+    }
+
+    if (node.children) {
+      for (const child of node.children) {
+        visitNode(child);
+      }
+    }
+  };
+
+  visitNode(tree);
+  return foundUsages;
+}
+
+export function inferClanSnapshotTagsFromTree(
+  tree: MdxNode,
+  { errorPrefix = "Chronicle" }: InferOptions = {},
+): string[] {
+  const usages = inferClanSnapshotTagUsagesFromTree(tree, { errorPrefix });
+  return Array.from(new Set(usages.map((usage) => usage.tag)));
+}
+
 export function inferYouTubeVideoArtistTagsFromTree(
   tree: MdxNode,
   { errorPrefix = "Chronicle" }: InferOptions = {},

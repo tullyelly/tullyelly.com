@@ -9,6 +9,7 @@ export type ChroniclePersonTagUsage = {
 export type ChroniclePersonTagSource = {
   slug: string;
   draft?: boolean;
+  clanTagUsages?: unknown;
   personTagUsages?: unknown;
 };
 
@@ -32,8 +33,12 @@ function isChroniclePersonTagUsage(
 function getPersonTagUsages(
   post: ChroniclePersonTagSource,
 ): ChroniclePersonTagUsage[] {
-  if (!Array.isArray(post.personTagUsages)) return [];
-  return post.personTagUsages.filter(isChroniclePersonTagUsage);
+  const usages = [
+    ...(Array.isArray(post.personTagUsages) ? post.personTagUsages : []),
+    ...(Array.isArray(post.clanTagUsages) ? post.clanTagUsages : []),
+  ];
+
+  return usages.filter(isChroniclePersonTagUsage);
 }
 
 function trimToValue(value: string): string | null {

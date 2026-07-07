@@ -15,6 +15,7 @@ const mockListRecentTcdbClanFallers = jest.fn();
 const mockListRecentTcdbClanRisers = jest.fn();
 const mockListTopTcdbClanRankings = jest.fn();
 const mockGetTcdbClanRankingsBySlug = jest.fn();
+const mockListClanTcdbSnapshotHistory = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("next/cache", () => ({
@@ -74,6 +75,18 @@ jest.mock("@/components/tcdb/HomieCardCountSparkline", () => ({
     />
   ),
 }));
+jest.mock("@/components/tcdb/ClanCardCountSparkline", () => ({
+  __esModule: true,
+  default: ({ snapshots }: { snapshots: unknown[] }) => (
+    <div
+      data-testid="clan-card-count-sparkline"
+      data-snapshots={String(snapshots.length)}
+      data-sport={
+        String((snapshots[0] as { sport?: string } | undefined)?.sport ?? "")
+      }
+    />
+  ),
+}));
 jest.mock("@/lib/data/tcdb-clans", () => ({
   formatClanSportLabel: (sport: string) =>
     sport
@@ -83,6 +96,8 @@ jest.mock("@/lib/data/tcdb-clans", () => ({
       .join(" "),
   getTcdbClanRankingsBySlug: (...args: unknown[]) =>
     mockGetTcdbClanRankingsBySlug(...args),
+  listClanTcdbSnapshotHistory: (...args: unknown[]) =>
+    mockListClanTcdbSnapshotHistory(...args),
   listNumberOneTcdbClanRankings: (...args: unknown[]) =>
     mockListNumberOneTcdbClanRankings(...args),
   listRecentTcdbClanFallers: (...args: unknown[]) =>
@@ -95,7 +110,7 @@ jest.mock("@/lib/data/tcdb-clans", () => ({
 
 import HomiesPage from "@/app/cardattack/homies/page";
 import HomieDetailPage from "@/app/cardattack/homies/[tagSlugOrId]/page";
-import ClanDetailPage from "@/app/cardattack/tcdb-rankings/clans/[slug]/page";
+import ClanDetailPage from "@/app/cardattack/clans/[slug]/page";
 import TCDBRankingRowClient from "@/components/tcdb/TCDBRankingRowClient";
 
 const homieRanking = {
@@ -116,6 +131,7 @@ const homieRanking = {
 
 const clanRanking = {
   clan_id: 12,
+  tag_slug: "bucks-n-six",
   name: "Milwaukee Bucks",
   slug: "milwaukee-bucks",
   sport: "basketball",
@@ -166,6 +182,41 @@ describe("TCDB rankings pages", () => {
     mockListRecentTcdbClanRisers.mockReset();
     mockListTopTcdbClanRankings.mockReset();
     mockGetTcdbClanRankingsBySlug.mockReset();
+    mockListClanTcdbSnapshotHistory.mockReset();
+    mockListClanTcdbSnapshotHistory.mockResolvedValue([
+      {
+        clan_id: 12,
+        sport: "basketball",
+        card_count: 120,
+        ranking: 2,
+        ranking_at: "2026-04-01",
+        difference: 6,
+      },
+      {
+        clan_id: 12,
+        sport: "basketball",
+        card_count: 136,
+        ranking: 1,
+        ranking_at: "2026-05-01",
+        difference: 8,
+      },
+      {
+        clan_id: 12,
+        sport: "football",
+        card_count: 575,
+        ranking: 2,
+        ranking_at: "2026-04-01",
+        difference: 70,
+      },
+      {
+        clan_id: 12,
+        sport: "football",
+        card_count: 600,
+        ranking: 1,
+        ranking_at: "2026-05-01",
+        difference: 75,
+      },
+    ]);
   });
 
   it("renders the homies list page and preferred detail links", async () => {
@@ -212,10 +263,11 @@ describe("TCDB rankings pages", () => {
     expect(screen.queryByText("Diff Sign Changed")).not.toBeInTheDocument();
     expect(screen.getByText("Rank Trend")).toBeInTheDocument();
     expect(screen.queryByText("Current Rank")).not.toBeInTheDocument();
-    expect(screen.getByText("TCDb").closest("dl")).toHaveClass(
-      "xl:grid-cols-6",
-    );
-    const summaryGrid = screen.getByText("TCDb").closest("dl");
+    const tcdbRankText = screen
+      .getAllByText("TCDb")
+      .find((node) => node.parentElement?.textContent === "TCDb RANK");
+    const summaryGrid = tcdbRankText?.closest("dl");
+    expect(summaryGrid).toHaveClass("xl:grid-cols-6");
     const summaryCard = summaryGrid?.closest("section");
     expect(summaryGrid).not.toContainElement(
       screen.getByTestId("homie-card-count-sparkline"),
@@ -223,6 +275,7 @@ describe("TCDB rankings pages", () => {
     expect(summaryCard).toContainElement(
       screen.getByTestId("homie-card-count-sparkline"),
     );
+    expect(summaryCard).toHaveTextContent("TCDb CARD HISTORY");
     expect(screen.getByTestId("homie-card-count-sparkline")).toHaveAttribute(
       "data-snapshots",
       "2",
@@ -399,6 +452,28 @@ describe("TCDB rankings pages", () => {
   });
 
   it("renders clan detail as a page", async () => {
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
+      slug: "bucks-n-six",
+      displayName: "Milwaukee Bucks",
+      href: "/cardattack/clans/milwaukee-bucks",
+      hrefKind: "clan",
+      isClickable: true,
+      meta: {},
+    });
+    mockListChronicleTagDisplayNames.mockReturnValue([
+      { displayName: "bucks", count: 2, chronicleCount: 2 },
+      { displayName: "bucks-n-six", count: 1, chronicleCount: 1 },
+    ]);
+    mockGetTaggedPosts.mockReturnValue([
+      {
+        slug: "wu-tang-clans",
+        title: "wu-tang clans",
+        summary: "A Chronicle with a Bucks clan tag.",
+        date: "2026-07-06",
+        url: "/shaolin/wu-tang-clans",
+        tags: ["bucks-n-six"],
+      },
+    ]);
     mockGetTcdbClanRankingsBySlug.mockResolvedValue([
       clanRanking,
       { ...clanRanking, sport: "football", card_count: 250 },
@@ -419,8 +494,68 @@ describe("TCDB rankings pages", () => {
     expect(
       screen.getByRole("heading", { name: "Football" }),
     ).toBeInTheDocument();
-    expect(screen.getAllByText("Sport")).toHaveLength(2);
+    expect(screen.queryByText("Sport")).not.toBeInTheDocument();
+    expect(screen.queryByText("Slug")).not.toBeInTheDocument();
+    expect(screen.queryByText("Rank Delta")).not.toBeInTheDocument();
+    expect(screen.queryByText("Difference Delta")).not.toBeInTheDocument();
+    expect(screen.queryByText("Diff Sign Changed")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to clans" })).toHaveAttribute(
+      "href",
+      "/cardattack/clans",
+    );
+    const [basketballChart, footballChart] = screen.getAllByTestId(
+      "clan-card-count-sparkline",
+    );
+    const basketballSection = screen
+      .getByRole("heading", { name: "Basketball" })
+      .closest("section");
+    const footballSection = screen
+      .getByRole("heading", { name: "Football" })
+      .closest("section");
+    expect(basketballSection?.querySelector("dl")).toHaveClass(
+      "xl:grid-cols-6",
+    );
+    expect(footballSection?.querySelector("dl")).toHaveClass("xl:grid-cols-6");
+    expect(basketballSection).toHaveTextContent("TCDb CARD HISTORY");
+    expect(basketballSection).toHaveTextContent("Rank Trend");
+    expect(basketballSection).toContainElement(basketballChart);
+    expect(basketballChart).toHaveAttribute("data-sport", "basketball");
+    expect(basketballChart).toHaveAttribute("data-snapshots", "2");
+    expect(footballSection).toContainElement(footballChart);
+    expect(footballSection).toHaveTextContent("TCDb CARD HISTORY");
+    expect(footballChart).toHaveAttribute("data-sport", "football");
+    expect(footballChart).toHaveAttribute("data-snapshots", "2");
+    expect(
+      screen.getByText("chronicle display names for milwaukee bucks"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Default tag")).toBeInTheDocument();
+    expect(screen.getByText("#bucks-n-six")).toBeInTheDocument();
+    expect(screen.getByText("Total uses")).toBeInTheDocument();
+    expect(screen.getByText("3 mentions")).toBeInTheDocument();
+    expect(screen.getByText("bucks")).toBeInTheDocument();
+    expect(screen.getByText("2 mentions across 2 chronicles")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "recent chronicles for bucks-n-six",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "wu-tang clans" }),
+    ).toHaveAttribute("href", "/shaolin/wu-tang-clans");
+    expect(
+      screen.queryByRole("link", { name: "Clan rankings" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(mockGetStoredTagMetadataForHrefKind).toHaveBeenCalledWith({
+      slug: "bucks-n-six",
+      href: "/cardattack/clans/milwaukee-bucks",
+      hrefKind: "clan",
+    });
+    expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith(
+      "bucks-n-six",
+    );
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith("bucks-n-six");
+    expect(mockListClanTcdbSnapshotHistory).toHaveBeenCalledWith(12);
   });
 
   it("renders TCDB ranking row links without dialog attributes", () => {

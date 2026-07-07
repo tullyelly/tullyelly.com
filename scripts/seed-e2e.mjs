@@ -143,8 +143,8 @@ const PERSONA_DEFS = [
         orderIndex: 10,
       },
       {
-        label: "Rankings",
-        href: "/cardattack/tcdb-rankings",
+        label: "Homies",
+        href: "/cardattack/homies",
         feature: "menu.cardattack.tcdb.rankings",
         orderIndex: 20,
       },

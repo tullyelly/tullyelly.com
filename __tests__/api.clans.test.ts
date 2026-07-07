@@ -1,7 +1,7 @@
 /** @jest-environment node */
 
-import { GET as GET_LIST } from "@/app/api/tcdb-rankings/clans/route";
-import { GET as GET_DETAIL } from "@/app/api/tcdb-rankings/clans/[slug]/route";
+import { GET as GET_LIST } from "@/app/api/clans/route";
+import { GET as GET_DETAIL } from "@/app/api/clans/[slug]/route";
 import {
   getTcdbClanRankingsBySlug,
   listTcdbClanRankings,
@@ -22,6 +22,7 @@ const mockListTcdbClanRankings = listTcdbClanRankings as jest.Mock;
 
 const ranking = {
   clan_id: 12,
+  tag_slug: "bucks-n-six",
   name: "Milwaukee Bucks",
   slug: "milwaukee-bucks",
   sport: "basketball",
@@ -36,7 +37,7 @@ const ranking = {
   diff_sign_changed: false,
 };
 
-describe("GET /api/tcdb-rankings/clans", () => {
+describe("GET /api/clans", () => {
   beforeEach(() => {
     mockGetTcdbClanRankingsBySlug.mockReset();
     mockListTcdbClanRankings.mockReset();
@@ -57,7 +58,7 @@ describe("GET /api/tcdb-rankings/clans", () => {
 
     const res = await GET_LIST(
       new Request(
-        "https://tullyelly.com/api/tcdb-rankings/clans?page=2&pageSize=20&q=bucks&trend=up",
+        "https://tullyelly.com/api/clans?page=2&pageSize=20&q=bucks&trend=up",
       ),
     );
 
@@ -81,9 +82,7 @@ describe("GET /api/tcdb-rankings/clans", () => {
     });
 
     await GET_LIST(
-      new Request(
-        "https://tullyelly.com/api/tcdb-rankings/clans?trend=sideways",
-      ),
+      new Request("https://tullyelly.com/api/clans?trend=sideways"),
     );
 
     expect(mockListTcdbClanRankings).toHaveBeenCalledWith({
@@ -95,7 +94,7 @@ describe("GET /api/tcdb-rankings/clans", () => {
   });
 });
 
-describe("GET /api/tcdb-rankings/clans/:slug", () => {
+describe("GET /api/clans/:slug", () => {
   beforeEach(() => {
     mockGetTcdbClanRankingsBySlug.mockReset();
     mockListTcdbClanRankings.mockReset();

@@ -54,4 +54,27 @@ describe("collectChronicleTagDisplayNames", () => {
       ),
     ).toEqual([{ displayName: "giannis", count: 1, chronicleCount: 1 }]);
   });
+
+  it("collects ClanSnapshot usages for clan tag display names", () => {
+    expect(
+      collectChronicleTagDisplayNames(
+        [
+          {
+            slug: "one",
+            clanTagUsages: [{ tag: "noles", displayName: "noles" }],
+          },
+          {
+            slug: "two",
+            clanTagUsages: [{ tag: "NOLES", displayName: "NOLES" }],
+            personTagUsages: [{ tag: "noles", displayName: "seminoles" }],
+          },
+        ],
+        "noles",
+      ),
+    ).toEqual([
+      { displayName: "noles", count: 1, chronicleCount: 1 },
+      { displayName: "NOLES", count: 1, chronicleCount: 1 },
+      { displayName: "seminoles", count: 1, chronicleCount: 1 },
+    ]);
+  });
 });

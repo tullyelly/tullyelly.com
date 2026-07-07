@@ -5,6 +5,7 @@ import {
   ALTER_EGO_OPTIONS,
   DEFAULT_ALTER_EGO,
   inferAlterEgosFromTree,
+  inferClanSnapshotTagUsagesFromTree,
   inferPersonTagUsagesFromTree,
   inferYouTubeVideoArtistTagsFromTree,
   mergeChronicleTags,
@@ -14,6 +15,8 @@ import {
 
 const contentDirPath = "content";
 const inferredAlterEgos = new Map<string, string[]>();
+const inferredClanSnapshotTags = new Map<string, string[]>();
+const inferredClanSnapshotTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredPersonTags = new Map<string, string[]>();
 const inferredPersonTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredYouTubeVideoArtistTags = new Map<string, string[]>();
@@ -77,6 +80,12 @@ function remarkInferPersonTags() {
     const foundTags = Array.from(
       new Set(foundUsages.map((usage) => usage.tag)),
     );
+    const foundClanSnapshotUsages = inferClanSnapshotTagUsagesFromTree(tree, {
+      errorPrefix,
+    });
+    const foundClanSnapshotTags = Array.from(
+      new Set(foundClanSnapshotUsages.map((usage) => usage.tag)),
+    );
 
     if (foundTags.length > 0) {
       inferredPersonTags.set(sourceFilePath, foundTags);
@@ -84,6 +93,17 @@ function remarkInferPersonTags() {
     } else {
       inferredPersonTags.delete(sourceFilePath);
       inferredPersonTagUsages.delete(sourceFilePath);
+    }
+
+    if (foundClanSnapshotTags.length > 0) {
+      inferredClanSnapshotTags.set(sourceFilePath, foundClanSnapshotTags);
+      inferredClanSnapshotTagUsages.set(
+        sourceFilePath,
+        foundClanSnapshotUsages,
+      );
+    } else {
+      inferredClanSnapshotTags.delete(sourceFilePath);
+      inferredClanSnapshotTagUsages.delete(sourceFilePath);
     }
   };
 }
@@ -152,6 +172,9 @@ const Post = defineDocumentType(() => ({
         const inferredInlinePersonTags = inferredPersonTags.get(
           doc._raw.sourceFilePath,
         );
+        const inferredInlineClanSnapshotTags = inferredClanSnapshotTags.get(
+          doc._raw.sourceFilePath,
+        );
         const inferredVideoArtistTags = inferredYouTubeVideoArtistTags.get(
           doc._raw.sourceFilePath,
         );
@@ -161,6 +184,7 @@ const Post = defineDocumentType(() => ({
           doc.tags,
           inferredAlterEgoTags ?? [],
           inferredInlinePersonTags ?? [],
+          inferredInlineClanSnapshotTags ?? [],
           inferredVideoArtistTags ?? [],
         );
       },
@@ -176,6 +200,11 @@ const Post = defineDocumentType(() => ({
       type: "json",
       resolve: (doc) =>
         inferredPersonTagUsages.get(doc._raw.sourceFilePath) ?? [],
+    },
+    clanTagUsages: {
+      type: "json",
+      resolve: (doc) =>
+        inferredClanSnapshotTagUsages.get(doc._raw.sourceFilePath) ?? [],
     },
   },
 }));

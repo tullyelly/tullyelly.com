@@ -1,5 +1,7 @@
 import {
   ALTER_EGO_OPTIONS,
+  inferClanSnapshotTagUsagesFromTree,
+  inferClanSnapshotTagsFromTree,
   inferAlterEgosFromTree,
   inferPersonTagUsagesFromTree,
   inferPersonTagsFromTree,
@@ -46,6 +48,19 @@ const personTagNode = (
       ? []
       : [{ type: "mdxJsxAttribute", name: "displayName", value: displayName }]),
   ],
+  children,
+});
+
+const clanSnapshotNode = (
+  tag?: unknown,
+  children: TestNode[] = [],
+): TestNode => ({
+  type: "mdxJsxFlowElement",
+  name: "ClanSnapshot",
+  attributes:
+    tag === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "tag", value: tag }],
   children,
 });
 
@@ -141,6 +156,42 @@ describe("inferPersonTagUsagesFromTree", () => {
     expect(() => inferPersonTagUsagesFromTree(tree, { errorPrefix })).toThrow(
       `${errorPrefix}: PersonTag displayName must be a string literal.`,
     );
+  });
+});
+
+describe("inferClanSnapshotTagUsagesFromTree", () => {
+  const errorPrefix = "Chronicle sample.mdx";
+
+  it("extracts ClanSnapshot tag usages for Chronicle tag sections", () => {
+    const tree = root([
+      clanSnapshotNode("noles"),
+      clanSnapshotNode("t-wolves"),
+      clanSnapshotNode("noles"),
+    ]);
+
+    expect(inferClanSnapshotTagUsagesFromTree(tree, { errorPrefix })).toEqual([
+      { tag: "noles", displayName: "noles" },
+      { tag: "t-wolves", displayName: "t-wolves" },
+      { tag: "noles", displayName: "noles" },
+    ]);
+    expect(inferClanSnapshotTagsFromTree(tree, { errorPrefix })).toEqual([
+      "noles",
+      "t-wolves",
+    ]);
+  });
+
+  it("throws when ClanSnapshot tag is missing or not literal", () => {
+    expect(() =>
+      inferClanSnapshotTagUsagesFromTree(root([clanSnapshotNode()]), {
+        errorPrefix,
+      }),
+    ).toThrow(`${errorPrefix}: ClanSnapshot is missing the required tag prop.`);
+
+    expect(() =>
+      inferClanSnapshotTagUsagesFromTree(root([clanSnapshotNode({})]), {
+        errorPrefix,
+      }),
+    ).toThrow(`${errorPrefix}: ClanSnapshot tag must be a string literal.`);
   });
 });
 

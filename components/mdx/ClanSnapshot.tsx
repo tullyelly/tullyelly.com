@@ -6,6 +6,7 @@ import {
   type ClanSnapshotRecord,
   type ClanSnapshotTrend,
 } from "@/lib/data/tcdb-clan-snapshot";
+import { getTcdbClanRankingHref } from "@/lib/tcdb-clan-routes";
 import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
 import { normalizeTagSlug } from "@/lib/tags";
 
@@ -77,7 +78,7 @@ function renderSnapshotSummary(
       {index === 0 ? ", " : "; "}
       <span>{sportLabel}</span> <span>[</span>
       <Link
-        href={`/cardattack/tcdb-rankings/clans/${encodeURIComponent(snapshot.slug)}`}
+        href={getTcdbClanRankingHref(snapshot)}
         prefetch={false}
         className={linkClassName}
       >
