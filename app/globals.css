@@ -160,6 +160,12 @@ a:focus {
   --person-tag-hover-color: var(--blue);
 }
 
+[data-cipher-says] {
+  --person-tag-color: var(--tc-chrome-hi);
+  --person-tag-hover-bg: var(--tc-chrome-silver);
+  --person-tag-hover-color: var(--ink);
+}
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,

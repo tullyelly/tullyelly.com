@@ -1,11 +1,20 @@
 import { type ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
+import { ScrollCallout } from "@/components/scrolls/ScrollCallout";
 
 interface ScrollAmendmentProps {
   children: ReactNode;
   className?: string;
 }
+
+const scrollAmendmentBodyClassName =
+  "bg-[var(--blue)] text-[color:var(--text-on-blue)] [&_a]:!text-white [&_a:hover]:bg-white [&_a:hover]:!text-[color:var(--blue)] [&_a:focus-visible]:outline-white [&_[data-person-tag]]:!text-[color:var(--text-on-blue)] [&_ul>li]:marker:text-[color:var(--text-on-blue)]";
+
+const scrollAmendmentLabelClassName = "text-[color:var(--ink)]";
+
+const scrollAmendmentLabelStyle = {
+  backgroundColor: "var(--cream)",
+};
 
 /**
  * Inline callout for editorial notes within scrolls content.
@@ -13,21 +22,15 @@ interface ScrollAmendmentProps {
  */
 export function ScrollAmendment({ children, className }: ScrollAmendmentProps) {
   return (
-    <span
-      role="note"
+    <ScrollCallout
       data-scroll-amendment
-      className={cn(
-        "relative block w-full rounded-lg bg-[var(--blue)] px-4 py-4 text-[13px] font-medium leading-snug text-[color:var(--text-on-blue)] shadow-sm md:px-5 md:py-5 md:text-[15px] [&_a]:rounded [&_a]:px-1 [&_a]:!text-white [&_a]:underline [&_a]:transition-colors [&_a]:duration-150 [&_a:hover]:bg-white [&_a:hover]:!text-[color:var(--blue)] [&_a:focus-visible]:outline [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-2 [&_a:focus-visible]:outline-white [&_[data-person-tag]]:!text-[color:var(--text-on-blue)] [&_ul>li]:marker:text-[color:var(--text-on-blue)]",
-        className,
-      )}
+      label="scroll amendment"
+      bodyClassName={scrollAmendmentBodyClassName}
+      labelClassName={scrollAmendmentLabelClassName}
+      labelStyle={scrollAmendmentLabelStyle}
+      className={className}
     >
-      <span
-        className="absolute left-0 top-0 inline-flex items-center rounded-tl-lg rounded-tr-none px-4 py-1 text-sm font-semibold leading-none text-[color:var(--ink,_#0c1b0c)] shadow-sm md:px-5"
-        style={{ backgroundColor: "var(--cream)" }}
-      >
-        scroll amendment
-      </span>
-      <span className="block pt-1.5 md:pt-2">{children}</span>
-    </span>
+      {children}
+    </ScrollCallout>
   );
 }
