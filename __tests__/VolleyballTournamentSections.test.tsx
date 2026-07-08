@@ -50,6 +50,7 @@ describe("VolleyballTournamentSections", () => {
         postSlug: "tournament-day-one",
         postUrl: "/shaolin/tournament-day-one",
         postDate: "2026-04-01",
+        tournamentDate: "2026-04-01",
         postTitle: "tournament day one",
         tournamentName: "Spring Classic",
         tournamentRecord: "3-1",
@@ -60,6 +61,7 @@ describe("VolleyballTournamentSections", () => {
         postSlug: "tournament-day-two",
         postUrl: "/shaolin/tournament-day-two",
         postDate: "2026-04-02",
+        tournamentDate: "2026-04-02",
         postTitle: "tournament day two",
         tournamentName: "Spring Classic",
         tournamentRecord: "5-1",
@@ -78,7 +80,7 @@ describe("VolleyballTournamentSections", () => {
     expect(chronicleSectionMdxRendererMock).toHaveBeenCalledTimes(2);
     expect(
       screen.getByRole("link", { name: "Jump to 2026-04-01 (Day 1)" }),
-    ).toHaveAttribute("href", "#section-tournament-day-one-1");
+    ).toHaveAttribute("href", "#day-2026-04-01");
 
     const firstRendererProps = chronicleSectionMdxRendererMock.mock
       .calls[0]?.[0] as
@@ -99,5 +101,60 @@ describe("VolleyballTournamentSections", () => {
     expect(firstRendererProps?.components?.ReleaseSection).toBeDefined();
     expect(secondRendererProps?.postDate).toBe("2026-04-02");
     expect(secondRendererProps?.components?.ReleaseSection).toBeDefined();
+  });
+
+  it("groups multiple same-date release sections under a single tournament day", async () => {
+    const sections = [
+      {
+        tournamentId: "8",
+        postSlug: "aau-nationals",
+        postUrl: "/shaolin/aau-nationals",
+        postDate: "2026-07-07",
+        tournamentDate: "2026-07-07",
+        postTitle: "aau nationals",
+        mdx: '<ReleaseSection tournamentId={8} tournamentDate="2026-07-07">Walk in</ReleaseSection>',
+      },
+      {
+        tournamentId: "8",
+        postSlug: "aau-nationals",
+        postUrl: "/shaolin/aau-nationals",
+        postDate: "2026-07-07",
+        tournamentDate: "2026-07-07",
+        postTitle: "aau nationals",
+        mdx: '<ReleaseSection tournamentId={8} tournamentDate="2026-07-07">Match one</ReleaseSection>',
+      },
+      {
+        tournamentId: "8",
+        postSlug: "aau-nationals",
+        postUrl: "/shaolin/aau-nationals",
+        postDate: "2026-07-07",
+        tournamentDate: "2026-07-07",
+        postTitle: "aau nationals",
+        mdx: '<ReleaseSection tournamentId={8} tournamentDate="2026-07-07">Match two</ReleaseSection>',
+      },
+      {
+        tournamentId: "8",
+        postSlug: "aau-nationals",
+        postUrl: "/shaolin/aau-nationals",
+        postDate: "2026-07-07",
+        tournamentDate: "2026-07-07",
+        postTitle: "aau nationals",
+        mdx: '<ReleaseSection tournamentId={8} tournamentDate="2026-07-07">Match three</ReleaseSection>',
+      },
+    ];
+
+    const ui = await VolleyballTournamentSections({ sections });
+    render(ui);
+
+    expect(chronicleSectionMdxRendererMock).toHaveBeenCalledTimes(4);
+    expect(
+      screen.getByRole("heading", { name: /2026-07-07: Day 1/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /Day 2/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Jump to 2026-07-07 (Day 1)" }),
+    ).not.toBeInTheDocument();
   });
 });
