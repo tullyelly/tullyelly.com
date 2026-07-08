@@ -79,6 +79,7 @@ async function PostContent({ slug }: { slug: string }) {
               date={post.date}
               summary={post.summary}
               tags={post.tags}
+              tagMetadataBySlug={tagMetadataBySlug}
             />
             <ChroniclePrevNextNav slug={post.slug} />
           </PageIntro>

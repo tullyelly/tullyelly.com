@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { fmtDate } from "@/lib/datetime";
 import { PILL_BLUE, pillInteractionClasses } from "@/components/ui/pillStyles";
-import { getHashtagDisplayName, normalizeTagSlug } from "@/lib/tags";
+import {
+  getHashtagDisplayName,
+  getKnownTagHref,
+  normalizeTagSlug,
+} from "@/lib/tags";
+import type { TagMetadata } from "@/lib/tags-server";
 
 type ChronicleSignatureProps = {
   title: string;
   date: string;
   summary?: string;
   tags?: string[];
+  tagMetadataBySlug?: ReadonlyMap<string, TagMetadata>;
 };
 
 export function ChronicleSignature({
@@ -15,6 +21,7 @@ export function ChronicleSignature({
   date,
   summary,
   tags,
+  tagMetadataBySlug,
 }: ChronicleSignatureProps) {
   const normalizedTags = tags?.map((tag) => tag.trim()).filter(Boolean) ?? [];
 
@@ -38,11 +45,14 @@ export function ChronicleSignature({
         {normalizedTags.length ? (
           <div className="mt-1 flex flex-wrap gap-1.5">
             {normalizedTags.map((tag) => {
-              const tagSlug = encodeURIComponent(normalizeTagSlug(tag));
+              const tagSlug = normalizeTagSlug(tag);
+              const tagHref =
+                tagMetadataBySlug?.get(tagSlug)?.href ?? getKnownTagHref(tag);
+
               return (
                 <Link
                   key={tag}
-                  href={`/shaolin/tags/${tagSlug}`}
+                  href={tagHref}
                   className={[
                     "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
                     pillInteractionClasses,

@@ -31,6 +31,7 @@ import {
   normalizeVolleyballTournamentDate,
   normalizeVolleyballTournamentKey,
 } from "@/lib/volleyball-tournament-db";
+import { formatVolleyballTournamentFinish } from "@/lib/volleyball-finish";
 
 /*
 Spike note (ReleaseSection styling)
@@ -170,13 +171,6 @@ function getReadableTextColor(backgroundColor: string): string {
 
 function getReviewLabel(type: ReviewType): string {
   return REVIEW_TYPE_CONFIG[type].singularLabel;
-}
-
-function getTournamentFinishLabel(finish: number | null): string | null {
-  if (finish === 1) return "1st Place";
-  if (finish === 2) return "2nd Place";
-  if (finish === 3) return "3rd Place";
-  return null;
 }
 
 function toOptionalText(
@@ -553,7 +547,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   );
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
   const showTournamentVisuals = showTournament && !showReleaseDetails;
-  const tournamentFinishLabel = getTournamentFinishLabel(
+  const tournamentFinishLabel = formatVolleyballTournamentFinish(
     resolvedTournamentFinish ?? null,
   );
   const showReviewVisuals = Boolean(review);

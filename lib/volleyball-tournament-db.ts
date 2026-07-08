@@ -30,6 +30,11 @@ type VolleyballTournamentSummaryRow = {
   overall_losses: number | string;
 };
 
+type VolleyballTournamentListSummaryRow = VolleyballTournamentSummaryRow & {
+  tournament_days: number | string;
+  latest_tournament_date: string;
+};
+
 export type VolleyballTournamentSummary = {
   tournamentKey: string;
   tournamentName: string;
@@ -37,6 +42,17 @@ export type VolleyballTournamentSummary = {
   overallWins: number;
   overallLosses: number;
   overallRecord: string;
+};
+
+export type VolleyballTournamentListSummary = {
+  tournamentId: string;
+  tournamentName: string;
+  finish: number | null;
+  overallWins: number;
+  overallLosses: number;
+  overallRecord: string;
+  tournamentDays: number;
+  latestTournamentDate: string;
 };
 
 export function normalizeVolleyballTournamentKey(tournamentKey: string): string {
@@ -162,4 +178,51 @@ export async function getVolleyballTournamentSummaryByKey(
     overallLosses,
     overallRecord: `${overallWins}-${overallLosses}`,
   };
+}
+
+export async function getVolleyballTournamentListSummaries(): Promise<
+  VolleyballTournamentListSummary[]
+> {
+  const rows = await sql<VolleyballTournamentListSummaryRow>`
+    SELECT
+      tournament.tournament_key,
+      tournament.tournament_name,
+      tournament.finish,
+      COALESCE(SUM(day.wins), 0) AS overall_wins,
+      COALESCE(SUM(day.losses), 0) AS overall_losses,
+      COUNT(DISTINCT day.tournament_date) AS tournament_days,
+      TO_CHAR(MAX(day.tournament_date), 'YYYY-MM-DD') AS latest_tournament_date
+    FROM dojo.volleyball_tournament AS tournament
+    JOIN dojo.volleyball_tournament_day AS day
+      ON day.volleyball_tournament_id = tournament.id
+    GROUP BY
+      tournament.id,
+      tournament.tournament_key,
+      tournament.tournament_name,
+      tournament.finish
+    ORDER BY
+      MAX(day.tournament_date) DESC,
+      CASE
+        WHEN tournament.tournament_key ~ '^[0-9]+$'
+          THEN tournament.tournament_key::integer
+        ELSE NULL
+      END DESC NULLS LAST,
+      tournament.tournament_key DESC
+  `;
+
+  return rows.map((row) => {
+    const overallWins = toInteger(row.overall_wins);
+    const overallLosses = toInteger(row.overall_losses);
+
+    return {
+      tournamentId: row.tournament_key,
+      tournamentName: row.tournament_name,
+      finish: row.finish,
+      overallWins,
+      overallLosses,
+      overallRecord: `${overallWins}-${overallLosses}`,
+      tournamentDays: toInteger(row.tournament_days),
+      latestTournamentDate: row.latest_tournament_date,
+    };
+  });
 }

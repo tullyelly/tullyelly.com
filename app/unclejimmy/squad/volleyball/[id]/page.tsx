@@ -8,6 +8,7 @@ import VolleyballTournamentSections from "@/components/unclejimmy/VolleyballTour
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { getVolleyballTournamentSections } from "@/lib/volleyball-tournaments";
 import { getVolleyballTournamentSummaryByKey } from "@/lib/volleyball-tournament-db";
+import { formatVolleyballTournamentFinish } from "@/lib/volleyball-finish";
 
 type Params = { id: string };
 
@@ -15,13 +16,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const TROPHY_ICON_SRC = "/images/optimus/ccvbc-trophy.webp";
-
-function getFinishLabel(finish: number | null): string | null {
-  if (finish === 1) return "1st Place";
-  if (finish === 2) return "2nd Place";
-  if (finish === 3) return "3rd Place";
-  return null;
-}
 
 export async function generateMetadata({
   params,
@@ -69,7 +63,9 @@ export default async function UncleJimmyVolleyballTournamentPage({
     notFound();
   }
 
-  const finishLabel = getFinishLabel(tournamentSummary.finish);
+  const finishLabel = formatVolleyballTournamentFinish(
+    tournamentSummary.finish,
+  );
   const finishHasTrophy = tournamentSummary.finish === 1;
   const finishBadgeClassName = finishHasTrophy
     ? "inline-flex items-center justify-center gap-3 rounded-full border border-[var(--cream)] bg-black pl-2.5 pr-4 py-2 text-sm font-semibold text-[var(--cream)] shadow-sm"

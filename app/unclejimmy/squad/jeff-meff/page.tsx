@@ -29,6 +29,9 @@ export const metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function UncleJimmySquadJeffMeffPage() {
   const taggedPosts = getTaggedPosts("jeff-meff");
 
@@ -36,7 +39,7 @@ export default function UncleJimmySquadJeffMeffPage() {
     <div className="space-y-10">
       <div className="space-y-8">
         <h1 className="text-2xl md:text-3xl font-semibold leading-tight">
-          jeff-meff
+          jeff meff
         </h1>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           <i>jeff meff</i> is the next dedicated page in 🎙<i>unclejimmy</i>&rsquo;s squad. He's the greatest teammate, always sporting a smile, might lose an occasional phone or two, and most importantly, our #1 living his best life guy. 

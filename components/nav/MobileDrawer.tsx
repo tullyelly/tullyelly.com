@@ -31,10 +31,8 @@ import DrawerItem from "@/components/nav/DrawerItem";
 import { cn } from "@/lib/utils";
 import { useNavController } from "@/components/nav/NavController";
 import { useNavResetOnRouteChange } from "@/hooks/useNavResetOnRouteChange";
-import { HOME_EMOJI, PERSONA_EMOJI } from "@/components/nav/menuUtils";
 import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
 import { sanitizeCallback } from "@/lib/auth/sanitizeCallback";
-import twemoji from "twemoji";
 
 type MobileDrawerProps = {
   open: boolean;
@@ -152,7 +150,6 @@ export default function MobileDrawer({
   const { registerCloseHandler } = useNavController();
   useNavResetOnRouteChange();
   const sheetContentRef = React.useRef<HTMLDivElement | null>(null);
-  const twemojiFrameRef = React.useRef<number | null>(null);
   const [expandedPersona, setExpandedPersona] =
     React.useState<PersonaKey | null>(null);
   const [searchActive, setSearchActive] = React.useState(false);
@@ -180,11 +177,6 @@ export default function MobileDrawer({
     }
     return entries;
   }, [personaSection]);
-  const personaEmojiKeys = React.useMemo(
-    () => personaEntries.map(({ key }) => key).join("|"),
-    [personaEntries],
-  );
-
   React.useEffect(() => {
     if (!open) {
       setExpandedPersona(null);
@@ -202,25 +194,6 @@ export default function MobileDrawer({
     }
     previousOpenRef.current = open;
   }, [open, menu.persona]);
-
-  React.useEffect(() => {
-    const node = sheetContentRef.current;
-    if (!node) return;
-    if (twemojiFrameRef.current !== null) {
-      window.cancelAnimationFrame(twemojiFrameRef.current);
-      twemojiFrameRef.current = null;
-    }
-    twemojiFrameRef.current = window.requestAnimationFrame(() => {
-      twemoji.parse(node, { folder: "svg", ext: ".svg" });
-      twemojiFrameRef.current = null;
-    });
-    return () => {
-      if (twemojiFrameRef.current !== null) {
-        window.cancelAnimationFrame(twemojiFrameRef.current);
-        twemojiFrameRef.current = null;
-      }
-    };
-  }, [open, personaEmojiKeys]);
 
   React.useEffect(() => {
     if (!open || expandedPersona) return;
@@ -457,7 +430,6 @@ export default function MobileDrawer({
         onKeyDownCapture={handleSheetKeyDown}
         overlayClassName="bg-black/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out"
         className="z-[80] inset-x-0 bottom-0 h-[85vh] rounded-t-2xl border-t border-[color:var(--border-subtle)] bg-[color:var(--surface-page)] p-0 text-[color:var(--text-strong)] sm:h-[80vh]"
-        data-emoji-scope="mobile-drawer"
       >
         <div data-testid="nav-mobile-drawer" className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-[color:var(--border-subtle)] px-5 py-4">
@@ -602,12 +574,7 @@ export default function MobileDrawer({
                   className={cn(drawerActionClasses, "justify-start")}
                   onClick={handleHome}
                 >
-                  <span
-                    className="emoji text-xl leading-none"
-                    aria-hidden="true"
-                  >
-                    {HOME_EMOJI}
-                  </span>
+                  <Lucide.Home className="size-5" aria-hidden="true" />
                   <span className="flex-1 truncate">Home</span>
                 </Link>
               </DrawerItem>
@@ -617,7 +584,6 @@ export default function MobileDrawer({
                   (entry) => entry.key === "shaolin",
                 );
                 if (!shaolinEntry?.item?.href) return null;
-                const personaEmoji = PERSONA_EMOJI["shaolin"];
                 const buttonId = `mobile-drawer-root-${shaolinEntry.item.id}`;
                 return (
                   <DrawerItem className="mx-1 mb-3">
@@ -630,19 +596,10 @@ export default function MobileDrawer({
                         handleNavigate(event, shaolinEntry.item, "primary")
                       }
                     >
-                      {personaEmoji ? (
-                        <span
-                          className="emoji text-xl leading-none"
-                          aria-hidden="true"
-                        >
-                          {personaEmoji}
-                        </span>
-                      ) : (
-                        <Icon
-                          name={shaolinEntry.item.iconKey}
-                          className="size-5"
-                        />
-                      )}
+                      <Icon
+                        name={shaolinEntry.item.iconKey}
+                        className="size-5"
+                      />
                       <span className="flex-1 truncate">
                         {shaolinEntry.label}
                       </span>
@@ -664,7 +621,6 @@ export default function MobileDrawer({
                       const isExpanded = expandedPersona === key;
                       const buttonId = `mobile-drawer-root-${item.id}`;
                       const panelId = `mobile-drawer-persona-panel-${key}`;
-                      const personaEmoji = PERSONA_EMOJI[key];
                       return (
                         <div
                           key={item.id}
@@ -687,16 +643,7 @@ export default function MobileDrawer({
                               aria-controls={panelId}
                               onClick={() => handleTogglePersona(key)}
                             >
-                              {personaEmoji ? (
-                                <span
-                                  className="emoji text-xl leading-none"
-                                  aria-hidden="true"
-                                >
-                                  {personaEmoji}
-                                </span>
-                              ) : (
-                                <Icon name={item.iconKey} className="size-5" />
-                              )}
+                              <Icon name={item.iconKey} className="size-5" />
                               <span className="flex-1 truncate">{label}</span>
                               <Lucide.ChevronRight
                                 className={`size-4 text-[color:var(--text-muted,#58708c)] transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
