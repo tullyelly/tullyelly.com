@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  NEXT_TELEMETRY_DISABLED: "1"
+  DATABASE_URL: "postgresql://tullyelly_ci:tullyelly_ci@127.0.0.1:5432/tullyelly_ci"
+  TEST_DATABASE_URL: "postgresql://tullyelly_ci:tullyelly_ci@127.0.0.1:5432/tullyelly_test"
+  AUTH_SECRET: "ci-auth-secret"
+  NEXTAUTH_SECRET: "ci-auth-secret"
+  NEXTAUTH_URL: "http://127.0.0.1:4010"
+  NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:4010"
+  GOOGLE_CLIENT_ID: "ci-google-client-id"
+  GOOGLE_CLIENT_SECRET: "ci-google-client-secret"
+  NEXT_PUBLIC_MENU_SHOW_ALL: "1"
+
+jobs:
+  guardrails:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        env:
+          SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test:ci
+
+      - name: Build
+        env:
+          SKIP_DB: "true"
+        run: npm run build
+
+      - name: Check security headers
+        env:
+          SKIP_DB: "true"
+        run: |
+          npm run start:ci &
+          server_pid=$!
+
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+          }
+
+          trap cleanup EXIT
+          npm run wait:ci
+          npm run security-headers:check -- http://127.0.0.1:4010/api/health
+
+      # Playwright, image checks, and SEO checks stay optional for now;
+      # keep the baseline guardrail workflow focused on stable PR blockers.

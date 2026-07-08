@@ -89,4 +89,18 @@ Out of respect for the homie who does most of the work around here, I might let 
 
     That's a long dead idea that's now more secure. I should get back to that one though - it would save me a bit of time if done right.
 
+    ---
+
+    Next up, some of those pesky tests I turned off. Let's turn them back on. Hey <PersonTag tag="cipher" />, turn me on:
+
+    <CipherSays>Restore the main automated checks that run when code changes are submitted. This helps catch broken code, failed tests, and missing safety checks before changes reach the live site.</CipherSays>
+
+    Oh yeah, supes horned up.
+
+    Hey buddy, how many tests are there now?
+
+    <CipherSays>With the guardrails back on, the automated checks are doing their job before anything reaches main: lint, typecheck, the CI test run, build, and security header checks all line up in GitHub Actions. The current suite covers 525 tests across 113 suites, with a smaller smoke pass of 81 related tests across 14 suites before the full coverage gate. It is boring on purpose; the right kind of boring, where broken code has to get past the machines before it gets anywhere near the live site.</CipherSays>
+
+    That'll do, pig. That'll do.
+
 </ReleaseSection>
