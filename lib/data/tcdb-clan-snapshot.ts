@@ -1,8 +1,8 @@
 import "server-only";
 
 import { asDateString } from "@/lib/dates";
+import { queryRows } from "@/lib/db";
 import { withDbRetry } from "@/lib/db/retry";
-import { sqlQueryRows } from "@/lib/db-sql-helpers";
 import { normalizeTagSlug } from "@/lib/tags";
 
 export type ClanSnapshotTrend = "up" | "down" | "flat";
@@ -139,7 +139,7 @@ export async function getClanSnapshotsForTagOnDate(
   }
 
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbClanSnapshotRow>(
+    queryRows<DbClanSnapshotRow>(
       `
         WITH matched_clans AS (
           SELECT

@@ -1,15 +1,15 @@
 /** @jest-environment node */
 
-const sqlQueryRowsMock = jest.fn();
-const sqlQueryOneMock = jest.fn();
+const queryRowsMock = jest.fn();
+const queryOneMock = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("@/lib/db/retry", () => ({
   withDbRetry: (fn: () => Promise<unknown>) => fn(),
 }));
-jest.mock("@/lib/db-sql-helpers", () => ({
-  sqlQueryOne: (...args: unknown[]) => sqlQueryOneMock(...args),
-  sqlQueryRows: (...args: unknown[]) => sqlQueryRowsMock(...args),
+jest.mock("@/lib/db", () => ({
+  queryOne: (...args: unknown[]) => queryOneMock(...args),
+  queryRows: (...args: unknown[]) => queryRowsMock(...args),
 }));
 
 import {
@@ -65,12 +65,12 @@ const homieRow = {
 
 describe("tcdb clan ranking data helpers", () => {
   beforeEach(() => {
-    sqlQueryRowsMock.mockReset();
-    sqlQueryOneMock.mockReset();
+    queryRowsMock.mockReset();
+    queryOneMock.mockReset();
   });
 
   it("lists clan rankings with pagination, search, and trend filters", async () => {
-    sqlQueryRowsMock
+    queryRowsMock
       .mockResolvedValueOnce([clanRow])
       .mockResolvedValueOnce([{ c: "1" }]);
 
@@ -93,7 +93,7 @@ describe("tcdb clan ranking data helpers", () => {
       },
     });
 
-    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
+    const [query, values] = queryRowsMock.mock.calls[0] as [
       string,
       unknown[],
     ];
@@ -113,7 +113,7 @@ describe("tcdb clan ranking data helpers", () => {
       card_count: 250,
       ranking: 4,
     };
-    sqlQueryRowsMock.mockResolvedValue([clanRow, footballRow]);
+    queryRowsMock.mockResolvedValue([clanRow, footballRow]);
 
     await expect(getTcdbClanRankingsBySlug("Milwaukee-Bucks")).resolves.toEqual(
       [
@@ -122,7 +122,7 @@ describe("tcdb clan ranking data helpers", () => {
       ],
     );
 
-    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
+    const [query, values] = queryRowsMock.mock.calls[0] as [
       string,
       unknown[],
     ];
@@ -132,7 +132,7 @@ describe("tcdb clan ranking data helpers", () => {
   });
 
   it("lists clan snapshot history by sport and date", async () => {
-    sqlQueryRowsMock.mockResolvedValueOnce([
+    queryRowsMock.mockResolvedValueOnce([
       {
         clan_id: 12,
         sport: "basketball",
@@ -170,7 +170,7 @@ describe("tcdb clan ranking data helpers", () => {
       },
     ]);
 
-    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
+    const [query, values] = queryRowsMock.mock.calls[0] as [
       string,
       unknown[],
     ];
@@ -188,7 +188,7 @@ describe("tcdb clan ranking data helpers", () => {
       [],
     );
 
-    expect(sqlQueryRowsMock).not.toHaveBeenCalled();
+    expect(queryRowsMock).not.toHaveBeenCalled();
   });
 
   it("builds cleaned clan ranking public routes", () => {
@@ -199,7 +199,7 @@ describe("tcdb clan ranking data helpers", () => {
   });
 
   it("returns an empty list for missing or invalid clan slugs", async () => {
-    sqlQueryRowsMock.mockResolvedValue([]);
+    queryRowsMock.mockResolvedValue([]);
 
     await expect(getTcdbClanRankingsBySlug("missing-clan")).resolves.toEqual(
       [],
@@ -208,34 +208,34 @@ describe("tcdb clan ranking data helpers", () => {
       [],
     );
 
-    expect(sqlQueryRowsMock).toHaveBeenCalledTimes(1);
+    expect(queryRowsMock).toHaveBeenCalledTimes(1);
   });
 
   it("returns #1 homie and clan summary rows", async () => {
-    sqlQueryRowsMock.mockResolvedValueOnce([clanRow]);
+    queryRowsMock.mockResolvedValueOnce([clanRow]);
     await expect(listNumberOneTcdbClanRankings()).resolves.toEqual([
       { ...clanRow, ranking_at: "2026-05-01" },
     ]);
-    expect(sqlQueryRowsMock.mock.calls[0][0]).toContain(
+    expect(queryRowsMock.mock.calls[0][0]).toContain(
       "WHERE r.ranking = 1",
     );
 
-    sqlQueryRowsMock.mockResolvedValueOnce([homieRow]);
+    queryRowsMock.mockResolvedValueOnce([homieRow]);
     await expect(listNumberOneTcdbHomieRankings()).resolves.toEqual([
       { ...homieRow, ranking_at: "2026-05-01" },
     ]);
-    expect(sqlQueryRowsMock.mock.calls[1][0]).toContain("WHERE ranking = 1");
+    expect(queryRowsMock.mock.calls[1][0]).toContain("WHERE ranking = 1");
   });
 
   it("gets homie ranking detail by slug or numeric fallback", async () => {
-    sqlQueryOneMock.mockResolvedValueOnce(homieRow);
+    queryOneMock.mockResolvedValueOnce(homieRow);
 
     await expect(getHomieTcdbRankingByRouteKey(" Freak ")).resolves.toEqual({
       ...homieRow,
       ranking_at: "2026-05-01",
     });
 
-    const [slugQuery, slugValues] = sqlQueryOneMock.mock.calls[0] as [
+    const [slugQuery, slugValues] = queryOneMock.mock.calls[0] as [
       string,
       unknown[],
     ];
@@ -248,14 +248,14 @@ describe("tcdb clan ranking data helpers", () => {
       tag_slug: null,
       route_slug: "34",
     };
-    sqlQueryOneMock.mockResolvedValueOnce(fallbackRow);
+    queryOneMock.mockResolvedValueOnce(fallbackRow);
 
     await expect(getHomieTcdbRankingByRouteKey("34")).resolves.toEqual({
       ...fallbackRow,
       ranking_at: "2026-05-01",
     });
 
-    const [idQuery, idValues] = sqlQueryOneMock.mock.calls[1] as [
+    const [idQuery, idValues] = queryOneMock.mock.calls[1] as [
       string,
       unknown[],
     ];
@@ -264,7 +264,7 @@ describe("tcdb clan ranking data helpers", () => {
   });
 
   it("lists homie snapshot history in chronological order", async () => {
-    sqlQueryRowsMock.mockResolvedValueOnce([
+    queryRowsMock.mockResolvedValueOnce([
       {
         homie_id: 34,
         card_count: 450,
@@ -298,7 +298,7 @@ describe("tcdb clan ranking data helpers", () => {
       },
     ]);
 
-    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
+    const [query, values] = queryRowsMock.mock.calls[0] as [
       string,
       unknown[],
     ];
@@ -313,13 +313,13 @@ describe("tcdb clan ranking data helpers", () => {
       [],
     );
 
-    expect(sqlQueryRowsMock).not.toHaveBeenCalled();
+    expect(queryRowsMock).not.toHaveBeenCalled();
   });
 
   it("orders clan risers and fallers by recent movement", async () => {
-    sqlQueryRowsMock.mockResolvedValueOnce([clanRow]);
+    queryRowsMock.mockResolvedValueOnce([clanRow]);
     await expect(listRecentTcdbClanRisers(3)).resolves.toHaveLength(1);
-    const [riserQuery, riserValues] = sqlQueryRowsMock.mock.calls[0] as [
+    const [riserQuery, riserValues] = queryRowsMock.mock.calls[0] as [
       string,
       unknown[],
     ];
@@ -327,7 +327,7 @@ describe("tcdb clan ranking data helpers", () => {
     expect(riserQuery).toContain("r.rank_delta DESC NULLS LAST");
     expect(riserValues).toEqual(["up", 3]);
 
-    sqlQueryRowsMock.mockResolvedValueOnce([
+    queryRowsMock.mockResolvedValueOnce([
       {
         ...clanRow,
         trend_overall: "down",
@@ -336,7 +336,7 @@ describe("tcdb clan ranking data helpers", () => {
       },
     ]);
     await expect(listRecentTcdbClanFallers(2)).resolves.toHaveLength(1);
-    const [fallerQuery, fallerValues] = sqlQueryRowsMock.mock.calls[1] as [
+    const [fallerQuery, fallerValues] = queryRowsMock.mock.calls[1] as [
       string,
       unknown[],
     ];

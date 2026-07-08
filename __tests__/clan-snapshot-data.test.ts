@@ -1,24 +1,24 @@
 /** @jest-environment node */
 
-const sqlQueryRowsMock = jest.fn();
+const queryRowsMock = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("@/lib/db/retry", () => ({
   withDbRetry: (fn: () => Promise<unknown>) => fn(),
 }));
-jest.mock("@/lib/db-sql-helpers", () => ({
-  sqlQueryRows: (...args: unknown[]) => sqlQueryRowsMock(...args),
+jest.mock("@/lib/db", () => ({
+  queryRows: (...args: unknown[]) => queryRowsMock(...args),
 }));
 
 import { getClanSnapshotsForTagOnDate } from "@/lib/data/tcdb-clan-snapshot";
 
 describe("clan snapshot data helper", () => {
   beforeEach(() => {
-    sqlQueryRowsMock.mockReset();
+    queryRowsMock.mockReset();
   });
 
   it("resolves dated clan snapshots from a chronicle tag", async () => {
-    sqlQueryRowsMock.mockResolvedValue([
+    queryRowsMock.mockResolvedValue([
       {
         clan_id: "12",
         name: "Florida State Seminoles",
@@ -97,8 +97,8 @@ describe("clan snapshot data helper", () => {
       },
     ]);
 
-    expect(sqlQueryRowsMock).toHaveBeenCalledTimes(1);
-    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
+    expect(queryRowsMock).toHaveBeenCalledTimes(1);
+    const [query, values] = queryRowsMock.mock.calls[0] as [
       string,
       string[],
     ];
@@ -121,13 +121,13 @@ describe("clan snapshot data helper", () => {
   });
 
   it("filters by sport when a sport is provided", async () => {
-    sqlQueryRowsMock.mockResolvedValue([]);
+    queryRowsMock.mockResolvedValue([]);
 
     await expect(
       getClanSnapshotsForTagOnDate("noles", "2026-04-10", "Football"),
     ).resolves.toEqual([]);
 
-    const [query, values] = sqlQueryRowsMock.mock.calls[0] as [
+    const [query, values] = queryRowsMock.mock.calls[0] as [
       string,
       string[],
     ];
@@ -141,7 +141,7 @@ describe("clan snapshot data helper", () => {
       getClanSnapshotsForTagOnDate("noles", "not-a-date"),
     ).resolves.toEqual([]);
 
-    expect(sqlQueryRowsMock).not.toHaveBeenCalled();
+    expect(queryRowsMock).not.toHaveBeenCalled();
   });
 
   it("returns an empty list for invalid sport filters without querying", async () => {
@@ -149,11 +149,11 @@ describe("clan snapshot data helper", () => {
       getClanSnapshotsForTagOnDate("noles", "2026-04-10", " /bad/ "),
     ).resolves.toEqual([]);
 
-    expect(sqlQueryRowsMock).not.toHaveBeenCalled();
+    expect(queryRowsMock).not.toHaveBeenCalled();
   });
 
   it("uses rank trend for snapshot rendering semantics", async () => {
-    sqlQueryRowsMock.mockResolvedValue([
+    queryRowsMock.mockResolvedValue([
       {
         clan_id: "12",
         name: "Florida State Seminoles",

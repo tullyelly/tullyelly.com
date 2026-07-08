@@ -22,13 +22,10 @@ jest.mock("@/lib/bricks-db", () => ({
     getBricksSummaryFromDbMock(...args),
 }));
 jest.mock("@/lib/usps-db", () => ({
-  getUspsSummaryFromDb: (...args: unknown[]) => getUspsSummaryFromDbMock(...args),
+  getUspsSummaryFromDb: (...args: unknown[]) =>
+    getUspsSummaryFromDbMock(...args),
   normalizeUspsCitySlug: (value: string) =>
-    value
-      .trim()
-      .replace(/^\/+/g, "")
-      .replace(/\/+$/g, "")
-      .toLowerCase(),
+    value.trim().replace(/^\/+/g, "").replace(/\/+$/g, "").toLowerCase(),
 }));
 jest.mock("@/lib/lcs-db", () => ({
   getLcsSummaryFromDb: (...args: unknown[]) => getLcsSummaryFromDbMock(...args),
@@ -253,18 +250,39 @@ describe("ReleaseSection", () => {
     expect(content).toHaveAttribute("data-tournament-finish", "1");
   });
 
-  it("throws cleanly when the volleyball tournament day is missing", async () => {
+  it("renders a fallback when the volleyball tournament day is missing", async () => {
     getVolleyballTournamentDayByKeyAndDateMock.mockResolvedValue(null);
 
-    await expect(
-      ReleaseSection({
-        ...baseProps,
-        tournamentId: 1,
-        tournamentDate: "2026-02-14",
-      }),
-    ).rejects.toThrow(
-      'ReleaseSection: no volleyball tournament found for tournamentId "1" on "2026-02-14".',
+    const ui = await ReleaseSection({
+      ...baseProps,
+      tournamentId: 1,
+      tournamentDate: "2026-02-14",
+    });
+    const { container } = render(ui);
+
+    expect(getVolleyballTournamentDayByKeyAndDateMock).toHaveBeenCalledWith(
+      "1",
+      "2026-02-14",
     );
+    expect(screen.getByText("hello world")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Volleyball tournament details are unavailable for tournament 1 on 2026-02-14.",
+      ),
+    ).toBeInTheDocument();
+
+    const content = container.querySelector(
+      "[data-tournament-status]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute("data-tournament-id", "1");
+    expect(content).toHaveAttribute("data-tournament-date", "2026-02-14");
+    expect(content).toHaveAttribute("data-tournament-status", "unavailable");
+    expect(content).not.toHaveAttribute("data-tournament-name");
+    expect(content).not.toHaveAttribute("data-tournament-record");
+    expect(container.querySelector("hr")).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".rounded-lg.border-\\[4px\\]"),
+    ).toBeInTheDocument();
   });
 
   it("renders shared review details from the unified review prop", async () => {
@@ -287,9 +305,7 @@ describe("ReleaseSection", () => {
           "Antique Shop: Little Red Barn Antiques (9.2/10)",
       ),
     ).toBeInTheDocument();
-    const shopLink = screen
-      .getByText("Little Red Barn Antiques")
-      .closest("a");
+    const shopLink = screen.getByText("Little Red Barn Antiques").closest("a");
     expect(shopLink).toBeInTheDocument();
     expect(shopLink).toHaveAttribute(
       "href",
@@ -649,7 +665,10 @@ describe("ReleaseSection", () => {
     const content = container.querySelector(
       "[data-usps-name]",
     ) as HTMLDivElement;
-    expect(content).toHaveAttribute("data-release-name", "International Bricks");
+    expect(content).toHaveAttribute(
+      "data-release-name",
+      "International Bricks",
+    );
     expect(content).toHaveAttribute("data-usps-id", "appleton-sdc");
     expect(content).toHaveAttribute("data-usps-name", "Appleton, Wisconsin");
     expect(content).toHaveAttribute("data-usps-rating", "9.1/10");
@@ -698,7 +717,9 @@ describe("ReleaseSection", () => {
     expect(wrapper.className).toContain("border-solid");
     expect(wrapper.className).toContain("border-[var(--blue)]");
 
-    const content = container.querySelector("[data-lcs-name]") as HTMLDivElement;
+    const content = container.querySelector(
+      "[data-lcs-name]",
+    ) as HTMLDivElement;
     expect(content).toHaveAttribute("data-lcs-slug", "walgreens-college");
     expect(content).toHaveAttribute("data-lcs-name", "Walgreens: College");
     expect(content).toHaveAttribute("data-lcs-city", "Appleton");
@@ -709,7 +730,10 @@ describe("ReleaseSection", () => {
       "data-lcs-route",
       "/cardattack/lcs/walgreens-college",
     );
-    expect(content).toHaveAttribute("data-lcs-url", "https://www.walgreens.com/");
+    expect(content).toHaveAttribute(
+      "data-lcs-url",
+      "https://www.walgreens.com/",
+    );
   });
 
   it("renders LCS details alongside release visuals when releaseId and lcs are both passed", async () => {
@@ -753,8 +777,13 @@ describe("ReleaseSection", () => {
     expect(tab).toBeInTheDocument();
     expect(tab).toHaveAttribute("href", "/mark2/shaolin-scrolls/55");
 
-    const content = container.querySelector("[data-lcs-name]") as HTMLDivElement;
-    expect(content).toHaveAttribute("data-release-name", "International Bricks");
+    const content = container.querySelector(
+      "[data-lcs-name]",
+    ) as HTMLDivElement;
+    expect(content).toHaveAttribute(
+      "data-release-name",
+      "International Bricks",
+    );
     expect(content).toHaveAttribute("data-lcs-slug", "walgreens-college");
   });
 
@@ -772,7 +801,9 @@ describe("ReleaseSection", () => {
       "/cardattack/lcs/walgreens-college",
     );
 
-    const content = container.querySelector("[data-lcs-name]") as HTMLDivElement;
+    const content = container.querySelector(
+      "[data-lcs-name]",
+    ) as HTMLDivElement;
     expect(content).toHaveAttribute("data-lcs-slug", "walgreens-college");
     expect(content).toHaveAttribute("data-lcs-name", "walgreens-college");
     expect(content).not.toHaveAttribute("data-lcs-rating");

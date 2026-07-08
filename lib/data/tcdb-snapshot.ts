@@ -1,8 +1,8 @@
 import "server-only";
 
 import { asDateString } from "@/lib/dates";
+import { queryOne } from "@/lib/db";
 import { withDbRetry } from "@/lib/db/retry";
-import { sqlQueryOne } from "@/lib/db-sql-helpers";
 import { normalizeTagSlug } from "@/lib/tags";
 
 export type TcdbSnapshotTrend = "up" | "down" | "flat";
@@ -80,7 +80,7 @@ export async function getTcdbSnapshotForTagOnDate(
   }
 
   const row = await withDbRetry(() =>
-    sqlQueryOne<DbTcdbSnapshotRow>(
+    queryOne<DbTcdbSnapshotRow>(
       `
         WITH matched_homie AS (
           SELECT

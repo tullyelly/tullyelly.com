@@ -106,10 +106,7 @@ Completed TCDB trade:
 Local card shop review:
 
 ```mdx
-<ReleaseSection
-  alterEgo="cardattack"
-  lcs="indy-card-exchange"
->
+<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">
   LCS visit notes.
 </ReleaseSection>
 ```
@@ -151,10 +148,7 @@ Save Point review:
 Bricks: LEGO build:
 
 ```mdx
-<ReleaseSection
-  alterEgo="unclejimmy"
-  bricks="10330"
->
+<ReleaseSection alterEgo="unclejimmy" bricks="10330">
   Build session notes for this LEGO set.
 </ReleaseSection>
 ```
@@ -183,7 +177,8 @@ ReleaseSection colour rules:
 
 ## 🗃️ Database, Auth, and Menu
 
-- Postgres via `pg` and the `lib/db` tagged template helper; DB access is blocked during production builds and when `SKIP_DB=true`.
+- Postgres via `pg` and the `lib/db` query helpers; DB access is blocked during
+  production builds and when `SKIP_DB=true`.
 - Prisma is scoped to the `auth` schema only (`prisma/schema.prisma`). `postinstall` runs `prisma generate` and `patch-package`.
 - Menu data flows from `dojo.v_menu_published`, filtered by capabilities in `dojo.authz_effective_features`, and cached per capability hash (`lib/menu/getMenu`). Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` locally to bypass filtering.
 - `scripts/seed-e2e.mjs` seeds menu personas/features in test DBs; Playwright setup expects `.env.test` with `TEST_DATABASE_URL`.
