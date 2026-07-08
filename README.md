@@ -264,6 +264,9 @@ This project requires a **Postgres** database and NextAuth secrets.
 
 Set `NEXT_PUBLIC_DEBUG_DB_META=1` to expose `/api/env-check` with redacted database env vars for debugging.
 
+SQL migrations live in `db/migrations` and are tracked in `dojo.schema_migration`.
+See [docs/migrations.md](docs/migrations.md) for the ledger workflow.
+
 For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
 
 ```bash
@@ -321,6 +324,9 @@ See [docs/hydration.md](docs/hydration.md) and [docs/hydration-contract.md](docs
 - `npm run prepare:content` – generate build info and Contentlayer data
 - `npm run build` – production build; `npm run start` starts it locally
 - `npm run db:ping` – verify DB connectivity (SELECT 1)
+- `npm run db:migrate:status` - show SQL migration ledger state
+- `npm run db:migrate:apply` - apply pending SQL migrations in filename order
+- `npm run db:migrate:verify` - fail if migrations are pending, failed, missing, or checksum-mismatched
 - `npm run check:emdash` – reject em dashes in MD/MDX/JSX copy
 - `npm run security-headers:check` – assert HSTS, frame, and MIME headers
 - `npm run share:generate` – refresh `/docs/share/<slug>.md`
