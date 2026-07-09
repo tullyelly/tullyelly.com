@@ -19,13 +19,22 @@ describe("assertValidDatabaseUrl", () => {
     ).not.toThrow();
   });
 
-  test("checks default neon credentials in production", () => {
+  test("rejects default neon credentials in production", () => {
     process.env.VERCEL_ENV = "production";
     const { assertValidDatabaseUrl } = require("@/db/assert-database-url");
 
     expect(() =>
       assertValidDatabaseUrl("postgres://neondb_owner@host/neondb"),
-    ).not.toThrow();
+    ).toThrow("Invalid DATABASE_URL");
+  });
+
+  test("rejects default neon database in production", () => {
+    process.env.VERCEL_ENV = "production";
+    const { assertValidDatabaseUrl } = require("@/db/assert-database-url");
+
+    expect(() =>
+      assertValidDatabaseUrl("postgres://tullyelly_admin@host/neondb"),
+    ).toThrow("Invalid DATABASE_URL");
   });
 
   test("ignores malformed urls without crashing", () => {

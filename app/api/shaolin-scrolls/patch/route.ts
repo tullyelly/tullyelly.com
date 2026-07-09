@@ -1,4 +1,9 @@
 import { getPool } from "@/db/pool";
+import { requireScrollsReleaseCreate } from "@/lib/auth/permissions";
+import {
+  AuthzForbiddenError,
+  AuthzUnauthenticatedError,
+} from "@/lib/authz/types";
 import type { QueryResult } from "pg";
 
 export const runtime = "nodejs";
@@ -25,6 +30,22 @@ export async function POST(req: Request) {
 
   if (!label || label.length > 120) {
     return Response.json({ error: "invalid label" }, { status: 400 });
+  }
+
+  try {
+    const permissionGranted =
+      (await requireScrollsReleaseCreate()) as boolean | void;
+    if (permissionGranted === false) {
+      return Response.json({ error: "FORBIDDEN" }, { status: 403 });
+    }
+  } catch (error) {
+    if (error instanceof AuthzUnauthenticatedError) {
+      return Response.json({ error: "UNAUTHENTICATED" }, { status: 401 });
+    }
+    if (error instanceof AuthzForbiddenError) {
+      return Response.json({ error: "FORBIDDEN" }, { status: 403 });
+    }
+    throw error;
   }
 
   const sql = "SELECT * FROM dojo.fn_next_patch($1::text);";

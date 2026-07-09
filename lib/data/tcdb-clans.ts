@@ -1,8 +1,8 @@
 import "server-only";
 
 import { asDateString } from "@/lib/dates";
+import { queryRows } from "@/lib/db";
 import { withDbRetry } from "@/lib/db/retry";
-import { sqlQueryRows } from "@/lib/db-sql-helpers";
 import type { RankingMeta, Trend } from "@/lib/data/tcdb";
 
 export type ClanRankingRow = {
@@ -93,7 +93,7 @@ export async function listTcdbClanRankings(opts: {
   const offset = (page - 1) * pageSize;
 
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbClanRankingRow>(
+    queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
                NULLIF(btrim(c.tag_slug), '') AS tag_slug,
@@ -123,7 +123,7 @@ export async function listTcdbClanRankings(opts: {
   const data = rows.map(normalizeClanRankingRow);
 
   const [{ c: totalStr } = { c: "0" }] = await withDbRetry(() =>
-    sqlQueryRows<{ c: string }>(
+    queryRows<{ c: string }>(
       `
         SELECT COUNT(*)::text AS c
         FROM ${TCDB_CLAN_TABLE} AS r
@@ -150,7 +150,7 @@ export async function getTcdbClanRankingsBySlug(
   if (!normalizedSlug) return [];
 
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbClanRankingRow>(
+    queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
                NULLIF(btrim(c.tag_slug), '') AS tag_slug,
@@ -186,7 +186,7 @@ export async function listClanTcdbSnapshotHistory(
   if (!/^\d+$/.test(normalizedClanId)) return [];
 
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbClanTcdbSnapshotRow>(
+    queryRows<DbClanTcdbSnapshotRow>(
       `
         SELECT clan_id,
                sport,
@@ -209,7 +209,7 @@ export async function listNumberOneTcdbClanRankings(): Promise<
   ClanRankingRow[]
 > {
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbClanRankingRow>(
+    queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
                NULLIF(btrim(c.tag_slug), '') AS tag_slug,
@@ -242,7 +242,7 @@ export async function listTopTcdbClanRankings(
 ): Promise<ClanRankingRow[]> {
   const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbClanRankingRow>(
+    queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
                NULLIF(btrim(c.tag_slug), '') AS tag_slug,
@@ -278,7 +278,7 @@ async function listRecentTcdbClanMovers(
   const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
   const direction = trend === "up" ? "DESC" : "ASC";
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbClanRankingRow>(
+    queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
                NULLIF(btrim(c.tag_slug), '') AS tag_slug,

@@ -22,10 +22,7 @@ import { normalizeLcsSlug } from "@/lib/lcs-types";
 import { REVIEW_TYPE_CONFIG, type ReviewType } from "@/lib/review-types";
 import { getScroll } from "@/lib/scrolls";
 import { getTcdbTradeSummaryFromDb } from "@/lib/tcdb-trade-db";
-import {
-  getUspsSummaryFromDb,
-  normalizeUspsCitySlug,
-} from "@/lib/usps-db";
+import { getUspsSummaryFromDb, normalizeUspsCitySlug } from "@/lib/usps-db";
 import {
   getVolleyballTournamentDayByKeyAndDate,
   normalizeVolleyballTournamentDate,
@@ -330,7 +327,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   }
 
   if (tcdbTradeId && lcs) {
-    throw new Error("ReleaseSection: pass either tcdbTradeId or lcs, not both.");
+    throw new Error(
+      "ReleaseSection: pass either tcdbTradeId or lcs, not both.",
+    );
   }
 
   if (review && lcs) {
@@ -397,14 +396,12 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       : bricksSummary?.reviewScore !== undefined
         ? formatNormalizedBricksReviewScore(bricksSummary.reviewScore)
         : undefined;
-  resolvedBricksRoute =
-    resolvedBricksPublicId
-      ? `/unclejimmy/bricks/${encodeURIComponent(resolvedBricksPublicId)}`
-      : undefined;
-  resolvedBricksReferenceUrl =
-    resolvedBricksPublicId
-      ? getBricksReferenceUrl(resolvedBricksPublicId)
-      : undefined;
+  resolvedBricksRoute = resolvedBricksPublicId
+    ? `/unclejimmy/bricks/${encodeURIComponent(resolvedBricksPublicId)}`
+    : undefined;
+  resolvedBricksReferenceUrl = resolvedBricksPublicId
+    ? getBricksReferenceUrl(resolvedBricksPublicId)
+    : undefined;
   resolvedUspsCitySlug = usps ? normalizeUspsCitySlug(usps) : undefined;
   const uspsSummary = resolvedUspsCitySlug
     ? await getUspsSummaryFromDb(resolvedUspsCitySlug)
@@ -436,7 +433,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   resolvedLcsCity = lcsSummary?.city;
   resolvedLcsState = lcsSummary?.state;
   resolvedLcsRating =
-    lcsSummary?.rating !== undefined ? `${lcsSummary.rating.toFixed(1)}/10` : undefined;
+    lcsSummary?.rating !== undefined
+      ? `${lcsSummary.rating.toFixed(1)}/10`
+      : undefined;
   resolvedLcsVisitCount = lcsSummary?.visitCount;
   resolvedLcsUrl = lcsSummary?.url;
   resolvedLcsRoute = resolvedLcsSlug
@@ -489,17 +488,13 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       resolvedTournamentDate,
     );
 
-    if (!tournamentDay) {
-      throw new Error(
-        `ReleaseSection: no volleyball tournament found for tournamentId "${resolvedTournamentKey}" on "${resolvedTournamentDate}".`,
-      );
+    if (tournamentDay) {
+      resolvedTournamentKey = tournamentDay.tournamentKey;
+      resolvedTournamentDate = tournamentDay.tournamentDate;
+      resolvedTournamentName = tournamentDay.tournamentName;
+      resolvedTournamentRecord = `${tournamentDay.wins}-${tournamentDay.losses}`;
+      resolvedTournamentFinish = tournamentDay.finish;
     }
-
-    resolvedTournamentKey = tournamentDay.tournamentKey;
-    resolvedTournamentDate = tournamentDay.tournamentDate;
-    resolvedTournamentName = tournamentDay.tournamentName;
-    resolvedTournamentRecord = `${tournamentDay.wins}-${tournamentDay.losses}`;
-    resolvedTournamentFinish = tournamentDay.finish;
   }
 
   const tcdbTradeSummary = tcdbTradeId
@@ -545,8 +540,12 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const showTournament = Boolean(
     resolvedTournamentName && resolvedTournamentRecord,
   );
+  const showTournamentUnavailable = Boolean(
+    resolvedTournamentKey && resolvedTournamentDate && !showTournament,
+  );
   const showReleaseDetails = Boolean(releaseId || tcdbTradeId);
-  const showTournamentVisuals = showTournament && !showReleaseDetails;
+  const showTournamentVisuals =
+    (showTournament || showTournamentUnavailable) && !showReleaseDetails;
   const tournamentFinishLabel = formatVolleyballTournamentFinish(
     resolvedTournamentFinish ?? null,
   );
@@ -667,6 +666,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       data-tournament-date={resolvedTournamentDate}
       data-tournament-name={resolvedTournamentName}
       data-tournament-record={resolvedTournamentRecord}
+      data-tournament-status={
+        showTournamentUnavailable ? "unavailable" : undefined
+      }
       data-tournament-finish={
         resolvedTournamentFinish !== undefined &&
         resolvedTournamentFinish !== null
@@ -734,8 +736,13 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
         </div>
       )}
       {children}
-      {showTournamentVisuals ? (
+      {showTournament ? (
         <div className="text-sm">{`${resolvedTournamentName}: ${resolvedTournamentRecord}`}</div>
+      ) : null}
+      {showTournamentUnavailable ? (
+        <div className="text-sm text-muted-foreground">
+          {`Volleyball tournament details are unavailable for tournament ${resolvedTournamentKey} on ${resolvedTournamentDate}.`}
+        </div>
       ) : null}
       {shouldRenderReview && reviewLabel && resolvedReviewName ? (
         <div className="text-sm">

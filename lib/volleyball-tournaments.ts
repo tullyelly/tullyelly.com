@@ -6,6 +6,7 @@ export type TournamentSection = {
   postSlug: string;
   postUrl: string;
   postDate: string;
+  tournamentDate: string;
   postTitle: string;
   tournamentName?: string;
   tournamentRecord?: string;
@@ -48,6 +49,7 @@ type ExtractedSection = {
   mdx: string;
   offset: number;
   tournamentId: string;
+  tournamentDate?: string;
   tournamentName?: string;
   tournamentRecord?: string;
 };
@@ -70,10 +72,12 @@ const TOURNAMENT_NAME_DOUBLE_QUOTED_ATTR = /tournamentName\s*=\s*"([^"]+)"/;
 const TOURNAMENT_NAME_SINGLE_QUOTED_ATTR = /tournamentName\s*=\s*'([^']+)'/;
 const TOURNAMENT_NAME_BRACED_QUOTED_ATTR =
   /tournamentName\s*=\s*\{\s*["']([^"']+)["']\s*\}/;
-const TOURNAMENT_RECORD_DOUBLE_QUOTED_ATTR =
-  /tournamentRecord\s*=\s*"([^"]+)"/;
-const TOURNAMENT_RECORD_SINGLE_QUOTED_ATTR =
-  /tournamentRecord\s*=\s*'([^']+)'/;
+const TOURNAMENT_DATE_DOUBLE_QUOTED_ATTR = /tournamentDate\s*=\s*"([^"]+)"/;
+const TOURNAMENT_DATE_SINGLE_QUOTED_ATTR = /tournamentDate\s*=\s*'([^']+)'/;
+const TOURNAMENT_DATE_BRACED_QUOTED_ATTR =
+  /tournamentDate\s*=\s*\{\s*["']([^"']+)["']\s*\}/;
+const TOURNAMENT_RECORD_DOUBLE_QUOTED_ATTR = /tournamentRecord\s*=\s*"([^"]+)"/;
+const TOURNAMENT_RECORD_SINGLE_QUOTED_ATTR = /tournamentRecord\s*=\s*'([^']+)'/;
 const TOURNAMENT_RECORD_BRACED_QUOTED_ATTR =
   /tournamentRecord\s*=\s*\{\s*["']([^"']+)["']\s*\}/;
 const TOURNAMENT_RECORD_PATTERN = /^\s*(\d+)\s*[-–—]\s*(\d+)\s*$/;
@@ -98,26 +102,57 @@ const extractTournamentId = (openingTag: string): string | undefined => {
 };
 
 const extractTournamentName = (openingTag: string): string | undefined => {
-  const bracedQuoted = openingTag.match(TOURNAMENT_NAME_BRACED_QUOTED_ATTR)?.[1];
+  const bracedQuoted = openingTag.match(
+    TOURNAMENT_NAME_BRACED_QUOTED_ATTR,
+  )?.[1];
   if (bracedQuoted?.trim()) return bracedQuoted.trim();
 
-  const doubleQuoted = openingTag.match(TOURNAMENT_NAME_DOUBLE_QUOTED_ATTR)?.[1];
+  const doubleQuoted = openingTag.match(
+    TOURNAMENT_NAME_DOUBLE_QUOTED_ATTR,
+  )?.[1];
   if (doubleQuoted?.trim()) return doubleQuoted.trim();
 
-  const singleQuoted = openingTag.match(TOURNAMENT_NAME_SINGLE_QUOTED_ATTR)?.[1];
+  const singleQuoted = openingTag.match(
+    TOURNAMENT_NAME_SINGLE_QUOTED_ATTR,
+  )?.[1];
+  if (singleQuoted?.trim()) return singleQuoted.trim();
+
+  return undefined;
+};
+
+const extractTournamentDate = (openingTag: string): string | undefined => {
+  const bracedQuoted = openingTag.match(
+    TOURNAMENT_DATE_BRACED_QUOTED_ATTR,
+  )?.[1];
+  if (bracedQuoted?.trim()) return bracedQuoted.trim();
+
+  const doubleQuoted = openingTag.match(
+    TOURNAMENT_DATE_DOUBLE_QUOTED_ATTR,
+  )?.[1];
+  if (doubleQuoted?.trim()) return doubleQuoted.trim();
+
+  const singleQuoted = openingTag.match(
+    TOURNAMENT_DATE_SINGLE_QUOTED_ATTR,
+  )?.[1];
   if (singleQuoted?.trim()) return singleQuoted.trim();
 
   return undefined;
 };
 
 const extractTournamentRecord = (openingTag: string): string | undefined => {
-  const bracedQuoted = openingTag.match(TOURNAMENT_RECORD_BRACED_QUOTED_ATTR)?.[1];
+  const bracedQuoted = openingTag.match(
+    TOURNAMENT_RECORD_BRACED_QUOTED_ATTR,
+  )?.[1];
   if (bracedQuoted?.trim()) return bracedQuoted.trim();
 
-  const doubleQuoted = openingTag.match(TOURNAMENT_RECORD_DOUBLE_QUOTED_ATTR)?.[1];
+  const doubleQuoted = openingTag.match(
+    TOURNAMENT_RECORD_DOUBLE_QUOTED_ATTR,
+  )?.[1];
   if (doubleQuoted?.trim()) return doubleQuoted.trim();
 
-  const singleQuoted = openingTag.match(TOURNAMENT_RECORD_SINGLE_QUOTED_ATTR)?.[1];
+  const singleQuoted = openingTag.match(
+    TOURNAMENT_RECORD_SINGLE_QUOTED_ATTR,
+  )?.[1];
   if (singleQuoted?.trim()) return singleQuoted.trim();
 
   return undefined;
@@ -146,8 +181,10 @@ const compareByDateAsc = (
   a: TournamentSectionWithOffset,
   b: TournamentSectionWithOffset,
 ) => {
-  const diff = toTimestamp(a.postDate) - toTimestamp(b.postDate);
+  const diff = toTimestamp(a.tournamentDate) - toTimestamp(b.tournamentDate);
   if (diff !== 0) return diff;
+  const postDateDiff = toTimestamp(a.postDate) - toTimestamp(b.postDate);
+  if (postDateDiff !== 0) return postDateDiff;
   const slugDiff = a.postSlug.localeCompare(b.postSlug);
   if (slugDiff !== 0) return slugDiff;
   return a.offset - b.offset;
@@ -165,7 +202,8 @@ const compareTournamentSummaryDesc = (
   a: VolleyballTournamentSummary,
   b: VolleyballTournamentSummary,
 ): number => {
-  const dateDiff = toTimestamp(b.latestPostDate) - toTimestamp(a.latestPostDate);
+  const dateDiff =
+    toTimestamp(b.latestPostDate) - toTimestamp(a.latestPostDate);
   if (dateDiff !== 0) return dateDiff;
   return compareTournamentIds(b.tournamentId, a.tournamentId);
 };
@@ -188,6 +226,7 @@ const extractTournamentSectionsWithOffsets = (
 
     const openingTag = raw.slice(openIndex, tagEnd + 1);
     const matchingTournamentId = extractTournamentId(openingTag);
+    const tournamentDate = extractTournamentDate(openingTag);
     const tournamentName = extractTournamentName(openingTag);
     const tournamentRecord = extractTournamentRecord(openingTag);
     const isSelfClosing = /\/\s*>$/.test(openingTag);
@@ -207,6 +246,7 @@ const extractTournamentSectionsWithOffsets = (
         mdx: openingTag,
         offset: openIndex,
         tournamentId: matchingTournamentId,
+        tournamentDate,
         tournamentName,
         tournamentRecord,
       });
@@ -222,6 +262,7 @@ const extractTournamentSectionsWithOffsets = (
       mdx: raw.slice(openIndex, endIndex),
       offset: openIndex,
       tournamentId: matchingTournamentId,
+      tournamentDate,
       tournamentName,
       tournamentRecord,
     });
@@ -266,6 +307,7 @@ export const getVolleyballTournamentSections = (
         postSlug: post.slug,
         postUrl: post.url,
         postDate: post.date,
+        tournamentDate: section.tournamentDate ?? post.date,
         postTitle: post.title ?? post.slug,
       });
     }
@@ -295,6 +337,7 @@ export const getAllVolleyballTournamentSummaries = (
         postSlug: post.slug,
         postUrl: post.url,
         postDate: post.date,
+        tournamentDate: section.tournamentDate ?? post.date,
         postTitle: post.title ?? post.slug,
       });
       byTournament.set(section.tournamentId, tournamentSections);
@@ -308,9 +351,9 @@ export const getAllVolleyballTournamentSummaries = (
     const orderedSections = [...sections].sort(compareByDateAsc);
     const summary = summarizeTournamentSections(orderedSections);
     const latestPostDate =
-      orderedSections[orderedSections.length - 1]?.postDate ?? "";
+      orderedSections[orderedSections.length - 1]?.tournamentDate ?? "";
     const tournamentDays = new Set(
-      orderedSections.map((section) => section.postDate),
+      orderedSections.map((section) => section.tournamentDate),
     ).size;
 
     summaries.push({
@@ -335,7 +378,10 @@ export const getVolleyballTournamentPageData = (
   const normalizedTournamentId = normalizeTournamentId(tournamentId);
   if (!normalizedTournamentId) return null;
 
-  const sections = getVolleyballTournamentSections(normalizedTournamentId, posts);
+  const sections = getVolleyballTournamentSections(
+    normalizedTournamentId,
+    posts,
+  );
   if (sections.length === 0) return null;
 
   const summary = summarizeTournamentSections(sections);
@@ -343,7 +389,8 @@ export const getVolleyballTournamentPageData = (
   return {
     tournamentId: normalizedTournamentId,
     tournamentName:
-      summary.tournamentName ?? `Volleyball Tournament ${normalizedTournamentId}`,
+      summary.tournamentName ??
+      `Volleyball Tournament ${normalizedTournamentId}`,
     summary,
     sections,
   };

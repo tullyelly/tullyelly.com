@@ -10,6 +10,7 @@ import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
 import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
+import { CipherSays } from "@/components/scrolls/CipherSays";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
 import RedditEmbed from "@/components/unclejimmy/RedditEmbed";
@@ -43,6 +44,7 @@ type CustomMDXComponents = MDXComponents & {
   PersonTag: typeof PersonTag;
   ReleaseSection: typeof ReleaseSection;
   SetCollector: typeof SetCollector;
+  CipherSays: typeof CipherSays;
   ScrollAmendment: typeof ScrollAmendment;
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
   YouTubeVideo: typeof YouTubeVideo;
@@ -215,6 +217,7 @@ export const mdxComponents: CustomMDXComponents = {
   PersonTag,
   ReleaseSection,
   SetCollector,
+  CipherSays,
   ScrollAmendment,
   YouTubeMusicPlaylist,
   YouTubeVideo,

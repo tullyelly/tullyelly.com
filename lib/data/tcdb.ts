@@ -1,7 +1,7 @@
 import "server-only";
 import { asDateString } from "@/lib/dates";
+import { queryOne, queryRows } from "@/lib/db";
 import { withDbRetry } from "@/lib/db/retry";
-import { sqlQueryOne, sqlQueryRows } from "@/lib/db-sql-helpers";
 
 export type Trend = "up" | "down" | "flat";
 
@@ -55,7 +55,7 @@ if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
   void (async () => {
     try {
       const reg = await withDbRetry(() =>
-        sqlQueryOne<{ r: string | null }>("SELECT to_regclass($1::text) AS r", [
+        queryOne<{ r: string | null }>("SELECT to_regclass($1::text) AS r", [
           TCDB_TABLE,
         ]),
       );
@@ -133,7 +133,7 @@ export async function listTcdbRankings(opts: {
   const offset = (page - 1) * pageSize;
 
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    queryRows<DbRankingRow>(
       `
         SELECT homie_id,
                tag_slug,
@@ -160,7 +160,7 @@ export async function listTcdbRankings(opts: {
   const data = rows.map(normalizeRankingRow);
 
   const [{ c: totalStr } = { c: "0" }] = await withDbRetry(() =>
-    sqlQueryRows<{ c: string }>(
+    queryRows<{ c: string }>(
       `SELECT COUNT(*)::text AS c FROM ${TCDB_TABLE} ${whereSql}`,
       params,
     ),
@@ -187,7 +187,7 @@ export async function getHomieTcdbRankingByRouteKey(
   const param = isNumericId ? routeKey : routeKey.toLowerCase();
 
   const row = await withDbRetry(() =>
-    sqlQueryOne<DbRankingRow>(
+    queryOne<DbRankingRow>(
       `
         SELECT homie_id,
                tag_slug,
@@ -220,7 +220,7 @@ export async function listHomieTcdbSnapshotHistory(
   if (!/^\d+$/.test(normalizedHomieId)) return [];
 
   const rows = await withDbRetry(() =>
-    sqlQueryRows<HomieTcdbSnapshotRow>(
+    queryRows<HomieTcdbSnapshotRow>(
       `
         SELECT homie_id,
                card_count,
@@ -240,7 +240,7 @@ export async function listHomieTcdbSnapshotHistory(
 
 export async function listNumberOneTcdbHomieRankings(): Promise<RankingRow[]> {
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    queryRows<DbRankingRow>(
       `
         SELECT homie_id,
                tag_slug,
@@ -270,7 +270,7 @@ export async function listTopTcdbHomieRankings(
 ): Promise<RankingRow[]> {
   const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    queryRows<DbRankingRow>(
       `
         SELECT homie_id,
                tag_slug,
@@ -303,7 +303,7 @@ async function listRecentTcdbHomieMovers(
   const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
   const direction = trend === "up" ? "DESC" : "ASC";
   const rows = await withDbRetry(() =>
-    sqlQueryRows<DbRankingRow>(
+    queryRows<DbRankingRow>(
       `
         SELECT homie_id,
                tag_slug,

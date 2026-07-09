@@ -55,7 +55,7 @@ describe("getVolleyballTournamentSections", () => {
         url: "/shaolin/later-day",
         date: "2026-02-15",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1}>Later</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-15">Later</ReleaseSection>`,
         },
       },
       {
@@ -64,7 +64,7 @@ describe("getVolleyballTournamentSections", () => {
         url: "/shaolin/earlier-day",
         date: "2026-02-14",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1}>Earlier</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-14">Earlier</ReleaseSection>`,
         },
       },
     ];
@@ -74,8 +74,30 @@ describe("getVolleyballTournamentSections", () => {
     expect(sections).toHaveLength(2);
     expect(sections[0]?.postSlug).toBe("earlier-day");
     expect(sections[1]?.postSlug).toBe("later-day");
+    expect(sections[0]?.tournamentDate).toBe("2026-02-14");
+    expect(sections[1]?.tournamentDate).toBe("2026-02-15");
     expect(sections[0]?.tournamentName).toBeUndefined();
     expect(sections[1]?.tournamentRecord).toBeUndefined();
+  });
+
+  it("falls back to the post date when tournamentDate is absent", () => {
+    const tournamentId = "1";
+    const posts = [
+      {
+        slug: "legacy-day",
+        title: "Legacy Day",
+        url: "/shaolin/legacy-day",
+        date: "2026-02-14",
+        body: {
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1}>Legacy</ReleaseSection>`,
+        },
+      },
+    ];
+
+    const sections = getVolleyballTournamentSections(tournamentId, posts);
+
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.tournamentDate).toBe("2026-02-14");
   });
 
   it("preserves in-post order for multiple sections", () => {
@@ -87,11 +109,11 @@ describe("getVolleyballTournamentSections", () => {
       date: "2026-02-14",
       body: {
         raw: [
-          `<ReleaseSection alterEgo="unclejimmy" tournamentId={1}>`,
+          `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-14">`,
           "  First section",
           "</ReleaseSection>",
           "",
-          `<ReleaseSection alterEgo="unclejimmy" tournamentId={1}>`,
+          `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-14">`,
           "  Second section",
           "</ReleaseSection>",
         ].join("\n"),
@@ -114,7 +136,7 @@ describe("getVolleyballTournamentSections", () => {
         url: "/shaolin/day-one",
         date: "2026-02-14",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="2–1">Day 1</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-14" tournamentName="Midwest Boys Point Series" tournamentRecord="2–1">Day 1</ReleaseSection>`,
         },
       },
       {
@@ -123,7 +145,7 @@ describe("getVolleyballTournamentSections", () => {
         url: "/shaolin/day-two",
         date: "2026-02-15",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="0-2">Day 2</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-15" tournamentName="Midwest Boys Point Series" tournamentRecord="0-2">Day 2</ReleaseSection>`,
         },
       },
     ];
@@ -151,7 +173,7 @@ describe("getAllVolleyballTournamentSummaries", () => {
         url: "/shaolin/day-one",
         date: "2026-02-14",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="2-1">Day 1</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-14" tournamentName="Midwest Boys Point Series" tournamentRecord="2-1">Day 1</ReleaseSection>`,
         },
       },
       {
@@ -160,7 +182,7 @@ describe("getAllVolleyballTournamentSummaries", () => {
         url: "/shaolin/day-two",
         date: "2026-02-16",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={2} tournamentName="Club Tune Up" tournamentRecord="1-2">Day 1</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={2} tournamentDate="2026-02-16" tournamentName="Club Tune Up" tournamentRecord="1-2">Day 1</ReleaseSection>`,
         },
       },
       {
@@ -169,7 +191,7 @@ describe("getAllVolleyballTournamentSummaries", () => {
         url: "/shaolin/day-three",
         date: "2026-02-15",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="0-2">Day 2</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-15" tournamentName="Midwest Boys Point Series" tournamentRecord="0-2">Day 2</ReleaseSection>`,
         },
       },
     ];
@@ -186,6 +208,31 @@ describe("getAllVolleyballTournamentSummaries", () => {
     expect(summaries[1]?.tournamentDays).toBe(2);
     expect(summaries[1]?.latestPostDate).toBe("2026-02-15");
   });
+
+  it("counts same-date tournament sections as one tournament day", () => {
+    const posts = [
+      {
+        slug: "aau-nationals",
+        title: "AAU Nationals",
+        url: "/shaolin/aau-nationals",
+        date: "2026-07-07",
+        body: {
+          raw: [
+            `<ReleaseSection alterEgo="unclejimmy" tournamentId={8} tournamentDate="2026-07-07">Walk in</ReleaseSection>`,
+            `<ReleaseSection alterEgo="unclejimmy" tournamentId={8} tournamentDate="2026-07-07">Match one</ReleaseSection>`,
+            `<ReleaseSection alterEgo="unclejimmy" tournamentId={8} tournamentDate="2026-07-07">Match two</ReleaseSection>`,
+            `<ReleaseSection alterEgo="unclejimmy" tournamentId={8} tournamentDate="2026-07-07">Match three</ReleaseSection>`,
+          ].join("\n"),
+        },
+      },
+    ];
+
+    const summaries = getAllVolleyballTournamentSummaries(posts);
+
+    expect(summaries).toHaveLength(1);
+    expect(summaries[0]?.tournamentDays).toBe(1);
+    expect(summaries[0]?.latestPostDate).toBe("2026-07-07");
+  });
 });
 
 describe("getVolleyballTournamentPageData", () => {
@@ -197,7 +244,7 @@ describe("getVolleyballTournamentPageData", () => {
         url: "/shaolin/day-one",
         date: "2026-02-14",
         body: {
-          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentName="Midwest Boys Point Series" tournamentRecord="2-1">Day 1</ReleaseSection>`,
+          raw: `<ReleaseSection alterEgo="unclejimmy" tournamentId={1} tournamentDate="2026-02-14" tournamentName="Midwest Boys Point Series" tournamentRecord="2-1">Day 1</ReleaseSection>`,
         },
       },
     ];

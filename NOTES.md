@@ -10,9 +10,8 @@
 
 ## DB access primitives
 
-- `lib/db.ts` exports the `sql` tagged template helper; it relies on `@/db/pool` for connections.
-- `db/pool.ts` exposes `getPool()` which returns a singleton `pg.Pool`; it supports LISTEN based invalidation and an in memory pool for E2E mode.
-- `lib/pool.ts` (unused today) wraps `pg.Pool` and exports a `tx` helper if we need a typed PoolClient helper outside the shared pool.
+- `lib/db.ts` exports the preferred dojo query helpers: `sql` for tagged template queries and `queryRows`/`queryOne` for dynamic text queries.
+- `db/pool.ts` exposes `getPool()` as the shared lower-level `pg` pool; use it only when code needs a raw pool/client, such as transactions, LISTEN based invalidation, or the in memory E2E scrolls pool.
 - Transaction pattern for Snapshot API work will use `getPool()` with an explicit connection:
   ```ts
   const pool = getPool();

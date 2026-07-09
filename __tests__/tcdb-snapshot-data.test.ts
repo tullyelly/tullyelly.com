@@ -1,24 +1,24 @@
 /** @jest-environment node */
 
-const sqlQueryOneMock = jest.fn();
+const queryOneMock = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("@/lib/db/retry", () => ({
   withDbRetry: (fn: () => Promise<unknown>) => fn(),
 }));
-jest.mock("@/lib/db-sql-helpers", () => ({
-  sqlQueryOne: (...args: unknown[]) => sqlQueryOneMock(...args),
+jest.mock("@/lib/db", () => ({
+  queryOne: (...args: unknown[]) => queryOneMock(...args),
 }));
 
 import { getTcdbSnapshotForTagOnDate } from "@/lib/data/tcdb-snapshot";
 
 describe("tcdb snapshot data helper", () => {
   beforeEach(() => {
-    sqlQueryOneMock.mockReset();
+    queryOneMock.mockReset();
   });
 
   it("resolves a dated homie snapshot from a chronicle tag", async () => {
-    sqlQueryOneMock.mockResolvedValue({
+    queryOneMock.mockResolvedValue({
       homie_id: "432",
       route_slug: "shaq",
       name: "Shaquille O'Neal",
@@ -59,8 +59,8 @@ describe("tcdb snapshot data helper", () => {
       diffSignChanged: false,
     });
 
-    expect(sqlQueryOneMock).toHaveBeenCalledTimes(1);
-    const [query, values] = sqlQueryOneMock.mock.calls[0] as [
+    expect(queryOneMock).toHaveBeenCalledTimes(1);
+    const [query, values] = queryOneMock.mock.calls[0] as [
       string,
       [string, string],
     ];
@@ -78,11 +78,11 @@ describe("tcdb snapshot data helper", () => {
       getTcdbSnapshotForTagOnDate("shaq", "not-a-date"),
     ).resolves.toBeNull();
 
-    expect(sqlQueryOneMock).not.toHaveBeenCalled();
+    expect(queryOneMock).not.toHaveBeenCalled();
   });
 
   it("uses rank trend for snapshot rendering semantics", async () => {
-    sqlQueryOneMock.mockResolvedValue({
+    queryOneMock.mockResolvedValue({
       homie_id: "432",
       route_slug: "shaq",
       name: "Shaquille O'Neal",

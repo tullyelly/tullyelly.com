@@ -106,10 +106,7 @@ Completed TCDB trade:
 Local card shop review:
 
 ```mdx
-<ReleaseSection
-  alterEgo="cardattack"
-  lcs="indy-card-exchange"
->
+<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">
   LCS visit notes.
 </ReleaseSection>
 ```
@@ -151,10 +148,7 @@ Save Point review:
 Bricks: LEGO build:
 
 ```mdx
-<ReleaseSection
-  alterEgo="unclejimmy"
-  bricks="10330"
->
+<ReleaseSection alterEgo="unclejimmy" bricks="10330">
   Build session notes for this LEGO set.
 </ReleaseSection>
 ```
@@ -183,7 +177,8 @@ ReleaseSection colour rules:
 
 ## 🗃️ Database, Auth, and Menu
 
-- Postgres via `pg` and the `lib/db` tagged template helper; DB access is blocked during production builds and when `SKIP_DB=true`.
+- Postgres via `pg` and the `lib/db` query helpers; DB access is blocked during
+  production builds and when `SKIP_DB=true`.
 - Prisma is scoped to the `auth` schema only (`prisma/schema.prisma`). `postinstall` runs `prisma generate` and `patch-package`.
 - Menu data flows from `dojo.v_menu_published`, filtered by capabilities in `dojo.authz_effective_features`, and cached per capability hash (`lib/menu/getMenu`). Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` locally to bypass filtering.
 - `scripts/seed-e2e.mjs` seeds menu personas/features in test DBs; Playwright setup expects `.env.test` with `TEST_DATABASE_URL`.
@@ -264,6 +259,9 @@ This project requires a **Postgres** database and NextAuth secrets.
 
 Set `NEXT_PUBLIC_DEBUG_DB_META=1` to expose `/api/env-check` with redacted database env vars for debugging.
 
+SQL migrations live in `db/migrations` and are tracked in `dojo.schema_migration`.
+See [docs/migrations.md](docs/migrations.md) for the ledger workflow.
+
 For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
 
 ```bash
@@ -321,6 +319,9 @@ See [docs/hydration.md](docs/hydration.md) and [docs/hydration-contract.md](docs
 - `npm run prepare:content` – generate build info and Contentlayer data
 - `npm run build` – production build; `npm run start` starts it locally
 - `npm run db:ping` – verify DB connectivity (SELECT 1)
+- `npm run db:migrate:status` - show SQL migration ledger state
+- `npm run db:migrate:apply` - apply pending SQL migrations in filename order
+- `npm run db:migrate:verify` - fail if migrations are pending, failed, missing, or checksum-mismatched
 - `npm run check:emdash` – reject em dashes in MD/MDX/JSX copy
 - `npm run security-headers:check` – assert HSTS, frame, and MIME headers
 - `npm run share:generate` – refresh `/docs/share/<slug>.md`

@@ -1,7 +1,6 @@
 // app/api/_diag/db/route.ts  (TEMP)
 import { NextResponse } from "next/server";
-import { Pool } from "pg";
-import { normalizeDatabaseUrl } from "@/lib/db-url";
+import { getPool } from "@/db/pool";
 
 function sanitize(url?: string) {
   if (!url) return null;
@@ -21,10 +20,7 @@ export async function GET() {
       { status: 503 },
     );
   }
-  const connectionString = process.env.DATABASE_URL
-    ? normalizeDatabaseUrl(process.env.DATABASE_URL)
-    : undefined;
-  const pool = new Pool({ connectionString });
+  const pool = getPool();
   const meta = await pool.query(`
     SELECT
       current_database()               AS database,
@@ -38,7 +34,6 @@ export async function GET() {
     WHERE table_name IN ('users','accounts','sessions','verification_tokens')
     ORDER BY table_schema, table_name
   `);
-  await pool.end();
   return NextResponse.json({
     env_seen: {
       NODE_ENV: process.env.NODE_ENV,
