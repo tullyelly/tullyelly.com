@@ -1,15 +1,20 @@
 import { revalidateTag } from "next/cache";
 import { getPool } from "@/db/pool";
 import { isNextBuild } from "@/lib/env";
+import {
+  isDbSkipEnabled,
+  isE2EModeEnabled,
+  isNextE2EEnabled,
+} from "@/lib/escape-hatches";
 
 let listenerPromise: Promise<void> | null = null;
 
 function shouldSkipListener(): boolean {
   if (process.env.NODE_ENV === "test") return true;
-  if (process.env.E2E_MODE === "1") return true;
-  if (process.env.NEXT_E2E === "1") return true;
+  if (isE2EModeEnabled()) return true;
+  if (isNextE2EEnabled()) return true;
   if (isNextBuild()) return true;
-  if (process.env.SKIP_DB === "true") return true;
+  if (isDbSkipEnabled()) return true;
   return false;
 }
 

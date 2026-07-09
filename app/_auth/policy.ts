@@ -1,4 +1,5 @@
 import { sql } from "@/lib/db";
+import { isDbSkipEnabled } from "@/lib/escape-hatches";
 
 export interface EffectiveFeatureSnapshot {
   features: string[];
@@ -22,7 +23,7 @@ function toFeatureList(value: unknown): string[] {
 export async function getAuthzRevision(
   userId: string | null | undefined,
 ): Promise<number> {
-  if (process.env.SKIP_DB === "true") return 0;
+  if (isDbSkipEnabled()) return 0;
   if (!userId) return 0;
   const rows = await sql<{ revision: number | null }>`
     SELECT dojo.authz_get_revision(${userId}::uuid) AS revision
@@ -33,7 +34,7 @@ export async function getAuthzRevision(
 export async function getEffectiveFeatures(
   userId: string | null | undefined,
 ): Promise<EffectiveFeatureSnapshot> {
-  if (process.env.SKIP_DB === "true") {
+  if (isDbSkipEnabled()) {
     return { features: [], revision: 0 };
   }
   if (!userId) {

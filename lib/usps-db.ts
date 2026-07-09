@@ -2,6 +2,7 @@ import "server-only";
 
 import { sql } from "@/lib/db";
 import { isNextBuild } from "@/lib/env";
+import { isDbSkipEnabled } from "@/lib/escape-hatches";
 
 type UspsSummaryRow = {
   city_slug: string;
@@ -76,7 +77,7 @@ function toRating(value: number | string): number {
 function shouldSkipUspsDb(): boolean {
   return (
     isNextBuild() ||
-    process.env.SKIP_DB === "true" ||
+    isDbSkipEnabled() ||
     process.env.JEST_WORKER_ID !== undefined ||
     process.env.NODE_ENV === "test"
   );

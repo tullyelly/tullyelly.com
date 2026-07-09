@@ -21,7 +21,7 @@ The menu tree comes from `dojo.v_menu_published` and is filtered server-side bef
 
 ## Local override
 
-- Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` (or `true`/`yes`) in `.env.local` to bypass filtering during development. Remember to remove it before shipping.
+- Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` (or `true`/`yes`) in `.env.local` to bypass filtering during development. Production runtime ignores this flag.
 
 ## Testing guidance
 

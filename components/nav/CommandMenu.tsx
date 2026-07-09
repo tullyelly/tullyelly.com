@@ -20,9 +20,9 @@ import { analytics } from "@/lib/analytics";
 import { flattenLinks, type FlatLink } from "@/lib/menu.flatten";
 import { readRecent, saveRecent, upsertRecent } from "@/lib/menu.recents";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 
-const TEST_MODE =
-  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+const TEST_MODE = isTestMenuModeEnabled();
 
 type Ctx = {
   open: boolean;

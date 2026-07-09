@@ -21,7 +21,7 @@ Environment basics:
 - `TEST_DATABASE_URL` – used by tests and Playwright.
 - `NEXTAUTH_SECRET` (or `AUTH_SECRET`), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` – NextAuth with Prisma adapter scoped to the `auth` schema.
 - `NEXT_PUBLIC_SITE_URL` – base URL for metadata; defaults to `http://localhost:3000`.
-- Optional local flags: `NEXT_PUBLIC_ANNOUNCEMENT` (banner), `NEXT_PUBLIC_MENU_SHOW_ALL=1` (bypass menu gating), `SKIP_DB=true` (explicitly fail DB access), `E2E_MODE=1` (stubbed pool for scrolls reads).
+- Optional local flags: `NEXT_PUBLIC_ANNOUNCEMENT` (banner), `NEXT_PUBLIC_MENU_SHOW_ALL=1` (bypass menu gating), `SKIP_DB=true` (explicitly fail DB access), `E2E_MODE=1` (stubbed pool for scrolls reads). Escape-hatch flags are ignored in production runtime.
 - `npm run prepare:content` regenerates `lib/build-info.ts` and Contentlayer data; it runs before dev, typecheck, and tests.
 
 ---
@@ -178,11 +178,11 @@ ReleaseSection colour rules:
 ## 🗃️ Database, Auth, and Menu
 
 - Postgres via `pg` and the `lib/db` query helpers; DB access is blocked during
-  production builds and when `SKIP_DB=true`.
-- Prisma is scoped to the `auth` schema only (`prisma/schema.prisma`). `postinstall` runs `prisma generate` and `patch-package`.
-- Menu data flows from `dojo.v_menu_published`, filtered by capabilities in `dojo.authz_effective_features`, and cached per capability hash (`lib/menu/getMenu`). Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` locally to bypass filtering.
+  production builds and when `SKIP_DB=true` outside production runtime.
+- Prisma is scoped to the `auth` schema only (`prisma/schema.prisma`). `postinstall` runs `prisma generate`.
+- Menu data flows from `dojo.v_menu_published`, filtered by capabilities in `dojo.authz_effective_features`, and cached per capability hash (`lib/menu/getMenu`). Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` locally to bypass filtering; production ignores it.
 - `scripts/seed-e2e.mjs` seeds menu personas/features in test DBs; Playwright setup expects `.env.test` with `TEST_DATABASE_URL`.
-- Shaolin Scrolls (`app/mark2/shaolin-scrolls`) and TCDB rankings (`app/cardattack/tcdb-rankings`) read from database views; `E2E_MODE=1` swaps in a stub pool for scrolls reads only.
+- Shaolin Scrolls (`app/mark2/shaolin-scrolls`) and TCDB rankings (`app/cardattack/tcdb-rankings`) read from database views; `E2E_MODE=1` swaps in a stub pool for scrolls reads only outside production runtime.
 - `/api/comments` uses `dojo.v_blog_comment`; posting requires a NextAuth session and Zod-validated input.
 
 ---
@@ -257,7 +257,10 @@ Keep stakeholder snippets in sync whenever you ship a new page.
 
 This project requires a **Postgres** database and NextAuth secrets.
 
-Set `NEXT_PUBLIC_DEBUG_DB_META=1` to expose `/api/env-check` with redacted database env vars for debugging.
+Set `DEBUG_DB_META=1` locally to expose `/api/env-check` and `/api/db-meta`
+with redacted database metadata for debugging. These routes 404 in production.
+See [docs/escape-hatches.md](docs/escape-hatches.md) for the full escape hatch
+ledger.
 
 SQL migrations live in `db/migrations` and are tracked in `dojo.schema_migration`.
 See [docs/migrations.md](docs/migrations.md) for the ledger workflow.

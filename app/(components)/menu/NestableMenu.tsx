@@ -26,9 +26,9 @@ import {
   useMenuActionCtx,
   type PendingAction,
 } from "./menu-action-context";
+import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 
-const TEST_MODE =
-  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+const TEST_MODE = isTestMenuModeEnabled();
 
 const POPPER_WRAPPER_SELECTOR = "[data-radix-popper-content-wrapper]";
 

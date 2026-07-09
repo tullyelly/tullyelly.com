@@ -1,11 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
+import { notFound } from "next/navigation";
+import { isImageSanityCheckEnabled } from "@/lib/escape-hatches";
 
 export const metadata = {
   title: "Image Sanity Check",
 };
 
 export default function Page() {
+  if (!isImageSanityCheckEnabled()) {
+    notFound();
+  }
+
   return (
     <article className="section" aria-labelledby="title">
       <h1 id="title">Image Sanity Check</h1>

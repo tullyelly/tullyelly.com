@@ -9,6 +9,7 @@ import {
 } from "@/lib/tcdb-card-traffic";
 import { sql } from "@/lib/db";
 import { isNextBuild } from "@/lib/env";
+import { isDbSkipEnabled } from "@/lib/escape-hatches";
 
 export type TcdbTradeStatus = "Open" | "Completed";
 export type TcdbTradeDaySide = "sent" | "received" | "archived";
@@ -93,7 +94,7 @@ function toIntegerWithFallback(
 }
 
 function shouldSkipTcdbCardTrafficDb(): boolean {
-  return isNextBuild() || process.env.SKIP_DB === "true";
+  return isNextBuild() || isDbSkipEnabled();
 }
 
 function toTradeCardCounts(

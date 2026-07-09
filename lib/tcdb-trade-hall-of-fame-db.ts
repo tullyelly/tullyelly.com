@@ -2,6 +2,7 @@ import "server-only";
 
 import { sql } from "@/lib/db";
 import { isNextBuild } from "@/lib/env";
+import { isDbSkipEnabled } from "@/lib/escape-hatches";
 
 type TcdbTradeHallOfFameInductionRow = {
   set_slug: string;
@@ -71,7 +72,7 @@ function toStringArray(value: string[] | string | null | undefined): string[] {
 function shouldSkipTcdbTradeHallOfFameDb(): boolean {
   return (
     isNextBuild() ||
-    process.env.SKIP_DB === "true" ||
+    isDbSkipEnabled() ||
     process.env.JEST_WORKER_ID !== undefined ||
     process.env.NODE_ENV === "test"
   );
