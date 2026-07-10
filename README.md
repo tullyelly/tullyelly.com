@@ -1,353 +1,269 @@
 # tullyelly.com
 
-[![Coverage ≥85%](https://img.shields.io/badge/coverage-%E2%89%A585%25-blue)](#-guardrails--coverage)
+Next.js App Router site for tullyelly.com. The project combines MDX chronicles,
+persona-based navigation, card and review tools, authenticated comments, and
+Postgres-backed feature/menu data.
 
-Next.js App Router with Tailwind v4 tokens, Contentlayer-powered chronicles, Postgres-backed menus and comments, and NextAuth (Google) via Prisma for the auth schema.
+## What This Project Does
 
----
+- Publishes chronicles from `content/chronicles/*.mdx` at `/shaolin`.
+- Serves persona areas such as `mark2`, `cardattack`, `theabbott`,
+  `unclejimmy`, and `tullyelly`.
+- Provides database-backed pages for Shaolin Scrolls, TCDB rankings/trades,
+  set collecting, local card shops, reviews, comments, authz, and profile data.
+- Uses Google sign-in through NextAuth; Prisma is limited to the `auth` schema.
+- Builds navigation from `dojo.v_menu_published` and filters it by effective
+  feature capabilities.
 
-## 🚀 Getting Started
+## Tech Stack
 
-Recommended Node: **20**. Install deps and start dev:
+- Next.js 16 App Router, React 19, TypeScript, typed routes
+- Tailwind CSS v4 with CSS tokens in `app/globals.css`
+- MDX through `@next/mdx` and Contentlayer v2
+- Postgres via `pg`; Prisma adapter only for NextAuth tables
+- NextAuth Google provider
+- Radix UI primitives, lucide icons, shadcn-style component aliases
+- Jest, Testing Library, Vitest, Playwright, ESLint, Prettier, secretlint
+- Vercel deployment support
+
+## Repository Structure
+
+```text
+app/                    Next.js routes, layouts, route handlers, page-local libs
+components/             Shared React components and UI primitives
+content/chronicles/     Chronicle MDX content consumed by Contentlayer
+db/                     SQL migrations, schema snippets, verification scripts, pool
+docs/                   Project docs for authoring, migrations, authz, images, etc.
+e2e/                    Playwright specs and visual snapshots
+lib/                    Shared app, DB, menu, authz, SEO, data, and content helpers
+mdx/                    MDX remark tooling
+prisma/                 Prisma schema for the NextAuth `auth` schema
+public/                 Static images, videos, fonts, and generated optimized assets
+scripts/                Content, image, DB, metadata, coverage, and guardrail scripts
+tests/                  Additional Playwright-style tests and utilities
+__tests__/              Jest unit and integration tests
+vitest/                 Vitest component/client tests
+```
+
+Important config files:
+
+- `package.json` for npm scripts
+- `next.config.mjs` for Next, MDX, Contentlayer, headers, and bundling config
+- `contentlayer.config.ts` for chronicle document fields and inferred tags
+- `jest.config.cjs`, `vitest.config.ts`, `playwright.config.ts` for tests
+- `eslint.config.mjs`, `tailwind.config.mjs`, `postcss.config.mjs`
+- `.npmrc` uses npm nested install strategy and lockfile v2
+- `vercel.json` is present for Vercel project config
+
+## Prerequisites
+
+- Node.js 20 is the project baseline. The repo currently also runs under newer
+  Node locally, but CI uses Node 20.
+- npm only. Do not switch package managers.
+- Postgres-compatible database for DB-backed pages and auth flows.
+- Google OAuth credentials for real sign-in flows.
+- Playwright browsers for E2E tests, installed through the npm script below.
+
+## Environment Setup
+
+Start from the examples:
+
+```bash
+cp .env.example .env.local
+cp .env.test.example .env.test
+```
+
+Core variables:
+
+| Variable                                   | Purpose                                                                                         |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                             | Main Postgres connection string for local runtime and DB scripts.                               |
+| `TEST_DATABASE_URL`                        | Test database connection string used by Jest/Playwright and E2E seed scripts.                   |
+| `NEXTAUTH_SECRET` or `AUTH_SECRET`         | NextAuth secret.                                                                                |
+| `NEXTAUTH_URL`                             | NextAuth base URL; local examples use `http://localhost:3000` or Playwright's `127.0.0.1:4321`. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth credentials.                                                                       |
+| `NEXT_PUBLIC_SITE_URL`                     | Public canonical URL for metadata; defaults exist in code for local use.                        |
+
+Useful local-only flags:
+
+| Flag                          | Purpose                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_MENU_SHOW_ALL=1` | Bypass menu capability filtering locally. Ignored in production runtime. |
+| `SKIP_DB=true`                | Explicitly disables DB access outside production runtime.                |
+| `E2E_MODE=1`                  | Enables E2E stubs for limited DB reads and test-only routes.             |
+| `DEBUG_DB_META=1`             | Exposes `/api/env-check` and `/api/db-meta` locally.                     |
+| `DISABLE_SENTRY=1`            | Disables Sentry outside normal production configuration.                 |
+
+See `docs/escape-hatches.md` for legacy and debug escape hatches. Never commit
+real `.env*` files or connection strings.
+
+## Local Development
+
+Install dependencies:
 
 ```bash
 npm ci
+```
+
+Generate build metadata, the image manifest, and Contentlayer data:
+
+```bash
+npm run prepare:content
+```
+
+Run the app:
+
+```bash
 npm run dev
 ```
 
-Environment basics:
-
-- `DATABASE_URL` – required for most pages; production rejects `neondb_owner/neondb` combos.
-- `TEST_DATABASE_URL` – used by tests and Playwright.
-- `NEXTAUTH_SECRET` (or `AUTH_SECRET`), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` – NextAuth with Prisma adapter scoped to the `auth` schema.
-- `NEXT_PUBLIC_SITE_URL` – base URL for metadata; defaults to `http://localhost:3000`.
-- Optional local flags: `NEXT_PUBLIC_ANNOUNCEMENT` (banner), `NEXT_PUBLIC_MENU_SHOW_ALL=1` (bypass menu gating), `SKIP_DB=true` (explicitly fail DB access), `E2E_MODE=1` (stubbed pool for scrolls reads).
-- `npm run prepare:content` regenerates `lib/build-info.ts` and Contentlayer data; it runs before dev, typecheck, and tests.
-
----
-
-## 📚 Content & Authoring
-
-- Chronicles live in `content/chronicles/*.mdx` and are built by Contentlayer. Frontmatter: `title`, `date`, `summary`, `tags`, `draft`, `infinityStone`, `cover`, `canonical`. Slugs map to `/shaolin/<slug>`.
-- Chronicle pages render via `app/shaolin/[slug]/page.tsx`; comments post to `/api/comments` and require a signed-in user.
-- Scaffold a chronicle with `npm run new-chronicle -- "Title"`; it writes `content/chronicles/<slug>.mdx` and creates `public/images/optimus/<slug>/`.
-- Scaffold a static MDX page with `npm run new-page <slug> "Title"`. It writes `app/<slug>/page.mdx` with frontmatter and expects a hero at `public/images/optimus/<slug>/hero.webp` (drop sources in `public/images/source/` first).
-- Validate page metadata and frontmatter with `npm run validate-frontmatter && npm run validate-seo`; run `npm run images:optimus -- "<folder>"` (or `npm run images:optimus` for all sources) and `npm run images:check` to keep assets within budget.
-- Reference docs: `docs/authoring.md`, `docs/static-page-template-v2.md`, and `docs/hydration*.md` for SSR to client hydration contracts.
-
-### ReleaseSection Reference
-
-`ReleaseSection` is the standard chronicle MDX wrapper for persona-tagged blocks.
-`alterEgo` is always required.
-
-Supported modes and what they feed:
-
-- Plain section; persona tag plus optional trailing divider.
-- `releaseId`; links to `/mark2/shaolin-scrolls/[id]`.
-- `tcdbTradeId`; links to `/cardattack/tcdb-trades/[tradeId]`.
-- `lcs="shop-slug"`; feeds `/cardattack/lcs` and `/cardattack/lcs/[id]`.
-- `review={{ type: "table-schema", ... }}`; feeds `/unclejimmy/table-schema` and `/unclejimmy/table-schema/[id]`.
-- `review={{ type: "save-point", ... }}`; feeds `/unclejimmy/call-a-save-point` and `/unclejimmy/call-a-save-point/[id]`.
-- `bricks="10330"`; feeds `/unclejimmy/bricks` and `/unclejimmy/bricks/[id]`.
-- `tournamentId` + `tournamentDate`; feeds `/unclejimmy/squad/volleyball/[id]`.
-
-Rules to remember:
-
-- Pick at most one metadata mode per section: `releaseId`, `tcdbTradeId`, `review`, `lcs`, `bricks`, or `usps`.
-- TCDB trade partner, card counts, and completion links are resolved from DB-backed trade metadata.
-- `tournamentId` and `tournamentDate` must be provided together.
-- `tournamentId` can be numeric or quoted; use it when the section should be grouped into volleyball directory/detail pages.
-- `guestMage` can be added to any section type.
-- `divider={false}` removes the trailing divider.
-- `review.url` and `review.rating` are optional.
-- `bricks` can be authored as a string id in MDX; optional `name`, `tag`, `pieceCount`, and `reviewScore` overrides are available when `ReleaseSection` is used from TSX.
-- `rainbowColour` is renderer-owned; do not hand-author it in chronicle MDX.
-
-Examples:
-
-Plain section:
-
-```mdx
-<ReleaseSection alterEgo="tullyelly">Plain chronicle copy.</ReleaseSection>
-```
-
-Plain section without the trailing divider:
-
-```mdx
-<ReleaseSection alterEgo="theabbott" divider={false}>
-  Last section on the page.
-</ReleaseSection>
-```
-
-Shaolin Scrolls release link:
-
-```mdx
-<ReleaseSection alterEgo="mark2" releaseId="117">
-  Notes for a specific release.
-</ReleaseSection>
-```
-
-Open TCDB trade:
-
-```mdx
-<ReleaseSection alterEgo="cardattack" tcdbTradeId="997119">
-  Trade notes before the return mail day lands.
-</ReleaseSection>
-```
-
-Completed TCDB trade:
-
-```mdx
-<ReleaseSection alterEgo="cardattack" tcdbTradeId="970598">
-  Mail day notes after the trade is finished.
-</ReleaseSection>
-```
-
-Local card shop review:
-
-```mdx
-<ReleaseSection alterEgo="cardattack" lcs="indy-card-exchange">
-  LCS visit notes.
-</ReleaseSection>
-```
-
-Table Schema review:
-
-```mdx
-<ReleaseSection
-  alterEgo="unclejimmy"
-  review={{
-    type: "table-schema",
-    id: "1",
-    name: "Colossal Cafe",
-    url: "https://colossalcafe.com/",
-    rating: "7.7",
-  }}
->
-  Food review notes.
-</ReleaseSection>
-```
-
-Save Point review:
-
-```mdx
-<ReleaseSection
-  alterEgo="unclejimmy"
-  review={{
-    type: "save-point",
-    id: "mewgenics",
-    name: "Mewgenics",
-    url: "https://mewgenics.wiki.gg/",
-    rating: "9.5",
-  }}
->
-  Video game review notes.
-</ReleaseSection>
-```
-
-Bricks: LEGO build:
-
-```mdx
-<ReleaseSection alterEgo="unclejimmy" bricks="10330">
-  Build session notes for this LEGO set.
-</ReleaseSection>
-```
-
-Tournament recap with guest mage credit:
-
-```mdx
-<ReleaseSection
-  alterEgo="unclejimmy"
-  tournamentId={2}
-  tournamentDate="2026-02-22"
-  guestMage="eeeeeeeemma"
->
-  Tournament recap notes.
-</ReleaseSection>
-```
-
-ReleaseSection colour rules:
-
-- ReleaseSection accents use rainbow assignment colours from `lib/release-section-colours`; release metadata props do not select colours.
-- Multi-section renderers assign rainbow colours sequentially via shared sequencing from `lib/release-section-colours`.
-- `7+` sections use straight rainbow order with wrap; `6 or fewer` sections use a random unique subset sorted back to rainbow order.
-- Do not add ad hoc per-section border colours in these multi-section views.
-
----
-
-## 🗃️ Database, Auth, and Menu
-
-- Postgres via `pg` and the `lib/db` query helpers; DB access is blocked during
-  production builds and when `SKIP_DB=true`.
-- Prisma is scoped to the `auth` schema only (`prisma/schema.prisma`). `postinstall` runs `prisma generate` and `patch-package`.
-- Menu data flows from `dojo.v_menu_published`, filtered by capabilities in `dojo.authz_effective_features`, and cached per capability hash (`lib/menu/getMenu`). Set `NEXT_PUBLIC_MENU_SHOW_ALL=1` locally to bypass filtering.
-- `scripts/seed-e2e.mjs` seeds menu personas/features in test DBs; Playwright setup expects `.env.test` with `TEST_DATABASE_URL`.
-- Shaolin Scrolls (`app/mark2/shaolin-scrolls`) and TCDB rankings (`app/cardattack/tcdb-rankings`) read from database views; `E2E_MODE=1` swaps in a stub pool for scrolls reads only.
-- `/api/comments` uses `dojo.v_blog_comment`; posting requires a NextAuth session and Zod-validated input.
-
----
-
-## 🎨 Design Tokens & Styles
-
-- Tokens live in `app/globals.css`; Tailwind (`tailwind.config.mjs`) maps them to utilities and brand colors.
-- `Card` supports `accent="bucks" | "cream-city-cream" | "great-lakes-blue"` with 2px borders.
-- Desktop tables use `components/ui/Table` with `.zebra-desktop` striping and optional `variant="bucks"` framing.
-- Form inputs share the `.form-input` class defined in `app/globals.css`.
-- MDX uses a remark plugin that swaps em dashes for semicolons; keep user-visible copy em dash free.
-
----
-
-## ✅ Guardrails & Coverage
-
-- Jest thresholds: 85% lines/statements/functions, 80% branches (see `jest.config.cjs`). `npm run test:coverage` and `npm run test:ci` enforce them.
-- `npm run coverage:check` reads `coverage/coverage-summary.json` and fails if lines dip below `COVERAGE_MINIMUM` (default 80); CI uploads the summary artifact.
-- `.husky/pre-push` runs `lint`, `typecheck`, `test:smoke`, and `test:coverage`; bypass with `SKIP_COVERAGE_GUARD=1` only in emergencies.
-- Security headers (HSTS, frame denial, MIME sniffing) are asserted in CI via `npm run security-headers:check`.
-- Lint-staged (pre-commit) runs Prettier, ESLint, secretlint, and the MD/MDX semicolon fixer.
-
----
-
-## 🖼️ Image Optimization Pipeline
-
-Optimize large images before pushing to the repo:
-
-1. Place original images into:
-
-   ```
-   public/images/source/
-   ```
-
-2. Generate optimized assets:
-
-   ```bash
-   npm run images:optimus -- "<folder>"
-   ```
-
-   Or run `npm run images:optimus` to process the full `public/images/source/` tree.
-
-3. Verify outputs:
-
-   ```bash
-   npm run images:check
-   ```
-
-4. Optimized images are saved to:
-
-   ```
-   public/images/optimus/<folder>/
-   ```
-
-5. On success processed source files are removed; if no other source files remain, the source folder is cleaned.
-
-Still images are resized to a **1920px** max width and exported as **WebP**. `.gif` and `.mp4` sources are converted to animated WebP.
-
----
-
-## 📣 Share Kit
-
-Keep stakeholder snippets in sync whenever you ship a new page.
-
-- Add the slug to your metadata so `canonicalUrl(slug)` can supply the canonical entry.
-- Add a one-liner in `/lib/share/oneLiners.ts`.
-- Run `npm run share:generate` to refresh Confluence-ready Markdown in `/docs/share/<slug>.md`.
-
----
-
-## 🗃️ Database
-
-This project requires a **Postgres** database and NextAuth secrets.
-
-Set `NEXT_PUBLIC_DEBUG_DB_META=1` to expose `/api/env-check` with redacted database env vars for debugging.
-
-SQL migrations live in `db/migrations` and are tracked in `dojo.schema_migration`.
-See [docs/migrations.md](docs/migrations.md) for the ledger workflow.
-
-For tests, create a `.env.test` file so `npm test` can load a dedicated database URL:
+For active MDX/chronicle editing, run the app and Contentlayer watcher together:
 
 ```bash
-# .env.test
-TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/tullyelly_test
+npm run dev:full
 ```
 
-Using a Neon branch instead of local Postgres? Point `TEST_DATABASE_URL` at your **branch URL** (placeholder shown):
+Other local dev modes:
 
 ```bash
-# .env.test (example)
-TEST_DATABASE_URL="postgresql://<user>:<password>@<your-neon-branch-host>/<db-name>?sslmode=require&channel_binding=require"
+npm run dev:stable          # webpack, polling, no filesystem cache
+npm run dev:turbo           # Turbopack
+npm run dev:with-contentlayer
 ```
 
-🔐 Secrets hygiene: Never paste real connection strings into docs or code. In CI or Vercel use secrets (`DATABASE_URL`, `TEST_DATABASE_URL`). Locally, keep them only in untracked `.env*` files.
-
-Verify connectivity:
+The app's health endpoint is:
 
 ```bash
-# Verify connectivity
-curl -s http://localhost:3000/api/_health
-
-# Metadata + counts
-curl -s http://localhost:3000/api/db-meta
-curl -s http://localhost:3000/api/shaolin-scrolls/count
-
-# Shaolin Scrolls queries
-curl -s "http://localhost:3000/api/shaolin-scrolls?limit=5&offset=0&sort=semver:desc"
-curl -s "http://localhost:3000/api/shaolin-scrolls?q=scroll"
-
-# Mutations (creates new scrolls)
-curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test patch"}' http://localhost:3000/api/shaolin-scrolls/patch
-
-curl -s -X POST -H 'Content-Type: application/json' \
-  -d '{"label":"Test minor"}' http://localhost:3000/api/shaolin-scrolls/minor
+curl -s http://localhost:3000/api/health
 ```
 
----
+## Common Commands
 
-## ♻️ Hydration
+| Command                          | Purpose                                                                                         |
+| -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `npm run prepare:content`        | Regenerate `lib/build-info.ts`, `lib/images/optimus-images-manifest.json`, and `.contentlayer`. |
+| `npm run lint`                   | Run ESLint with the repo config.                                                                |
+| `npm run typecheck`              | Run TypeScript; preflight regenerates content.                                                  |
+| `npm run format:check`           | Check Prettier formatting for changed tracked files.                                            |
+| `npm run format`                 | Format JS/TS/MD/MDX/JSON/YAML/CSS files.                                                        |
+| `npm test`                       | Run Jest; preflight regenerates content.                                                        |
+| `npm run test:smoke`             | Run related Jest smoke tests.                                                                   |
+| `npm run test:coverage`          | Run Jest with coverage thresholds.                                                              |
+| `npm run test:components`        | Run Vitest tests under `vitest/`.                                                               |
+| `npm run test:e2e`               | Run Playwright E2E tests.                                                                       |
+| `npm run build`                  | Generate content, run `prisma generate`, then `next build`.                                     |
+| `npm run start`                  | Start a built Next app.                                                                         |
+| `npm run analyze`                | Run bundle analyzer build.                                                                      |
+| `npm run check:emdash`           | Reject em dashes in user-visible MD/MDX/JSX copy.                                               |
+| `npm run secrets:scan`           | Run secretlint over the repo.                                                                   |
+| `npm run security-headers:check` | Verify expected security headers against a URL.                                                 |
 
-See [docs/hydration.md](docs/hydration.md) and [docs/hydration-contract.md](docs/hydration-contract.md) for how server-rendered data stays in sync with client hydration.
+## Content and Assets
 
----
+Chronicles live in `content/chronicles/*.mdx` and become `/shaolin/<slug>`
+routes. Contentlayer requires `title`, `date`, and `summary`; optional fields
+include `tags`, `draft`, `infinityStone`, `cover`, `canonical`, and `alterEgo`.
+The Contentlayer config also infers tags from supported MDX components such as
+`ReleaseSection`, `PersonTag`, clan snapshots, and YouTube videos.
 
-## 📜 Scripts
-
-- `npm run lint` – lint the codebase (includes metadata enforcement via `lint:metadata`)
-- `npm run typecheck` – run TypeScript checks; preflight runs `prepare:content`
-- `npm run format:check` – verify formatting without writing changes
-- `npm run deadcode` – list unused exports
-- `npm run guard:self-fetch` – block Next.js self-fetch patterns
-- `npm run check:use-server` – flag invalid `"use server"` exports
-- `npm run prepare:content` – generate build info and Contentlayer data
-- `npm run build` – production build; `npm run start` starts it locally
-- `npm run db:ping` – verify DB connectivity (SELECT 1)
-- `npm run db:migrate:status` - show SQL migration ledger state
-- `npm run db:migrate:apply` - apply pending SQL migrations in filename order
-- `npm run db:migrate:verify` - fail if migrations are pending, failed, missing, or checksum-mismatched
-- `npm run check:emdash` – reject em dashes in MD/MDX/JSX copy
-- `npm run security-headers:check` – assert HSTS, frame, and MIME headers
-- `npm run share:generate` – refresh `/docs/share/<slug>.md`
-
----
-
-## 🧪 CI
-
-GitHub Actions includes:
-
-- **CI** (`.github/workflows/ci.yml`) – gated by `CI_ENABLED` repo variable. Runs lint, typecheck, metadata lint, format check, Jest smoke + coverage (`test:ci`), `coverage:check`, optional image/SEO validators, build, and security header smoke. E2E job follows when enabled and paths match.
-- **coverage** – always on `main` and PRs to `main`, runs `npm run test:coverage` and uploads `coverage/lcov.info`.
-
----
-
-## Running E2E
-
-**Cache-first (recommended):**
+Create a chronicle:
 
 ```bash
-npm ci
+npm run new-chronicle -- "Title"
+```
+
+Create a static MDX page:
+
+```bash
+npm run new-page <slug> "Title"
+```
+
+Image workflow:
+
+```bash
+npm run images:optimus -- "<folder>"
+npm run images:check
+npm run assets:report
+```
+
+Source assets go in `public/images/source/`; optimized outputs land under
+`public/images/optimus/<folder>/`. See `docs/images.md` and
+`docs/authoring.md` for the full authoring flow. Detailed MDX metadata behavior
+is documented in `docs/contentlayer-inference.md`.
+
+## Data, Auth, and Database
+
+- Runtime DB access flows through `lib/db.ts` and `db/pool.ts`.
+- `db/pool.ts` blocks DB access during Next production builds.
+- `db/assert-database-url.ts` rejects unsafe production `neondb_owner/neondb`
+  URLs.
+- Prisma is scoped to the `auth` schema in `prisma/schema.prisma`.
+- Menu rows come from `dojo.v_menu_published`.
+- Effective feature checks use `dojo.authz_effective_features` and related
+  authz helpers under `lib/authz`.
+- Comments use `dojo.v_blog_comment`.
+
+DB commands:
+
+```bash
+npm run db:ping
+npm run db:migrate:status
+npm run db:migrate:apply
+npm run db:migrate:verify
+```
+
+Migration scripts load `.env.local` by default. To target another env file:
+
+```bash
+DOTENV_CONFIG_PATH=.env.test npm run db:migrate:status
+```
+
+SQL migrations live in `db/migrations` and are tracked in
+`dojo.schema_migration`. Do not edit migrations after applying them to a shared
+database; add a new migration instead. See `docs/migrations.md`.
+
+E2E seed data:
+
+```bash
+npm run pretest:e2e:seed
+```
+
+The seed script reads `.env.test`, uses `TEST_DATABASE_URL` or `DATABASE_URL`,
+and refuses production-looking databases outside CI.
+
+## Testing
+
+Unit and integration tests:
+
+```bash
+npm test
+```
+
+Coverage:
+
+```bash
+npm run test:coverage
+npm run coverage:check
+```
+
+Component/client tests:
+
+```bash
+npm run test:components
+```
+
+Playwright:
+
+```bash
 npm run test:e2e:install
 npm run test:e2e
 ```
 
-`.env.test` must provide `TEST_DATABASE_URL` (used for seeding menu/authz fixtures in `pretest:e2e:seed`). Set `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` and `PLAYWRIGHT_USE_SYSTEM_CHROME=1` to lean on a system Chrome:
+Playwright loads `.env.test`, requires `TEST_DATABASE_URL` or `DATABASE_URL`,
+seeds fixtures in `pretest:e2e`, builds the E2E app, and serves it on
+`127.0.0.1:4321`.
+
+To use a system Chrome:
 
 ```bash
 export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
@@ -356,49 +272,146 @@ export PLAYWRIGHT_CHROME_PATH="/usr/bin/google-chrome"
 npm run test:e2e
 ```
 
----
+## Code Quality and CI
 
-## 🔏 Build Provenance
+- ESLint is configured in `eslint.config.mjs`.
+- Prettier is the formatting source of truth.
+- `lint-staged` runs secretlint, Prettier, ESLint, and the MD/MDX semicolon
+  fixer on staged files.
+- Husky `pre-commit` runs lint-staged.
+- Husky `pre-push` runs lint, typecheck, `test:smoke`, and `test:coverage`.
+  Set `SKIP_COVERAGE_GUARD=1` only when you intentionally need to bypass it.
+- Jest coverage thresholds are 85% lines/statements/functions and 80% branches.
 
-Confirm deployments with a build receipt and headers:
+GitHub Actions:
 
-```bash
-# JSON receipt
-curl -s https://<app-url>/api/__version | jq
+- `.github/workflows/ci.yml` runs on pushes to `main` and PRs targeting `main`.
+  It installs dependencies, then runs lint, typecheck, `test:ci`, build with
+  `SKIP_DB=true`, and a security header check against `/api/health`.
+- `.github/workflows/coverage.yml` runs coverage on `main` and PRs to `main`
+  and uploads `coverage/lcov.info`.
 
-# Headers on any response
-curl -I https://<app-url>/ | grep -i "^x-"
-```
+## Build and Deployment
 
-If @sentry/nextjs is installed and SENTRY_DSN is set, releases inherit the same commit and environment metadata.
-
----
-
-## 📚 Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Tailwind CSS Docs](https://tailwindcss.com/docs)
-- [Sharp Image Processing](https://sharp.pixelplumbing.com/)
-- [Imagemin](https://github.com/imagemin/imagemin)
-
----
-
-## ☁️ Deployment
-
-Deploy to production manually via the Vercel CLI:
+Build locally:
 
 ```bash
-export VERCEL_TOKEN=...
-npx vercel --prod --token "$VERCEL_TOKEN"
+npm run build
 ```
 
----
+Run a production build locally:
 
-## ✅ Quick Notes
+```bash
+npm run start:prod:local
+```
 
-- App shell lives in `components/app-shell/AppShell` with menu data from `lib/menu/getMenu` and persona-aware metadata in `app/_menu`.
-- Home tiles render from `components/home/*` (`app/page.tsx`).
-- Chronicles index and tag filters: `app/shaolin/page.tsx`; details: `app/shaolin/[slug]/page.tsx`.
-- Shaolin Scrolls UI: `app/mark2/shaolin-scrolls`; TCDB rankings live at `app/cardattack/tcdb-rankings` and accept deep links at `/cardattack/tcdb-rankings/[homie_id]`.
-- Credits and Flowers plumbing: `app/credits` and `components/flowers/FlowersInline.tsx`.
-- Build info is written to `lib/build-info.ts` by `npm run gen:build-info`; Contentlayer output sits in `.contentlayer`.
+Vercel deployment support is present through `vercel.json` and npm scripts.
+The production deploy script builds locally through Vercel and deploys the
+prebuilt output:
+
+```bash
+npm run deploy:prod
+```
+
+Build provenance is exposed at:
+
+```bash
+curl -s https://<app-url>/api/__version
+```
+
+Security headers are defined in `next.config.mjs` and checked by
+`npm run security-headers:check`.
+
+## Contribution Workflow
+
+1. Branch from the current base branch. Existing project guidance uses
+   `cipher/<short-feature-name>` or `feature/<ticket>`.
+2. Keep feature changes and refactors separate where possible.
+3. Update docs when behavior, commands, env vars, or authoring flows change.
+4. Before opening a PR, run the checks that match your change:
+
+   ```bash
+   npm run lint
+   npm run typecheck
+   npm test
+   ```
+
+5. For DB changes, add a numbered SQL migration under `db/migrations` and run
+   `npm run db:migrate:verify` against the intended non-production database.
+6. For UI changes, include screenshots in the PR.
+
+The PR template asks for summary, Jira ID, reviewers, checks, and screenshots
+for UI work.
+
+## Troubleshooting
+
+**Next says the lockfile is missing SWC dependencies**
+
+Run:
+
+```bash
+npm ci --include=optional
+```
+
+On Linux arm64, verify the local binary can load:
+
+```bash
+node -e "require('@next/swc-linux-arm64-gnu'); console.log('ok')"
+```
+
+If the lockfile checker still tries to patch at dev startup, run this diagnostic
+without starting the server:
+
+```bash
+node -e "const { patchIncorrectLockfile } = require('next/dist/lib/patch-incorrect-lockfile'); patchIncorrectLockfile(process.cwd()).then(()=>console.log('ok'))"
+```
+
+**Content edits do not show up**
+
+Run `npm run dev:full` so Contentlayer watches MDX files, or rerun
+`npm run prepare:content`.
+
+**DB-backed pages fail during build**
+
+Production builds intentionally block DB access. Static generation paths should
+use build-safe data or fallbacks. Set `SKIP_DB=true` only for local/test
+escape-hatch behavior; production runtime ignores it.
+
+**Playwright refuses to start**
+
+Check `.env.test`. `playwright.config.ts` requires `TEST_DATABASE_URL` or
+`DATABASE_URL`.
+
+**Metadata lint fails**
+
+Page routes need a metadata export or metadata builder. See
+`scripts/ensure-metadata.js` and `docs/static-page-template-v2.md`.
+
+**Image checks fail**
+
+Run the optimizer for the relevant folder, then rerun `npm run images:check`.
+Use `npm run assets:report` to inspect large assets before committing.
+
+## Caveats and Known Limits
+
+- DB access is intentionally disabled during Next production builds.
+- `scripts/patch-next-breadcrumb-types.mjs` is a quarantined legacy script for
+  unsupported page-level `breadcrumb` exports. Do not wire it into normal
+  install, dev, test, or build flows.
+- Debug routes such as `/api/db-meta`, `/api/env-check`, `/api/diag`, and
+  `/_sanity/image-check` require explicit local debug flags and 404 in
+  production.
+- User-visible copy should avoid em dashes; use semicolons instead.
+- Do not rename public URLs, persona names, `tullyelly`, or `shaolin`
+  identifiers without an approved ticket.
+
+## More Documentation
+
+- `docs/authoring.md` for static page authoring
+- `docs/contentlayer-inference.md` for inferred chronicle metadata
+- `docs/images.md` for image and asset handling
+- `docs/migrations.md` for SQL migration workflow
+- `docs/menu.md` for menu capability gating
+- `docs/authz/` for authorization policy and workflows
+- `docs/hydration.md` and `docs/hydration-contract.md` for hydration contracts
+- `docs/escape-hatches.md` for legacy/debug escape hatches

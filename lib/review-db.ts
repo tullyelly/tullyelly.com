@@ -2,6 +2,7 @@ import "server-only";
 
 import { isNextBuild } from "@/lib/env";
 import { sql } from "@/lib/db";
+import { isDbSkipEnabled } from "@/lib/escape-hatches";
 import { normalizeReviewExternalId, type ReviewType } from "@/lib/review-types";
 
 type ReviewSummaryRow = {
@@ -69,7 +70,7 @@ function toOptionalString(value: string | null): string | undefined {
 function shouldSkipReviewDb(): boolean {
   return (
     isNextBuild() ||
-    process.env.SKIP_DB === "true" ||
+    isDbSkipEnabled() ||
     process.env.JEST_WORKER_ID !== undefined ||
     process.env.NODE_ENV === "test"
   );

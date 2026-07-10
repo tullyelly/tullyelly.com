@@ -5,6 +5,8 @@ import {
   inferAlterEgosFromTree,
   inferPersonTagUsagesFromTree,
   inferPersonTagsFromTree,
+  inferYouTubeVideoArtistTagsFromTree,
+  mergeChronicleTags,
   mergeTagsWithAlterEgo,
 } from "@/lib/alterEgo";
 
@@ -64,6 +66,19 @@ const clanSnapshotNode = (
   children,
 });
 
+const youTubeVideoNode = (
+  artist?: unknown,
+  children: TestNode[] = [],
+): TestNode => ({
+  type: "mdxJsxFlowElement",
+  name: "YouTubeVideo",
+  attributes:
+    artist === undefined
+      ? []
+      : [{ type: "mdxJsxAttribute", name: "artist", value: artist }],
+  children,
+});
+
 describe("inferAlterEgosFromTree", () => {
   const errorPrefix = "Chronicle sample.mdx";
 
@@ -89,6 +104,23 @@ describe("inferAlterEgosFromTree", () => {
     const tree = root([releaseNode(undefined)]);
     expect(() => inferAlterEgosFromTree(tree, { errorPrefix })).toThrow(
       `${errorPrefix}: ReleaseSection is missing the required alterEgo prop.`,
+    );
+  });
+
+  it("throws when alterEgo attribute is duplicated", () => {
+    const tree = root([
+      {
+        type: "mdxJsxFlowElement",
+        name: "ReleaseSection",
+        attributes: [
+          { type: "mdxJsxAttribute", name: "alterEgo", value: "mark2" },
+          { type: "mdxJsxAttribute", name: "alterEgo", value: "cardattack" },
+        ],
+      },
+    ]);
+
+    expect(() => inferAlterEgosFromTree(tree, { errorPrefix })).toThrow(
+      `${errorPrefix}: ReleaseSection should declare exactly one alterEgo prop.`,
     );
   });
 
@@ -157,6 +189,51 @@ describe("inferPersonTagUsagesFromTree", () => {
       `${errorPrefix}: PersonTag displayName must be a string literal.`,
     );
   });
+
+  it("throws when PersonTag tag or displayName props are duplicated", () => {
+    expect(() =>
+      inferPersonTagUsagesFromTree(
+        root([
+          {
+            type: "mdxJsxTextElement",
+            name: "PersonTag",
+            attributes: [
+              { type: "mdxJsxAttribute", name: "tag", value: "freak" },
+              { type: "mdxJsxAttribute", name: "tag", value: "giannis" },
+            ],
+          },
+        ]),
+        { errorPrefix },
+      ),
+    ).toThrow(`${errorPrefix}: PersonTag should declare exactly one tag prop.`);
+
+    expect(() =>
+      inferPersonTagUsagesFromTree(
+        root([
+          {
+            type: "mdxJsxTextElement",
+            name: "PersonTag",
+            attributes: [
+              { type: "mdxJsxAttribute", name: "tag", value: "freak" },
+              {
+                type: "mdxJsxAttribute",
+                name: "displayName",
+                value: "giannis",
+              },
+              {
+                type: "mdxJsxAttribute",
+                name: "displayName",
+                value: "the greek freak",
+              },
+            ],
+          },
+        ]),
+        { errorPrefix },
+      ),
+    ).toThrow(
+      `${errorPrefix}: PersonTag should declare at most one displayName prop.`,
+    );
+  });
 });
 
 describe("inferClanSnapshotTagUsagesFromTree", () => {
@@ -192,6 +269,118 @@ describe("inferClanSnapshotTagUsagesFromTree", () => {
         errorPrefix,
       }),
     ).toThrow(`${errorPrefix}: ClanSnapshot tag must be a string literal.`);
+  });
+
+  it("throws when ClanSnapshot tag is duplicated", () => {
+    expect(() =>
+      inferClanSnapshotTagUsagesFromTree(
+        root([
+          {
+            type: "mdxJsxFlowElement",
+            name: "ClanSnapshot",
+            attributes: [
+              { type: "mdxJsxAttribute", name: "tag", value: "noles" },
+              { type: "mdxJsxAttribute", name: "tag", value: "t-wolves" },
+            ],
+          },
+        ]),
+        { errorPrefix },
+      ),
+    ).toThrow(
+      `${errorPrefix}: ClanSnapshot should declare exactly one tag prop.`,
+    );
+  });
+});
+
+describe("inferYouTubeVideoArtistTagsFromTree", () => {
+  const errorPrefix = "Chronicle sample.mdx";
+
+  it("normalizes and deduplicates YouTubeVideo artist tags", () => {
+    const tree = root([
+      youTubeVideoNode("DJ Shadow"),
+      youTubeVideoNode("dj shadow"),
+      youTubeVideoNode("Gang Starr"),
+    ]);
+
+    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+      "dj-shadow",
+      "gang-starr",
+    ]);
+  });
+
+  it("throws when YouTubeVideo artist is duplicated", () => {
+    expect(() =>
+      inferYouTubeVideoArtistTagsFromTree(
+        root([
+          {
+            type: "mdxJsxFlowElement",
+            name: "YouTubeVideo",
+            attributes: [
+              { type: "mdxJsxAttribute", name: "artist", value: "DOOM" },
+              {
+                type: "mdxJsxAttribute",
+                name: "artist",
+                value: "Gang Starr",
+              },
+            ],
+          },
+        ]),
+        { errorPrefix },
+      ),
+    ).toThrow(
+      `${errorPrefix}: YouTubeVideo should declare exactly one artist prop.`,
+    );
+  });
+});
+
+describe("Chronicle inference pipeline examples", () => {
+  const errorPrefix = "Chronicle sample.mdx";
+
+  it("merges frontmatter and inferred tags without changing authoring syntax", () => {
+    const tree = root([
+      releaseNode("unclejimmy", [
+        personTagNode("jeff-meff", "noah"),
+        clanSnapshotNode("t-wolves"),
+        youTubeVideoNode("DJ Shadow"),
+      ]),
+      releaseNode("cardattack", [personTagNode("tcdb")]),
+    ]);
+
+    const alterEgoTags = inferAlterEgosFromTree(tree, { errorPrefix });
+    const personTagUsages = inferPersonTagUsagesFromTree(tree, { errorPrefix });
+    const clanTagUsages = inferClanSnapshotTagUsagesFromTree(tree, {
+      errorPrefix,
+    });
+    const youtubeArtistTags = inferYouTubeVideoArtistTagsFromTree(tree, {
+      errorPrefix,
+    });
+
+    expect(alterEgoTags).toEqual(["unclejimmy", "cardattack"]);
+    expect(personTagUsages).toEqual([
+      { tag: "jeff-meff", displayName: "noah" },
+      { tag: "tcdb", displayName: "tcdb" },
+    ]);
+    expect(clanTagUsages).toEqual([
+      { tag: "t-wolves", displayName: "t-wolves" },
+    ]);
+    expect(youtubeArtistTags).toEqual(["dj-shadow"]);
+    expect(
+      mergeChronicleTags(
+        ["frontmatter", "jeff-meff"],
+        alterEgoTags,
+        personTagUsages.map((usage) => usage.tag),
+        clanTagUsages.map((usage) => usage.tag),
+        youtubeArtistTags,
+      ),
+    ).toEqual([
+      "frontmatter",
+      "jeff-meff",
+      "unclejimmy",
+      "cardattack",
+      "tcdb",
+      "t-wolves",
+      "dj-shadow",
+    ]);
   });
 });
 

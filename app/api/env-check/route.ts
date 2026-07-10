@@ -1,3 +1,5 @@
+import { isDebugDbMetadataEnabled } from "@/lib/escape-hatches";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,7 +24,7 @@ const VARS = [
 ] as const;
 
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_DEBUG_DB_META !== "1") {
+  if (!isDebugDbMetadataEnabled()) {
     return new Response("Not Found", { status: 404 });
   }
   const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown";

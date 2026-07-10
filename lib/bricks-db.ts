@@ -3,6 +3,7 @@ import "server-only";
 import { sql } from "@/lib/db";
 import { normalizeBricksPublicId, type BricksSubset } from "@/lib/bricks-types";
 import { isNextBuild } from "@/lib/env";
+import { isDbSkipEnabled } from "@/lib/escape-hatches";
 
 type BricksSummaryRow = {
   subset: BricksSubset;
@@ -89,7 +90,7 @@ function toPieceCount(value: number | string | null): number | undefined {
 function shouldSkipBricksDb(): boolean {
   return (
     isNextBuild() ||
-    process.env.SKIP_DB === "true" ||
+    isDbSkipEnabled() ||
     process.env.JEST_WORKER_ID !== undefined ||
     process.env.NODE_ENV === "test"
   );

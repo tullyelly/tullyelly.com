@@ -12,6 +12,10 @@ import type { ResolvedPersona } from "@/lib/menu/persona";
 import Footer from "@/app/_components/Footer";
 import { CONTENT_GUTTER_CLASS } from "./constants";
 import Breadcrumbs from "@/components/breadcrumbs/Breadcrumbs";
+import {
+  isBreadcrumbDebugAllowed,
+  isPublicE2EModeEnabled,
+} from "@/lib/escape-hatches";
 
 type AppShellProps = {
   announcement?: string | null;
@@ -39,6 +43,7 @@ export default async function AppShell({
   const hdrs = await headers();
 
   const headerForce = (() => {
+    if (!isBreadcrumbDebugAllowed()) return false;
     try {
       const candidate =
         hdrs.get("x-next-url") || hdrs.get("x-invoke-path") || null;
@@ -89,7 +94,7 @@ export default async function AppShell({
           "px-6 pt-[var(--pane-pt)] pb-6 md:px-8 md:pl-[--bookmark-offset] md:pb-8 lg:px-10",
         )}
       >
-        {process.env.NEXT_PUBLIC_E2E_MODE === "1" ? <E2EOnlyNav /> : null}
+        {isPublicE2EModeEnabled() ? <E2EOnlyNav /> : null}
         {children}
       </div>
       <Breadcrumbs

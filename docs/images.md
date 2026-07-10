@@ -12,3 +12,47 @@
 - `FolderImageCarousel` scans nested folders n levels deep.
 - When a request to `/_next/image` fails, the response body describes the problem (e.g., `"url" parameter is invalid`).
 - During debugging you can bypass optimization with the `unoptimized` prop on `next/image`.
+
+## Asset Size Reporting
+
+Run the read-only asset report when you want a quick view of repo image and media growth:
+
+```bash
+npm run assets:report
+```
+
+The report scans:
+
+- `public/images/optimus`
+- `public/images/source`
+- `public/videos`
+
+It shows total size by folder, the largest 20 files, source or raw files that may not belong in the repo, and large animated WebP or media files. It never deletes files.
+
+Use the optional check when you want the report to fail after thresholds are exceeded:
+
+```bash
+npm run assets:check
+```
+
+Default thresholds:
+
+| Limit              | Default |
+| ------------------ | ------- |
+| Total scanned      | 750 MiB |
+| Optimized images   | 650 MiB |
+| Source images      | 25 MiB  |
+| Media folder       | 100 MiB |
+| Single file        | 15 MiB  |
+| Animated WebP file | 8 MiB   |
+| Media file         | 25 MiB  |
+
+Override thresholds with environment variables when a branch needs a temporary or stricter budget:
+
+- `ASSETS_MAX_TOTAL_MB`
+- `ASSETS_MAX_OPTIMUS_MB`
+- `ASSETS_MAX_SOURCE_MB`
+- `ASSETS_MAX_MEDIA_MB`
+- `ASSETS_MAX_FILE_MB`
+- `ASSETS_MAX_ANIMATED_WEBP_MB`
+- `ASSETS_MAX_MEDIA_FILE_MB`

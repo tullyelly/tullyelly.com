@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import { DATABASE_URL, isNextBuild } from "@/lib/env";
 import { assertValidDatabaseUrl } from "@/db/assert-database-url";
 import { normalizeDatabaseUrl } from "@/lib/db-url";
+import { isDbSkipEnabled, isE2EModeEnabled } from "@/lib/escape-hatches";
 
 interface Queryable {
   query<T = any>(sql: any, values?: any[]): Promise<any>;
@@ -79,11 +80,11 @@ function createE2EPool(): Queryable {
 export function getPool(): Queryable {
   if (pool) return pool;
 
-  if (process.env.SKIP_DB === "true") {
+  if (isDbSkipEnabled()) {
     throw new Error("Database access disabled when SKIP_DB=true.");
   }
 
-  if (process.env.E2E_MODE === "1") {
+  if (isE2EModeEnabled()) {
     pool = createE2EPool();
     return pool;
   }

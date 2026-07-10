@@ -23,6 +23,11 @@ import type {
 import type { MenuNodeRow } from "@/lib/menu/dbTypes";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
 import {
+  isDbSkipEnabled,
+  isMenuBypassEnabled,
+  isTestMenuModeEnabled,
+} from "@/lib/escape-hatches";
+import {
   isCapabilityKeyArray,
   type Badge,
   type CapabilityKey,
@@ -40,10 +45,7 @@ function capsHash(caps: Set<string>) {
 const MENU_REVALIDATE_SECONDS = 300;
 
 function shouldBypassFiltering(): boolean {
-  const flag = process.env.NEXT_PUBLIC_MENU_SHOW_ALL;
-  if (!flag) return false;
-  const normalized = flag.toLowerCase();
-  return normalized === "1" || normalized === "true" || normalized === "yes";
+  return isMenuBypassEnabled();
 }
 
 type MenuIndexSerialized = {
@@ -188,15 +190,11 @@ function resolveRequirements(
   return undefined;
 }
 
-// Only allow TEST_MODE in non-production *or* when explicitly forced with a private server flag.
-// This prevents NEXT_PUBLIC_TEST_MODE from accidentally activating stubs in prod.
-const TEST_MODE =
-  (process.env.NODE_ENV !== "production" &&
-    (process.env.NEXT_PUBLIC_TEST_MODE === "1" ||
-      process.env.TEST_MODE === "1")) ||
-  process.env.FORCE_TEST_MENU === "1";
+// Legacy test-tree escape hatch: ignored in production runtime, including FORCE_TEST_MENU.
+// This keeps public NEXT_PUBLIC_* flags from accidentally bypassing DB-backed menus.
+const TEST_MODE = isTestMenuModeEnabled();
 const BUILD_MODE = isNextBuild();
-const DB_DISABLED = process.env.SKIP_DB === "true";
+const DB_DISABLED = isDbSkipEnabled();
 
 const ALLOW_ALL_GATE: FeatureGate = () => true;
 

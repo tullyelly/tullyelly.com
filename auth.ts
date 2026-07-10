@@ -6,6 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import { getAuthzRevision, getEffectiveFeatures } from "@/app/_auth/policy";
+import { isDbSkipEnabled } from "@/lib/escape-hatches";
 
 declare global {
   var __PRISMA_CLIENT__: PrismaClient | undefined;
@@ -14,7 +15,7 @@ declare global {
 let prisma: PrismaClient | undefined = global.__PRISMA_CLIENT__;
 
 export function getPrisma(): PrismaClient {
-  if (process.env.SKIP_DB === "true") {
+  if (isDbSkipEnabled()) {
     throw new Error("Prisma access disabled when SKIP_DB=true.");
   }
   if (!prisma) {
@@ -42,7 +43,7 @@ async function applyEffectiveFeatures(
   userId: string | undefined,
   refresh: boolean,
 ): Promise<void> {
-  if (process.env.SKIP_DB === "true") {
+  if (isDbSkipEnabled()) {
     return;
   }
   if (!userId) return;
@@ -79,9 +80,7 @@ export const authOptions: NextAuthOptions = {
 
   // Use JWT sessions so NextAuth middleware can authorize requests.
   // We still keep the Prisma adapter for users/accounts persistence.
-  ...(process.env.SKIP_DB === "true"
-    ? {}
-    : { adapter: PrismaAdapter(getPrisma()) }),
+  ...(isDbSkipEnabled() ? {} : { adapter: PrismaAdapter(getPrisma()) }),
   session: { strategy: "jwt" },
 
   providers: [

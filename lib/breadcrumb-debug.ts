@@ -1,7 +1,13 @@
+import {
+  isBreadcrumbDebugAllowed,
+  isBreadcrumbDebugForceEnabled,
+} from "@/lib/escape-hatches";
+
 export const breadcrumbDebug = {
   get force(): boolean {
+    if (!isBreadcrumbDebugAllowed()) return false;
     if (typeof window === "undefined") {
-      return process.env.NEXT_PUBLIC_BC_FORCE === "true";
+      return isBreadcrumbDebugForceEnabled();
     }
     try {
       const url = new URL(window.location.href);

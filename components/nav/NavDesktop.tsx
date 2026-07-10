@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import type { NavItem, PersonaItem } from "@/types/nav";
 import { analytics } from "@/lib/analytics";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
+import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 import type {
   MenuItem,
   MenuPayload,
@@ -25,8 +26,7 @@ import { handleSameRouteNoop, isSameRoute } from "@/components/nav/sameRoute";
 import { cn } from "@/lib/utils";
 import HeaderUser from "./HeaderUser";
 
-const TEST_MODE =
-  process.env.NEXT_PUBLIC_TEST_MODE === "1" || process.env.TEST_MODE === "1";
+const TEST_MODE = isTestMenuModeEnabled();
 
 type Props = {
   menu: MenuPayload;

@@ -24,6 +24,7 @@ import {
   SITE_TITLE,
   SITE_URL,
 } from "@/lib/seo/constants";
+import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 
 // Ensure menu data is always fetched at runtime (not during build),
 // so we never bake TEST_MENU_ITEMS into static output.
@@ -110,7 +111,7 @@ export default async function RootLayout({
       data-e2e-stable={isE2EStable ? "true" : undefined}
     >
       <head>
-        {process.env.NEXT_PUBLIC_TEST_MODE === "1" ? (
+        {isTestMenuModeEnabled() ? (
           <Script
             id="test-init"
             src="/test-init.js"

@@ -2,11 +2,12 @@ import { notFound } from "next/navigation";
 import MenuTestbed from "./MenuTestbed";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
 import type { PersonaItem } from "@/types/nav";
+import { isE2EModeEnabled } from "@/lib/escape-hatches";
 
 export const dynamic = "force-dynamic";
 
 export default function MenuTestPage() {
-  if (process.env.E2E_MODE !== "1") {
+  if (!isE2EModeEnabled()) {
     notFound();
   }
 

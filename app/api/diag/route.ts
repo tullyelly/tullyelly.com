@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
+import { isDiagnosticsDebugEnabled } from "@/lib/escape-hatches";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
+  if (!isDiagnosticsDebugEnabled()) {
+    return new Response("Not Found", { status: 404 });
+  }
+
   return NextResponse.json(
     {
       ok: true,

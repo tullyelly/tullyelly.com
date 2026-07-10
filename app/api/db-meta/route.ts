@@ -1,6 +1,13 @@
-// app/api/_diag/db/route.ts  (TEMP)
 import { NextResponse } from "next/server";
 import { getPool } from "@/db/pool";
+import {
+  isDbSkipEnabled,
+  isDebugDbMetadataEnabled,
+} from "@/lib/escape-hatches";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function sanitize(url?: string) {
   if (!url) return null;
@@ -14,7 +21,11 @@ function sanitize(url?: string) {
 }
 
 export async function GET() {
-  if (process.env.SKIP_DB === "true") {
+  if (!isDebugDbMetadataEnabled()) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  if (isDbSkipEnabled()) {
     return NextResponse.json(
       { ok: false, reason: "Database access disabled in CI." },
       { status: 503 },

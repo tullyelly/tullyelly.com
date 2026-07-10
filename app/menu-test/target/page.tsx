@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
+import { isE2EModeEnabled } from "@/lib/escape-hatches";
 
 export const dynamic = "force-dynamic";
 
 export default function MenuTargetPage() {
-  if (process.env.E2E_MODE !== "1") {
+  if (!isE2EModeEnabled()) {
     notFound();
   }
 
