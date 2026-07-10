@@ -3,7 +3,7 @@ import type { ComponentProps } from "react";
 import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
 import PersonTag from "@/components/mdx/PersonTag";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
-import { createNextRainbowColour } from "@/lib/release-section-colours";
+import { createNextOriginalReleaseSectionColour } from "@/lib/release-section-colours";
 import type { TagMetadata } from "@/lib/tags-server";
 import { normalizeTagSlug } from "@/lib/tags";
 
@@ -32,7 +32,7 @@ export function ChronicleMdxRenderer({
   tagMetadataBySlug,
 }: ChronicleMdxRendererProps) {
   const totalSections = countReleaseSections(source);
-  const nextRainbowColour = createNextRainbowColour(totalSections);
+  const nextRainbowColour = createNextOriginalReleaseSectionColour(totalSections, source);
 
   function RainbowReleaseSection(props: ReleaseSectionProps) {
     return <ReleaseSection {...props} rainbowColour={nextRainbowColour()} />;

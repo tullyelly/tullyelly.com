@@ -1,4 +1,5 @@
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
+import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 const pageTitle = "🪶theabbott cipher | tullyelly";
@@ -24,6 +25,7 @@ export const metadata = {
 export default function TheAbbottPage() {
   return (
     <div className="space-y-12">
+      <PersonaReleaseFeed persona="theabbott" />
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           cipher

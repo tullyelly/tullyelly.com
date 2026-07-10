@@ -2,6 +2,7 @@ import {
   RAINBOW_COLOURS,
   buildRainbowColourList,
   createNextRainbowColour,
+  getOriginalReleaseSectionColour,
 } from "@/lib/release-section-colours";
 
 const rainbowIndexByColour = new Map<string, number>(
@@ -127,5 +128,15 @@ describe("release-section-colours", () => {
     const next = createNextRainbowColour(0);
     expect(next()).toBeUndefined();
     expect(next()).toBeUndefined();
+  });
+
+  it("resolves a section's original rainbow position", () => {
+    expect(getOriginalReleaseSectionColour(3, 7)).toBe("#FFFF00");
+    expect(getOriginalReleaseSectionColour(0, 7)).toBeUndefined();
+  });
+
+  it("resolves small chronicles deterministically from their source", () => {
+    const first = getOriginalReleaseSectionColour(2, 3, "same source");
+    expect(getOriginalReleaseSectionColour(2, 3, "same source")).toBe(first);
   });
 });

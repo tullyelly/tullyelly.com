@@ -78,3 +78,38 @@ export function createNextRainbowColour(total: number): () => string | undefined
     return next;
   };
 }
+
+export function getOriginalReleaseSectionColour(
+  sectionOrdinal: number,
+  totalSections: number,
+  sourceKey?: string,
+): string | undefined {
+  if (!Number.isInteger(sectionOrdinal) || sectionOrdinal < 1) return undefined;
+  if (sourceKey && totalSections > 0 && totalSections < RAINBOW_COLOURS.length) {
+    let hash = 2166136261;
+    for (let index = 0; index < sourceKey.length; index += 1) {
+      hash ^= sourceKey.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    const available = [...RAINBOW_COLOURS];
+    const selected: string[] = [];
+    while (selected.length < totalSections) {
+      hash = Math.imul(hash ^ (hash >>> 15), 2246822519);
+      const picked = Math.abs(hash) % available.length;
+      selected.push(available.splice(picked, 1)[0]);
+    }
+    return sortByRainbowOrder(selected)[sectionOrdinal - 1];
+  }
+  return buildRainbowColourList(totalSections)[sectionOrdinal - 1];
+}
+
+export function createNextOriginalReleaseSectionColour(
+  totalSections: number,
+  sourceKey: string,
+): () => string | undefined {
+  let sectionOrdinal = 0;
+  return () => {
+    sectionOrdinal += 1;
+    return getOriginalReleaseSectionColour(sectionOrdinal, totalSections, sourceKey);
+  };
+}

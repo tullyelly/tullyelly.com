@@ -1,4 +1,5 @@
 import PersonTag from "@/components/mdx/PersonTag";
+import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 const pageTitle = "🎙unclejimmy circus | tullyelly";
@@ -25,6 +26,7 @@ export const metadata = {
 export default function UncleJimmyPage() {
   return (
     <div className="space-y-12">
+      <PersonaReleaseFeed persona="unclejimmy" />
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           circus
