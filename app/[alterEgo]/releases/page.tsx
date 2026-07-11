@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PersonaReleaseLogEntry } from "@/components/chronicles/PersonaReleaseLog";
+import { ReleaseLogPagination } from "@/components/chronicles/ReleaseLogPagination";
 import {
   getAlterEgoReleaseEntries,
+  getReleasePageDateRange,
   normalizeReleasePage,
   normalizeReleaseOrder,
   orderReleaseEntries,
@@ -69,6 +71,7 @@ export default async function PersonaReleasesPage({
   );
   const result = paginateReleaseEntries(orderedEntries, requested);
   if (result.outOfRange) notFound();
+  const dateRange = getReleasePageDateRange(result.entries);
   const tags = Array.from(new Set(result.entries.flatMap((entry) => entry.postTags)));
   const tagMetadataBySlug = await releaseTagMetadata(tags);
 
@@ -100,6 +103,15 @@ export default async function PersonaReleasesPage({
           </div>
         </header>
 
+        <ReleaseLogPagination
+          persona={alterEgo as PersonaReleaseFeed}
+          order={order}
+          page={result.page}
+          pageCount={result.pageCount}
+          dateRange={dateRange}
+          position="top"
+        />
+
         {result.entries.length === 0 ? (
           <p className="px-2 text-muted-foreground md:px-0">No releases have landed here yet.</p>
         ) : (
@@ -110,11 +122,14 @@ export default async function PersonaReleasesPage({
           </div>
         )}
 
-        <nav aria-label="Release log pagination" className="flex items-center justify-between border-t border-border pt-6">
-          {result.page > 1 ? <Link className="link-blue" href={getPersonaReleaseLogHref(alterEgo as PersonaReleaseFeed, result.page - 1, order)}>← Previous</Link> : <span />}
-          <span className="text-sm text-muted-foreground">Page {result.page} of {result.pageCount}</span>
-          {result.page < result.pageCount ? <Link className="link-blue" href={getPersonaReleaseLogHref(alterEgo as PersonaReleaseFeed, result.page + 1, order)}>Next →</Link> : <span />}
-        </nav>
+        <ReleaseLogPagination
+          persona={alterEgo as PersonaReleaseFeed}
+          order={order}
+          page={result.page}
+          pageCount={result.pageCount}
+          dateRange={dateRange}
+          position="bottom"
+        />
       </main>
     </div>
   );

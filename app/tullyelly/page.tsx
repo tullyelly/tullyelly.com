@@ -1,5 +1,6 @@
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
+import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
 
 const pageTitle = "⚒️tullyelly forge | tullyelly";
 const pageDescription =
@@ -25,6 +26,7 @@ export const metadata = {
 export default function TullyellyPage() {
   return (
     <div className="space-y-12">
+      <PersonaActivityChart alterEgo="tullyelly" />
       <PersonaReleaseFeed persona="tullyelly" />
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">

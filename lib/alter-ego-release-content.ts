@@ -211,6 +211,14 @@ export function paginateReleaseEntries(entries: AlterEgoReleaseEntry[], requeste
   return { entries: outOfRange ? [] : entries.slice(start, start + PERSONA_RELEASE_PAGE_SIZE), page, pageCount, total, outOfRange };
 }
 
+export function getReleasePageDateRange(
+  entries: readonly AlterEgoReleaseEntry[],
+): { start: string; end: string } | null {
+  if (entries.length === 0) return null;
+  const dates = entries.map((entry) => entry.postDate.slice(0, 10)).sort();
+  return { start: dates[0], end: dates[dates.length - 1] };
+}
+
 export function releaseSectionPreview(bodyMdx: string, limit = 240): string {
   let text = bodyMdx
     .replace(/(^|\n)[ \t]*(`{3,}|~{3,})[\s\S]*?\n[ \t]*\2[ \t]*(?=\n|$)/g, " ")

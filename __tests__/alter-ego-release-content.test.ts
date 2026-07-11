@@ -5,6 +5,7 @@ import {
   extractReleaseSections,
   getAlterEgoReleaseEntries,
   getLandingReleaseEntries,
+  getReleasePageDateRange,
   normalizeReleasePage,
   normalizeReleaseOrder,
   orderReleaseEntries,
@@ -91,6 +92,15 @@ describe("alter ego release content", () => {
     expect(paginateReleaseEntries(entries, 1).entries).toHaveLength(20);
     expect(paginateReleaseEntries(entries, 2).entries).toHaveLength(5);
     expect(paginateReleaseEntries(entries, 3)).toMatchObject({ entries: [], outOfRange: true });
+  });
+
+  it("reports the chronological date range represented by the current page", () => {
+    const entries = getAlterEgoReleaseEntries("mark2", [
+      post("older", "2026-06-30", '<ReleaseSection alterEgo="mark2">Older</ReleaseSection>'),
+      post("newer", "2026-07-08", '<ReleaseSection alterEgo="mark2">Newer</ReleaseSection>'),
+    ]);
+    expect(getReleasePageDateRange(entries)).toEqual({ start: "2026-06-30", end: "2026-07-08" });
+    expect(getReleasePageDateRange([])).toBeNull();
   });
 
   it("normalizes missing and invalid page values", () => {

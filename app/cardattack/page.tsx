@@ -1,5 +1,6 @@
 import PersonTag from "@/components/mdx/PersonTag";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
+import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 const pageTitle = "🃏cardattack vault | tullyelly";
@@ -26,6 +27,7 @@ export const metadata = {
 export default function CardattackPage() {
   return (
     <div className="space-y-12">
+      <PersonaActivityChart alterEgo="cardattack" />
       <PersonaReleaseFeed persona="cardattack" />
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
