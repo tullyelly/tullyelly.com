@@ -1,7 +1,7 @@
 import * as React from "react";
 import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
-import LoopedGIF from "@/components/LoopedGIF";
+import FruityLoops from "@/components/FruityLoops";
 import { CodePanel } from "@/components/mdx/code-panel";
 import PersonTag from "@/components/mdx/PersonTag";
 import SetCollector from "@/components/mdx/SetCollector";
@@ -212,7 +212,7 @@ export const mdxComponents: CustomMDXComponents = {
   ...defaultComponents,
   a: SmartLink, // override default link
   XEmbed,
-  LoopedGIF,
+  FruityLoops,
   CodePanel,
   PersonTag,
   ReleaseSection,

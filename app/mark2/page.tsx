@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import FlowersInline from "@/components/flowers/FlowersInline";
+import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
+import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
@@ -43,6 +45,8 @@ export const metadata = {
 export default function Mark2Page() {
   return (
     <div className="space-y-12">
+      <PersonaActivityChart alterEgo="mark2" />
+      <PersonaReleaseFeed persona="mark2" />
       <section className="space-y-4">
         <h1 className="text-xl md:text-2xl font-semibold leading-snug">
           blueprint
