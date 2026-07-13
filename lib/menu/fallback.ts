@@ -155,6 +155,13 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       feature: "menu.cardattack.tcdb.trades",
     },
     {
+      id: "hall-of-fame",
+      label: "Hall of Fame",
+      href: "/cardattack/hof",
+      iconKey: "Trophy",
+      feature: "menu.cardattack.tcdb.hof",
+    },
+    {
       id: "set-collector",
       label: "Set Collector",
       href: "/cardattack/set-collector",

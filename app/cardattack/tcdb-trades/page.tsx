@@ -1,29 +1,14 @@
 import { Card } from "@ui";
 import FullBleedPage from "@/components/layout/FullBleedPage";
 import PageIntro from "@/components/layout/PageIntro";
-import {
-  listTcdbTradeHallOfFameInductions,
-  listTcdbTradeHallOfFamers,
-} from "@/lib/tcdb-trade-hall-of-fame";
-import { getSetCollectorDetailHref } from "@/lib/set-collector-content";
 import { listTcdbTrades } from "@/lib/tcdb-trades";
-import TcdbTradeHallOfFameInductionsTable from "./_components/TcdbTradeHallOfFameInductionsTable";
-import TcdbTradeHallOfFameTable from "./_components/TcdbTradeHallOfFameTable";
 import TcdbTradeListClient from "./_components/TcdbTradeListClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function Page() {
-  const [trades, hallOfFamers, inductions] = await Promise.all([
-    listTcdbTrades(),
-    listTcdbTradeHallOfFamers(),
-    listTcdbTradeHallOfFameInductions(),
-  ]);
-  const inductionRows = inductions.map((induction) => ({
-    ...induction,
-    setHref: getSetCollectorDetailHref(induction.setSlug),
-  }));
+  const trades = await listTcdbTrades();
 
   return (
     <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
@@ -36,9 +21,6 @@ export default async function Page() {
             Thank you to all of my trade partners. A wonderful community.
           </p>
         </PageIntro>
-
-        <TcdbTradeHallOfFameTable rows={hallOfFamers} />
-        <TcdbTradeHallOfFameInductionsTable rows={inductionRows} />
 
         <section className="space-y-4">
           <div className="space-y-1">
