@@ -6,13 +6,8 @@ jest.mock("@/lib/datetime", () => ({
   fmtDate: (value: string) => value,
 }));
 
-const listTcdbTradesMock = jest.fn();
 const listTcdbTradeHallOfFamersMock = jest.fn();
 const listTcdbTradeHallOfFameInductionsMock = jest.fn();
-
-jest.mock("@/lib/tcdb-trades", () => ({
-  listTcdbTrades: (...args: unknown[]) => listTcdbTradesMock(...args),
-}));
 
 jest.mock("@/lib/tcdb-trade-hall-of-fame", () => ({
   listTcdbTradeHallOfFamers: (...args: unknown[]) =>
@@ -29,11 +24,10 @@ jest.mock("@/lib/set-collector-content", () => ({
 import Page, {
   dynamic,
   revalidate,
-} from "@/app/cardattack/tcdb-trades/page";
+} from "@/app/cardattack/hof/page";
 
-describe("TCDb trades route Hall of Fame integration", () => {
+describe("TCDb Trade Hall of Fame route", () => {
   beforeEach(() => {
-    listTcdbTradesMock.mockReset();
     listTcdbTradeHallOfFamersMock.mockReset();
     listTcdbTradeHallOfFameInductionsMock.mockReset();
   });
@@ -43,19 +37,7 @@ describe("TCDb trades route Hall of Fame integration", () => {
     expect(revalidate).toBe(0);
   });
 
-  it("renders Hall of Fame sections above the existing trade list", async () => {
-    listTcdbTradesMock.mockResolvedValue([
-      {
-        tradeId: "960943",
-        startDate: "2026-01-24",
-        endDate: "2026-01-31",
-        partner: "collect-a-set",
-        status: "Completed",
-        received: 5,
-        sent: 3,
-        total: 8,
-      },
-    ]);
+  it("renders both Hall of Fame sections", async () => {
     listTcdbTradeHallOfFamersMock.mockResolvedValue([
       {
         partner: "collect-a-set",
@@ -94,30 +76,21 @@ describe("TCDb trades route Hall of Fame integration", () => {
     const ui = await Page();
     render(ui);
 
-    expect(listTcdbTradesMock).toHaveBeenCalledTimes(1);
     expect(listTcdbTradeHallOfFamersMock).toHaveBeenCalledTimes(1);
     expect(listTcdbTradeHallOfFameInductionsMock).toHaveBeenCalledTimes(1);
 
-    const pageIntro = screen.getAllByRole("heading", {
-      name: "TCDb Trades",
-    })[0];
-    const hallOfFameHeading = screen.getByRole("heading", {
+    const hallOfFameHeadings = screen.getAllByRole("heading", {
       name: "TCDb Trade Hall of Fame",
     });
+    const [pageIntro, hallOfFameHeading] = hallOfFameHeadings;
     const inductionsHeading = screen.getByRole("heading", {
       name: "Hall of Fame Inductions",
     });
-    const tradeListHeading = screen.getAllByRole("heading", {
-      name: "TCDb Trades",
-    })[1];
 
     expect(pageIntro.compareDocumentPosition(hallOfFameHeading)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(hallOfFameHeading.compareDocumentPosition(inductionsHeading)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
-    expect(inductionsHeading.compareDocumentPosition(tradeListHeading)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
 
@@ -128,7 +101,6 @@ describe("TCDb trades route Hall of Fame integration", () => {
       0,
     );
     expect(screen.getAllByText("2").length).toBeGreaterThan(0);
-    expect(screen.getByTestId("tcdb-trade-table")).toBeInTheDocument();
     expect(screen.getByTestId("tcdb-trade-hof-table")).toBeInTheDocument();
     expect(
       screen.getByTestId("tcdb-trade-hof-inductions-table"),
