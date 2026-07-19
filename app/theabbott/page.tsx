@@ -65,7 +65,7 @@ export default function TheAbbottPage() {
           Best idea wins.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          <ScrollAmendment>
+          <ScrollAmendment date="2025-10-19">
             oh, and cypher from the matrix is a judas type who betrays our boi
             neo. I also call the AI agent (Codex) in ChatGPT cipher in part
             because of this movie classic and his repeated betrayal. Another

@@ -7,7 +7,9 @@ import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 describe("ScrollAmendment", () => {
   it("renders the release-style tab with cream/ink label and blue/white body", () => {
     render(
-      <ScrollAmendment>Only chronicles 1-10 were updated.</ScrollAmendment>,
+      <ScrollAmendment date="2026-07-19">
+        Only chronicles 1-10 were updated.
+      </ScrollAmendment>,
     );
 
     const wrapper = screen.getByRole("note");
@@ -27,7 +29,7 @@ describe("ScrollAmendment", () => {
       "[&_ul>li]:marker:text-[color:var(--text-on-blue)]",
     );
 
-    const label = screen.getByText("scroll amendment");
+    const label = screen.getByText("scroll amendment · 2026-07-19");
     expect(label).toHaveClass("absolute");
     expect(label).toHaveClass("rounded-tl-lg");
     expect(label).toHaveClass("rounded-tr-none");
@@ -42,7 +44,7 @@ describe("ScrollAmendment", () => {
 
   it("keeps inline person tags on the white text treatment", () => {
     render(
-      <ScrollAmendment>
+      <ScrollAmendment date="2026-07-19">
         <PersonTag tag="nikkigirl" /> sent in the correction.
       </ScrollAmendment>,
     );

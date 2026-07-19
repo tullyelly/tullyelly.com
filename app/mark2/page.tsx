@@ -176,7 +176,7 @@ export default function Mark2Page() {
           the laptop and is a distant second.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          <ScrollAmendment>
+          <ScrollAmendment date="2025-10-19">
             I wrote most of these landing pages on my phone using Obsidian.
           </ScrollAmendment>
         </p>

@@ -5,6 +5,7 @@ import { ScrollCallout } from "@/components/scrolls/ScrollCallout";
 interface ScrollAmendmentProps {
   children: ReactNode;
   className?: string;
+  date: string;
 }
 
 const scrollAmendmentBodyClassName =
@@ -20,11 +21,15 @@ const scrollAmendmentLabelStyle = {
  * Inline callout for editorial notes within scrolls content.
  * Uses a release-style tab label with Cream City Cream + black text while keeping the body Great Lakes Blue with white text.
  */
-export function ScrollAmendment({ children, className }: ScrollAmendmentProps) {
+export function ScrollAmendment({
+  children,
+  className,
+  date,
+}: ScrollAmendmentProps) {
   return (
     <ScrollCallout
       data-scroll-amendment
-      label="scroll amendment"
+      label={`scroll amendment · ${date}`}
       bodyClassName={scrollAmendmentBodyClassName}
       labelClassName={scrollAmendmentLabelClassName}
       labelStyle={scrollAmendmentLabelStyle}
