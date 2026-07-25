@@ -44,8 +44,10 @@ describe("SetCollector", () => {
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
-      tcdbSetUrl: "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
+      tcdbSetUrl:
+        "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
       completedSetPhotoPath: "/images/optimus/1991-92-upper-deck/hero.webp",
+      categoryTag: "Basketball",
       rating: 9.5,
       cardsOwned: 456,
       totalCards: 500,
@@ -66,8 +68,11 @@ describe("SetCollector", () => {
     expect(
       screen.getByRole("link", { name: "1991-92 Upper Deck" }),
     ).toHaveAttribute("href", "/cardattack/set-collector/1991-92-upper-deck");
+    expect(screen.getByText(", basketball")).toBeInTheDocument();
     expect(screen.getByText("(456/500; 91.2%)")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "960943" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "960943" }),
+    ).not.toBeInTheDocument();
     expect(container.querySelector("li > div")).toBeNull();
     expect(container.querySelector("li > p")).toBeNull();
   });
@@ -79,7 +84,8 @@ describe("SetCollector", () => {
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
-      tcdbSetUrl: "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
+      tcdbSetUrl:
+        "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
       cardsOwned: 500,
       totalCards: 500,
       cardsMissing: 0,
@@ -150,7 +156,9 @@ describe("SetCollector", () => {
       "/cardattack/set-collector/1992-courtside-draft-pix",
     );
     expect(screen.getByText("(133/147; 90.5%)")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "1004001" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "1004001" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders a lightweight fallback when no latest snapshot is available", async () => {
@@ -160,7 +168,8 @@ describe("SetCollector", () => {
       setName: "1991-92 Upper Deck",
       releaseYear: 1991,
       manufacturer: "Upper Deck",
-      tcdbSetUrl: "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
+      tcdbSetUrl:
+        "https://www.tcdb.com/ViewSet.cfm/sid/2090/1991-92-Upper-Deck",
       completedSetPhotoPath: "/images/optimus/1991-92-upper-deck/hero.webp",
       rating: 9.5,
       totalCards: 500,
@@ -174,11 +183,15 @@ describe("SetCollector", () => {
       screen.getByRole("link", { name: "1991-92 Upper Deck" }),
     ).toHaveAttribute("href", "/cardattack/set-collector/1991-92-upper-deck");
     expect(screen.queryByText(/\(.*%/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "960943" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "960943" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders nothing when the summary lookup fails", async () => {
-    getSetCollectorSummaryRowMock.mockRejectedValue(new Error("db unavailable"));
+    getSetCollectorSummaryRowMock.mockRejectedValue(
+      new Error("db unavailable"),
+    );
     console.error = jest.fn();
 
     const ui = await SetCollector({ set: " /1991 92 Upper Deck/ " });

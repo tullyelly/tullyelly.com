@@ -76,6 +76,9 @@ export default async function SetCollector({
       >
         {summary.setName}
       </Link>
+      {summary.categoryTag ? (
+        <span>{`, ${summary.categoryTag.toLowerCase()}`}</span>
+      ) : null}
       {latestProgress ? <span>{` (${latestProgress})`}</span> : null}
     </>
   );
