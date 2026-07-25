@@ -13,5 +13,7 @@ export async function GET(req: Request) {
   const trend = isTrend(trendParam) ? trendParam : undefined;
 
   const data = await listTcdbClanRankings({ page, pageSize, q, trend });
-  return NextResponse.json(data, { headers: { "Cache-Tag": "tcdb-rankings" } });
+  return NextResponse.json(data, {
+    headers: { "Cache-Tag": "tcdb-ranking-data" },
+  });
 }

@@ -4,6 +4,7 @@ import {
   PERSISTENT_BANNER_STORAGE_KEY,
   clearPersistentBanner,
   getPersistentBanner,
+  getPersistentBanners,
   setPersistentBanner,
 } from "@/lib/persistent-banner";
 
@@ -42,6 +43,32 @@ describe("PersistentBannerHost", () => {
     expect(screen.queryByText(/Important notice/)).toBeNull();
   });
 
+  test("queues multiple banners and dismisses them independently", async () => {
+    render(<PersistentBannerHost />);
+
+    act(() => {
+      setPersistentBanner({
+        message: "Giannis was saved.",
+        variant: "success",
+      });
+      setPersistentBanner({
+        message: "Glenn failed to save.",
+        variant: "error",
+      });
+    });
+
+    expect(await screen.findByText("Giannis was saved.")).toBeInTheDocument();
+    expect(screen.getByText("Glenn failed to save.")).toBeInTheDocument();
+    expect(getPersistentBanners()).toHaveLength(2);
+
+    const dismissButtons = screen.getAllByLabelText(/dismiss announcement/i);
+    fireEvent.click(dismissButtons[0]!);
+
+    expect(screen.queryByText("Giannis was saved.")).not.toBeInTheDocument();
+    expect(screen.getByText("Glenn failed to save.")).toBeInTheDocument();
+    expect(getPersistentBanners()).toHaveLength(1);
+  });
+
   test("clearing via helper hides banner", async () => {
     render(<PersistentBannerHost />);
 
@@ -49,13 +76,13 @@ describe("PersistentBannerHost", () => {
       setPersistentBanner({ message: "Notice", variant: "info" });
     });
 
-    expect(await screen.findByText(/Notice/)).toBeInTheDocument();
+    expect(await screen.findAllByText("Notice")).toHaveLength(2);
 
     act(() => {
       clearPersistentBanner();
     });
 
-    expect(screen.queryByText(/Notice/)).toBeNull();
+    expect(screen.queryAllByText("Notice")).toHaveLength(0);
   });
 });
 

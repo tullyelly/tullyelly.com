@@ -44,7 +44,7 @@ describe("NextAuth callbacks", () => {
 
     const token = await authOptions.callbacks?.jwt?.({
       token: {
-        features: ["menu.cardattack.tcdb.rankings"],
+        features: ["menu.cardattack.homies"],
         authzRevision: 3,
         email: "test@example.com",
         sub: "user-2",
@@ -55,14 +55,14 @@ describe("NextAuth callbacks", () => {
 
     expect(getAuthzRevisionMock).toHaveBeenCalledWith("user-2");
     expect(getEffectiveFeaturesMock).not.toHaveBeenCalled();
-    expect((token as any).features).toEqual(["menu.cardattack.tcdb.rankings"]);
+    expect((token as any).features).toEqual(["menu.cardattack.homies"]);
     expect((token as any).authzRevision).toBe(3);
   });
 
   it("refreshes features when revision bumped", async () => {
     getAuthzRevisionMock.mockResolvedValue(10);
     getEffectiveFeaturesMock.mockResolvedValue({
-      features: ["menu.mark2.admin", "menu.cardattack.tcdb.rankings"],
+      features: ["menu.mark2.admin", "menu.cardattack.homies"],
       revision: 10,
     });
 
@@ -81,7 +81,7 @@ describe("NextAuth callbacks", () => {
     expect(getEffectiveFeaturesMock).toHaveBeenCalledWith("user-9");
     expect((token as any).features).toEqual([
       "menu.mark2.admin",
-      "menu.cardattack.tcdb.rankings",
+      "menu.cardattack.homies",
     ]);
     expect((token as any).authzRevision).toBe(10);
   });

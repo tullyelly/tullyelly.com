@@ -5,6 +5,7 @@ const mockListRecentTcdbHomieFallers = jest.fn();
 const mockListRecentTcdbHomieRisers = jest.fn();
 const mockListTopTcdbHomieRankings = jest.fn();
 const mockListTcdbRankings = jest.fn();
+const mockListHomieDirectory = jest.fn();
 const mockGetHomieTcdbRankingByRouteKey = jest.fn();
 const mockListHomieTcdbSnapshotHistory = jest.fn();
 const mockGetStoredTagMetadataForHrefKind = jest.fn();
@@ -34,10 +35,10 @@ jest.mock("next/navigation", () => ({
 jest.mock("@/lib/authz", () => ({
   canCurrentUser: jest.fn().mockResolvedValue(false),
 }));
-jest.mock("@/app/cardattack/tcdb-rankings/_lib/getCurrentDate", () => ({
+jest.mock("@/app/cardattack/homies/_lib/getCurrentDate", () => ({
   getCurrentDateIso: jest.fn().mockResolvedValue("2026-05-01"),
 }));
-jest.mock("@/app/cardattack/tcdb-rankings/_lib/getHomieOptions", () => ({
+jest.mock("@/app/cardattack/homies/_lib/getHomieOptions", () => ({
   getHomieOptions: jest.fn().mockResolvedValue([]),
 }));
 jest.mock("@/lib/data/tcdb", () => ({
@@ -55,6 +56,9 @@ jest.mock("@/lib/data/tcdb", () => ({
   listTopTcdbHomieRankings: (...args: unknown[]) =>
     mockListTopTcdbHomieRankings(...args),
 }));
+jest.mock("@/lib/data/homies", () => ({
+  listHomieDirectory: (...args: unknown[]) => mockListHomieDirectory(...args),
+}));
 jest.mock("@/lib/tags-server", () => ({
   getStoredTagMetadataForHrefKind: (...args: unknown[]) =>
     mockGetStoredTagMetadataForHrefKind(...args),
@@ -62,6 +66,7 @@ jest.mock("@/lib/tags-server", () => ({
 jest.mock("@/lib/chronicle-person-tags", () => ({
   listChronicleTagDisplayNames: (...args: unknown[]) =>
     mockListChronicleTagDisplayNames(...args),
+  listChroniclePersonTagCounts: jest.fn().mockReturnValue([]),
 }));
 jest.mock("@/lib/blog", () => ({
   getTaggedPosts: (...args: unknown[]) => mockGetTaggedPosts(...args),
@@ -81,9 +86,9 @@ jest.mock("@/components/tcdb/ClanCardCountSparkline", () => ({
     <div
       data-testid="clan-card-count-sparkline"
       data-snapshots={String(snapshots.length)}
-      data-sport={
-        String((snapshots[0] as { sport?: string } | undefined)?.sport ?? "")
-      }
+      data-sport={String(
+        (snapshots[0] as { sport?: string } | undefined)?.sport ?? "",
+      )}
     />
   ),
 }));
@@ -153,6 +158,7 @@ describe("TCDB rankings pages", () => {
     mockListRecentTcdbHomieRisers.mockReset();
     mockListTopTcdbHomieRankings.mockReset();
     mockListTcdbRankings.mockReset();
+    mockListHomieDirectory.mockReset();
     mockGetHomieTcdbRankingByRouteKey.mockReset();
     mockListHomieTcdbSnapshotHistory.mockReset();
     mockListHomieTcdbSnapshotHistory.mockResolvedValue([
@@ -220,10 +226,25 @@ describe("TCDB rankings pages", () => {
   });
 
   it("renders the homies list page and preferred detail links", async () => {
-    mockListTcdbRankings.mockResolvedValue({
-      data: [homieRanking],
-      meta: { page: 1, pageSize: 50, total: 1, totalPages: 1 },
-    });
+    mockListHomieDirectory.mockResolvedValue([
+      {
+        id: 34,
+        name: homieRanking.name,
+        tag_slug: "freak",
+        drafted: 2021,
+        updated_at: null,
+        route_slug: "freak",
+        card_count: 500,
+        ranking: 1,
+        ranking_at: "2026-05-01",
+        difference: 5,
+        rank_delta: 1,
+        diff_delta: 2,
+        trend_rank: "up",
+        trend_overall: "up",
+        diff_sign_changed: false,
+      },
+    ]);
 
     render(
       await HomiesPage({
@@ -533,15 +554,18 @@ describe("TCDB rankings pages", () => {
     expect(screen.getByText("Total uses")).toBeInTheDocument();
     expect(screen.getByText("3 mentions")).toBeInTheDocument();
     expect(screen.getByText("bucks")).toBeInTheDocument();
-    expect(screen.getByText("2 mentions across 2 chronicles")).toBeInTheDocument();
+    expect(
+      screen.getByText("2 mentions across 2 chronicles"),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         name: "recent chronicles for bucks-n-six",
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "wu-tang clans" }),
-    ).toHaveAttribute("href", "/shaolin/wu-tang-clans");
+    expect(screen.getByRole("link", { name: "wu-tang clans" })).toHaveAttribute(
+      "href",
+      "/shaolin/wu-tang-clans",
+    );
     expect(
       screen.queryByRole("link", { name: "Clan rankings" }),
     ).not.toBeInTheDocument();

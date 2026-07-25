@@ -66,7 +66,7 @@ describe("GET /api/clans", () => {
     expect(await res.json()).toMatchObject({
       data: [{ slug: "milwaukee-bucks" }],
     });
-    expect(res.headers.get("Cache-Tag")).toBe("tcdb-rankings");
+    expect(res.headers.get("Cache-Tag")).toBe("tcdb-ranking-data");
     expect(mockListTcdbClanRankings).toHaveBeenCalledWith({
       page: 2,
       pageSize: 20,
@@ -118,7 +118,7 @@ describe("GET /api/clans/:slug", () => {
       ],
       meta: { slug: "milwaukee-bucks", total: 2 },
     });
-    expect(res.headers.get("Cache-Tag")).toBe("tcdb-rankings");
+    expect(res.headers.get("Cache-Tag")).toBe("tcdb-ranking-data");
     expect(mockGetTcdbClanRankingsBySlug).toHaveBeenCalledWith(
       "milwaukee-bucks",
     );

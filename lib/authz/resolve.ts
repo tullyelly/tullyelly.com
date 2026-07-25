@@ -62,6 +62,15 @@ async function fetchPolicySnapshot(userId: string): Promise<CachedPolicy> {
   };
 }
 
+async function fetchPolicyRevision(userId: string): Promise<number> {
+  const db = getPool();
+  const { rows } = await db.query<{ revision: number }>(
+    `SELECT dojo.authz_get_revision($1::uuid) AS revision`,
+    [userId],
+  );
+  return rows?.[0]?.revision ?? 0;
+}
+
 /**
  * Cache effective policy per user.
  * Invalidate via revalidateTag('auth:user:{id}') on membership/feature changes.
@@ -69,9 +78,13 @@ async function fetchPolicySnapshot(userId: string): Promise<CachedPolicy> {
 export async function getEffectivePolicy(
   userId: string,
 ): Promise<EffectivePolicy> {
+  // Membership updates bump this revision in the same database transaction.
+  // Including it in the cache key makes policy refresh deterministic even when
+  // a LISTEN/NOTIFY subscriber was not active when the update occurred.
+  const revision = await fetchPolicyRevision(userId);
   const cached = await unstable_cache(
     () => fetchPolicySnapshot(userId),
-    ["authz-policy", userId],
+    ["authz-policy", userId, `revision:${revision}`],
     { tags: [`auth:user:${userId}`] },
   )();
 

@@ -67,7 +67,10 @@ async function PostContent({ slug }: { slug: string }) {
           as="section"
           className="border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8 md:pt-0"
         >
-          <PageIntro title={`${fmtDate(post.date)}: ${post.title}`}>
+          <PageIntro
+            title={`${fmtDate(post.date)}: ${post.title}`}
+            showProductionLink={false}
+          >
             <ChronicleMdxRenderer
               code={post.body.code}
               postDate={post.date}

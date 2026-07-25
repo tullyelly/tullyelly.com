@@ -25,6 +25,7 @@ import {
   listHomieTcdbSnapshotHistory,
   listNumberOneTcdbHomieRankings,
 } from "@/lib/data/tcdb";
+import { listHomieDirectory } from "@/lib/data/homies";
 import {
   getTcdbClanRankingHref,
   TCDB_CLAN_RANKINGS_PATH,
@@ -63,6 +64,19 @@ const homieRow = {
   diff_sign_changed: false,
 };
 
+describe("homie directory read model", () => {
+  it("starts from dojo.homie and left joins optional ranking data", async () => {
+    queryRowsMock.mockResolvedValueOnce([]);
+
+    await listHomieDirectory();
+
+    const sql = String(queryRowsMock.mock.calls[0]?.[0]);
+    expect(sql).toContain("FROM dojo.homie AS h");
+    expect(sql).toContain("LEFT JOIN dojo.homie_tcdb_ranking_rt AS r");
+    expect(sql).toContain("NULLS LAST");
+  });
+});
+
 describe("tcdb clan ranking data helpers", () => {
   beforeEach(() => {
     queryRowsMock.mockReset();
@@ -93,10 +107,7 @@ describe("tcdb clan ranking data helpers", () => {
       },
     });
 
-    const [query, values] = queryRowsMock.mock.calls[0] as [
-      string,
-      unknown[],
-    ];
+    const [query, values] = queryRowsMock.mock.calls[0] as [string, unknown[]];
     expect(query).toContain("FROM dojo.clan_tcdb_ranking_rt");
     expect(query).toContain("JOIN dojo.clan AS c");
     expect(query).toContain("NULLIF(btrim(c.tag_slug), '') AS tag_slug");
@@ -122,10 +133,7 @@ describe("tcdb clan ranking data helpers", () => {
       ],
     );
 
-    const [query, values] = queryRowsMock.mock.calls[0] as [
-      string,
-      unknown[],
-    ];
+    const [query, values] = queryRowsMock.mock.calls[0] as [string, unknown[]];
     expect(query).toContain("WHERE r.slug = $1");
     expect(query).toContain("ORDER BY r.sport ASC");
     expect(values).toEqual(["milwaukee-bucks"]);
@@ -170,10 +178,7 @@ describe("tcdb clan ranking data helpers", () => {
       },
     ]);
 
-    const [query, values] = queryRowsMock.mock.calls[0] as [
-      string,
-      unknown[],
-    ];
+    const [query, values] = queryRowsMock.mock.calls[0] as [string, unknown[]];
     expect(query).toContain("FROM dojo.clan_tcdb_snapshot_rt");
     expect(query).toContain("WHERE clan_id = $1::bigint");
     expect(query).toContain("sport");
@@ -216,9 +221,7 @@ describe("tcdb clan ranking data helpers", () => {
     await expect(listNumberOneTcdbClanRankings()).resolves.toEqual([
       { ...clanRow, ranking_at: "2026-05-01" },
     ]);
-    expect(queryRowsMock.mock.calls[0][0]).toContain(
-      "WHERE r.ranking = 1",
-    );
+    expect(queryRowsMock.mock.calls[0][0]).toContain("WHERE r.ranking = 1");
 
     queryRowsMock.mockResolvedValueOnce([homieRow]);
     await expect(listNumberOneTcdbHomieRankings()).resolves.toEqual([
@@ -298,10 +301,7 @@ describe("tcdb clan ranking data helpers", () => {
       },
     ]);
 
-    const [query, values] = queryRowsMock.mock.calls[0] as [
-      string,
-      unknown[],
-    ];
+    const [query, values] = queryRowsMock.mock.calls[0] as [string, unknown[]];
     expect(query).toContain("FROM dojo.homie_tcdb_snapshot_rt");
     expect(query).toContain("WHERE homie_id = $1::bigint");
     expect(query).toContain("ORDER BY ranking_at ASC");

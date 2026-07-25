@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import ProductionPageLink from "./ProductionPageLink";
 
 type PageIntroProps = {
   title: React.ReactNode;
@@ -9,6 +10,7 @@ type PageIntroProps = {
   contentClassName?: string;
   headerClassName?: string;
   titleClassName?: string;
+  showProductionLink?: boolean;
 };
 
 export default function PageIntro({
@@ -20,11 +22,12 @@ export default function PageIntro({
   contentClassName,
   headerClassName,
   titleClassName,
+  showProductionLink = true,
 }: PageIntroProps) {
-  const hasHeaderLayout = accessory || actions;
+  const hasHeaderLayout = showProductionLink || accessory || actions;
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-4 pt-8", className)}>
       <header
         className={cn(
           hasHeaderLayout
@@ -38,12 +41,13 @@ export default function PageIntro({
             <div className="flex items-center gap-3">
               <h1
                 className={cn(
-                  "text-3xl font-semibold leading-tight md:text-4xl",
+                  "!m-0 text-3xl font-semibold leading-tight md:text-4xl",
                   titleClassName,
                 )}
               >
                 {title}
               </h1>
+              {showProductionLink ? <ProductionPageLink /> : null}
               {accessory}
             </div>
             {actions}

@@ -39,7 +39,7 @@
 - `lib/authz/resolve.ts` registers cache tag `auth:user:{id}` and relies on `revalidateTag` for policy busting.
 - `lib/authz/invalidation.ts` subscribes to the `authz_changed` channel and calls `revalidateTag('auth:user:${id}')`.
 - `app/mark2/admin/authz/actions.ts` revalidates `auth:user:${userId}` after role grant or revoke.
-- `app/api/revalidate/tcdb-rankings/route.ts` confirms the rankings tag is `'tcdb-rankings'`.
+- Homie list and mutation paths share the `homies` cache tag; homie updates also invalidate `homie-options` and `homie-details`.
 - All code imports `revalidateTag` from `next/cache`.
 
 ## Gaps addressed

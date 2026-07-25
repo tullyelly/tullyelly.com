@@ -73,7 +73,7 @@ const MENU_FEATURES = [
   ["menu.mark2.scrolls", "Menu: Shaolin Scrolls"],
   ["menu.cardattack.overview", "Menu: cardattack Overview"],
   ["menu.cardattack.tcdb.home", "Menu: TCDB Home"],
-  ["menu.cardattack.tcdb.rankings", "Menu: TCDB Rankings"],
+  ["menu.cardattack.homies", "Menu: Homies"],
   ["menu.cardattack.tcdb.trades", "Menu: TCDB Trades"],
   ["menu.cardattack.tcdb.hof", "Menu: TCDb Trade Hall of Fame"],
   ["menu.cardattack.tcdb.set.collector", "Menu: Set Collector"],
@@ -146,7 +146,7 @@ const PERSONA_DEFS = [
       {
         label: "Homies",
         href: "/cardattack/homies",
-        feature: "menu.cardattack.tcdb.rankings",
+        feature: "menu.cardattack.homies",
         orderIndex: 20,
       },
       {
@@ -418,6 +418,30 @@ async function seedMenu(client) {
   }
 }
 
+async function seedHomieUpdateAuthorization(client) {
+  await client.query(`
+    INSERT INTO dojo.authz_app (slug, name, is_public)
+    VALUES ('tcdb', 'TCDB', TRUE)
+    ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+  `);
+  await client.query(`
+    INSERT INTO dojo.authz_feature (app_id, key, description, enabled)
+    SELECT id, 'tcdb.homie.update', 'update an existing homie', TRUE
+    FROM dojo.authz_app WHERE slug = 'tcdb'
+    ON CONFLICT (key) DO UPDATE
+      SET app_id = EXCLUDED.app_id, description = EXCLUDED.description, enabled = TRUE
+  `);
+  await client.query(`
+    INSERT INTO dojo.authz_role_feature (role_id, feature_id, effect)
+    SELECT role.id, feature.id, 'allow'
+    FROM dojo.authz_role AS role
+    CROSS JOIN dojo.authz_feature AS feature
+    WHERE role.name IN ('editor', 'admin')
+      AND feature.key = 'tcdb.homie.update'
+    ON CONFLICT (role_id, feature_id) DO UPDATE SET effect = 'allow'
+  `);
+}
+
 async function main() {
   const client = new Client({
     connectionString: EFFECTIVE_URL,
@@ -433,6 +457,7 @@ async function main() {
     await client.query("SET LOCAL search_path TO auth, dojo, public");
 
     await seedMenu(client);
+    await seedHomieUpdateAuthorization(client);
 
     await client.query("COMMIT");
     console.log("[seed-e2e] Seed completed successfully.");

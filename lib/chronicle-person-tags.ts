@@ -19,6 +19,12 @@ export type ChronicleTagDisplayName = {
   chronicleCount: number;
 };
 
+export type ChroniclePersonTagCount = {
+  tag: string;
+  count: number;
+  chronicleCount: number;
+};
+
 function isChroniclePersonTagUsage(
   value: unknown,
 ): value is ChroniclePersonTagUsage {
@@ -99,5 +105,60 @@ export function listChronicleTagDisplayNames(
   return collectChronicleTagDisplayNames(
     allPosts as readonly ChroniclePersonTagSource[],
     tag,
+  );
+}
+
+export function collectChroniclePersonTagCounts(
+  posts: readonly ChroniclePersonTagSource[],
+  allowedTags: readonly string[],
+  limit = 10,
+): ChroniclePersonTagCount[] {
+  const allowed = new Set(
+    allowedTags.map(normalizeTagSlug).filter((tag) => tag.length > 0),
+  );
+  const safeLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 0;
+  const counts = new Map<
+    string,
+    { count: number; chronicleSlugs: Set<string> }
+  >();
+
+  for (const post of posts) {
+    if (post.draft || !Array.isArray(post.personTagUsages)) continue;
+
+    for (const value of post.personTagUsages) {
+      if (!isChroniclePersonTagUsage(value)) continue;
+      const tag = normalizeTagSlug(value.tag);
+      if (!allowed.has(tag)) continue;
+      const current = counts.get(tag);
+      if (current) {
+        current.count += 1;
+        current.chronicleSlugs.add(post.slug);
+      } else {
+        counts.set(tag, {
+          count: 1,
+          chronicleSlugs: new Set([post.slug]),
+        });
+      }
+    }
+  }
+
+  return Array.from(counts.entries())
+    .map(([tag, value]) => ({
+      tag,
+      count: value.count,
+      chronicleCount: value.chronicleSlugs.size,
+    }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
+    .slice(0, safeLimit);
+}
+
+export function listChroniclePersonTagCounts(
+  allowedTags: readonly string[],
+  limit = 10,
+): ChroniclePersonTagCount[] {
+  return collectChroniclePersonTagCounts(
+    allPosts as readonly ChroniclePersonTagSource[],
+    allowedTags,
+    limit,
   );
 }

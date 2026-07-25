@@ -12,7 +12,7 @@ describe("getCapabilities", () => {
 
   it("builds capabilities from session features", async () => {
     (getServerSession as jest.Mock).mockResolvedValue({
-      user: { features: ["menu.mark2.admin", "menu.cardattack.tcdb.rankings"] },
+      user: { features: ["menu.mark2.admin", "menu.cardattack.homies"] },
     });
 
     const capabilities = await getCapabilities();
