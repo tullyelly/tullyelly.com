@@ -4,19 +4,23 @@ import { ExternalLink } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
 const PRODUCTION_ORIGIN = "https://tullyelly.com";
+const PRODUCTION_HOSTNAME = new URL(PRODUCTION_ORIGIN).hostname;
 
 function subscribe() {
   return () => undefined;
 }
 
-function getProductionHref() {
-  const current = new URL(window.location.href);
-  if (current.origin === PRODUCTION_ORIGIN) return null;
+export function getProductionHref(current: URL) {
+  if (current.hostname === PRODUCTION_HOSTNAME) return null;
   return `${PRODUCTION_ORIGIN}${current.pathname}${current.search}${current.hash}`;
 }
 
 export default function ProductionPageLink() {
-  const href = useSyncExternalStore(subscribe, getProductionHref, () => null);
+  const href = useSyncExternalStore(
+    subscribe,
+    () => getProductionHref(new URL(window.location.href)),
+    () => null,
+  );
 
   if (!href) return null;
 

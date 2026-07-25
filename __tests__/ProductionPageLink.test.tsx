@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 
-import ProductionPageLink from "@/components/layout/ProductionPageLink";
+import ProductionPageLink, {
+  getProductionHref,
+} from "@/components/layout/ProductionPageLink";
 
 describe("ProductionPageLink", () => {
   it("links the current local path and query to production", async () => {
@@ -16,5 +18,13 @@ describe("ProductionPageLink", () => {
       "href",
       "https://tullyelly.com/cardattack/homies?trend=up&page=2",
     );
+  });
+
+  it("does not link to production when already on the production hostname", () => {
+    expect(
+      getProductionHref(
+        new URL("http://tullyelly.com:3000/cardattack/homies?trend=up"),
+      ),
+    ).toBeNull();
   });
 });
