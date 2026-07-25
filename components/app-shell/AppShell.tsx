@@ -12,6 +12,7 @@ import type { ResolvedPersona } from "@/lib/menu/persona";
 import Footer from "@/app/_components/Footer";
 import { CONTENT_GUTTER_CLASS } from "./constants";
 import Breadcrumbs from "@/components/breadcrumbs/Breadcrumbs";
+import PersistentBannerHost from "@/components/PersistentBannerHost";
 import {
   isBreadcrumbDebugAllowed,
   isPublicE2EModeEnabled,
@@ -95,6 +96,7 @@ export default async function AppShell({
         )}
       >
         {isPublicE2EModeEnabled() ? <E2EOnlyNav /> : null}
+        <PersistentBannerHost />
         {children}
       </div>
       <Breadcrumbs

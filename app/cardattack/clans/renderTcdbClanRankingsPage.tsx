@@ -33,13 +33,13 @@ const readClanRankings = (
   unstable_cache(
     () => listTcdbClanRankings({ page, pageSize, q, trend }),
     [
-      "tcdb-rankings-clans",
+      "clan-ranking-data",
       `p:${page}`,
       `ps:${pageSize}`,
       `q:${q ?? ""}`,
       `t:${trend ?? ""}`,
     ],
-    { revalidate: 300, tags: ["tcdb-rankings", "tcdb-rankings-clans"] },
+    { revalidate: 300, tags: ["tcdb-ranking-data", "clan-ranking-data"] },
   )();
 
 export async function renderTcdbClanRankingsPage(

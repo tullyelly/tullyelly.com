@@ -1,6 +1,6 @@
 # CAPABILITIES ; WU-375 (Spike)
 
-**Scope:** We gate _features_, not apps/pages. v1 keeps `tcdb-rankings` public; only the **create snapshot** action is gated.
+**Scope:** We gate features, not public pages. The homie directory is public; snapshot creation and homie updates are gated.
 
 ## Grammar & Naming
 
@@ -14,12 +14,13 @@
 | key                    | app  | description                        | status     |
 | ---------------------- | ---- | ---------------------------------- | ---------- |
 | `tcdb.snapshot.create` | tcdb | create a homie snapshot via UI/API | **active** |
+| `tcdb.homie.update`    | tcdb | update an existing homie           | **active** |
 | `tcdb.snapshot.view`   | tcdb | read/inspect snapshot history      | future     |
 
 ## Roles (baseline)
 
 - `viewer`: default; no gated features.
-- `editor`: can create snapshots (`tcdb.snapshot.create`).
+- `editor`: can create snapshots and update homies.
 - `admin`: full access to seeded features (explicit grants).
 
 ## Evaluation Principles

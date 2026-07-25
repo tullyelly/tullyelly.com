@@ -11,7 +11,7 @@ The menu tree comes from `dojo.v_menu_published` and is filtered server-side bef
 ## requires
 
 - Every nav item can declare `requires: string[]`. All entries must be truthy strings; blank strings are discarded.
-- Items pass only when **every** required capability is present. Use small, specific keys (examples: `menu.cardattack.tcdb.rankings`).
+- Items pass only when **every** required capability is present. Use small, specific keys (examples: `menu.cardattack.homies`).
 - When legacy data still writes `featureKey`, the filter treats it as a single-item `requires` list. Keep `featureKey` populated so analytics can attribute clicks to features.
 
 ## hidden

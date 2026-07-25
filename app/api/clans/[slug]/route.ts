@@ -20,7 +20,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
       meta: { slug: rankings[0]?.slug ?? slug, total: rankings.length },
     },
     {
-      headers: { "Cache-Tag": "tcdb-rankings" },
+      headers: { "Cache-Tag": "tcdb-ranking-data" },
     },
   );
 }

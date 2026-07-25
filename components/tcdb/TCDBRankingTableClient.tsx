@@ -161,7 +161,7 @@ export default function TCDBRankingTableClient({
       <Table
         variant="bucks"
         aria-label={labels.tableAriaLabel}
-        data-testid="tcdb-rankings-table"
+        data-testid="tcdb-ranking-table"
         className="thead-sticky"
         themeStyle={theme?.tableThemeStyle}
       >

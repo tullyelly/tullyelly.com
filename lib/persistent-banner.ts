@@ -5,54 +5,124 @@ export type PersistentBannerPayload = {
   variant?: "info" | "success" | "warning" | "error";
 };
 
+export type PersistentBannerRecord = PersistentBannerPayload & {
+  id: string;
+  createdAt: number;
+};
+
 type BannerEventDetail = {
-  payload: PersistentBannerPayload | null;
+  banners: PersistentBannerRecord[];
 };
 
 export const PERSISTENT_BANNER_STORAGE_KEY = "tullyelly:persistent-banner";
 export const PERSISTENT_BANNER_EVENT = "tullyelly:persistent-banner";
 
-function dispatchBannerEvent(payload: PersistentBannerPayload | null): void {
+let bannerSequence = 0;
+
+function nextBannerId(): string {
+  bannerSequence += 1;
+  return `persistent-banner-${Date.now().toString(36)}-${bannerSequence.toString(36)}`;
+}
+
+function dispatchBannerEvent(banners: PersistentBannerRecord[]): void {
   if (typeof window === "undefined") return;
   const event = new CustomEvent<BannerEventDetail>(PERSISTENT_BANNER_EVENT, {
-    detail: { payload },
+    detail: { banners },
   });
   window.dispatchEvent(event);
 }
 
-export function setPersistentBanner(payload: PersistentBannerPayload): void {
+function isPayload(value: unknown): value is PersistentBannerPayload {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as { message?: unknown }).message === "string" &&
+    (value as { message: string }).message.trim().length > 0
+  );
+}
+
+function normalizeStoredValue(value: unknown): PersistentBannerRecord[] {
+  const entries = Array.isArray(value) ? value : [value];
+  return entries.flatMap((entry, index) => {
+    if (!isPayload(entry)) return [];
+    const record = entry as Partial<PersistentBannerRecord>;
+    return [
+      {
+        id:
+          typeof record.id === "string" && record.id
+            ? record.id
+            : `persistent-banner-legacy-${index}`,
+        message: record.message!.trim(),
+        variant: record.variant,
+        createdAt:
+          typeof record.createdAt === "number" ? record.createdAt : index,
+      },
+    ];
+  });
+}
+
+function storeBanners(
+  banners: PersistentBannerRecord[],
+  operation: "persist" | "clear" = "persist",
+): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(
-      PERSISTENT_BANNER_STORAGE_KEY,
-      JSON.stringify(payload),
+    if (banners.length === 0) {
+      window.localStorage.removeItem(PERSISTENT_BANNER_STORAGE_KEY);
+    } else {
+      window.localStorage.setItem(
+        PERSISTENT_BANNER_STORAGE_KEY,
+        JSON.stringify(banners),
+      );
+    }
+  } catch (err) {
+    console.error(
+      operation === "clear"
+        ? "Failed to clear banner"
+        : "Failed to persist banner",
+      err,
     );
-  } catch (err) {
-    console.error("Failed to persist banner", err);
   }
-  dispatchBannerEvent(payload);
+  dispatchBannerEvent(banners);
 }
 
-export function clearPersistentBanner(): void {
+export function setPersistentBanner(payload: PersistentBannerPayload): string {
+  if (typeof window === "undefined") return "";
+  const banner: PersistentBannerRecord = {
+    ...payload,
+    message: payload.message.trim(),
+    id: nextBannerId(),
+    createdAt: Date.now(),
+  };
+  storeBanners([...getPersistentBanners(), banner]);
+  return banner.id;
+}
+
+export function clearPersistentBanner(id?: string): void {
   if (typeof window === "undefined") return;
-  try {
-    window.localStorage.removeItem(PERSISTENT_BANNER_STORAGE_KEY);
-  } catch (err) {
-    console.error("Failed to clear banner", err);
+  if (!id) {
+    storeBanners([], "clear");
+    return;
   }
-  dispatchBannerEvent(null);
+  storeBanners(
+    getPersistentBanners().filter((banner) => banner.id !== id),
+    "clear",
+  );
 }
 
-export function getPersistentBanner(): PersistentBannerPayload | null {
-  if (typeof window === "undefined") return null;
+export function getPersistentBanners(): PersistentBannerRecord[] {
+  if (typeof window === "undefined") return [];
   const raw = window.localStorage.getItem(PERSISTENT_BANNER_STORAGE_KEY);
-  if (!raw) return null;
+  if (!raw) return [];
   try {
-    const parsed = JSON.parse(raw) as PersistentBannerPayload;
-    if (!parsed?.message) return null;
-    return parsed;
+    return normalizeStoredValue(JSON.parse(raw));
   } catch (err) {
     console.error("Failed to parse persisted banner", err);
-    return null;
+    return [];
   }
+}
+
+// Compatibility for existing consumers that only inspect one banner.
+export function getPersistentBanner(): PersistentBannerPayload | null {
+  return getPersistentBanners()[0] ?? null;
 }

@@ -29,7 +29,7 @@ export const TEST_MENU_ITEMS: NavItem[] = [
         kind: "link",
         label: "Homies",
         href: "/menu-test/target",
-        featureKey: "menu.cardattack.tcdb.rankings",
+        featureKey: "menu.cardattack.homies",
       },
       {
         id: "cardattack-trades",
