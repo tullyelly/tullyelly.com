@@ -98,22 +98,19 @@ describe("clan snapshot data helper", () => {
     ]);
 
     expect(queryRowsMock).toHaveBeenCalledTimes(1);
-    const [query, values] = queryRowsMock.mock.calls[0] as [
-      string,
-      string[],
-    ];
+    const [query, values] = queryRowsMock.mock.calls[0] as [string, string[]];
 
     expect(query).toContain("WITH matched_clans AS");
-    expect(query).toContain("snapshot_history AS");
+    expect(query).toContain("matched_snapshots AS");
     expect(query).toContain("FROM dojo.clan AS c");
-    expect(query).toContain("FROM dojo.clan_tcdb_snapshot AS snapshot");
-    expect(query).toContain(
+    expect(query).toContain("FROM dojo.clan_tcdb_snapshot_rt AS snapshot");
+    expect(query).not.toContain(
       "PARTITION BY snapshot.clan_id, snapshot.sport",
     );
     expect(query).toContain("WHERE to_jsonb(c) ->> 'tag_slug' = $2");
     expect(query).toContain("OR c.slug = $2");
     expect(query).not.toContain("LIMIT 1");
-    expect(query).toContain("WHERE s.ranking_at = $1::date");
+    expect(query).toContain("WHERE snapshot.ranking_at = $1::date");
     expect(query).toContain(
       "ORDER BY s.match_rank ASC, s.sport ASC, s.ranking ASC, s.slug ASC",
     );
@@ -127,10 +124,7 @@ describe("clan snapshot data helper", () => {
       getClanSnapshotsForTagOnDate("noles", "2026-04-10", "Football"),
     ).resolves.toEqual([]);
 
-    const [query, values] = queryRowsMock.mock.calls[0] as [
-      string,
-      string[],
-    ];
+    const [query, values] = queryRowsMock.mock.calls[0] as [string, string[]];
 
     expect(query).toContain("AND s.sport = $3");
     expect(values).toEqual(["2026-04-10", "noles", "football"]);
