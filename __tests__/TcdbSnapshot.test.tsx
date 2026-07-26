@@ -30,7 +30,9 @@ describe("TcdbSnapshot", () => {
         ranking: 149,
         rankingAt: "2026-04-10",
         ...(trend === "flat" ? { prevRanking: 149 } : {}),
-        trend,
+        trend: trend === "up" ? "down" : "up",
+        trendRank: trend === "up" ? "down" : "up",
+        trendOverall: trend,
       });
 
       const ui = await TcdbSnapshot({
@@ -69,7 +71,9 @@ describe("TcdbSnapshot", () => {
       cardCount: 178,
       ranking: 149,
       rankingAt: "2026-04-10",
-      trend: "flat",
+      trend: "up",
+      trendRank: "up",
+      trendOverall: "flat",
     });
 
     const ui = await TcdbSnapshot({
