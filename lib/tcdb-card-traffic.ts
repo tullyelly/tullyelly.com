@@ -12,8 +12,10 @@ export type TcdbCardTrafficCalendarDay = {
 };
 
 export type TcdbCardTrafficDay = TcdbCardTrafficCalendarDay & {
-  cardTotal: number;
-  tradeCount: number;
+  sent: number;
+  received: number;
+  sentTradeCount: number;
+  receivedTradeCount: number;
 };
 
 export type TcdbCardTrafficWindow = {
@@ -26,8 +28,10 @@ export type TcdbCardTrafficWindow = {
 };
 
 type TrafficCounts = {
-  cardTotal: number;
-  tradeCount: number;
+  sent: number;
+  received: number;
+  sentTradeCount: number;
+  receivedTradeCount: number;
 };
 
 export function normalizeTcdbCardTrafficDate(value: string): string {
@@ -156,8 +160,10 @@ export function buildTcdbCardTrafficRows(
 
     return {
       ...day,
-      cardTotal: counts?.cardTotal ?? 0,
-      tradeCount: counts?.tradeCount ?? 0,
+      sent: counts?.sent ?? 0,
+      received: counts?.received ?? 0,
+      sentTradeCount: counts?.sentTradeCount ?? 0,
+      receivedTradeCount: counts?.receivedTradeCount ?? 0,
     };
   });
 }

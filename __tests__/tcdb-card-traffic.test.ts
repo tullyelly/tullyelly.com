@@ -102,8 +102,10 @@ describe("TCDb card traffic window", () => {
         [
           "2026-06-24",
           {
-            cardTotal: 12,
-            tradeCount: 2,
+            sent: 12,
+            received: 7,
+            sentTradeCount: 2,
+            receivedTradeCount: 1,
           },
         ],
       ]),
@@ -113,14 +115,18 @@ describe("TCDb card traffic window", () => {
     expect(rows[4]).toMatchObject({
       date: "2026-06-24",
       slot: 5,
-      cardTotal: 12,
-      tradeCount: 2,
+      sent: 12,
+      received: 7,
+      sentTradeCount: 2,
+      receivedTradeCount: 1,
     });
     expect(rows[5]).toMatchObject({
       date: "2026-06-25",
       slot: 6,
-      cardTotal: 0,
-      tradeCount: 0,
+      sent: 0,
+      received: 0,
+      sentTradeCount: 0,
+      receivedTradeCount: 0,
       isChronicleDate: true,
     });
   });
