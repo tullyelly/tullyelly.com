@@ -179,8 +179,10 @@ describe("tcdb trade db helper", () => {
     mockSql.mockResolvedValue([
       {
         traffic_date: "2026-06-24",
-        trade_count: "2",
-        card_total: "9",
+        sent: "9",
+        received: "6",
+        sent_trade_count: "2",
+        received_trade_count: "1",
       },
     ]);
 
@@ -193,29 +195,37 @@ describe("tcdb trade db helper", () => {
     expect(rows[0]).toMatchObject({
       date: "2026-06-20",
       slot: 1,
-      cardTotal: 0,
-      tradeCount: 0,
+      sent: 0,
+      received: 0,
+      sentTradeCount: 0,
+      receivedTradeCount: 0,
       isChronicleDate: false,
     });
     expect(rows[4]).toMatchObject({
       date: "2026-06-24",
       slot: 5,
-      cardTotal: 9,
-      tradeCount: 2,
+      sent: 9,
+      received: 6,
+      sentTradeCount: 2,
+      receivedTradeCount: 1,
       isChronicleDate: false,
     });
     expect(rows[5]).toMatchObject({
       date: "2026-06-25",
       slot: 6,
-      cardTotal: 0,
-      tradeCount: 0,
+      sent: 0,
+      received: 0,
+      sentTradeCount: 0,
+      receivedTradeCount: 0,
       isChronicleDate: true,
     });
     expect(rows[9]).toMatchObject({
       date: "2026-06-29",
       slot: 10,
-      cardTotal: 0,
-      tradeCount: 0,
+      sent: 0,
+      received: 0,
+      sentTradeCount: 0,
+      receivedTradeCount: 0,
       isChronicleDate: false,
     });
 
@@ -247,7 +257,7 @@ describe("tcdb trade db helper", () => {
     ];
     const queryText = strings.join("");
     expect(queryText).toContain("MIN(traffic_date)");
-    expect(queryText).toContain("FROM dojo.v_tcdb_trade_card_traffic_trade");
+    expect(queryText).toContain("FROM dojo.v_tcdb_trade_card_traffic_day");
   });
 
   it("shows chronicle card traffic starting on the oldest traffic date", async () => {
@@ -260,8 +270,10 @@ describe("tcdb trade db helper", () => {
       .mockResolvedValueOnce([
         {
           traffic_date: "2026-01-24",
-          trade_count: "1",
-          card_total: "8",
+          sent: "8",
+          received: "0",
+          sent_trade_count: "1",
+          received_trade_count: "0",
         },
       ]);
 
@@ -274,16 +286,18 @@ describe("tcdb trade db helper", () => {
     expect(rows?.[5]).toMatchObject({
       date: "2026-01-24",
       slot: 6,
-      cardTotal: 8,
-      tradeCount: 1,
+      sent: 8,
+      received: 0,
+      sentTradeCount: 1,
+      receivedTradeCount: 0,
       isChronicleDate: true,
     });
     expect(mockSql).toHaveBeenCalledTimes(2);
   });
 
-  it("defines canonical trade card traffic views with side priority", () => {
+  it("defines sent and completion-side card traffic views", () => {
     const migration = readFileSync(
-      "db/migrations/055_create_tcdb_trade_card_traffic_views.sql",
+      "db/migrations/067_split_tcdb_card_traffic_series.sql",
       "utf8",
     );
     const tradeView = readFileSync(
@@ -301,34 +315,18 @@ describe("tcdb trade db helper", () => {
     expect(migration).toContain(
       "CREATE OR REPLACE VIEW dojo.v_tcdb_trade_card_traffic_day",
     );
-    expect(tradeView).toContain(
-      "MIN(day.trade_date) FILTER (WHERE day.side = 'sent') AS first_sent_date",
+    expect(migration).toContain(
+      "FILTER (WHERE day.side IN ('received', 'archived')) AS received_date",
     );
     expect(tradeView).toContain(
-      "MIN(day.trade_date) FILTER (WHERE day.side = 'received') AS first_received_date",
+      "MIN(day.trade_date) FILTER (WHERE day.side = 'sent') AS sent_date",
     );
     expect(tradeView).toContain(
-      "MIN(day.trade_date) FILTER (WHERE day.side = 'archived') AS first_archived_date",
+      "FILTER (WHERE day.side IN ('received', 'archived')) AS received_date",
     );
-    expect(tradeView).toContain("trade_dates.first_sent_date,");
-    expect(tradeView).toContain("trade_dates.first_received_date,");
-    expect(tradeView).toContain("trade_dates.first_archived_date");
-    expect(tradeView).toContain(
-      "COALESCE(trade.sent, 0) + COALESCE(trade.received, 0) AS card_total",
-    );
-    expect(tradeView).toContain(
-      "WHEN trade_dates.first_sent_date IS NOT NULL THEN 'sent'",
-    );
-    expect(tradeView).toContain(
-      "WHEN trade_dates.first_received_date IS NOT NULL THEN 'received'",
-    );
-    expect(tradeView).toContain(
-      "WHEN trade_dates.first_archived_date IS NOT NULL THEN 'archived'",
-    );
-    expect(dayView).toContain(
-      "FROM dojo.v_tcdb_trade_card_traffic_trade AS traffic",
-    );
-    expect(dayView).toContain("COUNT(*) AS trade_count");
-    expect(dayView).toContain("SUM(traffic.card_total) AS card_total");
+    expect(dayView).toContain("traffic.sent_date AS traffic_date");
+    expect(dayView).toContain("traffic.received_date AS traffic_date");
+    expect(dayView).toContain("SUM(traffic.sent) AS sent");
+    expect(dayView).toContain("SUM(traffic.received) AS received");
   });
 });

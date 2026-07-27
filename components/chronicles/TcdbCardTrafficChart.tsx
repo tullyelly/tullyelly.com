@@ -26,8 +26,8 @@ export async function TcdbCardTrafficChart({ chronicleDate }: Props) {
           TCDb Card Traffic
         </h2>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Counts total sent plus received cards for each trade; sent date is
-          used when available, then received date, then archived date.
+          Sent cards use the sent date; received cards use the received or
+          archived completion date recorded for each trade.
         </p>
       </div>
 

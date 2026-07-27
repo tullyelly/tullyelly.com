@@ -2,6 +2,7 @@
 
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ReferenceLine,
@@ -22,6 +23,8 @@ type ChartDatum = TcdbCardTrafficDay & {
 };
 
 type TooltipPayload = {
+  dataKey?: string;
+  name?: string;
   payload?: ChartDatum;
   value?: number;
 };
@@ -113,10 +116,17 @@ function TrafficTooltip({
         {row.fullDateLabel}
         {row.isChronicleDate ? " (chronicle)" : ""}
       </p>
-      <p className="text-xs text-muted-foreground">
-        {pluralize(row.cardTotal, "card")} across{" "}
-        {pluralize(row.tradeCount, "trade")}
-      </p>
+      {payload.map((entry) => {
+        const isSent = entry.dataKey === "sent";
+        const count = isSent ? row.sentTradeCount : row.receivedTradeCount;
+
+        return (
+          <p key={entry.dataKey} className="text-xs text-muted-foreground">
+            {entry.name}: {pluralize(entry.value ?? 0, "card")} across{" "}
+            {pluralize(count, "trade")}
+          </p>
+        );
+      })}
     </div>
   );
 }
@@ -148,7 +158,7 @@ function EmptyTrafficState({ rows }: Props) {
 }
 
 export function TcdbCardTrafficChartClient({ rows }: Props) {
-  const hasTraffic = rows.some((row) => row.cardTotal > 0);
+  const hasTraffic = rows.some((row) => row.sent > 0 || row.received > 0);
 
   if (!hasTraffic) {
     return <EmptyTrafficState rows={rows} />;
@@ -161,7 +171,7 @@ export function TcdbCardTrafficChartClient({ rows }: Props) {
     <div
       className="w-full overflow-x-auto"
       role="img"
-      aria-label="TCDb card traffic line chart showing 10 calendar days"
+      aria-label="TCDb sent and received card traffic line chart showing 10 calendar days"
       data-testid="tcdb-card-traffic-chart"
     >
       <div className="h-[320px] min-w-[360px]">
@@ -186,6 +196,7 @@ export function TcdbCardTrafficChartClient({ rows }: Props) {
               tick={{ fontSize: 12 }}
             />
             <Tooltip content={<TrafficTooltip />} />
+            <Legend verticalAlign="top" />
             {chronicleDate ? (
               <ReferenceLine
                 x={chronicleDate}
@@ -195,9 +206,18 @@ export function TcdbCardTrafficChartClient({ rows }: Props) {
             ) : null}
             <Line
               type="monotone"
-              dataKey="cardTotal"
-              name="Card total"
+              dataKey="sent"
+              name="Sent"
               stroke="var(--bucks-green)"
+              strokeWidth={3}
+              dot={{ r: 4, strokeWidth: 2 }}
+              activeDot={{ r: 6 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="received"
+              name="Received"
+              stroke="var(--blue)"
               strokeWidth={3}
               dot={{ r: 4, strokeWidth: 2 }}
               activeDot={{ r: 6 }}

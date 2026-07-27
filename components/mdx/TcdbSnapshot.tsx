@@ -115,8 +115,17 @@ export default async function TcdbSnapshot({
         {formatOrdinal(snapshot.ranking)}
       </Link>
       <span>]</span>{" "}
-      <span aria-label={getTrendLabel(snapshot)} role="img">
-        {getTrendEmoji(snapshot)}
+      <span
+        aria-label={getTrendLabel({
+          prevRanking: snapshot.prevRanking,
+          trend: snapshot.trendOverall,
+        })}
+        role="img"
+      >
+        {getTrendEmoji({
+          prevRanking: snapshot.prevRanking,
+          trend: snapshot.trendOverall,
+        })}
       </span>{" "}
       <span>{`(${formatCardCount(snapshot.cardCount)})`}</span>
     </>

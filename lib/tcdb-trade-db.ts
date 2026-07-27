@@ -35,8 +35,10 @@ type TcdbTradeDayRow = {
 
 type TcdbCardTrafficDayRow = {
   traffic_date: string;
-  trade_count: number | string | null;
-  card_total: number | string | null;
+  sent: number | string | null;
+  received: number | string | null;
+  sent_trade_count: number | string | null;
+  received_trade_count: number | string | null;
 };
 
 type TcdbCardTrafficOldestRow = {
@@ -250,8 +252,10 @@ export async function listTcdbCardTrafficDaysForChronicleFromDb(
     const rows = await sql<TcdbCardTrafficDayRow>`
       SELECT
         TO_CHAR(traffic_date, 'YYYY-MM-DD') AS traffic_date,
-        trade_count,
-        card_total
+        sent,
+        received,
+        sent_trade_count,
+        received_trade_count
       FROM dojo.v_tcdb_trade_card_traffic_day
       WHERE traffic_date BETWEEN ${trafficWindow.startDate}::date
         AND ${trafficWindow.endDate}::date
@@ -262,8 +266,10 @@ export async function listTcdbCardTrafficDaysForChronicleFromDb(
       rows.map((row) => [
         row.traffic_date,
         {
-          cardTotal: toIntegerWithFallback(row.card_total),
-          tradeCount: toIntegerWithFallback(row.trade_count),
+          sent: toIntegerWithFallback(row.sent),
+          received: toIntegerWithFallback(row.received),
+          sentTradeCount: toIntegerWithFallback(row.sent_trade_count),
+          receivedTradeCount: toIntegerWithFallback(row.received_trade_count),
         },
       ]),
     );
@@ -292,8 +298,7 @@ export async function getTcdbCardTrafficChartRowsForChronicleFromDb(
     const [oldestRow] = await sql<TcdbCardTrafficOldestRow>`
       SELECT
         TO_CHAR(MIN(traffic_date), 'YYYY-MM-DD') AS oldest_traffic_date
-      FROM dojo.v_tcdb_trade_card_traffic_trade
-      WHERE traffic_date IS NOT NULL
+      FROM dojo.v_tcdb_trade_card_traffic_day
     `;
     const oldestTrafficDate = oldestRow?.oldest_traffic_date
       ? normalizeTcdbCardTrafficDate(oldestRow.oldest_traffic_date)

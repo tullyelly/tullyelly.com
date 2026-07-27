@@ -24,7 +24,10 @@ jest.mock("recharts", () => ({
   ReferenceLine: ({ x }: { x: string }) => (
     <div data-testid="reference-line" data-x={x} />
   ),
-  Line: () => <div data-testid="line-series" />,
+  Legend: () => <div data-testid="legend" />,
+  Line: ({ dataKey, name }: { dataKey: string; name: string }) => (
+    <div data-testid="line-series" data-key={dataKey} data-name={name} />
+  ),
 }));
 
 const rows: TcdbCardTrafficDay[] = Array.from({ length: 10 }, (_, index) => {
@@ -33,8 +36,10 @@ const rows: TcdbCardTrafficDay[] = Array.from({ length: 10 }, (_, index) => {
   return {
     date: `2026-06-${day}`,
     slot: index + 1,
-    cardTotal: 0,
-    tradeCount: 0,
+    sent: 0,
+    received: 0,
+    sentTradeCount: 0,
+    receivedTradeCount: 0,
     isChronicleDate: index === 5,
   };
 });
@@ -51,7 +56,15 @@ describe("TcdbCardTrafficChartClient", () => {
 
   it("renders a line chart with the provided 10-day traffic rows", () => {
     const trafficRows = rows.map((row) =>
-      row.date === "2026-06-24" ? { ...row, cardTotal: 9, tradeCount: 2 } : row,
+      row.date === "2026-06-24"
+        ? {
+            ...row,
+            sent: 9,
+            received: 6,
+            sentTradeCount: 2,
+            receivedTradeCount: 1,
+          }
+        : row,
     );
 
     render(<TcdbCardTrafficChartClient rows={trafficRows} />);
@@ -66,12 +79,16 @@ describe("TcdbCardTrafficChartClient", () => {
     expect(chartData[0]?.axisLabel).toBe("Jun 20");
     expect(chartData[4]).toMatchObject({
       date: "2026-06-24",
-      cardTotal: 9,
-      tradeCount: 2,
+      sent: 9,
+      received: 6,
+      sentTradeCount: 2,
+      receivedTradeCount: 1,
     });
     expect(screen.getByTestId("reference-line")).toHaveAttribute(
       "data-x",
       "2026-06-25",
     );
+    expect(screen.getAllByTestId("line-series")).toHaveLength(2);
+    expect(screen.getByTestId("legend")).toBeInTheDocument();
   });
 });
