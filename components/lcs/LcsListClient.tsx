@@ -1,10 +1,14 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
 import { Table, TBody, THead } from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import type { LcsSummary } from "@/lib/lcs-types";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 
 type LcsListClientProps = {
   rows: LcsSummary[];
@@ -24,6 +28,13 @@ type LcsListClientProps = {
   rowTestId?: string;
 };
 
+const getLcsSearchValues = (row: LcsSummary) => [
+  row.slug,
+  row.name,
+  row.city,
+  row.state,
+];
+
 const ratingBadgeClassName =
   "inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--lcs-accent)] px-3 py-1 text-sm font-semibold text-[color:var(--lcs-pill-fg)] shadow-sm";
 const mobileMetaLabelClassName =
@@ -37,9 +48,11 @@ function formatRating(value: number): string {
   return `${value.toFixed(1)}/10`;
 }
 
-function getLocationLabel(row: Pick<LcsSummary, "city" | "state">): string | null {
-  const parts = [row.city, row.state].filter(
-    (value): value is string => Boolean(value),
+function getLocationLabel(
+  row: Pick<LcsSummary, "city" | "state">,
+): string | null {
+  const parts = [row.city, row.state].filter((value): value is string =>
+    Boolean(value),
   );
 
   return parts.length > 0 ? parts.join(", ") : null;
@@ -62,11 +75,23 @@ export default function LcsListClient({
   tableTestId = "lcs-table",
   rowTestId = "lcs-row",
 }: LcsListClientProps) {
+  const [query, setQuery] = useState("");
+  const visibleRows = useTableSearch(rows, query, getLcsSearchValues);
+
   return (
-    <div style={themeStyle}>
+    <div className="space-y-4" style={themeStyle}>
+      <TableSearch
+        query={query}
+        onQueryChange={setQuery}
+        label="Search card shops"
+        resultCount={visibleRows.length}
+        resultLabel={(count) =>
+          `${count} card shop${count === 1 ? "" : "s"} shown`
+        }
+      />
       <ul className="space-y-4 md:hidden">
-        {rows.length > 0 ? (
-          rows.map((row) => {
+        {visibleRows.length > 0 ? (
+          visibleRows.map((row) => {
             const location = getLocationLabel(row);
 
             return (
@@ -170,8 +195,8 @@ export default function LcsListClient({
           </th>
         </THead>
         <TBody>
-          {rows.length > 0 ? (
-            rows.map((row) => {
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => {
               const location = getLocationLabel(row);
 
               return (
@@ -224,7 +249,10 @@ export default function LcsListClient({
             })
           ) : (
             <tr>
-              <td colSpan={5} className="text-sm text-[color:var(--lcs-ink)]/80">
+              <td
+                colSpan={5}
+                className="text-sm text-[color:var(--lcs-ink)]/80"
+              >
                 {emptyMessage}
               </td>
             </tr>

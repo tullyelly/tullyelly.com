@@ -6,12 +6,19 @@ import { Card } from "@ui";
 import * as Dialog from "@ui/dialog";
 import { Table, TBody, THead } from "@/components/ui/Table";
 import TablePager from "@/components/ui/TablePager";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 import TrendPill from "@/components/tcdb/TrendPill";
 import type { HomieDirectoryRow } from "@/lib/data/homies";
 import { setPersistentBanner } from "@/lib/persistent-banner";
 
 const integer = new Intl.NumberFormat("en-US");
 const PAGE_SIZES = [25, 50, 100];
+const getHomieSearchValues = (row: HomieDirectoryRow) => [
+  row.name,
+  row.tag_slug,
+  row.drafted,
+  row.id,
+];
 type Editable = Pick<HomieDirectoryRow, "name" | "tag_slug" | "drafted">;
 
 function values(row: HomieDirectoryRow): Editable {
@@ -84,20 +91,14 @@ export default function HomieDirectory({
   const [pendingIds, setPendingIds] = useState<Set<number>>(() => new Set());
   const [mobileEdit, setMobileEdit] = useState<number | null>(null);
 
-  const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    return rows.filter((row) => {
-      const matchesText =
-        !needle ||
-        [
-          row.name,
-          row.tag_slug ?? "",
-          String(row.drafted),
-          String(row.id),
-        ].some((value) => value.toLowerCase().includes(needle));
-      return matchesText && (!trend || (row.trend_overall ?? "") === trend);
-    });
-  }, [q, rows, trend]);
+  const searchedRows = useTableSearch(rows, q, getHomieSearchValues);
+  const filtered = useMemo(
+    () =>
+      searchedRows.filter(
+        (row) => !trend || (row.trend_overall ?? "") === trend,
+      ),
+    [searchedRows, trend],
+  );
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
   const changed = (row: HomieDirectoryRow) => {
@@ -187,21 +188,20 @@ export default function HomieDirectory({
     }
   }
 
-  const resultMessage = `${filtered.length} homie${filtered.length === 1 ? "" : "s"} shown`;
-
   return (
     <section className="space-y-4" aria-label="Homie directory">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <input
-          type="search"
-          className="form-input h-9 w-full md:w-64"
-          aria-label="Search homies"
-          placeholder="Search homies"
-          value={q}
-          onChange={(event) => {
-            setQ(event.target.value);
+        <TableSearch
+          query={q}
+          onQueryChange={(query) => {
+            setQ(query);
             setPage(1);
           }}
+          label="Search homies"
+          resultCount={filtered.length}
+          resultLabel={(count) =>
+            `${count} homie${count === 1 ? "" : "s"} shown`
+          }
         />
         <div className="flex gap-2">
           <select
@@ -234,9 +234,6 @@ export default function HomieDirectory({
           ) : null}
         </div>
       </div>
-      <p className="sr-only" aria-live="polite">
-        {resultMessage}
-      </p>
 
       <ul className="space-y-3 md:hidden">
         {visible.map((row) => (

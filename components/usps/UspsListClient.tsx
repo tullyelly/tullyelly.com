@@ -1,9 +1,13 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
 import { Table, TBody, THead } from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 
 type UspsListRow = {
   citySlug: string;
@@ -31,6 +35,12 @@ type UspsListClientProps = {
   tableTestId?: string;
   rowTestId?: string;
 };
+
+const getUspsSearchValues = (row: UspsListRow) => [
+  row.citySlug,
+  row.cityName,
+  row.state,
+];
 
 const ratingBadgeClassName =
   "inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--usps-accent)] px-3 py-1 text-sm font-semibold text-[color:var(--usps-pill-fg)] shadow-sm";
@@ -61,11 +71,23 @@ export default function UspsListClient({
   tableTestId = "usps-table",
   rowTestId = "usps-row",
 }: UspsListClientProps) {
+  const [query, setQuery] = useState("");
+  const visibleRows = useTableSearch(rows, query, getUspsSearchValues);
+
   return (
-    <div style={themeStyle}>
+    <div className="space-y-4" style={themeStyle}>
+      <TableSearch
+        query={query}
+        onQueryChange={setQuery}
+        label="Search USPS locations"
+        resultCount={visibleRows.length}
+        resultLabel={(count) =>
+          `${count} USPS location${count === 1 ? "" : "s"} shown`
+        }
+      />
       <ul className="space-y-4 md:hidden">
-        {rows.length > 0 ? (
-          rows.map((row) => (
+        {visibleRows.length > 0 ? (
+          visibleRows.map((row) => (
             <Card
               as="li"
               key={`mobile-${row.citySlug}`}
@@ -151,8 +173,8 @@ export default function UspsListClient({
           </th>
         </THead>
         <TBody>
-          {rows.length > 0 ? (
-            rows.map((row) => (
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => (
               <tr
                 key={row.citySlug}
                 className="border-b border-[color:var(--table-row-divider)] last:border-0"

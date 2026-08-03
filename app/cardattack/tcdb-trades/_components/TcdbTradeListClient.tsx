@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { Table, TBody, THead } from "@/components/ui/Table";
 import { Card } from "@ui";
 import { fmtDate } from "@/lib/datetime";
 import { tcdbTradeTableThemeStyle } from "@/lib/tcdb-theme";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 
 type Props = {
   rows: {
@@ -21,6 +22,19 @@ type Props = {
     status: "Open" | "Completed";
   }[];
 };
+
+type TradeRow = Props["rows"][number];
+
+const getTradeSearchValues = (row: TradeRow) => [
+  row.tradeId,
+  row.status,
+  row.startDate,
+  row.endDate,
+  row.received,
+  row.sent,
+  row.total,
+  row.partner,
+];
 
 function getTradeStatusBadgeClass(status: "Open" | "Completed") {
   return getBadgeClass(status === "Open" ? "tcdb" : "spike");
@@ -51,15 +65,26 @@ function renderTradeCount(value?: number) {
 }
 
 export default function TcdbTradeListClient({ rows }: Props) {
+  const [query, setQuery] = useState("");
   const sortedRows = useMemo(() => {
     return [...rows].sort((a, b) => Number(b.tradeId) - Number(a.tradeId));
   }, [rows]);
+  const visibleRows = useTableSearch(sortedRows, query, getTradeSearchValues);
 
   return (
-    <>
+    <section className="space-y-4" aria-label="TCDb trades ledger">
+      <TableSearch
+        query={query}
+        onQueryChange={setQuery}
+        label="Search TCDb trades"
+        resultCount={visibleRows.length}
+        resultLabel={(count) =>
+          `${count} TCDb trade${count === 1 ? "" : "s"} shown`
+        }
+      />
       <ul className="space-y-3 md:hidden">
-        {sortedRows.length > 0 ? (
-          sortedRows.map((row) => (
+        {visibleRows.length > 0 ? (
+          visibleRows.map((row) => (
             <Card
               as="li"
               key={`mobile-${row.tradeId}`}
@@ -78,9 +103,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                     {row.tradeId}
                   </Link>
                 </div>
-                <Badge
-                  className={getTradeStatusBadgeClass(row.status)}
-                >
+                <Badge className={getTradeStatusBadgeClass(row.status)}>
                   {row.status}
                 </Badge>
               </div>
@@ -173,8 +196,8 @@ export default function TcdbTradeListClient({ rows }: Props) {
           <th scope="col">Partner</th>
         </THead>
         <TBody>
-          {sortedRows.length > 0 ? (
-            sortedRows.map((row) => (
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => (
               <tr
                 key={row.tradeId}
                 className="border-b border-[color:var(--table-row-divider)] last:border-0"
@@ -226,6 +249,6 @@ export default function TcdbTradeListClient({ rows }: Props) {
           )}
         </TBody>
       </Table>
-    </>
+    </section>
   );
 }
