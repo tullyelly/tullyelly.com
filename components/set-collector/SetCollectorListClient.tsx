@@ -1,9 +1,13 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
 import { Table, TBody, THead } from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 import {
   formatSetCollectorPercentComplete,
   formatSetCollectorRating,
@@ -34,6 +38,15 @@ type SetCollectorListClientProps = {
   tableTestId?: string;
   rowTestId?: string;
 };
+
+const getSetSearchValues = (row: SetCollectorListRow) => [
+  row.id,
+  row.setSlug,
+  row.setName,
+  row.releaseYear,
+  row.manufacturer,
+  row.categoryTag,
+];
 
 const ratingBadgeClassName =
   "inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--collector-accent)] px-3 py-1 text-sm font-semibold text-[color:var(--collector-pill-fg)] shadow-sm";
@@ -83,11 +96,23 @@ export default function SetCollectorListClient({
   tableTestId = "set-collector-table",
   rowTestId = "set-collector-row",
 }: SetCollectorListClientProps) {
+  const [query, setQuery] = useState("");
+  const visibleRows = useTableSearch(rows, query, getSetSearchValues);
+
   return (
-    <div style={themeStyle}>
+    <div className="space-y-4" style={themeStyle}>
+      <TableSearch
+        query={query}
+        onQueryChange={setQuery}
+        label="Search tracked sets"
+        resultCount={visibleRows.length}
+        resultLabel={(count) =>
+          `${count} tracked set${count === 1 ? "" : "s"} shown`
+        }
+      />
       <ul className="space-y-4 md:hidden">
-        {rows.length > 0 ? (
-          rows.map((row) => {
+        {visibleRows.length > 0 ? (
+          visibleRows.map((row) => {
             const progress = formatLatestProgress(
               row.cardsOwned,
               row.totalCards,
@@ -201,8 +226,8 @@ export default function SetCollectorListClient({
           </th>
         </THead>
         <TBody>
-          {rows.length > 0 ? (
-            rows.map((row) => {
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => {
               const progress = formatLatestProgress(
                 row.cardsOwned,
                 row.totalCards,
