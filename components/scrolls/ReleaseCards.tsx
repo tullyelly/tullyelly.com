@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
@@ -9,36 +9,21 @@ import { Card } from "@ui";
 
 type ReleaseCardsProps = {
   rows: ReleaseRow[];
-  onOpen?: (id: string, trigger: HTMLAnchorElement) => void;
 };
 
-export default function ReleaseCards({ rows, onOpen }: ReleaseCardsProps) {
-  const router = useRouter();
-  const onIdClick =
-    (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (e.metaKey || e.ctrlKey || e.button === 1) {
-        return;
-      }
-      e.preventDefault();
-      onOpen?.(id, e.currentTarget);
-      router.push(`/mark2/shaolin-scrolls/${id}`);
-    };
-
+export default function ReleaseCards({ rows }: ReleaseCardsProps) {
   return (
     <ul className="space-y-3" data-testid="scrolls-cards">
       {rows.map((r) => (
         <Card as="li" key={r.id} data-testid="release-card" className="p-3">
           <div className="flex items-center justify-between">
-            <a
+            <Link
               href={`/mark2/shaolin-scrolls/${r.id}`}
-              onClick={onIdClick(r.id)}
-              aria-label={`Open release ${r.id} details`}
+              aria-label={`View release ${r.id} details`}
               className="font-semibold link-blue"
-              role="button"
-              aria-haspopup="dialog"
             >
               #{r.id}
-            </a>
+            </Link>
             <span className="text-xs opacity-80">
               {formatReleaseDate(r.release_date)}
             </span>
