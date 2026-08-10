@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
@@ -8,23 +10,13 @@ import type { ReleaseRow } from "@/lib/scrolls";
 
 type ReleasesTableProps = {
   rows: ReleaseRow[];
-  onOpen: (id: string, trigger: HTMLAnchorElement) => void;
 };
 
 function getReleaseName(row: ReleaseRow) {
   return row.name || row.label || "";
 }
 
-export default function ReleasesTable({ rows, onOpen }: ReleasesTableProps) {
-  const onIdClick =
-    (scrollId: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (e.metaKey || e.ctrlKey || e.button === 1) {
-        return;
-      }
-      e.preventDefault();
-      onOpen(scrollId, e.currentTarget);
-    };
-
+export default function ReleasesTable({ rows }: ReleasesTableProps) {
   return (
     <Table
       variant="bucks"
@@ -55,16 +47,13 @@ export default function ReleasesTable({ rows, onOpen }: ReleasesTableProps) {
           return (
             <tr key={r.id} className="border-b border-black/5 last:border-0">
               <td className="tabular-nums text-ink/80">
-                <a
+                <Link
                   href={`/mark2/shaolin-scrolls/${r.id}`}
-                  onClick={onIdClick(r.id)}
-                  aria-label={`Open release ${r.id} details`}
+                  aria-label={`View release ${r.id} details`}
                   className="link-blue"
-                  role="button"
-                  aria-haspopup="dialog"
                 >
                   {r.id}
-                </a>
+                </Link>
               </td>
               <td className="whitespace-normal break-words">
                 <span className="block" title={getReleaseName(r)}>

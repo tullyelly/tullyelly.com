@@ -1,10 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useTransition } from "react";
+import { useTransition } from "react";
 import type { Route } from "next";
-import ScrollDialog from "@/app/(components)/shaolin/ScrollDialog";
-import { useScrollDialog } from "@/app/(components)/shaolin/useScrollDialog";
 import ReleaseCards from "@/components/scrolls/ReleaseCards";
 import ReleasesTable from "@/components/scrolls/ReleasesTable";
 import TablePager from "@/components/ui/TablePager";
@@ -30,10 +28,7 @@ export default function ScrollsPageClient({
   const pathname = usePathname() ?? "/mark2/shaolin-scrolls";
   const search = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const { open, setOpen, id, openWithId, close } = useScrollDialog();
-  const triggerRef = useRef<HTMLAnchorElement | null>(null);
   const searchSnapshot = search?.toString() ?? "";
-  const basePath = "/mark2/shaolin-scrolls";
 
   function updateQuery(
     next: Record<string, string | undefined>,
@@ -55,58 +50,6 @@ export default function ScrollsPageClient({
     });
   }
 
-  const handleNavigate = useCallback(
-    (nextId: string | number, trigger?: HTMLAnchorElement) => {
-      triggerRef.current = trigger ?? null;
-      router.push(`/mark2/shaolin-scrolls/${nextId}` as Route);
-    },
-    [router],
-  );
-
-  const handleCardTrigger = useCallback(
-    (_id: string | number, trigger?: HTMLAnchorElement) => {
-      triggerRef.current = trigger ?? null;
-    },
-    [],
-  );
-
-  const openDialogWithId = useCallback(
-    (nextId: string | number) => {
-      openWithId(nextId);
-    },
-    [openWithId],
-  );
-
-  const handleOpenChange = (v: boolean) => {
-    setOpen(v);
-    if (!v) {
-      triggerRef.current?.focus();
-    }
-  };
-
-  useEffect(() => {
-    const baseSegmentsCount = 2; // "mark2", "shaolin-scrolls"
-    const normalized =
-      pathname.endsWith("/") && pathname !== "/"
-        ? pathname.slice(0, -1)
-        : pathname;
-    if (normalized === basePath) {
-      close();
-      return;
-    }
-    if (!normalized.startsWith(basePath)) return;
-    const segments = normalized.split("/").filter(Boolean);
-    const lastSegment = segments[segments.length - 1];
-    const isNumericId = lastSegment && /^\d+$/.test(lastSegment);
-    if (!isNumericId) {
-      if (segments.length > baseSegmentsCount) {
-        router.replace(basePath as Route);
-      }
-      return;
-    }
-    openDialogWithId(lastSegment);
-  }, [pathname, basePath, close, openDialogWithId, router]);
-
   return (
     <div
       className="space-y-4"
@@ -115,9 +58,9 @@ export default function ScrollsPageClient({
       role="region"
     >
       <div className="md:hidden" suppressHydrationWarning>
-        <ReleaseCards rows={rows} onOpen={handleCardTrigger} />
+        <ReleaseCards rows={rows} />
       </div>
-      <ReleasesTable rows={rows} onOpen={handleNavigate} />
+      <ReleasesTable rows={rows} />
       <TablePager
         page={meta.page}
         pageSize={meta.pageSize}
@@ -128,7 +71,6 @@ export default function ScrollsPageClient({
           updateQuery({ pageSize: String(nextSize) }, { resetPage: true })
         }
       />
-      <ScrollDialog open={open} onOpenChange={handleOpenChange} id={id} />
     </div>
   );
 }

@@ -1,0 +1,151 @@
+---
+title: "the prestige"
+date: "2026-08-09"
+summary: "Take 2; Day 201, Abracadabra."
+draft: false
+infinityStone: false
+---
+
+<ReleaseSection alterEgo="unclejimmy" divider={false}>
+  Before heading back to this side of the border, <PersonTag tag="nikkigirl" />{" "}
+  and I had breakfast with <PersonTag tag="marina" />, <PersonTag tag="david" />{" "}
+  and <PersonTag displayName="the lazer" tag="the-lazer" />. More good times
+  with good folks and good food before we headed back.
+</ReleaseSection>
+
+<ReleaseSection alterEgo="mark2" releaseId="179">
+  Once we got home and I stopped being lazy for a few minutes,{" "}
+  <PersonTag tag="cipher" /> and I made a few changes around here. Simply
+  stated, when you go to any given release (we are on
+  [179](/mark2/shaolin-scrolls/179) right now), it will provide a summary of all
+  activity during any given release window. Click that last link or [this
+  link](/mark2/shaolin-scrolls/179) to see it in action.
+
+I don't like how the dates are working right now, but that's a problem for another time.
+
+Here's how the robot summarizes the work:
+
+## Shaolin Scroll Release Details
+
+Shaolin Scroll releases now have standalone, database-driven detail pages at:
+
+`/mark2/shaolin-scrolls/[id]`
+
+### What Changed
+
+- Replaced the release dialog with a full server-rendered detail page.
+- Release links now use normal navigation instead of opening a modal.
+- Added release-specific metadata and canonical URLs.
+- Added a release summary containing:
+  - Release name
+  - Semantic version
+  - Release type
+  - Status
+  - Official release date
+  - Activity-window start and end dates
+  - Release-window length
+  - In-progress status when applicable
+- Added conditional activity sections that only appear when matching activity exists.
+
+### Release Activity Windows
+
+Release windows are calculated by the database.
+
+For completed releases:
+
+- Start: the day after the previous completed release
+- End: the current release date, inclusive
+
+For an in-progress release:
+
+- Start: the day after the latest completed release
+- End: today
+
+For the earliest release, the start is derived from the earliest meaningful activity available on or before that release.
+
+### Supported Activity
+
+Release details currently summarize:
+
+- Chronicles
+- Chronicle amendments
+- TCDb trades sent
+- TCDb trades received
+- LCS visits
+- USPS visits
+- Reviews
+- Bricks build sessions
+- Set Collector snapshots
+
+Chronicle amendments are treated independently from original publication dates. An amendment to an older Chronicle can therefore appear in a newer release without reclassifying the Chronicle itself.
+
+### Database Architecture
+
+The implementation adds three reusable views:
+
+- `dojo.v_shaolin_site_activity`
+- `dojo.v_shaolin_release_window`
+- `dojo.v_shaolin_release_activity`
+
+These views normalize meaningful dated activity while excluding generic audit timestamps, authentication activity, migrations, and incidental row maintenance.
+
+Historical release activity remains dynamic. Corrections and backfills to source data will automatically update the corresponding release detail.
+
+### Cleanup
+
+The previous dialog architecture was removed, including:
+
+- `ScrollDialog`
+- `useScrollDialog`
+- Dialog-specific client routing
+- The obsolete Shaolin Scroll detail API
+- Dialog-focused tests
+- Deep-link dialog documentation
+
+Shared dialog primitives remain because other site features still use them.
+
+### Validation
+
+- Full Jest suite: 130 suites passed
+- Total tests: 602 passed
+- Focused release-detail and SQL regression tests passed
+- TypeScript typecheck passed
+- ESLint passed
+- Formatting and diff checks passed
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="cardattack" releaseId="179">
+    After that we, wait this one was just me, well me and the other versions of me that show up when I'm here chirping at you......I'm trying to say I finished up the next checkpoint for the next binder full of 2020-21 championship season basketball cards.
+
+    ![prizm](/images/optimus/the-prestige/prizm.webp)
+
+    Binder 9 in the books.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="unclejimmy">
+    You wanna know how I know that my <PersonTag displayName="brother" tag="ron" /> loves me? Well he and his hooked me up with <PersonTag tag="he-man" /> & <PersonTag tag="battlecat" /> for my [birthday](/shaolin/illusions) without even knowing we just watched [Masters of the Universe](/shaolin/illusions). He simply knows what he right answer is.
+
+    ![battlecat](/images/optimus/the-prestige/battlecat.webp)
+
+    I have now received two birthday presents this year, the first is that <PersonTag tag="godfather" /> book from <PersonTag displayName="jeff meff" tag="jeff-meff" /> and next, my newest toys from one of my favorite clans.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="theabbott" divider={false}>
+  We close today with the movie I watched after{" "}
+  <PersonTag displayName="mah baby" tag="nikkigirl" /> went to bed. We had some
+  later than expected nights and we are typically pretty spent after a weekend
+  of being the cool <PersonTag displayName="aunt" tag="nikkigirl" /> &{" "}
+  <PersonTag displayName="uncle" tag="unclejimmy" />.
+
+    ![prestige](/images/optimus/the-prestige/prestige.webp)
+
+    Speaking of <PersonTag displayName="dr. uncle ryan" tag="ron" />, [The Prestige](https://share.google/BFSt6tyyVWgGLSSkT) is the first movie I think of when I think of him.
+
+    <i>
+        The magician takes the ordinary something and makes it do something extraordinary.
+    </i>
+
+</ReleaseSection>
