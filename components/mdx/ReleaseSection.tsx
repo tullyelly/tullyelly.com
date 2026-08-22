@@ -29,6 +29,7 @@ import {
   normalizeVolleyballTournamentKey,
 } from "@/lib/volleyball-tournament-db";
 import { formatVolleyballTournamentFinish } from "@/lib/volleyball-finish";
+import { getReleaseSectionAnchorId } from "@/lib/release-section-anchor";
 
 /*
 Spike note (ReleaseSection styling)
@@ -67,6 +68,8 @@ type ReleaseSectionBaseProps = {
   tournamentId?: string | number;
   tournamentDate?: string;
   guestMage?: string;
+  /** Assigned by the full chronicle renderer from source order. */
+  sectionOrdinal?: number;
 };
 
 type ReleaseSectionWithReleaseId = ReleaseSectionBaseProps & {
@@ -247,6 +250,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     tournamentDate,
     guestMage,
     rainbowColour,
+    sectionOrdinal,
   } = props;
   let releaseName: string | undefined;
   let releaseType: string | undefined;
@@ -895,6 +899,18 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     </div>
   );
 
+  const withSourceAnchor = (content: ReactNode) =>
+    sectionOrdinal ? (
+      <div
+        id={getReleaseSectionAnchorId(sectionOrdinal)}
+        className="scroll-mt-24"
+      >
+        {content}
+      </div>
+    ) : (
+      content
+    );
+
   if (!showReleaseDetails) {
     const hasPlainVisualContainer =
       showTournamentVisuals ||
@@ -951,7 +967,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       baseContent
     );
 
-    return (
+    return withSourceAnchor(
       <>
         {plainContent}
         {divider && !hasPlainVisualContainer ? (
@@ -966,7 +982,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
             }
           />
         ) : null}
-      </>
+      </>,
     );
   }
 
@@ -1016,5 +1032,5 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     </div>
   );
 
-  return <>{releaseContainer}</>;
+  return withSourceAnchor(releaseContainer);
 }

@@ -2,6 +2,12 @@ import { render } from "@testing-library/react";
 import { screen } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
 
+const releaseSectionMock = jest.fn(
+  ({ children }: { children?: ReactNode; sectionOrdinal?: number }) => (
+    <div data-testid="release-section">{children}</div>
+  ),
+);
+
 const chronicleSectionMdxRendererMock = jest.fn(
   ({
     code,
@@ -23,9 +29,8 @@ jest.mock("@/components/chronicles/ChronicleSectionMdxRenderer", () => ({
 }));
 jest.mock("@/components/mdx/ReleaseSection", () => ({
   __esModule: true,
-  default: ({ children }: { children?: ReactNode }) => (
-    <div data-testid="release-section">{children}</div>
-  ),
+  default: (props: { children?: ReactNode; sectionOrdinal?: number }) =>
+    releaseSectionMock(props),
 }));
 
 import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
@@ -33,6 +38,41 @@ import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRender
 describe("ChronicleMdxRenderer", () => {
   beforeEach(() => {
     chronicleSectionMdxRendererMock.mockClear();
+    releaseSectionMock.mockClear();
+  });
+
+  it("assigns ReleaseSection anchors from the same source-order counter as rainbow colours", () => {
+    render(
+      <ChronicleMdxRenderer
+        code="compiled-mdx"
+        postDate="2026-04-10"
+        source={
+          '<ReleaseSection alterEgo="mark2">One</ReleaseSection><ReleaseSection alterEgo="cardattack">Two</ReleaseSection>'
+        }
+      />,
+    );
+
+    const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
+      | { components?: Record<string, unknown> }
+      | undefined;
+    const WrappedReleaseSection = props?.components?.ReleaseSection as
+      | ComponentType<{ alterEgo: string; children: ReactNode }>
+      | undefined;
+
+    expect(WrappedReleaseSection).toBeDefined();
+    if (!WrappedReleaseSection)
+      throw new Error("Expected ReleaseSection override");
+
+    render(<WrappedReleaseSection alterEgo="mark2">One</WrappedReleaseSection>);
+    render(
+      <WrappedReleaseSection alterEgo="cardattack">Two</WrappedReleaseSection>,
+    );
+
+    expect(
+      releaseSectionMock.mock.calls.map(
+        ([callProps]) => callProps.sectionOrdinal,
+      ),
+    ).toEqual([1, 2]);
   });
 
   it("passes the post date and release section override to the shared chronicle section renderer", () => {

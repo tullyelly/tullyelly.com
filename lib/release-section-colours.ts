@@ -67,7 +67,9 @@ export function buildRainbowColourList(total: number): string[] {
  * Consumers should create one getter and share it across all eligible
  * ReleaseSection renders in that tree.
  */
-export function createNextRainbowColour(total: number): () => string | undefined {
+export function createNextRainbowColour(
+  total: number,
+): () => string | undefined {
   const colours = buildRainbowColourList(total);
   let index = 0;
 
@@ -85,7 +87,11 @@ export function getOriginalReleaseSectionColour(
   sourceKey?: string,
 ): string | undefined {
   if (!Number.isInteger(sectionOrdinal) || sectionOrdinal < 1) return undefined;
-  if (sourceKey && totalSections > 0 && totalSections < RAINBOW_COLOURS.length) {
+  if (
+    sourceKey &&
+    totalSections > 0 &&
+    totalSections < RAINBOW_COLOURS.length
+  ) {
     let hash = 2166136261;
     for (let index = 0; index < sourceKey.length; index += 1) {
       hash ^= sourceKey.charCodeAt(index);
@@ -107,9 +113,27 @@ export function createNextOriginalReleaseSectionColour(
   totalSections: number,
   sourceKey: string,
 ): () => string | undefined {
+  const nextReleaseSection = createNextOriginalReleaseSection(
+    totalSections,
+    sourceKey,
+  );
+  return () => nextReleaseSection().rainbowColour;
+}
+
+export function createNextOriginalReleaseSection(
+  totalSections: number,
+  sourceKey: string,
+): () => { rainbowColour: string | undefined; sectionOrdinal: number } {
   let sectionOrdinal = 0;
   return () => {
     sectionOrdinal += 1;
-    return getOriginalReleaseSectionColour(sectionOrdinal, totalSections, sourceKey);
+    return {
+      rainbowColour: getOriginalReleaseSectionColour(
+        sectionOrdinal,
+        totalSections,
+        sourceKey,
+      ),
+      sectionOrdinal,
+    };
   };
 }
