@@ -7,6 +7,7 @@ import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
 import { createNextRainbowColour } from "@/lib/release-section-colours";
 import type { ReviewSection } from "@/lib/review-content";
+import { getReleaseSectionHref } from "@/lib/release-section-anchor";
 
 type ReviewChronicleFeedProps = {
   sections: ReviewSection[];
@@ -123,7 +124,10 @@ export default async function ReviewChronicleFeed({
                   {fmtDate(entry.section.postDate, "America/Chicago", "long")}
                 </time>
                 <Link
-                  href={entry.section.postUrl}
+                  href={getReleaseSectionHref(
+                    entry.section.postUrl,
+                    entry.section.sectionOrdinal,
+                  )}
                   className="mt-2 inline-flex items-center text-sm font-medium text-[color:var(--review-link)] transition hover:text-[color:var(--review-link-hover)]"
                 >
                   {`Original Chronicle: ${entry.section.postTitle}`}

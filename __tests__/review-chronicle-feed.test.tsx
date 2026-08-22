@@ -102,10 +102,10 @@ describe("ReviewChronicleFeed", () => {
     expect(screen.getByText("2026-04-03")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Original Chronicle: self care" }),
-    ).toHaveAttribute("href", "/shaolin/self-care");
+    ).toHaveAttribute("href", "/shaolin/self-care#release-section-1");
     expect(
       screen.getByRole("link", { name: "Original Chronicle: hooky" }),
-    ).toHaveAttribute("href", "/shaolin/hooky");
+    ).toHaveAttribute("href", "/shaolin/hooky#release-section-1");
 
     const mdxRendered = screen.getAllByTestId("chronicle-section-mdx-renderer");
     expect(mdxRendered).toHaveLength(2);

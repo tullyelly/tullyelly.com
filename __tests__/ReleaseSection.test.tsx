@@ -145,6 +145,15 @@ describe("ReleaseSection", () => {
     expect(container.querySelector(".relative")).toBeNull();
   });
 
+  it("renders a source-order anchor with a persistent-header scroll offset", async () => {
+    const ui = await ReleaseSection({ ...baseProps, sectionOrdinal: 2 });
+    const { container } = render(ui);
+
+    expect(container.querySelector("#release-section-2")).toHaveClass(
+      "scroll-mt-24",
+    );
+  });
+
   it("requires tournamentDate when tournamentId is provided", async () => {
     await expect(
       ReleaseSection({
