@@ -1,280 +1,149 @@
-import type { Route } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
-import { Badge } from "@/app/ui/Badge";
-import { getBadgeClass } from "@/app/ui/badge-maps";
-import FlowersInline from "@/components/flowers/FlowersInline";
-import { SectionDivider } from "@/components/SectionDivider";
 import { Card } from "@ui";
-import { getPublishedPosts, getTagsWithCounts, paginate } from "@/lib/blog";
+import FullBleedPage from "@/components/layout/FullBleedPage";
+import PageIntro from "@/components/layout/PageIntro";
+import { ALTER_EGO_OPTIONS, type AlterEgo } from "@/lib/alterEgo";
+import { getPublishedPosts } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
-import { makeListGenerateMetadata } from "@/lib/seo/factories";
-import { getHashtagDisplayName, normalizeTagSlug } from "@/lib/tags";
+import { buildMetadata } from "@/lib/seo/builders";
+import { canonicalFor } from "@/lib/seo/url";
+import { normalizeTagSlug } from "@/lib/tags";
+import ChronicleListClient, {
+  type ChronicleListRow,
+} from "./_components/ChronicleListClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const PER_PAGE = 10;
-const ALTER_EGO_TAGS = [
-  "mark2",
-  "cardattack",
-  "theabbott",
-  "unclejimmy",
-  "tullyelly",
-] as const;
-type AlterEgoTag = (typeof ALTER_EGO_TAGS)[number];
-
-function isAlterEgoTag(value: string | undefined): value is AlterEgoTag {
-  return (ALTER_EGO_TAGS as readonly string[]).includes(value ?? "");
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata({
+    title: "Shaolin Chronicles | tullyelly",
+    description:
+      "Search and explore the Shaolin Chronicles archive by alter ego and tag.",
+    canonical: canonicalFor("/shaolin"),
+    type: "website",
+    twitterCard: "summary",
+  });
 }
 
-export const generateMetadata = makeListGenerateMetadata({
-  path: "/shaolin",
-  getTitle: (_q, page) => {
-    const base = "Shaolin Chronicles | tullyelly";
-    return page && page !== "1" ? `${base}; page ${page}` : base;
-  },
-  getDescription: (_q, page) => {
-    const base =
-      "Browse the latest shaolin chronicles; tags, pagination, and archives for ongoing experiments";
-    return page && page !== "1" ? `${base} (page ${page}).` : `${base}.`;
-  },
-});
+function isAlterEgo(value: string | undefined): value is AlterEgo {
+  return ALTER_EGO_OPTIONS.some((alterEgo) => alterEgo === value);
+}
 
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string; alterEgo?: string }>;
+  searchParams?: Promise<{ alterEgo?: string }>;
 }) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const alterEgoFilter = (() => {
-    const raw = resolvedSearchParams?.alterEgo?.toString().trim().toLowerCase();
-    return isAlterEgoTag(raw) ? raw : undefined;
-  })();
-  const pageNum = Number(resolvedSearchParams?.page ?? "1");
-  const posts = getPublishedPosts();
-  const filteredPosts = alterEgoFilter
-    ? posts.filter((post) =>
-        (post.tags ?? []).map((t) => t.toLowerCase()).includes(alterEgoFilter),
-      )
-    : posts;
-  const tags = Object.entries(getTagsWithCounts(filteredPosts)).sort(
-    ([tagA, countA], [tagB, countB]) =>
-      countB - countA || tagA.localeCompare(tagB),
-  );
-  const { items, pages, current } = paginate(filteredPosts, pageNum, PER_PAGE);
-
-  const alterEgoQuery = alterEgoFilter
-    ? `alterEgo=${encodeURIComponent(alterEgoFilter)}`
+  const params = searchParams ? await searchParams : undefined;
+  const requestedAlterEgo = params?.alterEgo?.trim().toLowerCase();
+  const initialAlterEgo = isAlterEgo(requestedAlterEgo)
+    ? requestedAlterEgo
     : "";
-  const pageHref = (page: number) => {
-    const base =
-      page === 1 ? "/shaolin" : `/shaolin?page=${encodeURIComponent(page)}`;
-    if (!alterEgoQuery) return base as Route;
-    const joiner = base.includes("?") ? "&" : "?";
-    return `${base}${joiner}${alterEgoQuery}` as Route;
-  };
+  const posts = getPublishedPosts();
+  const rows: ChronicleListRow[] = posts.map((post) => ({
+    slug: post.slug,
+    url: post.url,
+    title: post.title,
+    summary: post.summary,
+    date: post.date,
+    alterEgo: post.resolvedAlterEgo as AlterEgo,
+    tags: Array.from(new Set((post.tags ?? []).map(normalizeTagSlug))),
+    infinityStone: post.infinityStone,
+  }));
+  const tags = Array.from(new Set(rows.flatMap((row) => row.tags))).sort(
+    (a, b) => a.localeCompare(b),
+  );
+  const infinityStoneCount = rows.filter((row) => row.infinityStone).length;
+  const latestChronicle = rows[0];
 
   return (
-    <main className="max-w-4xl mx-auto space-y-12 py-6 md:py-8">
-      <header className="space-y-3">
-        <h1 className="text-3xl font-semibold">chronicles</h1>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Welcome to my barely off the ground blog. Much will change. Styling is
-          kinda janky. Stay tuned.
-        </p>
-      </header>
-
-      <section className="space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-medium leading-snug">
-            Filter by alter-ego
-          </h2>
-          {alterEgoFilter ? (
-            <Link
-              href={"/shaolin" as Route}
-              className="text-sm link-blue"
-              prefetch={false}
-            >
-              Clear filter
-            </Link>
-          ) : null}
-        </div>
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1">
-          <Link
-            href={"/shaolin" as Route}
-            className="inline-flex flex-shrink-0"
-            prefetch={false}
-            aria-current={alterEgoFilter ? undefined : "page"}
-          >
-            <Badge
-              className={[
-                getBadgeClass(alterEgoFilter ? "archived" : "planned"),
-                "whitespace-nowrap",
-              ].join(" ")}
-            >
-              All alter-egos
-            </Badge>
-          </Link>
-          {ALTER_EGO_TAGS.map((tag) => {
-            const href = `/shaolin?alterEgo=${encodeURIComponent(
-              tag,
-            )}` as Route;
-            const isActive = alterEgoFilter === tag;
-            return (
-              <Link
-                key={tag}
-                href={href}
-                className="inline-flex flex-shrink-0"
-                prefetch={false}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <Badge
-                  className={[
-                    getBadgeClass(isActive ? "planned" : "archived"),
-                    "whitespace-nowrap",
-                  ].join(" ")}
-                >
-                  #{tag}
-                </Badge>
-              </Link>
-            );
-          })}
-        </div>
-        {alterEgoFilter ? (
-          <p className="text-sm text-muted-foreground">
-            Showing chronicles tagged #{alterEgoFilter}.
+    <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
+      <Card
+        as="section"
+        className="space-y-8 border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8"
+      >
+        <PageIntro title="Shaolin Chronicles">
+          <p className="text-[16px] text-muted-foreground md:text-[18px]">
+            The running record of whatever I&apos;m building, collecting,
+            fixing, breaking, watching, thinking about, or otherwise getting
+            myself into.
           </p>
-        ) : null}
-      </section>
+        </PageIntro>
 
-      {tags.length > 0 ? (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-lg font-medium leading-snug">Browse by tag</h2>
-            <Link
-              href={"/shaolin/tags" as Route}
-              className="text-sm link-blue"
-              prefetch={false}
-            >
-              View all
-            </Link>
-          </div>
-          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1">
-            {tags.map(([tag, count]) => (
-              <Link
-                key={tag}
-                href={`/shaolin/tags/${encodeURIComponent(tag)}` as Route}
-                className="inline-flex flex-shrink-0"
-                prefetch={false}
-              >
-                <Badge className={getBadgeClass("classic")}>
-                  {getHashtagDisplayName(tag)}{" "}
-                  <span className="pl-1 text-[11px] opacity-80">({count})</span>
-                </Badge>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <SectionDivider />
-
-      <ul className="space-y-6">
-        {items.map((p) => (
-          <Card as="li" key={p.slug} className="p-6 space-y-4">
-            <header className="space-y-1">
-              <h2 className="text-2xl font-semibold leading-snug">
-                <Link href={p.url as Route} className="link-blue">
-                  {p.title}
-                </Link>
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                {fmtDate(p.date)}
-              </span>
-            </header>
-            <p className="text-[16px] md:text-[18px] leading-relaxed text-muted-foreground">
-              {p.summary}
-            </p>
-            {(p.tags ?? []).length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {(p.tags ?? []).map((t) => (
+        <section aria-label="Chronicle metrics">
+          <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <Metric
+              label="Latest"
+              value={
+                latestChronicle ? (
                   <Link
-                    key={t}
-                    href={
-                      `/shaolin/tags/${encodeURIComponent(
-                        normalizeTagSlug(t),
-                      )}` as Route
-                    }
-                    className="inline-flex"
-                    prefetch={false}
+                    href={latestChronicle.url as Route}
+                    className="link-blue"
                   >
-                    <Badge className={getBadgeClass("planned")}>
-                      {getHashtagDisplayName(t)}
-                    </Badge>
+                    <time dateTime={latestChronicle.date}>
+                      {fmtDate(latestChronicle.date)}
+                    </time>
                   </Link>
-                ))}
-              </div>
-            ) : null}
-          </Card>
-        ))}
-      </ul>
+                ) : (
+                  "Not available"
+                )
+              }
+            />
+            <Metric label="Chronicles" value={String(rows.length)} />
+            <Metric
+              label="Tags"
+              value={
+                <>
+                  {tags.length}{" "}
+                  <Link href="/shaolin/tags" className="link-blue text-sm">
+                    (view all)
+                  </Link>
+                </>
+              }
+            />
+            <Metric
+              label="Infinity Stones"
+              value={String(infinityStoneCount)}
+            />
+          </dl>
+        </section>
 
-      <footer className="space-y-6">
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          <FlowersInline>
-            <a
-              href="https://www.contentlayer.dev/"
-              className="underline hover:no-underline"
-              target="_blank"
-              rel="noopener noreferrer"
+        <section className="space-y-4" aria-labelledby="chronicles-heading">
+          <div className="space-y-1">
+            <h2
+              id="chronicles-heading"
+              className="text-2xl font-semibold tracking-tight text-ink"
             >
-              Contentlayer
-            </a>
-            {", "}
-            <a
-              href="https://nextjs.org/"
-              className="underline hover:no-underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Next.js
-            </a>
-            {" & "}
-            <a
-              href="https://tailwindcss.com/"
-              className="underline hover:no-underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Tailwind CSS
-            </a>
-          </FlowersInline>
-        </p>
-        <nav
-          className="flex flex-wrap items-center gap-2 text-sm"
-          aria-label="Pagination"
-        >
-          {Array.from({ length: pages }).map((_, i) => {
-            const n = i + 1;
-            const href = pageHref(n);
-            const isCurrent = n === current;
-            return (
-              <Link
-                key={n}
-                href={href}
-                className={[
-                  "inline-flex min-w-9 items-center justify-center rounded-full px-3 py-1 font-medium transition",
-                  isCurrent
-                    ? "bg-[var(--blue)] !text-white hover:!text-white focus-visible:!text-white"
-                    : "bg-[var(--surface-card)] text-blue-600 border border-[var(--border-subtle)] hover:text-[var(--text-primary)]",
-                ].join(" ")}
-              >
-                {n}
-              </Link>
-            );
-          })}
-        </nav>
-      </footer>
-    </main>
+              Chronicles
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Search the whole archive or narrow things down by alter ego and
+              tag.
+            </p>
+          </div>
+
+          <ChronicleListClient
+            rows={rows}
+            alterEgos={ALTER_EGO_OPTIONS}
+            initialAlterEgo={initialAlterEgo}
+          />
+        </section>
+      </Card>
+    </FullBleedPage>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <Card as="div" className="p-3 md:p-4">
+      <dt className="text-xs font-medium uppercase tracking-wide text-ink/60">
+        {label}
+      </dt>
+      <dd className="mt-1 text-lg font-semibold tabular-nums text-ink">
+        {value}
+      </dd>
+    </Card>
   );
 }
