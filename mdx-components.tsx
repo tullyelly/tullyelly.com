@@ -52,14 +52,14 @@ type CustomMDXComponents = MDXComponents & {
   RedditEmbed: typeof RedditEmbed;
 };
 
-const defaultComponents = {
-  img: ({
-    className,
-    alt,
-    width,
-    height,
-    ...rest
-  }: React.ComponentProps<typeof Image>) => (
+export function MdxImage({
+  className,
+  alt,
+  width,
+  height,
+  ...rest
+}: React.ComponentProps<typeof Image>) {
+  return (
     <span className="mx-auto block w-full max-w-[520px]">
       <Image
         alt={alt ?? ""}
@@ -69,7 +69,11 @@ const defaultComponents = {
         {...rest}
       />
     </span>
-  ),
+  );
+}
+
+const defaultComponents = {
+  img: MdxImage,
   p: ({ className, ...props }: React.ComponentPropsWithoutRef<"p">) => (
     <p
       className={cn(

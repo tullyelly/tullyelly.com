@@ -7,6 +7,14 @@ const releaseSectionMock = jest.fn(
     <div data-testid="release-section">{children}</div>
   ),
 );
+const mdxImageMock = jest.fn(({ src }: { src: string }) => (
+  <div data-testid="resolved-image" data-src={src} />
+));
+const folderImageCarouselMock = jest.fn(
+  ({ folder }: { folder: string; altPrefix?: string }) => (
+    <div data-testid="folder-image-carousel">{folder}</div>
+  ),
+);
 
 const chronicleSectionMdxRendererMock = jest.fn(
   ({
@@ -32,6 +40,14 @@ jest.mock("@/components/mdx/ReleaseSection", () => ({
   default: (props: { children?: ReactNode; sectionOrdinal?: number }) =>
     releaseSectionMock(props),
 }));
+jest.mock("@/components/media/FolderImageCarousel.server", () => ({
+  __esModule: true,
+  default: (props: { folder: string; altPrefix?: string }) =>
+    folderImageCarouselMock(props),
+}));
+jest.mock("@/mdx-components", () => ({
+  MdxImage: (props: { src: string }) => mdxImageMock(props),
+}));
 
 import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
 
@@ -39,12 +55,15 @@ describe("ChronicleMdxRenderer", () => {
   beforeEach(() => {
     chronicleSectionMdxRendererMock.mockClear();
     releaseSectionMock.mockClear();
+    mdxImageMock.mockClear();
+    folderImageCarouselMock.mockClear();
   });
 
   it("assigns ReleaseSection anchors from the same source-order counter as rainbow colours", () => {
     render(
       <ChronicleMdxRenderer
         code="compiled-mdx"
+        slug="test-chronicle"
         postDate="2026-04-10"
         source={
           '<ReleaseSection alterEgo="mark2">One</ReleaseSection><ReleaseSection alterEgo="cardattack">Two</ReleaseSection>'
@@ -79,6 +98,7 @@ describe("ChronicleMdxRenderer", () => {
     render(
       <ChronicleMdxRenderer
         code="compiled-mdx"
+        slug="test-chronicle"
         postDate="2026-04-10"
         source={'<TcdbSnapshot tag="shaq" />'}
       />,
@@ -117,6 +137,7 @@ describe("ChronicleMdxRenderer", () => {
     render(
       <ChronicleMdxRenderer
         code="compiled-mdx"
+        slug="test-chronicle"
         postDate="2026-04-10"
         source={'<PersonTag tag="freak" />'}
         tagMetadataBySlug={tagMetadataBySlug}
@@ -152,5 +173,64 @@ describe("ChronicleMdxRenderer", () => {
       "/unclejimmy/squad/lulu",
     );
     expect(freakLinks[1]).toHaveAttribute("href", "/custom-route");
+  });
+
+  it("routes the Chronicle slug through the Markdown image resolver", () => {
+    render(
+      <ChronicleMdxRenderer
+        code="compiled-mdx"
+        slug="vomitspit"
+        postDate="2026-04-10"
+        source="![fern](fern.webp)"
+      />,
+    );
+
+    const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
+      | { components?: Record<string, unknown> }
+      | undefined;
+    const ChronicleImage = props?.components?.img as
+      | ComponentType<{ src: string; alt: string }>
+      | undefined;
+
+    expect(ChronicleImage).toBeDefined();
+    if (!ChronicleImage) throw new Error("Expected Chronicle image override");
+
+    render(<ChronicleImage src="fern.webp" alt="fern" />);
+    expect(mdxImageMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        src: "/images/optimus/vomitspit/fern.webp",
+      }),
+    );
+  });
+
+  it("resolves relative, root, and existing Chronicle carousel folders", () => {
+    render(
+      <ChronicleMdxRenderer
+        code="compiled-mdx"
+        slug="rye"
+        postDate="2026-04-10"
+        source='<FolderImageCarousel folder="faith" />'
+      />,
+    );
+
+    const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
+      | { components?: Record<string, unknown> }
+      | undefined;
+    const ChronicleCarousel = props?.components?.FolderImageCarousel as
+      | ComponentType<{ folder?: string }>
+      | undefined;
+
+    expect(ChronicleCarousel).toBeDefined();
+    if (!ChronicleCarousel) {
+      throw new Error("Expected Chronicle FolderImageCarousel override");
+    }
+
+    render(<ChronicleCarousel folder="faith" />);
+    render(<ChronicleCarousel />);
+    render(<ChronicleCarousel folder="rye/faith" />);
+
+    expect(
+      folderImageCarouselMock.mock.calls.map(([callProps]) => callProps.folder),
+    ).toEqual(["rye/faith", "rye", "rye/faith"]);
   });
 });

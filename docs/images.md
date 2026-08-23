@@ -7,8 +7,10 @@
 - `npm run images:optimus` uses the still-image optimizer for `.jpg`, `.jpeg`, `.png`, `.webp`, and `.tiff`, and the animated pipeline for `.gif` and `.mp4`.
 - Passing `npm run images:optimus -- "<slug>"` does not require `public/images/source/<slug>/` to exist and does not create it.
 - Outputs land in `public/images/optimus/<folder>`.
-- Paths passed to `<Image>` or `<img>` must start with a leading slash (e.g. `/images/optimus/cardattack.webp`).
+- Chronicle images live in `public/images/optimus/<chronicle-slug>/`. In Chronicle Markdown, use a filename such as `![fern](fern.webp)` or a path beneath that folder such as `![fern](plants/fern.webp)`; explicit root-relative paths are still supported.
+- Outside Chronicles, paths passed to `<Image>` or `<img>` must start with a leading slash (e.g. `/images/optimus/cardattack.webp`).
 - `FolderImageCarousel` accepts a `folder` relative to the optimus root; do not pass `/images/optimus/...`.
+- In Chronicles, `FolderImageCarousel` folders are relative to the Chronicle image folder. Use `<FolderImageCarousel folder="faith" />`, or omit `folder` to use the Chronicle's root image folder. Existing slug-qualified folders such as `folder="rye/faith"` remain supported.
 - `FolderImageCarousel` scans nested folders n levels deep.
 - When a request to `/_next/image` fails, the response body describes the problem (e.g., `"url" parameter is invalid`).
 - During debugging you can bypass optimization with the `unoptimized` prop on `next/image`.
