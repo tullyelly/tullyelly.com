@@ -73,6 +73,7 @@ async function PostContent({ slug }: { slug: string }) {
           >
             <ChronicleMdxRenderer
               code={post.body.code}
+              slug={post.slug}
               postDate={post.date}
               source={post.body.raw}
               tagMetadataBySlug={tagMetadataBySlug}

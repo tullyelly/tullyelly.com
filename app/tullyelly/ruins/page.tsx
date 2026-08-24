@@ -53,6 +53,7 @@ function LatestPost({ post }: { post: Post }) {
       <div className="space-y-4">
         <ChronicleMdxRenderer
           code={post.body.code}
+          slug={post.slug}
           postDate={post.date}
           source={post.body.raw}
         />
