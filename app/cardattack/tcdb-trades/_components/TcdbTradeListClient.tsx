@@ -18,7 +18,9 @@ type Props = {
     received?: number;
     sent?: number;
     total?: number;
-    partner?: string;
+    tradePartnerId: number;
+    partner: string;
+    partnerName?: string;
     status: "Open" | "Completed";
   }[];
 };
@@ -40,19 +42,15 @@ function getTradeStatusBadgeClass(status: "Open" | "Completed") {
   return getBadgeClass(status === "Open" ? "tcdb" : "spike");
 }
 
-function renderPartner(partner?: string) {
-  if (!partner) {
-    return <span className="text-muted-foreground">Unknown</span>;
-  }
+function renderPartner(row: TradeRow) {
   return (
-    <a
-      href={`https://www.tcdb.com/Profile.cfm/${encodeURIComponent(partner)}`}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`}
       className="link-blue"
     >
-      {partner}
-    </a>
+      {row.partner}
+      {row.partnerName ? ` (${row.partnerName})` : ""}
+    </Link>
   );
 }
 
@@ -135,7 +133,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                 <p className="text-xs uppercase tracking-wide text-ink/60">
                   Partner
                 </p>
-                <p>{renderPartner(row.partner)}</p>
+                <p>{renderPartner(row)}</p>
               </div>
             </Card>
           ))
@@ -236,7 +234,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                   {renderTradeCount(row.total)}
                 </td>
                 <td className="[overflow-wrap:anywhere]">
-                  {renderPartner(row.partner)}
+                  {renderPartner(row)}
                 </td>
               </tr>
             ))

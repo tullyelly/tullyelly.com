@@ -29,7 +29,9 @@ jest.mock("@/lib/datetime", () => ({
   fmtDate: (value: string) => value,
 }));
 
-import TcdbTradeChronicleFeed from "@/app/cardattack/tcdb-trades/[tradeId]/_components/TcdbTradeTimelineSection";
+import TcdbTradeChronicleFeed, {
+  resolveTradeChronicleImagePath,
+} from "@/app/cardattack/tcdb-trades/[tradeId]/_components/TcdbTradeTimelineSection";
 
 describe("TcdbTradeChronicleFeed", () => {
   beforeEach(() => {
@@ -38,6 +40,18 @@ describe("TcdbTradeChronicleFeed", () => {
     compileMdxToCodeMock.mockImplementation(async (source: string) => {
       return `compiled:${source}`;
     });
+  });
+
+  it("resolves existing relative Chronicle images and rejects missing ones", () => {
+    expect(resolveTradeChronicleImagePath("3am", "964402/1-964402.webp")).toBe(
+      "/images/optimus/3am/964402/1-964402.webp",
+    );
+    expect(
+      resolveTradeChronicleImagePath("tcdb-partners", "1091638.webp"),
+    ).toBeNull();
+    expect(
+      resolveTradeChronicleImagePath("tcdb-partners", "../x.webp"),
+    ).toBeNull();
   });
 
   it("passes each trade section date into the shared chronicle section renderer", async () => {
@@ -100,6 +114,7 @@ describe("TcdbTradeChronicleFeed", () => {
       .calls[0]?.[0] as
       | {
           postDate?: string;
+          chronicleSlug?: string;
           components?: { ReleaseSection?: unknown };
         }
       | undefined;
@@ -107,13 +122,16 @@ describe("TcdbTradeChronicleFeed", () => {
       .calls[1]?.[0] as
       | {
           postDate?: string;
+          chronicleSlug?: string;
           components?: { ReleaseSection?: unknown };
         }
       | undefined;
 
     expect(firstRendererProps?.postDate).toBe("2026-04-01");
+    expect(firstRendererProps?.chronicleSlug).toBe("trade-sent");
     expect(firstRendererProps?.components?.ReleaseSection).toBeDefined();
     expect(secondRendererProps?.postDate).toBe("2026-04-03");
+    expect(secondRendererProps?.chronicleSlug).toBe("trade-received");
     expect(secondRendererProps?.components?.ReleaseSection).toBeDefined();
   });
 

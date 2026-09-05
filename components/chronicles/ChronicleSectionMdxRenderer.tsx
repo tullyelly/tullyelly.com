@@ -1,5 +1,8 @@
 import type { MDXComponents } from "mdx/types";
 
+import ChronicleImage, {
+  type ChronicleImageProps,
+} from "@/components/chronicles/ChronicleImage";
 import ClanSnapshot, {
   type ClanSnapshotProps,
 } from "@/components/mdx/ClanSnapshot";
@@ -15,24 +18,30 @@ import type { TagMetadata } from "@/lib/tags-server";
 
 type ChronicleSectionMdxRendererProps = {
   code: string;
+  chronicleSlug?: string;
   postDate: string;
   components?: MDXComponents;
   tagMetadataBySlug?: ReadonlyMap<string, TagMetadata>;
 };
 
 type BoundSetCollectorProps = Pick<SetCollectorProps, "set">;
-type BoundClanSnapshotProps = Pick<
-  ClanSnapshotProps,
-  "href" | "tag" | "sport"
->;
+type BoundClanSnapshotProps = Pick<ClanSnapshotProps, "href" | "tag" | "sport">;
 type BoundTcdbSnapshotProps = Pick<TcdbSnapshotProps, "tag">;
 
 export function ChronicleSectionMdxRenderer({
   code,
+  chronicleSlug,
   postDate,
   components,
   tagMetadataBySlug,
 }: ChronicleSectionMdxRendererProps) {
+  function BoundChronicleImage(
+    props: Omit<ChronicleImageProps, "chronicleSlug">,
+  ) {
+    if (!chronicleSlug) return null;
+    return <ChronicleImage {...props} chronicleSlug={chronicleSlug} />;
+  }
+
   function BoundSetCollector({ set }: BoundSetCollectorProps) {
     return <SetCollector set={set} snapshotDate={postDate} />;
   }
@@ -62,6 +71,7 @@ export function ChronicleSectionMdxRenderer({
       code={code}
       components={{
         ...(components ?? {}),
+        ...(chronicleSlug ? { img: BoundChronicleImage } : {}),
         ClanSnapshot: BoundClanSnapshot,
         SetCollector: BoundSetCollector,
         TcdbSnapshot: BoundTcdbSnapshot,

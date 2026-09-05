@@ -16,7 +16,9 @@ type TcdbTradeHallOfFameInductionRow = {
   categoryTag?: string;
   setHref?: string;
   tradeId: string;
-  partner?: string | null;
+  tradePartnerId: number;
+  tcdbUsername: string;
+  name?: string;
   inductedDate: string;
   cardsOwned: number;
   totalCards: number;
@@ -26,30 +28,19 @@ type Props = {
   rows: TcdbTradeHallOfFameInductionRow[];
 };
 
-function getPartnerProfileHref(partner: string): string {
-  return `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(partner)}`;
-}
-
 function getFallbackSetCollectorDetailHref(setSlug: string): string {
   return `/cardattack/set-collector/${encodeURIComponent(setSlug)}`;
 }
 
-function renderHallOfFamer(partner?: string | null) {
-  const trimmed = partner?.trim();
-
-  if (!trimmed) {
-    return <span className="text-muted-foreground">Unknown</span>;
-  }
-
+function renderHallOfFamer(row: TcdbTradeHallOfFameInductionRow) {
   return (
-    <a
-      href={getPartnerProfileHref(trimmed)}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`}
       className="link-blue"
     >
-      {trimmed}
-    </a>
+      {row.tcdbUsername}
+      {row.name ? ` (${row.name})` : ""}
+    </Link>
   );
 }
 
@@ -63,7 +54,9 @@ function renderCategoryTag(categoryTag?: string) {
 
 export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
   const sortedRows = useMemo(() => {
-    return [...rows].sort((a, b) => b.inductedDate.localeCompare(a.inductedDate));
+    return [...rows].sort((a, b) =>
+      b.inductedDate.localeCompare(a.inductedDate),
+    );
   }, [rows]);
 
   return (
@@ -139,7 +132,7 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
                       Hall of Famer
                     </dt>
                     <dd className="[overflow-wrap:anywhere]">
-                      {renderHallOfFamer(row.partner)}
+                      {renderHallOfFamer(row)}
                     </dd>
                   </div>
                 </dl>
@@ -221,7 +214,7 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
                     </Link>
                   </td>
                   <td className="[overflow-wrap:anywhere]">
-                    {renderHallOfFamer(row.partner)}
+                    {renderHallOfFamer(row)}
                   </td>
                 </tr>
               );

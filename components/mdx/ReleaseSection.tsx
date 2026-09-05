@@ -505,6 +505,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     ? await getTcdbTradeSummaryFromDb(tcdbTradeId)
     : null;
   const resolvedTradePartner = tcdbTradeSummary?.partner;
+  const resolvedTradePartnerId = tcdbTradeSummary?.tradePartnerId;
   const resolvedTradeReceived = tcdbTradeSummary?.received;
   const resolvedTradeSent = tcdbTradeSummary?.sent;
   const resolvedTradeTotal = tcdbTradeSummary?.total;
@@ -512,13 +513,11 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   if (tcdbTradeId) {
     releaseType = "tcdb";
     tradeUrl = `/cardattack/tcdb-trades/${tcdbTradeId}`;
-    tradePartnerUrl = resolvedTradePartner
-      ? `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(
-          resolvedTradePartner,
-        )}`
+    tradePartnerUrl = resolvedTradePartnerId
+      ? `/cardattack/tcdb-trade-partners/${resolvedTradePartnerId}`
       : undefined;
     tabLabel = `TCDb Trade: ${tcdbTradeId}${
-      tradePartnerUrl ? `; Partner ${resolvedTradePartner}` : ""
+      resolvedTradePartner ? `; Partner ${resolvedTradePartner}` : ""
     }`;
   } else if (releaseId) {
     const release = await getScroll(releaseId);

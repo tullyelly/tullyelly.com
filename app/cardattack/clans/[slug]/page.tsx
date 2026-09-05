@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import ClanCardCountSparkline from "@/components/tcdb/ClanCardCountSparkline";
 import TcdbCardHistorySummary from "@/components/tcdb/TcdbCardHistorySummary";
+import TradePartnerRelations from "@/components/tcdb/TradePartnerRelations";
 import RankingDetailPage, {
   formatRankingDate,
   formatRankingNumber,
@@ -25,6 +26,7 @@ import {
   TCDB_CLAN_RANKINGS_PATH,
 } from "@/lib/tcdb-clan-routes";
 import { canonicalFor } from "@/lib/seo/url";
+import { listTradePartnersForClanFromDb } from "@/lib/tcdb-trade-partners-db";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -157,7 +159,10 @@ export default async function Page({ params }: PageProps) {
   const taggedChronicles = chronicleTagMetadata
     ? getTaggedPosts(chronicleTagMetadata.slug)
     : [];
-  const rankSnapshots = await listClanTcdbSnapshotHistory(ranking.clan_id);
+  const [rankSnapshots, tradePartners] = await Promise.all([
+    listClanTcdbSnapshotHistory(ranking.clan_id),
+    listTradePartnersForClanFromDb(ranking.clan_id),
+  ]);
   const rankSnapshotsBySport = new Map<string, typeof rankSnapshots>();
   for (const snapshot of rankSnapshots) {
     const snapshotsForSport = rankSnapshotsBySport.get(snapshot.sport) ?? [];
@@ -212,6 +217,7 @@ export default async function Page({ params }: PageProps) {
         };
       })}
     >
+      <TradePartnerRelations partners={tradePartners} />
       {chronicleTagMetadata ? (
         <ClanChronicleDisplayNamesSection
           tagMetadata={chronicleTagMetadata}

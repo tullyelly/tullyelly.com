@@ -40,7 +40,8 @@ describe("TCDb Trade Hall of Fame route", () => {
   it("renders both Hall of Fame sections", async () => {
     listTcdbTradeHallOfFamersMock.mockResolvedValue([
       {
-        partner: "collect-a-set",
+        tradePartnerId: 1,
+        tcdbUsername: "collect-a-set",
         categoryTags: ["basketball", "football"],
         inductionCount: 2,
         latestInductedDate: "2026-04-10",
@@ -54,7 +55,8 @@ describe("TCDb Trade Hall of Fame route", () => {
         manufacturer: "Upper Deck",
         categoryTag: "basketball",
         tradeId: "960943",
-        partner: "collect-a-set",
+        tradePartnerId: 1,
+        tcdbUsername: "collect-a-set",
         inductedDate: "2026-01-31",
         cardsOwned: 500,
         totalCards: 500,
@@ -66,7 +68,8 @@ describe("TCDb Trade Hall of Fame route", () => {
         manufacturer: "Courtside",
         categoryTag: "football",
         tradeId: "1004001",
-        partner: "collect-a-set",
+        tradePartnerId: 1,
+        tcdbUsername: "collect-a-set",
         inductedDate: "2026-04-10",
         cardsOwned: 147,
         totalCards: 147,

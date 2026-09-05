@@ -11,14 +11,18 @@ type TcdbTradeHallOfFameInductionRow = {
   manufacturer: string;
   category_tag: string | null;
   trade_id: string;
-  partner: string | null;
+  trade_partner_id: number | string;
+  tcdb_username: string;
+  name: string | null;
   inducted_date: string;
   cards_owned: number | string;
   total_cards: number | string;
 };
 
 type TcdbTradeHallOfFamerRow = {
-  partner: string | null;
+  trade_partner_id: number | string;
+  tcdb_username: string;
+  name: string | null;
   category_tags: string[] | string | null;
   induction_count: number | string;
   latest_inducted_date: string;
@@ -31,14 +35,18 @@ export type TcdbTradeHallOfFameInduction = {
   manufacturer: string;
   categoryTag?: string;
   tradeId: string;
-  partner?: string;
+  tradePartnerId: number;
+  tcdbUsername: string;
+  name?: string;
   inductedDate: string;
   cardsOwned: number;
   totalCards: number;
 };
 
 export type TcdbTradeHallOfFamer = {
-  partner?: string;
+  tradePartnerId: number;
+  tcdbUsername: string;
+  name?: string;
   categoryTags: string[];
   inductionCount: number;
   latestInductedDate: string;
@@ -96,7 +104,7 @@ async function withTcdbTradeHallOfFameDbFallback<T>(
 function toTcdbTradeHallOfFameInduction(
   row: TcdbTradeHallOfFameInductionRow,
 ): TcdbTradeHallOfFameInduction {
-  const partner = toOptionalString(row.partner);
+  const name = toOptionalString(row.name);
   const categoryTag = toOptionalString(row.category_tag);
 
   return {
@@ -105,24 +113,28 @@ function toTcdbTradeHallOfFameInduction(
     releaseYear: toInteger(row.release_year),
     manufacturer: row.manufacturer,
     tradeId: row.trade_id,
+    tradePartnerId: toInteger(row.trade_partner_id),
+    tcdbUsername: row.tcdb_username,
     inductedDate: row.inducted_date,
     cardsOwned: toInteger(row.cards_owned),
     totalCards: toInteger(row.total_cards),
     ...(categoryTag ? { categoryTag } : {}),
-    ...(partner ? { partner } : {}),
+    ...(name ? { name } : {}),
   };
 }
 
 function toTcdbTradeHallOfFamer(
   row: TcdbTradeHallOfFamerRow,
 ): TcdbTradeHallOfFamer {
-  const partner = toOptionalString(row.partner);
+  const name = toOptionalString(row.name);
 
   return {
+    tradePartnerId: toInteger(row.trade_partner_id),
+    tcdbUsername: row.tcdb_username,
     categoryTags: toStringArray(row.category_tags),
     inductionCount: toInteger(row.induction_count),
     latestInductedDate: row.latest_inducted_date,
-    ...(partner ? { partner } : {}),
+    ...(name ? { name } : {}),
   };
 }
 
@@ -138,7 +150,9 @@ export async function listTcdbTradeHallOfFameInductionsFromDb(): Promise<
         manufacturer,
         category_tag,
         trade_id,
-        partner,
+        trade_partner_id,
+        tcdb_username,
+        name,
         TO_CHAR(inducted_date, 'YYYY-MM-DD') AS inducted_date,
         cards_owned,
         total_cards
@@ -156,12 +170,14 @@ export async function listTcdbTradeHallOfFamersFromDb(): Promise<
   return withTcdbTradeHallOfFameDbFallback(async () => {
     const rows = await sql<TcdbTradeHallOfFamerRow>`
       SELECT
-        partner,
+        trade_partner_id,
+        tcdb_username,
+        name,
         category_tags,
         induction_count,
         TO_CHAR(latest_inducted_date, 'YYYY-MM-DD') AS latest_inducted_date
       FROM dojo.v_tcdb_trade_hall_of_famer
-      ORDER BY induction_count DESC, latest_inducted_date DESC, partner ASC
+      ORDER BY induction_count DESC, latest_inducted_date DESC, tcdb_username ASC
     `;
 
     return rows.map(toTcdbTradeHallOfFamer);

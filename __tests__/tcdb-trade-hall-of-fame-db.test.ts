@@ -66,7 +66,9 @@ describe("tcdb trade hall of fame db helper", () => {
         manufacturer: "Upper Deck",
         category_tag: "basketball",
         trade_id: "960943",
-        partner: " collect-a-set ",
+        trade_partner_id: "1",
+        tcdb_username: "collect-a-set",
+        name: "Collector One",
         inducted_date: "2026-01-31",
         cards_owned: "500",
         total_cards: "500",
@@ -81,7 +83,9 @@ describe("tcdb trade hall of fame db helper", () => {
         manufacturer: "Upper Deck",
         categoryTag: "basketball",
         tradeId: "960943",
-        partner: "collect-a-set",
+        tradePartnerId: 1,
+        tcdbUsername: "collect-a-set",
+        name: "Collector One",
         inductedDate: "2026-01-31",
         cardsOwned: 500,
         totalCards: 500,
@@ -102,13 +106,17 @@ describe("tcdb trade hall of fame db helper", () => {
   it("lists hall of famers grouped by partner and induction count", async () => {
     mockSql.mockResolvedValue([
       {
-        partner: "collect-a-set",
+        trade_partner_id: "1",
+        tcdb_username: "collect-a-set",
+        name: null,
         category_tags: ["basketball", "football"],
         induction_count: "2",
         latest_inducted_date: "2026-04-10",
       },
       {
-        partner: "jamestagli",
+        trade_partner_id: "2",
+        tcdb_username: "jamestagli",
+        name: null,
         category_tags: ["baseball"],
         induction_count: "1",
         latest_inducted_date: "2026-03-26",
@@ -117,13 +125,15 @@ describe("tcdb trade hall of fame db helper", () => {
 
     await expect(listTcdbTradeHallOfFamersFromDb()).resolves.toEqual([
       {
-        partner: "collect-a-set",
+        tradePartnerId: 1,
+        tcdbUsername: "collect-a-set",
         categoryTags: ["basketball", "football"],
         inductionCount: 2,
         latestInductedDate: "2026-04-10",
       },
       {
-        partner: "jamestagli",
+        tradePartnerId: 2,
+        tcdbUsername: "jamestagli",
         categoryTags: ["baseball"],
         inductionCount: 1,
         latestInductedDate: "2026-03-26",
@@ -143,7 +153,9 @@ describe("tcdb trade hall of fame db helper", () => {
   it("counts two completed set events for one partner as two inductions", async () => {
     mockSql.mockResolvedValue([
       {
-        partner: "collect-a-set",
+        trade_partner_id: "1",
+        tcdb_username: "collect-a-set",
+        name: null,
         category_tags: "{basketball,football}",
         induction_count: "2",
         latest_inducted_date: "2026-04-10",
@@ -152,7 +164,8 @@ describe("tcdb trade hall of fame db helper", () => {
 
     await expect(listTcdbTradeHallOfFamersFromDb()).resolves.toEqual([
       {
-        partner: "collect-a-set",
+        tradePartnerId: 1,
+        tcdbUsername: "collect-a-set",
         categoryTags: ["basketball", "football"],
         inductionCount: 2,
         latestInductedDate: "2026-04-10",
@@ -187,17 +200,17 @@ describe("tcdb trade hall of fame db helper", () => {
       "SELECT DISTINCT ON (collector.set_collector_header_id)",
     );
     expect(inductionView).toContain(
-      "FROM dojo.v_set_collector_header_snapshot AS collector",
+      "FROM dojo.v_set_collector_header_snapshot collector",
     );
     expect(inductionView).toContain(
-      "latest_snapshot.cards_owned = latest_snapshot.total_cards",
+      "latest.cards_owned = latest.total_cards",
     );
     expect(inductionView).toContain(
-      "NULLIF(BTRIM(latest_snapshot.category_tag), '')",
+      "NULLIF(BTRIM(latest.category_tag), '')",
     );
     expect(inductionView).toContain("day.side IN ('received', 'archived')");
     expect(inductionView).toContain(
-      "GROUP BY\n    latest_snapshot.set_collector_header_id",
+      "GROUP BY latest.set_collector_header_id",
     );
     expect(famerView).toContain("COUNT(*) AS induction_count");
     expect(famerView).toContain("ARRAY_AGG(DISTINCT induction.category_tag");
@@ -216,7 +229,7 @@ describe("tcdb trade hall of fame db helper", () => {
     expect(mockSql).not.toHaveBeenCalled();
   });
 
-  it("preserves rows with unknown partners for the UI fallback", async () => {
+  it("maps required normalized partner identity", async () => {
     mockSql.mockResolvedValue([
       {
         set_slug: "1991-92-upper-deck",
@@ -225,7 +238,9 @@ describe("tcdb trade hall of fame db helper", () => {
         manufacturer: "Upper Deck",
         category_tag: null,
         trade_id: "960943",
-        partner: null,
+        trade_partner_id: "1",
+        tcdb_username: "collect-a-set",
+        name: null,
         inducted_date: "2026-01-31",
         cards_owned: "500",
         total_cards: "500",
@@ -239,6 +254,8 @@ describe("tcdb trade hall of fame db helper", () => {
         releaseYear: 1991,
         manufacturer: "Upper Deck",
         tradeId: "960943",
+        tradePartnerId: 1,
+        tcdbUsername: "collect-a-set",
         inductedDate: "2026-01-31",
         cardsOwned: 500,
         totalCards: 500,

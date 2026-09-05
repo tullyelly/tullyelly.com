@@ -159,6 +159,7 @@ export default async function UspsChronicleFeed({
                     >
                       <ChronicleSectionMdxRenderer
                         code={section.code}
+                        chronicleSlug={section.postSlug}
                         postDate={section.postDate}
                         components={{ ReleaseSection: RainbowReleaseSection }}
                       />

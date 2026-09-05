@@ -21,7 +21,11 @@ type TcdbTradeCardCountsRow = {
 
 type TcdbTradeSummaryRow = TcdbTradeCardCountsRow & {
   trade_id: string;
-  partner: string | null;
+  trade_partner_id: number | string;
+  tcdb_username: string;
+  partner_name: string | null;
+  city_state: string | null;
+  country: string | null;
   start_date: string | null;
   end_date: string | null;
   section_count: number | string;
@@ -58,7 +62,11 @@ export type TcdbTradeDay = {
 
 export type TcdbTradeSummary = TcdbTradeCardCounts & {
   tradeId: string;
-  partner?: string;
+  tradePartnerId: number;
+  partner: string;
+  partnerName?: string;
+  cityState?: string;
+  country?: string;
   startDate: string;
   endDate?: string;
   sectionCount: number;
@@ -127,10 +135,14 @@ function toTcdbTradeSummary(row: TcdbTradeSummaryRow): TcdbTradeSummary {
   return {
     ...toTradeCardCounts(received, sent),
     tradeId: row.trade_id,
+    tradePartnerId: toInteger(row.trade_partner_id),
+    partner: row.tcdb_username,
     startDate: row.start_date ?? "",
     sectionCount: toInteger(row.section_count),
     status: row.has_completed ? "Completed" : "Open",
-    ...(row.partner ? { partner: row.partner } : {}),
+    ...(row.partner_name ? { partnerName: row.partner_name } : {}),
+    ...(row.city_state ? { cityState: row.city_state } : {}),
+    ...(row.country ? { country: row.country } : {}),
     ...(row.end_date ? { endDate: row.end_date } : {}),
   };
 }
@@ -143,7 +155,11 @@ export async function getTcdbTradeSummaryFromDb(
   const [row] = await sql<TcdbTradeSummaryRow>`
     SELECT
       trade.trade_id,
-      trade.partner,
+      partner.id AS trade_partner_id,
+      partner.tcdb_username,
+      partner.name AS partner_name,
+      partner.city_state,
+      partner.country,
       TO_CHAR(MIN(day.trade_date), 'YYYY-MM-DD') AS start_date,
       TO_CHAR(
         MAX(day.trade_date) FILTER (WHERE day.side IN ('received', 'archived')),
@@ -154,10 +170,13 @@ export async function getTcdbTradeSummaryFromDb(
       trade.received AS received,
       trade.sent AS sent
     FROM dojo.tcdb_trade AS trade
+    JOIN dojo.tcdb_trade_partner AS partner
+      ON partner.id = trade.trade_partner_id
     LEFT JOIN dojo.tcdb_trade_day AS day
       ON day.trade_id = trade.trade_id
     WHERE trade.trade_id = ${normalizedTradeId}
-    GROUP BY trade.id, trade.trade_id, trade.partner, trade.received, trade.sent
+    GROUP BY trade.id, trade.trade_id, partner.id, partner.tcdb_username,
+      partner.name, partner.city_state, partner.country, trade.received, trade.sent
     LIMIT 1
   `;
 
@@ -172,7 +191,11 @@ export async function listTcdbTradesFromDb(): Promise<TcdbTradeSummary[]> {
   const rows = await sql<TcdbTradeSummaryRow>`
     SELECT
       trade.trade_id,
-      trade.partner,
+      partner.id AS trade_partner_id,
+      partner.tcdb_username,
+      partner.name AS partner_name,
+      partner.city_state,
+      partner.country,
       TO_CHAR(MIN(day.trade_date), 'YYYY-MM-DD') AS start_date,
       TO_CHAR(
         MAX(day.trade_date) FILTER (WHERE day.side IN ('received', 'archived')),
@@ -183,9 +206,12 @@ export async function listTcdbTradesFromDb(): Promise<TcdbTradeSummary[]> {
       trade.received AS received,
       trade.sent AS sent
     FROM dojo.tcdb_trade AS trade
+    JOIN dojo.tcdb_trade_partner AS partner
+      ON partner.id = trade.trade_partner_id
     LEFT JOIN dojo.tcdb_trade_day AS day
       ON day.trade_id = trade.trade_id
-    GROUP BY trade.id, trade.trade_id, trade.partner, trade.received, trade.sent
+    GROUP BY trade.id, trade.trade_id, partner.id, partner.tcdb_username,
+      partner.name, partner.city_state, partner.country, trade.received, trade.sent
   `;
 
   return rows

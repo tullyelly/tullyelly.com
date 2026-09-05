@@ -155,6 +155,13 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       feature: "menu.cardattack.tcdb.trades",
     },
     {
+      id: "tcdb-trade-partners",
+      label: "Trade Partners",
+      href: "/cardattack/tcdb-trade-partners",
+      iconKey: "Users",
+      feature: "menu.cardattack.tcdb.trade.partners",
+    },
+    {
       id: "hall-of-fame",
       label: "Hall of Fame",
       href: "/cardattack/hof",
