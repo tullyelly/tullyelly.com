@@ -7,9 +7,6 @@ const releaseSectionMock = jest.fn(
     <div data-testid="release-section">{children}</div>
   ),
 );
-const mdxImageMock = jest.fn(({ src }: { src: string }) => (
-  <div data-testid="resolved-image" data-src={src} />
-));
 const folderImageCarouselMock = jest.fn(
   ({ folder }: { folder: string; altPrefix?: string }) => (
     <div data-testid="folder-image-carousel">{folder}</div>
@@ -45,9 +42,6 @@ jest.mock("@/components/media/FolderImageCarousel.server", () => ({
   default: (props: { folder: string; altPrefix?: string }) =>
     folderImageCarouselMock(props),
 }));
-jest.mock("@/mdx-components", () => ({
-  MdxImage: (props: { src: string }) => mdxImageMock(props),
-}));
 
 import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
 
@@ -55,7 +49,6 @@ describe("ChronicleMdxRenderer", () => {
   beforeEach(() => {
     chronicleSectionMdxRendererMock.mockClear();
     releaseSectionMock.mockClear();
-    mdxImageMock.mockClear();
     folderImageCarouselMock.mockClear();
   });
 
@@ -175,7 +168,7 @@ describe("ChronicleMdxRenderer", () => {
     expect(freakLinks[1]).toHaveAttribute("href", "/custom-route");
   });
 
-  it("routes the Chronicle slug through the Markdown image resolver", () => {
+  it("routes the Chronicle slug through the shared section image renderer", () => {
     render(
       <ChronicleMdxRenderer
         code="compiled-mdx"
@@ -188,19 +181,7 @@ describe("ChronicleMdxRenderer", () => {
     const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
       | { components?: Record<string, unknown> }
       | undefined;
-    const ChronicleImage = props?.components?.img as
-      | ComponentType<{ src: string; alt: string }>
-      | undefined;
-
-    expect(ChronicleImage).toBeDefined();
-    if (!ChronicleImage) throw new Error("Expected Chronicle image override");
-
-    render(<ChronicleImage src="fern.webp" alt="fern" />);
-    expect(mdxImageMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        src: "/images/optimus/vomitspit/fern.webp",
-      }),
-    );
+    expect(props).toMatchObject({ chronicleSlug: "vomitspit" });
   });
 
   it("resolves relative, root, and existing Chronicle carousel folders", () => {

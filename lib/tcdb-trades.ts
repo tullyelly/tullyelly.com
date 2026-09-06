@@ -41,9 +41,13 @@ export type TcdbTradeCardCounts = {
 
 export type TcdbTradeSummary = TcdbTradeCardCounts & {
   tradeId: string;
+  tradePartnerId: number;
   startDate: string;
   endDate?: string;
-  partner?: string;
+  partner: string;
+  partnerName?: string;
+  cityState?: string;
+  country?: string;
   sectionCount: number;
   status: "Open" | "Completed";
 };

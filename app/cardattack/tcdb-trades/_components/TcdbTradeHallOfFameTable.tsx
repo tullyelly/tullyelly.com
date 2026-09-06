@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo } from "react";
 import { Card } from "@ui";
 
@@ -8,7 +9,9 @@ import { fmtDate } from "@/lib/datetime";
 import { tcdbTradeTableThemeStyle } from "@/lib/tcdb-theme";
 
 type TcdbTradeHallOfFamerRow = {
-  partner?: string | null;
+  tradePartnerId: number;
+  tcdbUsername: string;
+  name?: string;
   categoryTags?: string[];
   inductionCount: number;
   latestInductedDate: string;
@@ -18,26 +21,15 @@ type Props = {
   rows: TcdbTradeHallOfFamerRow[];
 };
 
-function getPartnerProfileHref(partner: string): string {
-  return `https://www.tcdb.com/Profile.cfm/${encodeURIComponent(partner)}`;
-}
-
-function renderHallOfFamer(partner?: string | null) {
-  const trimmed = partner?.trim();
-
-  if (!trimmed) {
-    return <span className="text-muted-foreground">Unknown</span>;
-  }
-
+function renderHallOfFamer(row: TcdbTradeHallOfFamerRow) {
   return (
-    <a
-      href={getPartnerProfileHref(trimmed)}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`}
       className="link-blue"
     >
-      {trimmed}
-    </a>
+      {row.tcdbUsername}
+      {row.name ? ` (${row.name})` : ""}
+    </Link>
   );
 }
 
@@ -70,7 +62,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
         return latestDateDelta;
       }
 
-      return (a.partner ?? "").localeCompare(b.partner ?? "");
+      return a.tcdbUsername.localeCompare(b.tcdbUsername);
     });
   }, [rows]);
 
@@ -88,7 +80,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
       <ul className="space-y-3 md:hidden">
         {sortedRows.length > 0 ? (
           sortedRows.map((row) => {
-            const key = row.partner?.trim() || "unknown";
+            const key = row.tradePartnerId;
 
             return (
               <Card
@@ -103,7 +95,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
                       Hall of Famer
                     </p>
                     <p className="[overflow-wrap:anywhere] text-sm font-medium">
-                      {renderHallOfFamer(row.partner)}
+                      {renderHallOfFamer(row)}
                       {renderCategoryTags(row.categoryTags)}
                     </p>
                   </div>
@@ -163,7 +155,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
         <TBody>
           {sortedRows.length > 0 ? (
             sortedRows.map((row) => {
-              const key = row.partner?.trim() || "unknown";
+              const key = row.tradePartnerId;
 
               return (
                 <tr
@@ -172,7 +164,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
                   data-testid="tcdb-trade-hof-row"
                 >
                   <td className="[overflow-wrap:anywhere] font-medium">
-                    {renderHallOfFamer(row.partner)}
+                    {renderHallOfFamer(row)}
                     {renderCategoryTags(row.categoryTags)}
                   </td>
                   <td className="tcdb-trade-compact whitespace-nowrap font-semibold tabular-nums">

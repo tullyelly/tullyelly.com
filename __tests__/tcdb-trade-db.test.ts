@@ -36,7 +36,8 @@ describe("tcdb trade db helper", () => {
     mockSql.mockResolvedValue([
       {
         trade_id: "960943",
-        partner: "Jeff Skinner",
+        trade_partner_id: "2",
+        tcdb_username: "Jeff Skinner",
         start_date: "2026-01-24",
         end_date: "2026-01-31",
         section_count: "2",
@@ -48,6 +49,7 @@ describe("tcdb trade db helper", () => {
 
     await expect(getTcdbTradeSummaryFromDb(" 960943 ")).resolves.toEqual({
       tradeId: "960943",
+      tradePartnerId: 2,
       partner: "Jeff Skinner",
       startDate: "2026-01-24",
       endDate: "2026-01-31",
@@ -85,7 +87,8 @@ describe("tcdb trade db helper", () => {
     mockSql.mockResolvedValue([
       {
         trade_id: "960943",
-        partner: "Jeff Skinner",
+        trade_partner_id: "2",
+        tcdb_username: "Jeff Skinner",
         start_date: "2026-01-24",
         end_date: "2026-01-31",
         section_count: "2",
@@ -95,7 +98,8 @@ describe("tcdb trade db helper", () => {
       },
       {
         trade_id: "1001130",
-        partner: "jamestagli",
+        trade_partner_id: "20",
+        tcdb_username: "jamestagli",
         start_date: "2026-03-26",
         end_date: null,
         section_count: "1",
@@ -108,6 +112,7 @@ describe("tcdb trade db helper", () => {
     await expect(listTcdbTradesFromDb()).resolves.toEqual([
       {
         tradeId: "1001130",
+        tradePartnerId: 20,
         partner: "jamestagli",
         startDate: "2026-03-26",
         sectionCount: 1,
@@ -115,6 +120,7 @@ describe("tcdb trade db helper", () => {
       },
       {
         tradeId: "960943",
+        tradePartnerId: 2,
         partner: "Jeff Skinner",
         startDate: "2026-01-24",
         endDate: "2026-01-31",
@@ -132,7 +138,8 @@ describe("tcdb trade db helper", () => {
       .mockResolvedValueOnce([
         {
           trade_id: "960943",
-          partner: "Jeff Skinner",
+          trade_partner_id: "2",
+          tcdb_username: "Jeff Skinner",
           start_date: "2026-01-24",
           end_date: "2026-01-31",
           section_count: "2",
@@ -144,7 +151,8 @@ describe("tcdb trade db helper", () => {
       .mockResolvedValueOnce([
         {
           trade_id: "960943",
-          partner: "Jeff Skinner",
+          trade_partner_id: "2",
+          tcdb_username: "Jeff Skinner",
           start_date: "2026-01-24",
           end_date: "2026-01-31",
           section_count: "2",
@@ -156,7 +164,8 @@ describe("tcdb trade db helper", () => {
       .mockResolvedValueOnce([
         {
           trade_id: "960943",
-          partner: "Jeff Skinner",
+          trade_partner_id: "2",
+          tcdb_username: "Jeff Skinner",
           start_date: "2026-01-24",
           end_date: "2026-01-31",
           section_count: "2",

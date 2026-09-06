@@ -943,6 +943,7 @@ describe("ReleaseSection", () => {
   it("does not call getScroll and renders tcdb trade tab + partner link", async () => {
     getTcdbTradeSummaryFromDbMock.mockResolvedValue({
       tradeId: "359632",
+      tradePartnerId: 42,
       partner: "collect-a-set",
       startDate: "2026-01-01",
       sectionCount: 1,
@@ -974,7 +975,7 @@ describe("ReleaseSection", () => {
     expect(partnerLink).toBeInTheDocument();
     expect(partnerLink).toHaveAttribute(
       "href",
-      "https://www.tcdb.com/Profile.cfm/collect-a-set",
+      "/cardattack/tcdb-trade-partners/42",
     );
     expect(partnerLink).toHaveClass("link-blue");
     expect(getTcdbTradeSummaryFromDbMock).toHaveBeenCalledWith("359632");

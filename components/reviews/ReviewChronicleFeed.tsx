@@ -142,6 +142,7 @@ export default async function ReviewChronicleFeed({
             <div className="rounded-[28px] border border-[color:var(--review-border)] bg-[color:var(--review-surface)] px-4 py-4 shadow-sm md:px-5 md:py-5">
               <ChronicleSectionMdxRenderer
                 code={entry.section.code}
+                chronicleSlug={entry.section.postSlug}
                 postDate={entry.section.postDate}
                 components={{ ReleaseSection: RainbowReleaseSection }}
               />

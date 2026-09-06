@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
 import type {
   ComponentProps,
@@ -8,6 +7,7 @@ import type {
 } from "react";
 
 import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
+import { resolveChronicleImageSource } from "@/components/chronicles/ChronicleImage";
 import FolderImageCarouselServer from "@/components/media/FolderImageCarousel.server";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
@@ -26,6 +26,8 @@ type RenderableTradeSection = TradeSection & { code: string };
 type RenderableTradeDay = TradeChronicleDay & {
   compiledSections: RenderableTradeSection[];
 };
+
+export const resolveTradeChronicleImagePath = resolveChronicleImageSource;
 
 const DAY_LABEL: Record<TradeChronicleDay["side"], string> = {
   sent: "Package Sent",
@@ -180,23 +182,6 @@ export default async function TcdbTradeChronicleFeed({
         {...props}
       />
     ),
-    img: ({
-      className,
-      alt,
-      width,
-      height,
-      ...rest
-    }: ComponentPropsWithoutRef<typeof Image>) => (
-      <span className="mx-auto block w-full max-w-[30rem]">
-        <Image
-          alt={alt ?? ""}
-          width={width ?? 1200}
-          height={height ?? 630}
-          className={cn("w-full rounded-2xl shadow-sm", className)}
-          {...rest}
-        />
-      </span>
-    ),
     FolderImageCarousel: (
       props: ComponentProps<typeof FolderImageCarouselServer>,
     ) => (
@@ -275,36 +260,39 @@ export default async function TcdbTradeChronicleFeed({
 
               <div className="min-w-0 space-y-8">
                 {day.compiledSections.length > 0 ? (
-                  day.compiledSections.map((section, sectionIndex) => (
-                    <div
-                      key={`${day.tradeDate}-${section.postSlug}-${section.mdx}`}
-                      className={cn(
-                        "space-y-4",
-                        sectionIndex > 0 &&
-                          "border-t border-[color:var(--trade-border)] pt-8",
-                      )}
-                      style={{
-                        ["--mdx-divider-color" as string]:
-                          day.side === "received"
-                            ? "var(--trade-blue)"
-                            : day.side === "archived"
-                              ? "var(--trade-charcoal)"
-                              : "var(--trade-rust)",
-                        ["--mdx-marker-color" as string]:
-                          day.side === "received"
-                            ? "var(--trade-blue)"
-                            : day.side === "archived"
-                              ? "var(--trade-charcoal)"
-                              : "var(--trade-rust)",
-                      }}
-                    >
-                      <ChronicleSectionMdxRenderer
-                        code={section.code}
-                        postDate={section.postDate}
-                        components={tradeMdxComponents}
-                      />
-                    </div>
-                  ))
+                  day.compiledSections.map((section, sectionIndex) => {
+                    return (
+                      <div
+                        key={`${day.tradeDate}-${section.postSlug}-${section.mdx}`}
+                        className={cn(
+                          "space-y-4",
+                          sectionIndex > 0 &&
+                            "border-t border-[color:var(--trade-border)] pt-8",
+                        )}
+                        style={{
+                          ["--mdx-divider-color" as string]:
+                            day.side === "received"
+                              ? "var(--trade-blue)"
+                              : day.side === "archived"
+                                ? "var(--trade-charcoal)"
+                                : "var(--trade-rust)",
+                          ["--mdx-marker-color" as string]:
+                            day.side === "received"
+                              ? "var(--trade-blue)"
+                              : day.side === "archived"
+                                ? "var(--trade-charcoal)"
+                                : "var(--trade-rust)",
+                        }}
+                      >
+                        <ChronicleSectionMdxRenderer
+                          code={section.code}
+                          chronicleSlug={section.postSlug}
+                          postDate={section.postDate}
+                          components={tradeMdxComponents}
+                        />
+                      </div>
+                    );
+                  })
                 ) : (
                   <p className="text-sm leading-6 text-[color:var(--trade-charcoal)] opacity-80">
                     {missingContentMessage}

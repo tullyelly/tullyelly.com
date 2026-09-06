@@ -4,14 +4,10 @@ import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSe
 import PersonTag from "@/components/mdx/PersonTag";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
-import {
-  resolveChronicleCarouselFolder,
-  resolveChronicleImagePath,
-} from "@/lib/images/resolve-chronicle-image-path";
+import { resolveChronicleCarouselFolder } from "@/lib/images/resolve-chronicle-image-path";
 import { createNextOriginalReleaseSection } from "@/lib/release-section-colours";
 import type { TagMetadata } from "@/lib/tags-server";
 import { normalizeTagSlug } from "@/lib/tags";
-import { MdxImage } from "@/mdx-components";
 
 type ChronicleMdxRendererProps = {
   code: string;
@@ -26,7 +22,6 @@ const countReleaseSections = (source: string): number =>
 
 type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
 type PersonTagProps = ComponentProps<typeof PersonTag>;
-type ChronicleImageProps = ComponentProps<typeof MdxImage>;
 type ChronicleCarouselProps = Omit<
   ComponentProps<typeof FolderImageCarousel>,
   "folder"
@@ -70,12 +65,6 @@ export function ChronicleMdxRenderer({
     return <PersonTag {...props} href={metadata?.href ?? undefined} />;
   }
 
-  function ChronicleImage({ src, ...props }: ChronicleImageProps) {
-    const resolvedSrc =
-      typeof src === "string" ? resolveChronicleImagePath(slug, src) : src;
-    return <MdxImage {...props} src={resolvedSrc} />;
-  }
-
   function ChronicleFolderImageCarousel({
     folder,
     ...props
@@ -91,10 +80,10 @@ export function ChronicleMdxRenderer({
   return (
     <ChronicleSectionMdxRenderer
       code={code}
+      chronicleSlug={slug}
       postDate={postDate}
       tagMetadataBySlug={tagMetadataBySlug}
       components={{
-        img: ChronicleImage,
         FolderImageCarousel: ChronicleFolderImageCarousel,
         PersonTag: RoutedPersonTag,
         ReleaseSection: RainbowReleaseSection,

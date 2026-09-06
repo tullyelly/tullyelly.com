@@ -13,19 +13,22 @@ describe("TCDb Trade Hall of Fame components", () => {
       <TcdbTradeHallOfFameTable
         rows={[
           {
-            partner: "jamestagli",
+            tradePartnerId: 3,
+            tcdbUsername: "jamestagli",
             categoryTags: ["baseball"],
             inductionCount: 1,
             latestInductedDate: "2026-03-26",
           },
           {
-            partner: null,
+            tradePartnerId: 2,
+            tcdbUsername: "another-collector",
             categoryTags: ["basketball"],
             inductionCount: 2,
             latestInductedDate: "2026-01-31",
           },
           {
-            partner: "collect-a-set",
+            tradePartnerId: 1,
+            tcdbUsername: "collect-a-set",
             categoryTags: ["basketball", "football"],
             inductionCount: 2,
             latestInductedDate: "2026-04-10",
@@ -39,14 +42,14 @@ describe("TCDb Trade Hall of Fame components", () => {
     expect(
       within(rows[0]).getByText("(basketball, football)"),
     ).toBeInTheDocument();
-    expect(within(rows[1]).getByText("Unknown")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("another-collector")).toBeInTheDocument();
     expect(within(rows[1]).getByText("(basketball)")).toBeInTheDocument();
     expect(within(rows[2]).getByText("jamestagli")).toBeInTheDocument();
     expect(
       screen.getAllByRole("link", { name: "collect-a-set" })[0],
     ).toHaveAttribute(
       "href",
-      "https://www.tcdb.com/Profile.cfm/collect-a-set",
+      "/cardattack/tcdb-trade-partners/1",
     );
     expect(within(rows[0]).getByText("2")).toHaveClass("tabular-nums");
   });
@@ -63,7 +66,8 @@ describe("TCDb Trade Hall of Fame components", () => {
             manufacturer: "Upper Deck",
             categoryTag: "basketball",
             tradeId: "960943",
-            partner: "collect-a-set",
+            tradePartnerId: 1,
+            tcdbUsername: "collect-a-set",
             inductedDate: "2026-01-31",
             cardsOwned: 500,
             totalCards: 500,
@@ -76,7 +80,8 @@ describe("TCDb Trade Hall of Fame components", () => {
             manufacturer: "Courtside",
             categoryTag: "basketball",
             tradeId: "1004001",
-            partner: null,
+            tradePartnerId: 2,
+            tcdbUsername: "another-collector",
             inductedDate: "2026-04-10",
             cardsOwned: 147,
             totalCards: 147,
@@ -107,8 +112,8 @@ describe("TCDb Trade Hall of Fame components", () => {
       screen.getAllByRole("link", { name: "collect-a-set" })[0],
     ).toHaveAttribute(
       "href",
-      "https://www.tcdb.com/Profile.cfm/collect-a-set",
+      "/cardattack/tcdb-trade-partners/1",
     );
-    expect(within(rows[0]).getByText("Unknown")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("another-collector")).toBeInTheDocument();
   });
 });

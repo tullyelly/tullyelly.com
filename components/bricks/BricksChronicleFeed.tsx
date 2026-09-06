@@ -158,6 +158,7 @@ export default async function BricksChronicleFeed({
                   >
                     <ChronicleSectionMdxRenderer
                       code={section.code}
+                      chronicleSlug={section.postSlug}
                       postDate={section.postDate}
                       components={{ ReleaseSection: RainbowReleaseSection }}
                     />

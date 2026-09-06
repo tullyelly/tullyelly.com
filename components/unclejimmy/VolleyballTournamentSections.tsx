@@ -175,6 +175,7 @@ export default async function VolleyballTournamentSections({
               <ChronicleSectionMdxRenderer
                 key={key}
                 code={section.code}
+                chronicleSlug={section.postSlug}
                 postDate={section.postDate}
                 components={{ ReleaseSection: RainbowReleaseSection }}
               />

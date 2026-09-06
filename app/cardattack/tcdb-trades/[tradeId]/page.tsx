@@ -9,10 +9,7 @@ import {
   getTcdbTradeSummaryFromDb,
   type TcdbTradeDaySide,
 } from "@/lib/tcdb-trade-db";
-import {
-  getTcdbProfileUrl,
-  getTcdbTradeNarrativeDays,
-} from "@/lib/tcdb-trades";
+import { getTcdbTradeNarrativeDays } from "@/lib/tcdb-trades";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import TcdbTradeChronicleFeed from "./_components/TcdbTradeTimelineSection";
 
@@ -118,9 +115,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   }
 
   const chronicleDays = buildChronicleDays(narrativeDays);
-  const partnerUrl = summary.partner
-    ? getTcdbProfileUrl(summary.partner)
-    : null;
   const statusBadgeClassName =
     summary.status === "Completed"
       ? `inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--trade-blue)] px-3 py-1 text-[color:var(--trade-off-white)] ${summaryValueClassName}`
@@ -134,8 +128,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   }> = [
     {
       label: "Trade Partner",
-      value: summary.partner ?? "Not available",
-      href: partnerUrl ?? undefined,
+      value: summary.partner,
+      href: `/cardattack/tcdb-trade-partners/${summary.tradePartnerId}`,
       valueContainerClassName: "flex min-h-[2.25rem] items-center",
     },
     {
@@ -208,14 +202,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   <dt className={summaryLabelClassName}>{stat.label}</dt>
                   <dd className={`mt-2 ${stat.valueContainerClassName ?? ""}`}>
                     {stat.href ? (
-                      <a
+                      <Link
                         href={stat.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className={`inline-flex max-w-full items-center rounded-full border border-white bg-white px-3 py-1.5 text-[color:var(--trade-blue)] shadow-sm transition hover:bg-[color:var(--trade-blue-soft)] xl:whitespace-nowrap ${summaryValueClassName}`}
                       >
                         {stat.value}
-                      </a>
+                      </Link>
                     ) : stat.badgeClassName ? (
                       <span className={stat.badgeClassName}>{stat.value}</span>
                     ) : (

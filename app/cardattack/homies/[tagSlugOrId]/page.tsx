@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import HomieCardCountSparkline from "@/components/tcdb/HomieCardCountSparkline";
 import TcdbCardHistorySummary from "@/components/tcdb/TcdbCardHistorySummary";
+import TradePartnerRelations from "@/components/tcdb/TradePartnerRelations";
 import RankingDetailPage, {
   formatRankingDate,
   formatRankingNumber,
@@ -20,6 +21,7 @@ import type { TagMetadata } from "@/lib/tags-server";
 import { getStoredTagMetadataForHrefKind } from "@/lib/tags-server";
 import { getHomieTcdbRankingHref } from "@/lib/tcdb-homie-routes";
 import { makeDetailGenerateMetadata } from "@/lib/seo/factories";
+import { listTradePartnersForHomieFromDb } from "@/lib/tcdb-trade-partners-db";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -138,7 +140,10 @@ export default async function Page({ params }: PageProps) {
   const taggedChronicles = chronicleTagMetadata
     ? getTaggedPosts(chronicleTagMetadata.slug)
     : [];
-  const rankSnapshots = await listHomieTcdbSnapshotHistory(ranking.homie_id);
+  const [rankSnapshots, tradePartners] = await Promise.all([
+    listHomieTcdbSnapshotHistory(ranking.homie_id),
+    listTradePartnersForHomieFromDb(ranking.homie_id),
+  ]);
 
   return (
     <RankingDetailPage
@@ -179,6 +184,7 @@ export default async function Page({ params }: PageProps) {
         },
       ]}
     >
+      <TradePartnerRelations partners={tradePartners} />
       {chronicleTagMetadata ? (
         <HomieChronicleDisplayNamesSection
           tagMetadata={chronicleTagMetadata}

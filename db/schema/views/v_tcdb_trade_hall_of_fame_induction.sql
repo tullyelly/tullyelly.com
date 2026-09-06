@@ -1,69 +1,19 @@
 CREATE OR REPLACE VIEW dojo.v_tcdb_trade_hall_of_fame_induction AS
 WITH latest_snapshot AS (
-  SELECT DISTINCT ON (collector.set_collector_header_id)
-    collector.set_collector_header_id,
-    collector.set_slug,
-    collector.set_name,
-    collector.release_year,
-    collector.manufacturer,
-    collector.category_tag,
-    collector.snapshot_date,
-    collector.cards_owned,
-    collector.total_cards,
-    collector.tcdb_trade_id
-  FROM dojo.v_set_collector_header_snapshot AS collector
+  SELECT DISTINCT ON (collector.set_collector_header_id) collector.*
+  FROM dojo.v_set_collector_header_snapshot collector
   WHERE collector.set_collector_snapshot_id IS NOT NULL
-  ORDER BY
-    collector.set_collector_header_id,
-    collector.snapshot_date DESC,
-    collector.set_collector_snapshot_id DESC
-),
-induction AS (
-  SELECT
-    latest_snapshot.set_collector_header_id,
-    latest_snapshot.set_slug,
-    latest_snapshot.set_name,
-    latest_snapshot.release_year,
-    latest_snapshot.manufacturer,
-    NULLIF(BTRIM(latest_snapshot.category_tag), '') AS category_tag,
-    trade.trade_id,
-    NULLIF(BTRIM(trade.partner), '') AS partner,
-    COALESCE(
-      MAX(day.trade_date) FILTER (WHERE day.side IN ('received', 'archived')),
-      latest_snapshot.snapshot_date
-    ) AS inducted_date,
-    latest_snapshot.cards_owned,
-    latest_snapshot.total_cards
-  FROM latest_snapshot
-  INNER JOIN dojo.tcdb_trade AS trade
-    ON trade.trade_id = latest_snapshot.tcdb_trade_id
-  LEFT JOIN dojo.tcdb_trade_day AS day
-    ON day.trade_id = trade.trade_id
-  WHERE latest_snapshot.tcdb_trade_id IS NOT NULL
-    AND latest_snapshot.cards_owned = latest_snapshot.total_cards
-  GROUP BY
-    latest_snapshot.set_collector_header_id,
-    latest_snapshot.set_slug,
-    latest_snapshot.set_name,
-    latest_snapshot.release_year,
-    latest_snapshot.manufacturer,
-    NULLIF(BTRIM(latest_snapshot.category_tag), ''),
-    trade.trade_id,
-    NULLIF(BTRIM(trade.partner), ''),
-    latest_snapshot.snapshot_date,
-    latest_snapshot.cards_owned,
-    latest_snapshot.total_cards
+  ORDER BY collector.set_collector_header_id, collector.snapshot_date DESC, collector.set_collector_snapshot_id DESC
 )
-SELECT
-  set_collector_header_id,
-  set_slug,
-  set_name,
-  release_year,
-  manufacturer,
-  category_tag,
-  trade_id,
-  partner,
-  inducted_date,
-  cards_owned,
-  total_cards
-FROM induction;
+SELECT latest.set_collector_header_id, latest.set_slug, latest.set_name, latest.release_year,
+  latest.manufacturer, NULLIF(BTRIM(latest.category_tag), '') AS category_tag,
+  trade.trade_id, partner.id AS trade_partner_id, partner.tcdb_username, partner.name,
+  COALESCE(MAX(day.trade_date) FILTER (WHERE day.side IN ('received', 'archived')), latest.snapshot_date) AS inducted_date,
+  latest.cards_owned, latest.total_cards
+FROM latest_snapshot latest JOIN dojo.tcdb_trade trade ON trade.trade_id = latest.tcdb_trade_id
+JOIN dojo.tcdb_trade_partner partner ON partner.id = trade.trade_partner_id
+LEFT JOIN dojo.tcdb_trade_day day ON day.trade_id = trade.trade_id
+WHERE latest.cards_owned = latest.total_cards
+GROUP BY latest.set_collector_header_id, latest.set_slug, latest.set_name, latest.release_year,
+  latest.manufacturer, NULLIF(BTRIM(latest.category_tag), ''), trade.trade_id, partner.id,
+  partner.tcdb_username, partner.name, latest.snapshot_date, latest.cards_owned, latest.total_cards;

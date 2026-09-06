@@ -68,6 +68,7 @@ export async function PersonaReleaseLogEntry({
       </header>
       <ChronicleSectionMdxRenderer
         code={code}
+        chronicleSlug={entry.postSlug}
         postDate={entry.postDate}
         tagMetadataBySlug={tagMetadataBySlug}
         components={{
