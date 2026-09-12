@@ -73,7 +73,9 @@ describe("MdxImage", () => {
       "sizes",
       `(max-width: 768px) 100vw, ${Math.min(maxWidth, 1152)}px`,
     );
-    expect(image.parentElement?.parentElement).toHaveStyle({ maxWidth });
+    expect(image.parentElement?.parentElement).toHaveStyle({
+      maxWidth: `${maxWidth}px`,
+    });
     expect(interactiveImageMock.mock.calls[0][0].slide).toEqual({
       src: portrait.src,
       alt: "Portrait artwork",
@@ -109,7 +111,9 @@ describe("MdxImage", () => {
     expect(image).not.toHaveAttribute("data-next-image");
     expect(image).not.toHaveAttribute("width");
     expect(image).not.toHaveAttribute("height");
-    expect(image.parentElement?.parentElement).toHaveStyle({ maxWidth: 720 });
+    expect(image.parentElement?.parentElement).toHaveStyle({
+      maxWidth: "720px",
+    });
     expect(interactiveImageMock.mock.calls[0][0].slide).toMatchObject({
       src,
       alt: "External artwork",

@@ -3,6 +3,7 @@ import ProductionPageLink from "./ProductionPageLink";
 
 type PageIntroProps = {
   title: React.ReactNode;
+  description?: React.ReactNode;
   children?: React.ReactNode;
   accessory?: React.ReactNode;
   actions?: React.ReactNode;
@@ -15,6 +16,7 @@ type PageIntroProps = {
 
 export default function PageIntro({
   title,
+  description,
   children,
   accessory,
   actions,
@@ -27,7 +29,7 @@ export default function PageIntro({
   const hasHeaderLayout = showProductionLink || accessory || actions;
 
   return (
-    <div className={cn("space-y-4 pt-8", className)}>
+    <div className={cn("space-y-4 pt-6 md:pt-8", className)}>
       <header
         className={cn(
           hasHeaderLayout
@@ -38,7 +40,7 @@ export default function PageIntro({
       >
         {hasHeaderLayout ? (
           <>
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
               <h1
                 className={cn(
                   "!m-0 text-3xl font-semibold leading-tight md:text-4xl",
@@ -63,6 +65,11 @@ export default function PageIntro({
           </h1>
         )}
       </header>
+      {description ? (
+        <p className="!m-0 max-w-3xl text-base leading-7 text-muted-foreground md:text-lg">
+          {description}
+        </p>
+      ) : null}
       {children ? (
         <div className={cn("space-y-4", contentClassName)}>{children}</div>
       ) : null}

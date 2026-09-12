@@ -1,8 +1,9 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { Card } from "@ui";
-import FullBleedPage from "@/components/layout/FullBleedPage";
+import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
+import SectionHeader from "@/components/layout/SectionHeader";
 import { ALTER_EGO_OPTIONS, type AlterEgo } from "@/lib/alterEgo";
 import { getPublishedPosts } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
@@ -59,79 +60,64 @@ export default async function Page({
   const latestChronicle = rows[0];
 
   return (
-    <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
-      <Card
-        as="section"
-        className="space-y-8 border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8"
-      >
-        <PageIntro title="Shaolin Chronicles">
-          <p className="text-[16px] text-muted-foreground md:text-[18px]">
+    <DataPageShell>
+      <PageIntro
+        title="Shaolin Chronicles"
+        description={
+          <>
             The running record of whatever I&apos;m building, collecting,
             fixing, breaking, watching, thinking about, or otherwise getting
             myself into.
-          </p>
-        </PageIntro>
+          </>
+        }
+      />
 
-        <section aria-label="Chronicle metrics">
-          <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <Metric
-              label="Latest"
-              value={
-                latestChronicle ? (
-                  <Link
-                    href={latestChronicle.url as Route}
-                    className="link-blue"
-                  >
-                    <time dateTime={latestChronicle.date}>
-                      {fmtDate(latestChronicle.date)}
-                    </time>
-                  </Link>
-                ) : (
-                  "Not available"
-                )
-              }
-            />
-            <Metric label="Chronicles" value={String(rows.length)} />
-            <Metric
-              label="Tags"
-              value={
-                <>
-                  {tags.length}{" "}
-                  <Link href="/shaolin/tags" className="link-blue text-sm">
-                    (view all)
-                  </Link>
-                </>
-              }
-            />
-            <Metric
-              label="Infinity Stones"
-              value={String(infinityStoneCount)}
-            />
-          </dl>
-        </section>
-
-        <section className="space-y-4" aria-labelledby="chronicles-heading">
-          <div className="space-y-1">
-            <h2
-              id="chronicles-heading"
-              className="text-2xl font-semibold tracking-tight text-ink"
-            >
-              Chronicles
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Search the whole archive or narrow things down by alter ego and
-              tag.
-            </p>
-          </div>
-
-          <ChronicleListClient
-            rows={rows}
-            alterEgos={ALTER_EGO_OPTIONS}
-            initialAlterEgo={initialAlterEgo}
+      <section aria-label="Chronicle metrics">
+        <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Metric
+            label="Latest"
+            value={
+              latestChronicle ? (
+                <Link href={latestChronicle.url as Route} className="link-blue">
+                  <time dateTime={latestChronicle.date}>
+                    {fmtDate(latestChronicle.date)}
+                  </time>
+                </Link>
+              ) : (
+                "Not available"
+              )
+            }
           />
-        </section>
-      </Card>
-    </FullBleedPage>
+          <Metric label="Chronicles" value={String(rows.length)} />
+          <Metric
+            label="Tags"
+            value={
+              <>
+                {tags.length}{" "}
+                <Link href="/shaolin/tags" className="link-blue text-sm">
+                  (view all)
+                </Link>
+              </>
+            }
+          />
+          <Metric label="Infinity Stones" value={String(infinityStoneCount)} />
+        </dl>
+      </section>
+
+      <section className="space-y-4" aria-labelledby="chronicles-heading">
+        <SectionHeader
+          id="chronicles-heading"
+          title="Chronicles"
+          description="Search the whole archive or narrow things down by alter ego and tag."
+        />
+
+        <ChronicleListClient
+          rows={rows}
+          alterEgos={ALTER_EGO_OPTIONS}
+          initialAlterEgo={initialAlterEgo}
+        />
+      </section>
+    </DataPageShell>
   );
 }
 

@@ -476,6 +476,10 @@ p {
 }
 
 @layer utilities {
+  #content-pane:has([data-content-width="wide"]) {
+    max-width: 82rem;
+  }
+
   .link-blue {
     color: var(--blue);
     text-decoration: underline;

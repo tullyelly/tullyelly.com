@@ -3,14 +3,58 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 type TableVariant = "default" | "bucks";
+type TableLayout = "auto" | "fixed";
+type TableDensity = "comfortable" | "compact";
+
+export type TableColumnIntent =
+  | "default"
+  | "compact"
+  | "numeric"
+  | "date"
+  | "status"
+  | "identifier"
+  | "name"
+  | "grow"
+  | "descriptive"
+  | "nowrap";
 
 type TableProps = React.TableHTMLAttributes<HTMLTableElement> & {
   variant?: TableVariant; // controls outer frame styling
+  layout?: TableLayout;
+  density?: TableDensity;
   showOnMobile?: boolean;
   themeStyle?: React.CSSProperties;
   frameClassName?: string;
   frameStyle?: React.CSSProperties;
 };
+
+const TABLE_DENSITY_STYLES: Record<TableDensity, React.CSSProperties> = {
+  comfortable: {
+    ["--table-cell-x" as string]: "1rem",
+    ["--table-cell-y" as string]: "0.75rem",
+  },
+  compact: {
+    ["--table-cell-x" as string]: "0.75rem",
+    ["--table-cell-y" as string]: "0.5rem",
+  },
+};
+
+const TABLE_COLUMN_CLASSES: Record<TableColumnIntent, string> = {
+  default: "",
+  compact: "w-px whitespace-nowrap",
+  numeric: "w-px whitespace-nowrap tabular-nums",
+  date: "w-px whitespace-nowrap tabular-nums",
+  status: "w-px whitespace-nowrap",
+  identifier: "w-px whitespace-nowrap tabular-nums",
+  name: "w-full min-w-[12rem]",
+  grow: "w-full min-w-[12rem]",
+  descriptive: "min-w-[16rem] whitespace-normal",
+  nowrap: "whitespace-nowrap",
+};
+
+export function getTableColumnClassName(intent: TableColumnIntent = "default") {
+  return TABLE_COLUMN_CLASSES[intent];
+}
 
 const DEFAULT_TABLE_THEME_STYLE: React.CSSProperties = {
   ["--table-head-background" as string]: "var(--white)",
@@ -36,6 +80,8 @@ export function Table({
   className,
   children,
   variant = "default",
+  layout = "auto",
+  density = "comfortable",
   showOnMobile = false,
   themeStyle,
   frameClassName,
@@ -44,16 +90,17 @@ export function Table({
 }: TableProps) {
   const frameClass =
     variant === "bucks"
-      ? "overflow-x-auto overflow-hidden rounded-2xl border-2 border-[color:var(--table-frame-border)] shadow-sm ring-0"
+      ? "overflow-x-auto overflow-y-hidden rounded-2xl border-2 border-[color:var(--table-frame-border)] shadow-sm ring-0"
       : "overflow-x-auto rounded-2xl shadow-sm ring-1 ring-black/5";
   const displayClass = showOnMobile ? "block" : "hidden md:block";
   const resolvedFrameStyle = React.useMemo(
     () => ({
       ...TABLE_THEME_STYLES[variant],
+      ...TABLE_DENSITY_STYLES[density],
       ...(themeStyle ?? {}),
       ...(frameStyle ?? {}),
     }),
-    [frameStyle, themeStyle, variant],
+    [density, frameStyle, themeStyle, variant],
   );
 
   return (
@@ -64,7 +111,8 @@ export function Table({
       >
         <table
           className={cn(
-            "zebra-desktop w-full table-fixed border-collapse text-sm leading-6",
+            "zebra-desktop min-w-full border-collapse text-sm leading-6",
+            layout === "fixed" ? "table-fixed" : "table-auto",
             className,
           )}
           {...rest}
@@ -95,7 +143,7 @@ export function THead({
         className,
       )}
     >
-      <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold [&>th]:text-[color:var(--table-head-text)]">
+      <tr className="[&>th]:px-[var(--table-cell-x)] [&>th]:py-[var(--table-cell-y)] [&>th]:text-left [&>th]:font-semibold [&>th]:text-[color:var(--table-head-text)]">
         {children}
       </tr>
     </thead>
@@ -110,8 +158,67 @@ export function TBody({
   className?: string;
 }) {
   return (
-    <tbody className={cn("[&>tr>td]:px-4 [&>tr>td]:py-3 text-ink", className)}>
+    <tbody
+      className={cn(
+        "text-ink [&>tr>td]:px-[var(--table-cell-x)] [&>tr>td]:py-[var(--table-cell-y)] [&>tr:not(:last-child)>td]:border-b [&>tr:not(:last-child)>td]:border-[color:var(--table-row-divider)]",
+        className,
+      )}
+    >
       {children}
     </tbody>
+  );
+}
+
+type TableHeaderCellProps = React.ThHTMLAttributes<HTMLTableCellElement> & {
+  intent?: TableColumnIntent;
+};
+
+export function TableHeaderCell({
+  intent = "default",
+  className,
+  scope = "col",
+  ...rest
+}: TableHeaderCellProps) {
+  return (
+    <th
+      scope={scope}
+      className={cn(getTableColumnClassName(intent), className)}
+      {...rest}
+    />
+  );
+}
+
+type TableCellProps = React.TdHTMLAttributes<HTMLTableCellElement> & {
+  intent?: TableColumnIntent;
+};
+
+export function TableCell({
+  intent = "default",
+  className,
+  ...rest
+}: TableCellProps) {
+  return (
+    <td className={cn(getTableColumnClassName(intent), className)} {...rest} />
+  );
+}
+
+export function TableEmptyRow({
+  colSpan,
+  children,
+  className,
+}: {
+  colSpan: number;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <tr>
+      <td
+        colSpan={colSpan}
+        className={cn("!py-8 text-center text-sm text-ink/70", className)}
+      >
+        {children}
+      </td>
+    </tr>
   );
 }

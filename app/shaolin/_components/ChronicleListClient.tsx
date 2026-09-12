@@ -6,7 +6,15 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { Card } from "@ui";
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import TablePager from "@/components/ui/TablePager";
 import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 import type { AlterEgo } from "@/lib/alterEgo";
@@ -107,64 +115,70 @@ export default function ChronicleListClient({
 
   return (
     <div className="space-y-4" aria-label="Chronicles archive">
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_repeat(2,auto)_auto] xl:items-center">
-        <TableSearch
-          query={query}
-          onQueryChange={(nextQuery) => {
-            setQuery(nextQuery);
-            setPage(1);
-          }}
-          label="Search chronicles"
-          placeholder="Search chronicles"
-          resultCount={sortedRows.length}
-          resultLabel={(count) =>
-            `${count} chronicle${count === 1 ? "" : "s"} shown`
-          }
-          className="md:w-full"
-        />
-        <select
-          className="form-input h-9"
-          aria-label="Filter chronicles by alter ego"
-          value={alterEgo}
-          onChange={(event) => {
-            setAlterEgo(event.target.value as AlterEgo | "");
-            setPage(1);
-          }}
-        >
-          <option value="">All alter egos</option>
-          {alterEgos.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        <select
-          className="form-input h-9"
-          aria-label="Sort chronicles"
-          value={sort}
-          onChange={(event) => {
-            setSort(event.target.value as SortOrder);
-            setPage(1);
-          }}
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-        </select>
-        {hasActiveFilters ? (
-          <button
-            type="button"
-            className="btn h-9 whitespace-nowrap text-sm"
-            onClick={resetFilters}
-          >
-            Clear filters
-          </button>
-        ) : null}
-      </div>
-
-      <p className="text-sm text-ink/70" aria-live="polite">
-        {sortedRows.length} matching chronicle
-        {sortedRows.length === 1 ? "" : "s"}
-      </p>
+      <DataToolbar
+        ariaLabel="Chronicle controls"
+        search={
+          <TableSearch
+            query={query}
+            onQueryChange={(nextQuery) => {
+              setQuery(nextQuery);
+              setPage(1);
+            }}
+            label="Search chronicles"
+            placeholder="Search chronicles"
+            ariaControls="chronicles-table"
+          />
+        }
+        filters={
+          <>
+            <select
+              className="form-input h-10 w-full sm:w-auto"
+              aria-label="Filter chronicles by alter ego"
+              value={alterEgo}
+              onChange={(event) => {
+                setAlterEgo(event.target.value as AlterEgo | "");
+                setPage(1);
+              }}
+            >
+              <option value="">All alter egos</option>
+              {alterEgos.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <select
+              className="form-input h-10 w-full sm:w-auto"
+              aria-label="Sort chronicles"
+              value={sort}
+              onChange={(event) => {
+                setSort(event.target.value as SortOrder);
+                setPage(1);
+              }}
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </>
+        }
+        actions={
+          hasActiveFilters ? (
+            <button
+              type="button"
+              className="btn h-10 whitespace-nowrap text-sm"
+              onClick={resetFilters}
+            >
+              Clear filters
+            </button>
+          ) : null
+        }
+        result={
+          <DataResultCount>
+            {sortedRows.length} matching chronicle
+            {sortedRows.length === 1 ? "" : "s"}
+          </DataResultCount>
+        }
+      />
 
       <ul className="space-y-3 md:hidden">
         {visibleRows.length > 0 ? (
@@ -214,27 +228,25 @@ export default function ChronicleListClient({
         )}
       </ul>
 
-      <Table variant="bucks" aria-label="Chronicles table">
+      <Table
+        id="chronicles-table"
+        variant="bucks"
+        aria-label="Chronicles table"
+      >
         <THead variant="bucks">
-          <th scope="col" className="w-[126px] whitespace-nowrap">
-            Date
-          </th>
-          <th scope="col">Chronicle</th>
-          <th scope="col" className="w-[124px] whitespace-nowrap">
-            Alter Ego
-          </th>
-          <th scope="col" className="w-[34%]">
-            Tags
-          </th>
+          <TableHeaderCell intent="date">Date</TableHeaderCell>
+          <TableHeaderCell intent="grow">Chronicle</TableHeaderCell>
+          <TableHeaderCell intent="status">Alter Ego</TableHeaderCell>
+          <TableHeaderCell intent="descriptive">Tags</TableHeaderCell>
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
             visibleRows.map((row) => (
               <tr key={row.slug}>
-                <td className="whitespace-nowrap align-top tabular-nums">
+                <TableCell intent="date" className="align-top">
                   <time dateTime={row.date}>{fmtDate(row.date)}</time>
-                </td>
-                <td className="align-top">
+                </TableCell>
+                <TableCell intent="grow" className="align-top">
                   <div className="flex items-start gap-2">
                     <div className="min-w-0">
                       <Link
@@ -257,23 +269,23 @@ export default function ChronicleListClient({
                       </span>
                     ) : null}
                   </div>
-                </td>
-                <td className="whitespace-nowrap align-top">{row.alterEgo}</td>
-                <td className="align-top">
+                </TableCell>
+                <TableCell intent="status" className="align-top">
+                  {row.alterEgo}
+                </TableCell>
+                <TableCell intent="descriptive" className="align-top">
                   {row.tags.length > 0 ? (
                     <TagLinks tags={row.tags} />
                   ) : (
                     <span className="text-muted-foreground">No tags</span>
                   )}
-                </td>
+                </TableCell>
               </tr>
             ))
           ) : (
-            <tr>
-              <td colSpan={4} className="text-sm text-ink/70">
-                No chronicles match these filters.
-              </td>
-            </tr>
+            <TableEmptyRow colSpan={4}>
+              No chronicles match these filters.
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

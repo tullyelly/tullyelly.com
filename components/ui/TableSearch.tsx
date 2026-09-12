@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 
+import { cn } from "@/lib/utils";
+
 type SearchValue = string | number | null | undefined;
 
 export function useTableSearch<Row>(
@@ -31,29 +33,34 @@ export default function TableSearch({
   placeholder = label,
   resultCount,
   resultLabel,
-  className = "",
+  ariaControls,
+  className,
 }: {
   query: string;
   onQueryChange: (query: string) => void;
   label: string;
   placeholder?: string;
-  resultCount: number;
-  resultLabel: (count: number) => string;
+  resultCount?: number;
+  resultLabel?: (count: number) => string;
+  ariaControls?: string;
   className?: string;
 }) {
   return (
     <>
       <input
         type="search"
-        className={`form-input h-9 w-full md:w-64 ${className}`.trim()}
+        className={cn("form-input h-10 w-full sm:w-72", className)}
         aria-label={label}
+        aria-controls={ariaControls}
         placeholder={placeholder}
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
       />
-      <p className="sr-only" aria-live="polite">
-        {resultLabel(resultCount)}
-      </p>
+      {resultCount !== undefined && resultLabel ? (
+        <p className="sr-only" aria-live="polite">
+          {resultLabel(resultCount)}
+        </p>
+      ) : null}
     </>
   );
 }
