@@ -24,7 +24,14 @@ export type ClanRankingRow = {
 
 export type ClanRankingResponse = {
   data: ClanRankingRow[];
-  meta: RankingMeta;
+  meta: RankingMeta & { sport?: string };
+};
+
+export type ClanCollectionScoreboard = {
+  tracked_clans: number;
+  total_current_cards: number;
+  number_one_rankings: number;
+  sports: string[];
 };
 
 export type ClanTcdbSnapshotRow = {
@@ -41,6 +48,12 @@ const CLAN_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 type DbClanRankingRow = ClanRankingRow;
 type DbClanTcdbSnapshotRow = ClanTcdbSnapshotRow;
+type DbClanCollectionScoreboard = {
+  tracked_clans: number | string;
+  total_current_cards: number | string;
+  number_one_rankings: number | string;
+  sports: string[] | null;
+};
 
 function normalizeClanRankingRow(row: DbClanRankingRow): ClanRankingRow {
   const ranking_at = asDateString(row.ranking_at);
@@ -66,15 +79,25 @@ function normalizeSlug(slug: string): string | null {
   return CLAN_SLUG_PATTERN.test(normalized) ? normalized : null;
 }
 
+function normalizeInteger(value: number | string, field: string): number {
+  const normalized = typeof value === "number" ? value : Number(value);
+  if (!Number.isSafeInteger(normalized)) {
+    throw new Error(`Invalid ${field} value from database`);
+  }
+  return normalized;
+}
+
 export async function listTcdbClanRankings(opts: {
   page: number;
   pageSize: number;
   q?: string;
+  sport?: string;
   trend?: Trend;
 }): Promise<ClanRankingResponse> {
   const page = Math.max(1, Number(opts.page ?? 1));
   const pageSize = Math.max(1, Math.min(200, Number(opts.pageSize ?? 50)));
   const q = (opts.q ?? "").trim();
+  const sport = opts.sport ? normalizeSlug(opts.sport) : null;
   const trend = opts.trend;
 
   const where: string[] = [];
@@ -82,8 +105,15 @@ export async function listTcdbClanRankings(opts: {
   let i = 1;
 
   if (q) {
-    where.push(`r.name ILIKE $${i++}`);
+    where.push(
+      `(r.name ILIKE $${i} OR r.slug ILIKE $${i} OR r.sport ILIKE $${i})`,
+    );
+    i += 1;
     params.push(`%${q}%`);
+  }
+  if (sport) {
+    where.push(`r.sport = $${i++}`);
+    params.push(sport);
   }
   if (trend) {
     where.push(`r.trend_overall = $${i++}`);
@@ -139,7 +169,54 @@ export async function listTcdbClanRankings(opts: {
 
   return {
     data,
-    meta: { page, pageSize, total, totalPages, q: q || undefined, trend },
+    meta: {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      q: q || undefined,
+      trend,
+      ...(sport ? { sport } : {}),
+    },
+  };
+}
+
+export async function getTcdbClanCollectionScoreboard(): Promise<ClanCollectionScoreboard> {
+  const [row] = await withDbRetry(() =>
+    queryRows<DbClanCollectionScoreboard>(
+      `
+        SELECT COUNT(DISTINCT r.clan_id)::text AS tracked_clans,
+               COALESCE(SUM(r.card_count), 0)::text AS total_current_cards,
+               COUNT(*) FILTER (WHERE r.ranking = 1)::text AS number_one_rankings,
+               COALESCE(
+                 ARRAY_AGG(DISTINCT r.sport ORDER BY r.sport),
+                 ARRAY[]::text[]
+               ) AS sports
+        FROM ${TCDB_CLAN_TABLE} AS r
+      `,
+    ),
+  );
+
+  if (!row) {
+    return {
+      tracked_clans: 0,
+      total_current_cards: 0,
+      number_one_rankings: 0,
+      sports: [],
+    };
+  }
+
+  return {
+    tracked_clans: normalizeInteger(row.tracked_clans, "tracked_clans"),
+    total_current_cards: normalizeInteger(
+      row.total_current_cards,
+      "total_current_cards",
+    ),
+    number_one_rankings: normalizeInteger(
+      row.number_one_rankings,
+      "number_one_rankings",
+    ),
+    sports: row.sports ?? [],
   };
 }
 

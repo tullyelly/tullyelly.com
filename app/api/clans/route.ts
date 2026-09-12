@@ -9,10 +9,17 @@ export async function GET(req: Request) {
   const page = Number(searchParams.get("page") ?? "1");
   const pageSize = Number(searchParams.get("pageSize") ?? "50");
   const q = searchParams.get("q") ?? undefined;
+  const sport = searchParams.get("sport") ?? undefined;
   const trendParam = searchParams.get("trend");
   const trend = isTrend(trendParam) ? trendParam : undefined;
 
-  const data = await listTcdbClanRankings({ page, pageSize, q, trend });
+  const data = await listTcdbClanRankings({
+    page,
+    pageSize,
+    q,
+    sport,
+    trend,
+  });
   return NextResponse.json(data, {
     headers: { "Cache-Tag": "tcdb-ranking-data" },
   });

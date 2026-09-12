@@ -17,8 +17,8 @@ export const generateMetadata = makeListGenerateMetadata({
   },
   getDescription: (q, page) => {
     const base = q
-      ? `Cardattack clans filtered by "${q}"; review clan snapshots and handmade trends`
-      : "Cardattack clans; review clan snapshots and handmade trends";
+      ? `CardAttack clan collections filtered by "${q}"; review current cards, TCDb rankings, and collection growth`
+      : "CardAttack clan collections; review current cards, TCDb rankings, and collection growth";
     return page && page !== "1" ? `${base} (page ${page}).` : `${base}.`;
   },
 });
