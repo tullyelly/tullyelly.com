@@ -40,10 +40,16 @@ export type TCDBRankingTableLabels = {
   tableAriaLabel: string;
 };
 
+export type TCDBRankingSportOption = {
+  value: string;
+  label: string;
+};
+
 type TCDBRankingTableProps = {
   serverData: TCDBRankingTableData;
   theme?: TCDBRankingTableTheme;
   labels: TCDBRankingTableLabels;
+  sportOptions?: TCDBRankingSportOption[];
 };
 
 export function homieRankingsToTableData(
@@ -98,12 +104,14 @@ export default function TCDBRankingTable({
   serverData,
   theme,
   labels,
+  sportOptions,
 }: TCDBRankingTableProps) {
   return (
     <TCDBRankingTableClient
       serverData={serverData}
       theme={theme}
       labels={labels}
+      sportOptions={sportOptions}
     />
   );
 }

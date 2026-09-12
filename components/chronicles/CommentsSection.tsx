@@ -99,7 +99,10 @@ export function CommentsSection({ postSlug }: Props) {
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border-2 border-[var(--cream)] bg-white p-4 shadow-sm md:p-6">
+    <section
+      id="comments"
+      className="space-y-4 rounded-2xl border-2 border-[var(--cream)] bg-white p-4 shadow-sm md:p-6"
+    >
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-xl font-semibold">Comments</h2>
         {message ? (

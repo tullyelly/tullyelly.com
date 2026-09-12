@@ -8,6 +8,7 @@ import TrendPill from "./TrendPill";
 import type {
   TCDBRankingTableData,
   TCDBRankingTableLabels,
+  TCDBRankingSportOption,
   TCDBRankingTableTheme,
 } from "./TCDBRankingTable";
 import { Table, TBody, THead } from "@/components/ui/Table";
@@ -27,12 +28,14 @@ export type TCDBRankingTableClientProps = {
   serverData: TCDBRankingTableData;
   theme?: TCDBRankingTableTheme;
   labels: TCDBRankingTableLabels;
+  sportOptions?: TCDBRankingSportOption[];
 };
 
 export default function TCDBRankingTableClient({
   serverData,
   theme,
   labels,
+  sportOptions,
 }: TCDBRankingTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -42,6 +45,7 @@ export default function TCDBRankingTableClient({
   const [isPending, startTransition] = useTransition();
 
   const searchQ = search?.get("q") ?? "";
+  const searchSport = (search?.get("sport") ?? "").trim().toLowerCase();
   const searchTrend = search?.get("trend") ?? "";
 
   const rows = useMemo(
@@ -77,8 +81,9 @@ export default function TCDBRankingTableClient({
   const onSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      const formData = new FormData(event.currentTarget);
-      const nextQ = String(formData.get("q") ?? "");
+      const queryInput = event.currentTarget.elements.namedItem("q");
+      const nextQ =
+        queryInput instanceof HTMLInputElement ? queryInput.value : "";
       updateQuery({ q: nextQ || undefined }, { resetPage: true });
     },
     [updateQuery],
@@ -88,6 +93,14 @@ export default function TCDBRankingTableClient({
     (event: ChangeEvent<HTMLSelectElement>) => {
       const value = event.target.value;
       updateQuery({ trend: value || undefined }, { resetPage: true });
+    },
+    [updateQuery],
+  );
+
+  const onSportChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const value = event.target.value;
+      updateQuery({ sport: value || undefined }, { resetPage: true });
     },
     [updateQuery],
   );
@@ -102,7 +115,7 @@ export default function TCDBRankingTableClient({
       aria-busy={isPending ? "true" : undefined}
       role="region"
     >
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <form
           key={searchSnapshot}
           onSubmit={onSubmit}
@@ -132,19 +145,39 @@ export default function TCDBRankingTableClient({
             {isPending ? "Updating results" : "Results ready"}
           </div>
         </form>
-        <div className="md:min-w-[12rem]">
-          <select
-            name="trend"
-            defaultValue={searchTrend}
-            onChange={onTrendChange}
-            className="form-input h-9 w-full"
-            aria-label="Filter by trend"
-          >
-            <option value="">All trends</option>
-            <option value="up">Up</option>
-            <option value="down">Down</option>
-            <option value="flat">Flat</option>
-          </select>
+        <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto">
+          {sportOptions?.length ? (
+            <div className="lg:min-w-[11rem]">
+              <select
+                name="sport"
+                value={searchSport}
+                onChange={onSportChange}
+                className="form-input h-9 w-full"
+                aria-label="Filter by sport"
+              >
+                <option value="">All sports</option>
+                {sportOptions.map((sport) => (
+                  <option key={sport.value} value={sport.value}>
+                    {sport.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          <div className="lg:min-w-[11rem]">
+            <select
+              name="trend"
+              value={searchTrend}
+              onChange={onTrendChange}
+              className="form-input h-9 w-full"
+              aria-label="Filter by trend"
+            >
+              <option value="">All trends</option>
+              <option value="up">Up</option>
+              <option value="down">Down</option>
+              <option value="flat">Flat</option>
+            </select>
+          </div>
         </div>
       </div>
 

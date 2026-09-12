@@ -52,13 +52,14 @@ describe("GET /api/clans", () => {
         total: 1,
         totalPages: 1,
         q: "bucks",
+        sport: "basketball",
         trend: "up",
       },
     });
 
     const res = await GET_LIST(
       new Request(
-        "https://tullyelly.com/api/clans?page=2&pageSize=20&q=bucks&trend=up",
+        "https://tullyelly.com/api/clans?page=2&pageSize=20&q=bucks&sport=basketball&trend=up",
       ),
     );
 
@@ -71,6 +72,7 @@ describe("GET /api/clans", () => {
       page: 2,
       pageSize: 20,
       q: "bucks",
+      sport: "basketball",
       trend: "up",
     });
   });
@@ -89,6 +91,7 @@ describe("GET /api/clans", () => {
       page: 1,
       pageSize: 50,
       q: undefined,
+      sport: undefined,
       trend: undefined,
     });
   });

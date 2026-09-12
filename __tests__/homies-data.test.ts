@@ -13,6 +13,7 @@ jest.mock("@/lib/db", () => ({
 }));
 
 import {
+  getTcdbClanCollectionScoreboard,
   getTcdbClanRankingsBySlug,
   listClanTcdbSnapshotHistory,
   listNumberOneTcdbClanRankings,
@@ -83,7 +84,7 @@ describe("tcdb clan ranking data helpers", () => {
     queryOneMock.mockReset();
   });
 
-  it("lists clan rankings with pagination, search, and trend filters", async () => {
+  it("lists clan rankings with combined search, sport, and trend filters", async () => {
     queryRowsMock
       .mockResolvedValueOnce([clanRow])
       .mockResolvedValueOnce([{ c: "1" }]);
@@ -93,6 +94,7 @@ describe("tcdb clan ranking data helpers", () => {
         page: 2,
         pageSize: 20,
         q: "bucks",
+        sport: "basketball",
         trend: "up",
       }),
     ).resolves.toEqual({
@@ -103,6 +105,7 @@ describe("tcdb clan ranking data helpers", () => {
         total: 1,
         totalPages: 1,
         q: "bucks",
+        sport: "basketball",
         trend: "up",
       },
     });
@@ -111,10 +114,66 @@ describe("tcdb clan ranking data helpers", () => {
     expect(query).toContain("FROM dojo.clan_tcdb_ranking_rt");
     expect(query).toContain("JOIN dojo.clan AS c");
     expect(query).toContain("NULLIF(btrim(c.tag_slug), '') AS tag_slug");
-    expect(query).toContain("r.name ILIKE $1");
-    expect(query).toContain("r.trend_overall = $2");
+    expect(query).toContain(
+      "r.name ILIKE $1 OR r.slug ILIKE $1 OR r.sport ILIKE $1",
+    );
+    expect(query).toContain("r.sport = $2");
+    expect(query).toContain("r.trend_overall = $3");
     expect(query).toContain("ORDER BY r.card_count DESC, r.ranking ASC");
-    expect(values).toEqual(["%bucks%", "up", 20, 20]);
+    expect(values).toEqual(["%bucks%", "basketball", "up", 20, 20]);
+
+    const [countQuery, countValues] = queryRowsMock.mock.calls[1] as [
+      string,
+      unknown[],
+    ];
+    expect(countQuery).toContain(
+      "r.name ILIKE $1 OR r.slug ILIKE $1 OR r.sport ILIKE $1",
+    );
+    expect(countQuery).toContain("r.sport = $2");
+    expect(countQuery).toContain("r.trend_overall = $3");
+    expect(countValues).toEqual(["%bucks%", "basketball", "up"]);
+  });
+
+  it("returns normalized aggregate values for the collection scoreboard", async () => {
+    queryRowsMock.mockResolvedValueOnce([
+      {
+        tracked_clans: "18",
+        total_current_cards: "12482",
+        number_one_rankings: "7",
+        sports: ["baseball", "basketball", "football", "soccer"],
+      },
+    ]);
+
+    await expect(getTcdbClanCollectionScoreboard()).resolves.toEqual({
+      tracked_clans: 18,
+      total_current_cards: 12482,
+      number_one_rankings: 7,
+      sports: ["baseball", "basketball", "football", "soccer"],
+    });
+
+    const query = String(queryRowsMock.mock.calls[0]?.[0]);
+    expect(query).toContain("COUNT(DISTINCT r.clan_id)");
+    expect(query).toContain("SUM(r.card_count)");
+    expect(query).toContain("FILTER (WHERE r.ranking = 1)");
+    expect(query).toContain("ARRAY_AGG(DISTINCT r.sport ORDER BY r.sport)");
+  });
+
+  it("returns safe scoreboard values when no clans exist", async () => {
+    queryRowsMock.mockResolvedValueOnce([
+      {
+        tracked_clans: "0",
+        total_current_cards: "0",
+        number_one_rankings: "0",
+        sports: [],
+      },
+    ]);
+
+    await expect(getTcdbClanCollectionScoreboard()).resolves.toEqual({
+      tracked_clans: 0,
+      total_current_cards: 0,
+      number_one_rankings: 0,
+      sports: [],
+    });
   });
 
   it("gets all current sport rankings for a clan slug", async () => {

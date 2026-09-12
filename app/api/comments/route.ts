@@ -1,6 +1,8 @@
+import { after } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
+import { sendCommentNotification } from "@/lib/email/sendCommentNotification";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,7 +107,35 @@ export async function POST(req: Request) {
       console.error("[comments] insert returned no rows");
       return Response.json({ error: "database error" }, { status: 500 });
     }
-    return Response.json(serializeComment(created), { status: 201 });
+    const serializedComment = serializeComment(created);
+
+    try {
+      after(async () => {
+        try {
+          await sendCommentNotification({
+            commentId: serializedComment.id,
+            postSlug: serializedComment.post_slug,
+            commenterDisplayName: serializedComment.user_name,
+            commentBody: serializedComment.body,
+            createdAt: serializedComment.created_at,
+          });
+        } catch (err) {
+          console.error("[comments] notification failed", {
+            commentId: serializedComment.id,
+            postSlug: serializedComment.post_slug,
+            error: err,
+          });
+        }
+      });
+    } catch (err) {
+      console.error("[comments] notification scheduling failed", {
+        commentId: serializedComment.id,
+        postSlug: serializedComment.post_slug,
+        error: err,
+      });
+    }
+
+    return Response.json(serializedComment, { status: 201 });
   } catch (err) {
     console.error("[comments] create failed", err);
     const detail =
