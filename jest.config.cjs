@@ -75,4 +75,19 @@ const customJestConfig = {
   // Do NOT set "transform"—next/jest configures it.
 };
 
-module.exports = createJestConfig(customJestConfig);
+const getJestConfig = createJestConfig(customJestConfig);
+
+module.exports = async () => {
+  const config = await getJestConfig();
+
+  // Exercise the real ESM lightbox with Next's SWC transformer in component tests.
+  config.transformIgnorePatterns = config.transformIgnorePatterns.map(
+    (pattern) =>
+      pattern.replace(
+        "/node_modules/",
+        "/node_modules/(?!yet-another-react-lightbox/)",
+      ),
+  );
+
+  return config;
+};

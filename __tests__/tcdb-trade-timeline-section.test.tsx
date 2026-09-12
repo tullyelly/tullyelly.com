@@ -47,7 +47,10 @@ describe("TcdbTradeChronicleFeed", () => {
       "/images/optimus/3am/964402/1-964402.webp",
     );
     expect(
-      resolveTradeChronicleImagePath("tcdb-partners", "1091638.webp"),
+      resolveTradeChronicleImagePath(
+        "tcdb-partners",
+        "definitely-missing.webp",
+      ),
     ).toBeNull();
     expect(
       resolveTradeChronicleImagePath("tcdb-partners", "../x.webp"),

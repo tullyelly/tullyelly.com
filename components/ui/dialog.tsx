@@ -335,6 +335,9 @@ Overlay.displayName = RadixDialog.Overlay.displayName;
 export const Title = RadixDialog.Title;
 export const Description = RadixDialog.Description;
 export const Close = RadixDialog.Close;
+// Full-viewport experiences can reuse the project's Radix boundary without
+// inheriting the draggable, fixed-width dialog presentation above.
+export const PrimitiveContent = RadixDialog.Content;
 
 // Named exports mirror shadcn/ui expectations.
 export const Dialog = Root;

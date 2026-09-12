@@ -28,17 +28,35 @@ describe("ChronicleImage", () => {
     );
   });
 
+  it("preserves an existing root-relative image source", () => {
+    render(
+      <ChronicleImage
+        chronicleSlug="another-chronicle"
+        src="/images/optimus/avenue-q/selfie.webp"
+        alt="Mom and Sarah"
+      />,
+    );
+    expect(screen.getByTestId("resolved-image")).toHaveAttribute(
+      "data-src",
+      "/images/optimus/avenue-q/selfie.webp",
+    );
+    expect(screen.getByTestId("resolved-image")).toHaveAttribute(
+      "data-alt",
+      "Mom and Sarah",
+    );
+  });
+
   it("uses the standardized administrator message for missing images", () => {
     render(
       <ChronicleImage
         chronicleSlug="tcdb-partners"
-        src="1091638.webp"
-        alt="1091638"
+        src="definitely-missing.webp"
+        alt="Missing image"
       />,
     );
     expect(
       screen.getByText(
-        "Image unavailable: 1091638. Please contact the site administrator.",
+        "Image unavailable: Missing image. Please contact the site administrator.",
       ),
     ).toBeInTheDocument();
     expect(mdxImageMock).not.toHaveBeenCalled();

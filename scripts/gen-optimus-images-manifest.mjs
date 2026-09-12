@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 import { pathToFileURL } from "node:url";
 
 const optimusRoot = path.resolve("public/images/optimus");
@@ -30,8 +31,9 @@ async function* walk(dir) {
 async function collectUrls() {
   try {
     await fs.access(optimusRoot);
-  } catch {
-    return [];
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
   }
 
   const urls = [];
@@ -49,12 +51,44 @@ async function collectUrls() {
 
 export async function writeManifest() {
   const urls = await collectUrls();
-  const manifest = {
-    urls,
-  };
+  const images = [];
+  for (const src of urls) {
+    const filePath = path.join(
+      optimusRoot,
+      src.slice(outputRootUrl.length + 1),
+    );
+    let metadata;
+    try {
+      metadata = await sharp(filePath).metadata();
+    } catch (error) {
+      throw new Error(`Unable to read image dimensions: ${src}`, {
+        cause: error,
+      });
+    }
+    // Normalize each frame before applying the browser's EXIF orientation.
+    const frameWidth = metadata.width;
+    const frameHeight = metadata.pageHeight ?? metadata.height;
+    const swapsAxes = metadata.orientation >= 5 && metadata.orientation <= 8;
+    const width = swapsAxes ? frameHeight : frameWidth;
+    const height = swapsAxes ? frameWidth : frameHeight;
+    if (
+      !Number.isInteger(width) ||
+      !Number.isInteger(height) ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      throw new Error(`Invalid image dimensions: ${src}`);
+    }
+    images.push({ src, width, height });
+  }
+  const manifest = { urls, images };
 
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  await fs.writeFile(outputPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  await fs.writeFile(
+    outputPath,
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    "utf8",
+  );
   console.log(
     `Wrote ${path.relative(process.cwd(), outputPath)} with ${urls.length} images.`,
   );

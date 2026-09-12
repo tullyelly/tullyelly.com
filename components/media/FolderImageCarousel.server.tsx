@@ -3,6 +3,7 @@ import "server-only";
 import path from "node:path";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel";
 import { listOptimusImages } from "@/lib/images/list-optimus-images";
+import { getOptimusImageMetadata } from "@/lib/images/optimus-image-metadata";
 
 type FolderImageCarouselServerProps = {
   folder: string;
@@ -34,6 +35,7 @@ export default async function FolderImageCarouselServer({
   const slides = images.map((src) => ({
     src,
     alt: buildAltText(src, altPrefix),
+    ...getOptimusImageMetadata(src),
   }));
 
   return <FolderImageCarousel slides={slides} />;

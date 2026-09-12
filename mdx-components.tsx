@@ -10,11 +10,13 @@ import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
 import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
+import InteractiveImage from "@/components/media/InteractiveImage";
 import { CipherSays } from "@/components/scrolls/CipherSays";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
 import RedditEmbed from "@/components/unclejimmy/RedditEmbed";
 import { cn } from "@/lib/utils";
+import { getOptimusImageMetadata } from "@/lib/images/optimus-image-metadata";
 
 const bodyText =
   "text-[16px] md:text-[18px] leading-relaxed text-muted-foreground";
@@ -55,19 +57,80 @@ type CustomMDXComponents = MDXComponents & {
 export function MdxImage({
   className,
   alt,
+  src,
   width,
   height,
+  sizes,
+  style,
   ...rest
 }: React.ComponentProps<typeof Image>) {
+  const staticImage =
+    typeof src === "string" ? undefined : "default" in src ? src.default : src;
+  const imageSrc = typeof src === "string" ? src : staticImage!.src;
+  const intrinsic = staticImage ?? getOptimusImageMetadata(imageSrc);
+  const suppliedWidth = width ? Number(width) : undefined;
+  const suppliedHeight = height ? Number(height) : undefined;
+  const imageWidth =
+    suppliedWidth ??
+    (suppliedHeight && intrinsic
+      ? Math.round((suppliedHeight * intrinsic.width) / intrinsic.height)
+      : intrinsic?.width);
+  const imageHeight =
+    suppliedHeight ??
+    (suppliedWidth && intrinsic
+      ? Math.round((suppliedWidth * intrinsic.height) / intrinsic.width)
+      : intrinsic?.height);
+  const hasDimensions = Boolean(imageWidth && imageHeight);
+  // Let landscapes use the content pane, while keeping portraits and cards
+  // at a comfortable reading height. Intrinsic dimensions reserve the space.
+  const maxWidth =
+    imageWidth && imageHeight
+      ? Math.min(imageWidth, Math.round((720 * imageWidth) / imageHeight))
+      : 720;
+  const imageSizes =
+    sizes ?? `(max-width: 768px) 100vw, ${Math.min(maxWidth, 1152)}px`;
+  const imageClassName = cn("h-auto w-full rounded-xl shadow-sm", className);
+
   return (
-    <span className="mx-auto block w-full max-w-[520px]">
-      <Image
-        alt={alt ?? ""}
-        width={width ?? 1200}
-        height={height ?? 630}
-        className={cn("w-full rounded-xl shadow-sm", className)}
-        {...rest}
-      />
+    <span className="mx-auto block w-full" style={{ maxWidth }}>
+      <InteractiveImage
+        slide={{
+          src: imageSrc,
+          alt: alt ?? "",
+          width: intrinsic?.width ?? imageWidth,
+          height: intrinsic?.height ?? imageHeight,
+        }}
+      >
+        {hasDimensions ? (
+          <Image
+            {...rest}
+            src={src}
+            alt={alt ?? ""}
+            width={imageWidth}
+            height={imageHeight}
+            sizes={imageSizes}
+            className={imageClassName}
+            style={style}
+          />
+        ) : (
+          // Unknown external/non-Optimus images retain their natural ratio.
+          // Authors can supply dimensions to reserve space before they load.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageSrc}
+            alt={alt ?? ""}
+            width={imageWidth}
+            height={imageHeight}
+            sizes={sizes}
+            className={imageClassName}
+            style={style}
+            title={rest.title}
+            id={rest.id}
+            loading={rest.loading ?? "lazy"}
+            decoding={rest.decoding ?? "async"}
+          />
+        )}
+      </InteractiveImage>
     </span>
   );
 }

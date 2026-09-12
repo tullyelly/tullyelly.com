@@ -12,6 +12,7 @@
 - `FolderImageCarousel` accepts a `folder` relative to the optimus root; do not pass `/images/optimus/...`.
 - In Chronicles, `FolderImageCarousel` folders are relative to the Chronicle image folder. Use `<FolderImageCarousel folder="faith" />`, or omit `folder` to use the Chronicle's root image folder. Existing slug-qualified folders such as `folder="rye/faith"` remain supported.
 - `FolderImageCarousel` scans nested folders n levels deep.
+- `npm run prepare:content` generates the Optimus image manifest with each image's URL and intrinsic width and height. Markdown images use this metadata to reserve the correct aspect ratio before loading.
 - When a request to `/_next/image` fails, the response body describes the problem (e.g., `"url" parameter is invalid`).
 - During debugging you can bypass optimization with the `unoptimized` prop on `next/image`.
 
