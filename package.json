@@ -131,8 +131,6 @@
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
     "contentlayer2": "0.5.8",
-    "embla-carousel": "^8.6.0",
-    "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.25",
     "fuse.js": "^7.1.0",
     "lucide-react": "0.544.0",
@@ -151,6 +149,7 @@
     "tailwindcss-animate": "1.0.7",
     "twemoji": "^14.0.2",
     "vaul": "1.1.2",
+    "yet-another-react-lightbox": "^3.32.2",
     "youtube-music-ts-api": "^1.8.4",
     "zod": "^4.0.17"
   },
