@@ -16,6 +16,7 @@ export function mapDomainToCardItem<T>(
 }
 
 export { Card } from "./Card";
+export { PageState } from "./PageState";
 // Re-export the canonical Badge to keep a single source of truth
 export { Badge } from "@/app/ui/Badge";
 export { CardGrid } from "./CardGrid";
