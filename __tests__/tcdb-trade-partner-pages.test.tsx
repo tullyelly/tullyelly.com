@@ -1,5 +1,11 @@
 import { render, screen } from "@testing-library/react";
 
+const listHomiesMock = jest.fn(
+  async () => [] as Array<Record<string, unknown>>,
+);
+const listClansMock = jest.fn(async () => [] as Array<Record<string, unknown>>);
+const listTagsMock = jest.fn(async () => [] as Array<Record<string, unknown>>);
+
 jest.mock("@/lib/tcdb-trade-partners-db", () => ({
   listTcdbTradePartnersFromDb: jest.fn(async () => [
     {
@@ -38,9 +44,9 @@ jest.mock("@/lib/tcdb-trade-partners-db", () => ({
       total: 5,
     },
   ]),
-  listHomiesForTradePartnerFromDb: jest.fn(async () => []),
-  listClansForTradePartnerFromDb: jest.fn(async () => []),
-  listTagsForTradePartnerFromDb: jest.fn(async () => []),
+  listHomiesForTradePartnerFromDb: (..._args: unknown[]) => listHomiesMock(),
+  listClansForTradePartnerFromDb: (..._args: unknown[]) => listClansMock(),
+  listTagsForTradePartnerFromDb: (..._args: unknown[]) => listTagsMock(),
   listContentTagsForTradePartnerFromDb: jest.fn(async () => []),
   listSetCollectorImpactForTradePartnerFromDb: jest.fn(async () => []),
 }));
@@ -56,6 +62,12 @@ import PartnerDetailPage from "@/app/cardattack/tcdb-trade-partners/[id]/page";
 import PartnerListPage from "@/app/cardattack/tcdb-trade-partners/page";
 
 describe("TCDb trade partner pages", () => {
+  beforeEach(() => {
+    listHomiesMock.mockResolvedValue([]);
+    listClansMock.mockResolvedValue([]);
+    listTagsMock.mockResolvedValue([]);
+  });
+
   it("renders partner summary metrics on the list", async () => {
     render(await PartnerListPage());
     expect(
@@ -85,5 +97,18 @@ describe("TCDb trade partner pages", () => {
     expect(
       screen.queryByRole("heading", { name: "Related Chronicles" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("omits empty relationship groups inside a populated interests section", async () => {
+    listHomiesMock.mockResolvedValue([
+      { id: 7, name: "Masta Killa", tagSlug: "masta-killa" },
+    ]);
+
+    render(await PartnerDetailPage({ params: Promise.resolve({ id: "1" }) }));
+
+    expect(screen.getByRole("heading", { name: "Interests" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Homies" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "Clans" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Tags" })).toBeNull();
   });
 });
