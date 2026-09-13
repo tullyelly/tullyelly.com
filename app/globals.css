@@ -459,11 +459,16 @@ p {
 
 @layer components {
   .form-input {
-    @apply rounded border px-2 py-1;
+    @apply min-h-10 rounded border bg-white px-3 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
+    color: var(--ink);
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded bg-[var(--blue)] px-3 py-1 text-sm font-medium text-white transition hover:bg-[var(--blue-contrast)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-10 items-center justify-center rounded bg-[var(--blue)] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--blue-contrast)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .control-compact {
+    @apply min-h-9 py-1;
   }
 
   .modal-body {

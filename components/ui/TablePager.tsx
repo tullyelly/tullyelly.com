@@ -66,7 +66,7 @@ export default function TablePager({
           </label>
           <select
             id={selectId}
-            className="form-input h-9"
+            className="form-input"
             value={String(pageSize)}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
             disabled={isPending}

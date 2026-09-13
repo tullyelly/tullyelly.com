@@ -58,12 +58,11 @@ import PartnerListPage from "@/app/cardattack/tcdb-trade-partners/page";
 describe("TCDb trade partner pages", () => {
   it("renders partner summary metrics on the list", async () => {
     render(await PartnerListPage());
-    expect(screen.getByRole("link", { name: "collector" })).toHaveAttribute(
-      "href",
-      "/cardattack/tcdb-trade-partners/1",
-    );
-    expect(screen.getByText("Pat")).toBeInTheDocument();
-    expect(screen.getByText("London; UK")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link", { name: "collector" })[0],
+    ).toHaveAttribute("href", "/cardattack/tcdb-trade-partners/1");
+    expect(screen.getAllByText("Pat")).not.toHaveLength(0);
+    expect(screen.getAllByText("London; UK")).not.toHaveLength(0);
   });
 
   it("renders detail without empty optional relationship sections", async () => {

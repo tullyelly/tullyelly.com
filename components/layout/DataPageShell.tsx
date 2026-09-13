@@ -20,15 +20,7 @@ export default function DataPageShell({
   contentClassName,
 }: DataPageShellProps) {
   return (
-    <FullBleedPage
-      shellWidth={width === "wide" ? "wide" : "default"}
-      articleClassName={cn(
-        width === "wide"
-          ? "md:max-w-[76rem] xl:max-w-[82rem]"
-          : "md:max-w-[var(--content-max)]",
-        articleClassName,
-      )}
-    >
+    <FullBleedPage width={width} articleClassName={articleClassName}>
       <Card
         as="div"
         className={cn(

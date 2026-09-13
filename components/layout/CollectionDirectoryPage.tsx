@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import FullBleedPage from "./FullBleedPage";
 import ProductionPageLink from "./ProductionPageLink";
 import SectionHeader from "./SectionHeader";
+import { Stat, StatGrid } from "@/components/ui/StatGrid";
 
 type CollectionStat = {
   label: string;
@@ -52,10 +53,7 @@ export default function CollectionDirectoryPage({
   };
 
   return (
-    <FullBleedPage
-      shellWidth="wide"
-      articleClassName="md:max-w-[76rem] xl:max-w-[82rem]"
-    >
+    <FullBleedPage width="wide">
       <div
         className="space-y-8 px-1 py-6 md:px-2 md:py-8"
         style={resolvedThemeStyle}
@@ -79,21 +77,16 @@ export default function CollectionDirectoryPage({
               </div>
             </div>
 
-            <dl className="grid gap-px overflow-hidden rounded-xl border border-white/15 bg-white/15 md:grid-cols-3">
+            <StatGrid columns={3} variant="hero">
               {stats.map((stat) => (
-                <div
+                <Stat
                   key={stat.label}
-                  className="bg-black/10 px-3.5 py-3 md:px-4 md:py-3.5"
-                >
-                  <dt className="text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.18em] opacity-75 md:text-[0.72rem]">
-                    {stat.label}
-                  </dt>
-                  <dd className="mt-2 text-sm font-semibold leading-snug">
-                    {stat.value}
-                  </dd>
-                </div>
+                  variant="hero"
+                  label={stat.label}
+                  value={stat.value}
+                />
               ))}
-            </dl>
+            </StatGrid>
           </div>
         </section>
 

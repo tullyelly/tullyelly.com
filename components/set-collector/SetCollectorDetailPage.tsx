@@ -3,7 +3,14 @@ import Link from "next/link";
 import { Card } from "@ui";
 
 import FullBleedPage from "@/components/layout/FullBleedPage";
-import { Table, TBody, THead } from "@/components/ui/Table";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import type { SetCollectorPageData } from "@/lib/set-collector-content";
 import { fmtDate } from "@/lib/datetime";
 import {
@@ -42,10 +49,7 @@ function formatSnapshotDate(value?: string): string {
   return value ? fmtDate(value, "America/Chicago", "long") : "Not available";
 }
 
-function formatProgress(
-  cardsOwned?: number,
-  totalCards?: number,
-): string {
+function formatProgress(cardsOwned?: number, totalCards?: number): string {
   if (cardsOwned === undefined || totalCards === undefined) {
     return "Not available";
   }
@@ -68,10 +72,7 @@ function isInternalHref(href: string): boolean {
 }
 
 function isPreviewablePhotoPath(href: string): boolean {
-  return (
-    isInternalHref(href) &&
-    /\.(?:avif|gif|jpe?g|png|webp)$/i.test(href)
-  );
+  return isInternalHref(href) && /\.(?:avif|gif|jpe?g|png|webp)$/i.test(href);
 }
 
 function sortSnapshotsDesc(snapshots: SetCollectorPageData["snapshots"]) {
@@ -165,7 +166,7 @@ export default function SetCollectorDetailPage({
   const canPreviewPhoto = photoPath ? isPreviewablePhotoPath(photoPath) : false;
 
   return (
-    <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
+    <FullBleedPage width="wide">
       <div
         className="space-y-8 px-1 py-6 md:px-2 md:py-8"
         style={setCollectorPageThemeVars}
@@ -294,10 +295,7 @@ export default function SetCollectorDetailPage({
           </section>
         ) : null}
 
-        <section
-          aria-labelledby="set-collector-history"
-          className="space-y-5"
-        >
+        <section aria-labelledby="set-collector-history" className="space-y-5">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--collector-link)]/70">
               progress timeline
@@ -387,52 +385,52 @@ export default function SetCollectorDetailPage({
               themeStyle={setCollectorTableThemeStyle}
             >
               <THead variant="bucks">
-                <th scope="col" className="w-[180px] whitespace-nowrap">
-                  Snapshot Date
-                </th>
-                <th scope="col" className="w-[160px] whitespace-nowrap">
+                <TableHeaderCell intent="date">Snapshot Date</TableHeaderCell>
+                <TableHeaderCell intent="numeric">
                   Owned / Total
-                </th>
-                <th scope="col" className="w-[140px] whitespace-nowrap">
-                  Complete
-                </th>
-                <th scope="col" className="w-[120px] whitespace-nowrap">
-                  Missing
-                </th>
-                <th scope="col" className="w-[180px] whitespace-nowrap">
-                  Trade
-                </th>
+                </TableHeaderCell>
+                <TableHeaderCell intent="status">Complete</TableHeaderCell>
+                <TableHeaderCell intent="numeric">Missing</TableHeaderCell>
+                <TableHeaderCell intent="identifier">Trade</TableHeaderCell>
               </THead>
               <TBody>
                 {snapshots.length > 0 ? (
                   snapshots.map((snapshot) => (
                     <tr
                       key={snapshot.id}
-                      className="border-b border-[color:var(--table-row-divider)] last:border-0"
                       data-testid="set-collector-snapshot-row"
                     >
-                      <td className="whitespace-nowrap font-semibold text-[color:var(--collector-ink)]">
+                      <TableCell
+                        intent="date"
+                        className="font-semibold text-[color:var(--collector-ink)]"
+                      >
                         <time dateTime={snapshot.snapshotDate}>
                           {fmtDate(snapshot.snapshotDate)}
                         </time>
-                      </td>
-                      <td className="whitespace-nowrap font-semibold text-[color:var(--collector-ink)]">
+                      </TableCell>
+                      <TableCell
+                        intent="numeric"
+                        className="font-semibold text-[color:var(--collector-ink)]"
+                      >
                         {formatProgress(
                           snapshot.cardsOwned,
                           snapshot.totalCards,
                         )}
-                      </td>
-                      <td className="whitespace-nowrap">
+                      </TableCell>
+                      <TableCell intent="status">
                         <span className={ratingBadgeClassName}>
                           {formatSetCollectorPercentComplete(
                             snapshot.percentComplete,
                           )}
                         </span>
-                      </td>
-                      <td className="whitespace-nowrap font-semibold text-[color:var(--collector-ink)]">
+                      </TableCell>
+                      <TableCell
+                        intent="numeric"
+                        className="font-semibold text-[color:var(--collector-ink)]"
+                      >
                         {snapshot.cardsMissing}
-                      </td>
-                      <td className="whitespace-nowrap">
+                      </TableCell>
+                      <TableCell intent="identifier">
                         {snapshot.tcdbTradeId ? (
                           <Link
                             href={`/cardattack/tcdb-trades/${snapshot.tcdbTradeId}`}
@@ -445,18 +443,16 @@ export default function SetCollectorDetailPage({
                             No linked trade
                           </span>
                         )}
-                      </td>
+                      </TableCell>
                     </tr>
                   ))
                 ) : (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="text-sm text-[color:var(--collector-ink)]/80"
-                    >
-                      No snapshots have been recorded for this set yet.
-                    </td>
-                  </tr>
+                  <TableEmptyRow
+                    colSpan={5}
+                    className="text-[color:var(--collector-ink)]/80"
+                  >
+                    No snapshots have been recorded for this set yet.
+                  </TableEmptyRow>
                 )}
               </TBody>
             </Table>

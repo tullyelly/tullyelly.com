@@ -4,7 +4,15 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { Card } from "@ui";
 
-import { Table, TBody, THead } from "@/components/ui/Table";
+import SectionHeader from "@/components/layout/SectionHeader";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import { tcdbTradeTableThemeStyle } from "@/lib/tcdb-theme";
 
@@ -68,14 +76,10 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
 
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-semibold tracking-tight text-ink">
-          TCDb Trade Hall of Fame
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Partners whose trades pushed a set across the finish line.
-        </p>
-      </div>
+      <SectionHeader
+        title="TCDb Trade Hall of Fame"
+        description="Partners whose trades pushed a set across the finish line."
+      />
 
       <ul className="space-y-3 md:hidden">
         {sortedRows.length > 0 ? (
@@ -134,23 +138,12 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
         variant="bucks"
         aria-label="TCDb Trade Hall of Fame table"
         data-testid="tcdb-trade-hof-table"
-        className="[&_th.tcdb-trade-compact]:px-3 [&_td.tcdb-trade-compact]:px-3"
         themeStyle={tcdbTradeTableThemeStyle}
       >
         <THead variant="bucks">
-          <th scope="col">Hall of Famer</th>
-          <th
-            scope="col"
-            className="tcdb-trade-compact w-[120px] whitespace-nowrap"
-          >
-            Inductions
-          </th>
-          <th
-            scope="col"
-            className="tcdb-trade-compact w-[176px] whitespace-nowrap"
-          >
-            Latest Induction
-          </th>
+          <TableHeaderCell intent="grow">Hall of Famer</TableHeaderCell>
+          <TableHeaderCell intent="numeric">Inductions</TableHeaderCell>
+          <TableHeaderCell intent="date">Latest Induction</TableHeaderCell>
         </THead>
         <TBody>
           {sortedRows.length > 0 ? (
@@ -158,32 +151,26 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
               const key = row.tradePartnerId;
 
               return (
-                <tr
-                  key={key}
-                  className="border-b border-[color:var(--table-row-divider)] last:border-0"
-                  data-testid="tcdb-trade-hof-row"
-                >
-                  <td className="[overflow-wrap:anywhere] font-medium">
+                <tr key={key} data-testid="tcdb-trade-hof-row">
+                  <TableCell intent="grow" className="font-medium">
                     {renderHallOfFamer(row)}
                     {renderCategoryTags(row.categoryTags)}
-                  </td>
-                  <td className="tcdb-trade-compact whitespace-nowrap font-semibold tabular-nums">
+                  </TableCell>
+                  <TableCell intent="numeric" className="font-semibold">
                     {row.inductionCount}
-                  </td>
-                  <td className="tcdb-trade-compact whitespace-nowrap">
+                  </TableCell>
+                  <TableCell intent="date">
                     <time dateTime={row.latestInductedDate}>
                       {fmtDate(row.latestInductedDate)}
                     </time>
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })
           ) : (
-            <tr>
-              <td colSpan={3} className="text-sm text-ink/70">
-                No Hall of Famer inductions yet.
-              </td>
-            </tr>
+            <TableEmptyRow colSpan={3}>
+              No Hall of Famer inductions yet.
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

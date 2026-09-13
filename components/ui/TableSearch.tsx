@@ -49,7 +49,7 @@ export default function TableSearch({
     <>
       <input
         type="search"
-        className={cn("form-input h-10 w-full sm:w-72", className)}
+        className={cn("form-input w-full sm:w-72", className)}
         aria-label={label}
         aria-controls={ariaControls}
         placeholder={placeholder}

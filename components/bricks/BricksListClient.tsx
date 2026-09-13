@@ -1,8 +1,20 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 import { fmtDate } from "@/lib/datetime";
 import { formatBricksReviewScore } from "@/lib/bricks-types";
 
@@ -31,6 +43,12 @@ const scoreBadgeClassName =
   "inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--bricks-accent)] px-3 py-1 text-sm font-semibold text-[color:var(--bricks-pill-fg)] shadow-sm";
 const mobileMetaLabelClassName =
   "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--bricks-ink)]/65";
+const getBricksSearchValues = (row: BricksListRow) => [
+  row.publicId,
+  row.setName,
+  row.tag,
+  row.pieceCount,
+];
 
 function formatBuildDate(value?: string): string {
   return value ? fmtDate(value) : "Not available";
@@ -46,11 +64,32 @@ export default function BricksListClient({
   tableTestId = "bricks-table",
   rowTestId = "bricks-row",
 }: BricksListClientProps) {
+  const [query, setQuery] = useState("");
+  const visibleRows = useTableSearch(rows, query, getBricksSearchValues);
+  const emptyState =
+    rows.length === 0 ? emptyMessage : "No brick sets match this search.";
+
   return (
-    <div style={themeStyle}>
+    <div id="bricks-data-view" className="space-y-4" style={themeStyle}>
+      <DataToolbar
+        ariaLabel="Brick collection controls"
+        search={
+          <TableSearch
+            query={query}
+            onQueryChange={setQuery}
+            label="Search brick sets"
+            ariaControls="bricks-data-view"
+          />
+        }
+        result={
+          <DataResultCount>
+            {visibleRows.length} brick set{visibleRows.length === 1 ? "" : "s"}
+          </DataResultCount>
+        }
+      />
       <ul className="space-y-4 md:hidden">
-        {rows.length > 0 ? (
-          rows.map((row) => (
+        {visibleRows.length > 0 ? (
+          visibleRows.map((row) => (
             <Card
               as="li"
               key={`mobile-${row.publicId}`}
@@ -111,7 +150,7 @@ export default function BricksListClient({
             as="li"
             className="rounded-[24px] border-2 border-[color:var(--bricks-border)] bg-[color:var(--bricks-surface)] p-4 text-sm text-[color:var(--bricks-ink)]/80 shadow-sm"
           >
-            {emptyMessage}
+            {emptyState}
           </Card>
         )}
       </ul>
@@ -123,26 +162,16 @@ export default function BricksListClient({
         themeStyle={themeStyle}
       >
         <THead variant="bucks">
-          <th scope="col">Set</th>
-          <th scope="col" className="w-[150px] whitespace-nowrap">
-            Overall Score
-          </th>
-          <th scope="col" className="w-[96px] whitespace-nowrap">
-            Sessions
-          </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
-            Last Session
-          </th>
+          <TableHeaderCell intent="grow">Set</TableHeaderCell>
+          <TableHeaderCell intent="status">Overall Score</TableHeaderCell>
+          <TableHeaderCell intent="numeric">Sessions</TableHeaderCell>
+          <TableHeaderCell intent="date">Last Session</TableHeaderCell>
         </THead>
         <TBody>
-          {rows.length > 0 ? (
-            rows.map((row) => (
-              <tr
-                key={row.publicId}
-                className="border-b border-[color:var(--table-row-divider)] last:border-0"
-                data-testid={rowTestId}
-              >
-                <td>
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => (
+              <tr key={row.publicId} data-testid={rowTestId}>
+                <TableCell intent="grow">
                   <Link
                     href={`${detailBasePath}/${row.publicId}`}
                     className="text-base font-semibold text-[color:var(--bricks-link)] transition hover:text-[color:var(--bricks-link-hover)]"
@@ -164,29 +193,33 @@ export default function BricksListClient({
                         .join("; ")}
                     </p>
                   )}
-                </td>
-                <td className="whitespace-nowrap">
+                </TableCell>
+                <TableCell intent="status">
                   <span className={scoreBadgeClassName}>
                     {formatBricksReviewScore(row.reviewScore)}
                   </span>
-                </td>
-                <td className="whitespace-nowrap font-semibold tabular-nums text-[color:var(--bricks-ink)]">
+                </TableCell>
+                <TableCell
+                  intent="numeric"
+                  className="font-semibold text-[color:var(--bricks-ink)]"
+                >
                   {row.sessionCount}
-                </td>
-                <td className="whitespace-nowrap font-semibold text-[color:var(--bricks-ink)]">
+                </TableCell>
+                <TableCell
+                  intent="date"
+                  className="font-semibold text-[color:var(--bricks-ink)]"
+                >
                   {formatBuildDate(row.latestBuildDate)}
-                </td>
+                </TableCell>
               </tr>
             ))
           ) : (
-            <tr>
-              <td
-                colSpan={4}
-                className="text-sm text-[color:var(--bricks-ink)]/80"
-              >
-                {emptyMessage}
-              </td>
-            </tr>
+            <TableEmptyRow
+              colSpan={4}
+              className="text-[color:var(--bricks-ink)]/80"
+            >
+              {emptyState}
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

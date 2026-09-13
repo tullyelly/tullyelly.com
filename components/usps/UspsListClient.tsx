@@ -5,7 +5,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 
@@ -73,16 +81,26 @@ export default function UspsListClient({
 }: UspsListClientProps) {
   const [query, setQuery] = useState("");
   const visibleRows = useTableSearch(rows, query, getUspsSearchValues);
+  const emptyState =
+    rows.length === 0 ? emptyMessage : "No USPS locations match this search.";
 
   return (
-    <div className="space-y-4" style={themeStyle}>
-      <TableSearch
-        query={query}
-        onQueryChange={setQuery}
-        label="Search USPS locations"
-        resultCount={visibleRows.length}
-        resultLabel={(count) =>
-          `${count} USPS location${count === 1 ? "" : "s"} shown`
+    <div id="usps-data-view" className="space-y-4" style={themeStyle}>
+      <DataToolbar
+        ariaLabel="USPS location controls"
+        search={
+          <TableSearch
+            query={query}
+            onQueryChange={setQuery}
+            label="Search USPS locations"
+            ariaControls="usps-data-view"
+          />
+        }
+        result={
+          <DataResultCount>
+            {visibleRows.length} USPS location
+            {visibleRows.length === 1 ? "" : "s"}
+          </DataResultCount>
         }
       />
       <ul className="space-y-4 md:hidden">
@@ -146,7 +164,7 @@ export default function UspsListClient({
             as="li"
             className="rounded-[24px] border-2 border-[color:var(--usps-border)] bg-[color:var(--usps-surface)] p-4 text-sm text-[color:var(--usps-ink)]/80 shadow-sm"
           >
-            {emptyMessage}
+            {emptyState}
           </Card>
         )}
       </ul>
@@ -158,29 +176,17 @@ export default function UspsListClient({
         themeStyle={themeStyle}
       >
         <THead variant="bucks">
-          <th scope="col">{locationLabel}</th>
-          <th scope="col" className="w-[132px] whitespace-nowrap">
-            {ratingLabel}
-          </th>
-          <th scope="col" className="w-[90px] whitespace-nowrap">
-            {countLabel}
-          </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
-            {firstCountLabel}
-          </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
-            {latestCountLabel}
-          </th>
+          <TableHeaderCell intent="grow">{locationLabel}</TableHeaderCell>
+          <TableHeaderCell intent="status">{ratingLabel}</TableHeaderCell>
+          <TableHeaderCell intent="numeric">{countLabel}</TableHeaderCell>
+          <TableHeaderCell intent="date">{firstCountLabel}</TableHeaderCell>
+          <TableHeaderCell intent="date">{latestCountLabel}</TableHeaderCell>
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
             visibleRows.map((row) => (
-              <tr
-                key={row.citySlug}
-                className="border-b border-[color:var(--table-row-divider)] last:border-0"
-                data-testid={rowTestId}
-              >
-                <td>
+              <tr key={row.citySlug} data-testid={rowTestId}>
+                <TableCell intent="grow">
                   <Link
                     href={`${detailBasePath}/${row.citySlug}`}
                     className="text-base font-semibold text-[color:var(--usps-link)] transition hover:text-[color:var(--usps-link-hover)]"
@@ -190,32 +196,39 @@ export default function UspsListClient({
                   <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--usps-ink)]/60">
                     {row.state}
                   </p>
-                </td>
-                <td className="whitespace-nowrap">
+                </TableCell>
+                <TableCell intent="status">
                   <span className={ratingBadgeClassName}>
                     {formatRating(row.rating)}
                   </span>
-                </td>
-                <td className="whitespace-nowrap font-semibold tabular-nums text-[color:var(--usps-ink)]">
+                </TableCell>
+                <TableCell
+                  intent="numeric"
+                  className="font-semibold text-[color:var(--usps-ink)]"
+                >
                   {row.visitCount}
-                </td>
-                <td className="whitespace-nowrap font-semibold text-[color:var(--usps-ink)]">
+                </TableCell>
+                <TableCell
+                  intent="date"
+                  className="font-semibold text-[color:var(--usps-ink)]"
+                >
                   {formatVisitDate(row.firstVisitDate)}
-                </td>
-                <td className="whitespace-nowrap font-semibold text-[color:var(--usps-ink)]">
+                </TableCell>
+                <TableCell
+                  intent="date"
+                  className="font-semibold text-[color:var(--usps-ink)]"
+                >
                   {formatVisitDate(row.latestVisitDate)}
-                </td>
+                </TableCell>
               </tr>
             ))
           ) : (
-            <tr>
-              <td
-                colSpan={5}
-                className="text-sm text-[color:var(--usps-ink)]/80"
-              >
-                {emptyMessage}
-              </td>
-            </tr>
+            <TableEmptyRow
+              colSpan={5}
+              className="text-[color:var(--usps-ink)]/80"
+            >
+              {emptyState}
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

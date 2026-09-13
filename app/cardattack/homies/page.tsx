@@ -1,8 +1,8 @@
 import { makeListGenerateMetadata } from "@/lib/seo/factories";
 import { unstable_cache } from "next/cache";
-import { Card } from "@ui";
-import FullBleedPage from "@/components/layout/FullBleedPage";
+import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
+import SectionHeader from "@/components/layout/SectionHeader";
 import { canCurrentUser } from "@/lib/authz";
 import { listHomieDirectory } from "@/lib/data/homies";
 import { listChroniclePersonTagCounts } from "@/lib/chronicle-person-tags";
@@ -64,36 +64,33 @@ export default async function Page(_props?: {
       : [];
   });
   return (
-    <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
-      <Card
-        as="section"
-        className="border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8"
-      >
-        <div className="space-y-8">
-          <PageIntro
-            title="Homies"
-            actions={
-              canCreate ? (
-                <AddSnapshotButton
-                  homieOptions={homieOptions}
-                  defaultRankingDate={
-                    currentDate ||
-                    rows.find((row) => row.ranking_at)?.ranking_at ||
-                    ""
-                  }
-                />
-              ) : null
-            }
-          >
-            <p className="text-[16px] text-muted-foreground md:text-[18px]">
-              The public homie directory, with current TCDb collection rankings
-              where available.
-            </p>
-          </PageIntro>
-          <HomieTagUsageSummary rows={tagUsage} />
-          <HomieDirectory initialRows={rows} canUpdate={canUpdate} />
-        </div>
-      </Card>
-    </FullBleedPage>
+    <DataPageShell>
+      <PageIntro
+        title="Homies"
+        description="The public homie directory, with current TCDb collection rankings where available."
+        actions={
+          canCreate ? (
+            <AddSnapshotButton
+              homieOptions={homieOptions}
+              defaultRankingDate={
+                currentDate ||
+                rows.find((row) => row.ranking_at)?.ranking_at ||
+                ""
+              }
+            />
+          ) : null
+        }
+      />
+      <HomieTagUsageSummary rows={tagUsage} />
+      <section className="space-y-4" aria-labelledby="homie-directory-heading">
+        <SectionHeader
+          id="homie-directory-heading"
+          eyebrow="cardattack directory"
+          title="Homie Directory"
+          description="Search the roster or narrow it by current collection trend."
+        />
+        <HomieDirectory initialRows={rows} canUpdate={canUpdate} />
+      </section>
+    </DataPageShell>
   );
 }

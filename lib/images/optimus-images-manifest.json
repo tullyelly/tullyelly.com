@@ -1194,6 +1194,14 @@
     "/images/optimus/pragmatic/george/george-0.webp",
     "/images/optimus/pragmatic/george/george-1.webp",
     "/images/optimus/pragmatic/hockey.webp",
+    "/images/optimus/prestonplayz/battleship/battleship-0.webp",
+    "/images/optimus/prestonplayz/battleship/battleship-1.webp",
+    "/images/optimus/prestonplayz/bumblebee.webp",
+    "/images/optimus/prestonplayz/calazer/calazer-0.webp",
+    "/images/optimus/prestonplayz/calazer/calazer-1.webp",
+    "/images/optimus/prestonplayz/calazer/calazer-2.webp",
+    "/images/optimus/prestonplayz/dance.webp",
+    "/images/optimus/prestonplayz/prestonplayz.webp",
     "/images/optimus/project-hail-mary/1019086/1019086-0.webp",
     "/images/optimus/project-hail-mary/1019086/1019086-1.webp",
     "/images/optimus/project-hail-mary/1019701.webp",
@@ -7933,6 +7941,46 @@
     },
     {
       "src": "/images/optimus/pragmatic/hockey.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/prestonplayz/battleship/battleship-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/prestonplayz/battleship/battleship-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/prestonplayz/bumblebee.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/prestonplayz/calazer/calazer-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/prestonplayz/calazer/calazer-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/prestonplayz/calazer/calazer-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/prestonplayz/dance.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/prestonplayz/prestonplayz.webp",
       "width": 1920,
       "height": 2550
     },
