@@ -1,5 +1,6 @@
 import AdminAuthzPanel from "./authz/ClientPanel";
 import { listMemberships } from "./authz/actions";
+import DataPageShell from "@/components/layout/DataPageShell";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export const metadata = {
 export default async function AdminPage() {
   const memberships = await listMemberships();
   return (
-    <main className="space-y-6 p-6">
+    <DataPageShell contentClassName="space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Admin Tools</h1>
         <p className="text-sm text-gray-500">
@@ -38,6 +39,6 @@ export default async function AdminPage() {
         </p>
       </header>
       <AdminAuthzPanel initialMemberships={memberships} />
-    </main>
+    </DataPageShell>
   );
 }

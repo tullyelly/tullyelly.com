@@ -6,6 +6,22 @@ import { useRouter } from "next/navigation";
 import { fmtDateTime } from "@/lib/datetime";
 import { setPersistentBanner } from "@/lib/persistent-banner";
 import { BusyButton } from "@/components/ui/busy-button";
+import SectionHeader from "@/components/layout/SectionHeader";
+import {
+  MobileDataCard,
+  MobileDataCardHeader,
+  MobileDataEmptyState,
+  MobileDataField,
+  MobileDataGrid,
+} from "@/components/ui/MobileDataCard";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import { grantRole, revokeRole } from "./actions";
 
 export type MembershipRow = {
@@ -131,10 +147,11 @@ export default function AdminAuthzPanel({
   return (
     <div className="space-y-6">
       <section className="rounded border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="text-xl font-semibold">Grant or Revoke Role</h2>
-        <p className="text-sm text-gray-500">
-          Provide a user UUID and role; app slug is optional for global grants.
-        </p>
+        <SectionHeader
+          title="Grant or Revoke Role"
+          titleClassName="text-xl md:text-xl"
+          description="Provide a user UUID and role; app slug is optional for global grants."
+        />
         <form className="mt-4 space-y-3" onSubmit={handleGrant}>
           <div className="grid gap-3 md:grid-cols-5">
             <input
@@ -184,56 +201,90 @@ export default function AdminAuthzPanel({
       </section>
 
       <section className="rounded border border-gray-200 bg-white p-4 shadow-sm">
-        <h3 className="text-lg font-semibold">Memberships</h3>
-        <div className="mt-3 overflow-x-auto">
-          <table className="min-w-full border border-gray-200 text-left text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="border border-gray-200 p-2">Email</th>
-                <th className="border border-gray-200 p-2">User ID</th>
-                <th className="border border-gray-200 p-2">App</th>
-                <th className="border border-gray-200 p-2">Role</th>
-                <th className="border border-gray-200 p-2">Granted</th>
-                <th className="border border-gray-200 p-2 text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+        <SectionHeader
+          title="Memberships"
+          titleClassName="text-lg md:text-lg"
+        />
+
+        <ul className="mt-3 space-y-3 md:hidden">
+          {rows.length > 0 ? (
+            rows.map((row) => (
+              <MobileDataCard
+                key={`${row.user_id}-${row.role}-${formatApp(row.app_slug)}`}
+              >
+                <MobileDataCardHeader
+                  eyebrow={formatApp(row.app_slug)}
+                  title={row.email ?? "(unknown)"}
+                  description={row.user_id}
+                  trailing={
+                    <BusyButton
+                      type="button"
+                      onClick={() => void handleRevoke(row)}
+                      disabled={busy}
+                      isLoading={busy}
+                      loadingLabel="Working..."
+                      variant="outline"
+                      size="sm"
+                    >
+                      Revoke
+                    </BusyButton>
+                  }
+                />
+                <MobileDataGrid>
+                  <MobileDataField label="Role">{row.role}</MobileDataField>
+                  <MobileDataField label="Granted">
+                    {fmtDateTime(row.granted_at)}
+                  </MobileDataField>
+                </MobileDataGrid>
+              </MobileDataCard>
+            ))
+          ) : (
+            <MobileDataEmptyState>
+              No memberships recorded.
+            </MobileDataEmptyState>
+          )}
+        </ul>
+
+        <div className="mt-3">
+          <Table density="compact" aria-label="Authorization memberships">
+            <THead>
+              <TableHeaderCell intent="name">Email</TableHeaderCell>
+              <TableHeaderCell intent="identifier">User ID</TableHeaderCell>
+              <TableHeaderCell intent="status">App</TableHeaderCell>
+              <TableHeaderCell intent="status">Role</TableHeaderCell>
+              <TableHeaderCell intent="date">Granted</TableHeaderCell>
+              <TableHeaderCell intent="compact">Actions</TableHeaderCell>
+            </THead>
+            <TBody>
               {rows.length === 0 ? (
-                <tr>
-                  <td
-                    className="p-4 text-center text-sm text-gray-500"
-                    colSpan={6}
-                  >
-                    No memberships recorded.
-                  </td>
-                </tr>
+                <TableEmptyRow colSpan={6}>
+                  No memberships recorded.
+                </TableEmptyRow>
               ) : (
                 rows.map((row) => (
                   <tr
                     key={`${row.user_id}-${row.role}-${formatApp(row.app_slug)}`}
                   >
-                    <td className="border border-gray-200 p-2">
+                    <TableCell intent="name">
                       {row.email ?? "(unknown)"}
-                    </td>
-                    <td className="border border-gray-200 p-2 font-mono text-xs">
+                    </TableCell>
+                    <TableCell
+                      intent="identifier"
+                      className="font-mono text-xs"
+                    >
                       {row.user_id}
-                    </td>
-                    <td className="border border-gray-200 p-2">
+                    </TableCell>
+                    <TableCell intent="status">
                       {formatApp(row.app_slug)}
-                    </td>
-                    <td className="border border-gray-200 p-2">{row.role}</td>
-                    <td className="border border-gray-200 p-2">
+                    </TableCell>
+                    <TableCell intent="status">{row.role}</TableCell>
+                    <TableCell intent="date">
                       {fmtDateTime(row.granted_at)}
-                    </td>
-                    <td className="border border-gray-200 p-2 text-center">
+                    </TableCell>
+                    <TableCell intent="compact">
                       <BusyButton
                         type="button"
-                        className="border border-gray-300 px-2 py-1 text-xs font-medium text-gray-900 hover:bg-gray-100"
-                        onClick={() => {
-                          void handleRevoke(row);
-                        }}
+                        onClick={() => void handleRevoke(row)}
                         disabled={busy}
                         isLoading={busy}
                         loadingLabel="Working..."
@@ -242,12 +293,12 @@ export default function AdminAuthzPanel({
                       >
                         Revoke
                       </BusyButton>
-                    </td>
+                    </TableCell>
                   </tr>
                 ))
               )}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </div>
       </section>
     </div>
