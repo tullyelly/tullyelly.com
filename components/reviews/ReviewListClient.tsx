@@ -1,9 +1,21 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { Card } from "@ui";
 
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 import { fmtDate } from "@/lib/datetime";
 
 type ReviewListRow = {
@@ -37,6 +49,11 @@ const ratingBadgeClassName =
   "inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--review-accent)] px-3 py-1 text-sm font-semibold text-[color:var(--review-pill-fg)] shadow-sm";
 const mobileMetaLabelClassName =
   "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--review-ink)]/65";
+const getReviewSearchValues = (row: ReviewListRow) => [
+  row.id,
+  row.name,
+  row.url,
+];
 
 export default function ReviewListClient({
   rows,
@@ -55,13 +72,33 @@ export default function ReviewListClient({
   tableTestId = "review-table",
   rowTestId = "review-row",
 }: ReviewListClientProps) {
-  const sortedRows = rows;
+  const [query, setQuery] = useState("");
+  const visibleRows = useTableSearch(rows, query, getReviewSearchValues);
+  const emptyState =
+    rows.length === 0 ? emptyMessage : "No review subjects match this search.";
 
   return (
-    <div style={themeStyle}>
+    <div id="review-data-view" className="space-y-4" style={themeStyle}>
+      <DataToolbar
+        ariaLabel="Review directory controls"
+        search={
+          <TableSearch
+            query={query}
+            onQueryChange={setQuery}
+            label="Search reviews"
+            ariaControls="review-data-view"
+          />
+        }
+        result={
+          <DataResultCount>
+            {visibleRows.length} review subject
+            {visibleRows.length === 1 ? "" : "s"}
+          </DataResultCount>
+        }
+      />
       <ul className="space-y-4 md:hidden">
-        {sortedRows.length > 0 ? (
-          sortedRows.map((row) => (
+        {visibleRows.length > 0 ? (
+          visibleRows.map((row) => (
             <Card
               as="li"
               key={`mobile-${row.id}`}
@@ -92,7 +129,9 @@ export default function ReviewListClient({
                     </dd>
                   </div>
                   <div className="space-y-1">
-                    <dt className={mobileMetaLabelClassName}>{lastCountLabel}</dt>
+                    <dt className={mobileMetaLabelClassName}>
+                      {lastCountLabel}
+                    </dt>
                     <dd className="font-semibold text-[color:var(--review-ink)]">
                       <time dateTime={row.latestPostDate}>
                         {fmtDate(row.latestPostDate)}
@@ -124,7 +163,7 @@ export default function ReviewListClient({
             as="li"
             className="rounded-[24px] border-2 border-[color:var(--review-border)] bg-[color:var(--review-surface)] p-4 text-sm text-[color:var(--review-ink)]/80 shadow-sm"
           >
-            {emptyMessage}
+            {emptyState}
           </Card>
         )}
       </ul>
@@ -136,26 +175,18 @@ export default function ReviewListClient({
         themeStyle={themeStyle}
       >
         <THead variant="bucks">
-          <th scope="col">{tableFirstColumnLabel}</th>
-          <th scope="col" className="w-[140px] whitespace-nowrap">
-            Avg Rating
-          </th>
-          <th scope="col" className="w-[90px] whitespace-nowrap">
-            {countLabel}
-          </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
-            {lastCountLabel}
-          </th>
+          <TableHeaderCell intent="grow">
+            {tableFirstColumnLabel}
+          </TableHeaderCell>
+          <TableHeaderCell intent="status">Avg Rating</TableHeaderCell>
+          <TableHeaderCell intent="numeric">{countLabel}</TableHeaderCell>
+          <TableHeaderCell intent="date">{lastCountLabel}</TableHeaderCell>
         </THead>
         <TBody>
-          {sortedRows.length > 0 ? (
-            sortedRows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-[color:var(--table-row-divider)] last:border-0"
-                data-testid={rowTestId}
-              >
-                <td>
+          {visibleRows.length > 0 ? (
+            visibleRows.map((row) => (
+              <tr key={row.id} data-testid={rowTestId}>
+                <TableCell intent="grow">
                   <Link
                     href={`${detailBasePath}/${row.id}` as Route}
                     className="text-base font-semibold text-[color:var(--review-link)] transition hover:text-[color:var(--review-link-hover)]"
@@ -177,28 +208,35 @@ export default function ReviewListClient({
                       </a>
                     </p>
                   ) : null}
-                </td>
-                <td className="whitespace-nowrap">
+                </TableCell>
+                <TableCell intent="status">
                   <span className={ratingBadgeClassName}>
                     {`${row.averageRating.toFixed(1)}/10`}
                   </span>
-                </td>
-                <td className="whitespace-nowrap font-semibold tabular-nums text-[color:var(--review-ink)]">
+                </TableCell>
+                <TableCell
+                  intent="numeric"
+                  className="font-semibold text-[color:var(--review-ink)]"
+                >
                   {row.visitCount}
-                </td>
-                <td className="whitespace-nowrap font-semibold text-[color:var(--review-ink)]">
+                </TableCell>
+                <TableCell
+                  intent="date"
+                  className="font-semibold text-[color:var(--review-ink)]"
+                >
                   <time dateTime={row.latestPostDate}>
                     {fmtDate(row.latestPostDate)}
                   </time>
-                </td>
+                </TableCell>
               </tr>
             ))
           ) : (
-            <tr>
-              <td colSpan={4} className="text-sm text-[color:var(--review-ink)]/80">
-                {emptyMessage}
-              </td>
-            </tr>
+            <TableEmptyRow
+              colSpan={4}
+              className="text-[color:var(--review-ink)]/80"
+            >
+              {emptyState}
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

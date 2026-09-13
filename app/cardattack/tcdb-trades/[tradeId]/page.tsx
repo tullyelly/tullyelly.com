@@ -168,7 +168,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   ];
 
   return (
-    <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
+    <FullBleedPage width="wide">
       <div
         className="space-y-8 px-1 py-6 md:px-2 md:py-8"
         style={tcdbTradePageThemeVars}

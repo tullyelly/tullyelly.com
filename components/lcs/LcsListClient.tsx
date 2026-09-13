@@ -5,7 +5,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import type { LcsSummary } from "@/lib/lcs-types";
 import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
@@ -77,16 +85,25 @@ export default function LcsListClient({
 }: LcsListClientProps) {
   const [query, setQuery] = useState("");
   const visibleRows = useTableSearch(rows, query, getLcsSearchValues);
+  const emptyState =
+    rows.length === 0 ? emptyMessage : "No card shops match this search.";
 
   return (
-    <div className="space-y-4" style={themeStyle}>
-      <TableSearch
-        query={query}
-        onQueryChange={setQuery}
-        label="Search card shops"
-        resultCount={visibleRows.length}
-        resultLabel={(count) =>
-          `${count} card shop${count === 1 ? "" : "s"} shown`
+    <div id="lcs-data-view" className="space-y-4" style={themeStyle}>
+      <DataToolbar
+        ariaLabel="Card shop controls"
+        search={
+          <TableSearch
+            query={query}
+            onQueryChange={setQuery}
+            label="Search card shops"
+            ariaControls="lcs-data-view"
+          />
+        }
+        result={
+          <DataResultCount>
+            {visibleRows.length} card shop{visibleRows.length === 1 ? "" : "s"}
+          </DataResultCount>
         }
       />
       <ul className="space-y-4 md:hidden">
@@ -168,7 +185,7 @@ export default function LcsListClient({
             as="li"
             className="rounded-[24px] border-2 border-[color:var(--lcs-border)] bg-[color:var(--lcs-surface)] p-4 text-sm text-[color:var(--lcs-ink)]/80 shadow-sm"
           >
-            {emptyMessage}
+            {emptyState}
           </Card>
         )}
       </ul>
@@ -180,19 +197,11 @@ export default function LcsListClient({
         themeStyle={themeStyle}
       >
         <THead variant="bucks">
-          <th scope="col">{shopLabel}</th>
-          <th scope="col" className="w-[132px] whitespace-nowrap">
-            {ratingLabel}
-          </th>
-          <th scope="col" className="w-[90px] whitespace-nowrap">
-            {countLabel}
-          </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
-            {firstCountLabel}
-          </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
-            {latestCountLabel}
-          </th>
+          <TableHeaderCell intent="grow">{shopLabel}</TableHeaderCell>
+          <TableHeaderCell intent="status">{ratingLabel}</TableHeaderCell>
+          <TableHeaderCell intent="numeric">{countLabel}</TableHeaderCell>
+          <TableHeaderCell intent="date">{firstCountLabel}</TableHeaderCell>
+          <TableHeaderCell intent="date">{latestCountLabel}</TableHeaderCell>
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
@@ -200,12 +209,8 @@ export default function LcsListClient({
               const location = getLocationLabel(row);
 
               return (
-                <tr
-                  key={row.slug}
-                  className="border-b border-[color:var(--table-row-divider)] last:border-0"
-                  data-testid={rowTestId}
-                >
-                  <td>
+                <tr key={row.slug} data-testid={rowTestId}>
+                  <TableCell intent="grow">
                     <Link
                       href={`${detailBasePath}/${row.slug}`}
                       className="text-base font-semibold text-[color:var(--lcs-link)] transition hover:text-[color:var(--lcs-link-hover)]"
@@ -229,33 +234,40 @@ export default function LcsListClient({
                         </a>
                       </p>
                     ) : null}
-                  </td>
-                  <td className="whitespace-nowrap">
+                  </TableCell>
+                  <TableCell intent="status">
                     <span className={ratingBadgeClassName}>
                       {formatRating(row.rating)}
                     </span>
-                  </td>
-                  <td className="whitespace-nowrap font-semibold tabular-nums text-[color:var(--lcs-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="numeric"
+                    className="font-semibold text-[color:var(--lcs-ink)]"
+                  >
                     {row.visitCount}
-                  </td>
-                  <td className="whitespace-nowrap font-semibold text-[color:var(--lcs-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="date"
+                    className="font-semibold text-[color:var(--lcs-ink)]"
+                  >
                     {formatVisitDate(row.firstVisitDate)}
-                  </td>
-                  <td className="whitespace-nowrap font-semibold text-[color:var(--lcs-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="date"
+                    className="font-semibold text-[color:var(--lcs-ink)]"
+                  >
                     {formatVisitDate(row.latestVisitDate)}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })
           ) : (
-            <tr>
-              <td
-                colSpan={5}
-                className="text-sm text-[color:var(--lcs-ink)]/80"
-              >
-                {emptyMessage}
-              </td>
-            </tr>
+            <TableEmptyRow
+              colSpan={5}
+              className="text-[color:var(--lcs-ink)]/80"
+            >
+              {emptyState}
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

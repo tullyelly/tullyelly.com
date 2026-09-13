@@ -1,5 +1,4 @@
-import { Card } from "@ui";
-import FullBleedPage from "@/components/layout/FullBleedPage";
+import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
 import {
   listTcdbTradeHallOfFameInductions,
@@ -40,20 +39,14 @@ export default async function Page() {
   }));
 
   return (
-    <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
-      <Card
-        as="section"
-        className="space-y-8 border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8 md:pt-0"
-      >
-        <PageIntro title="TCDb Trade Hall of Fame">
-          <p className="text-[16px] md:text-[18px] text-muted-foreground">
-            Celebrating the trade partners who helped close out a set.
-          </p>
-        </PageIntro>
+    <DataPageShell>
+      <PageIntro
+        title="TCDb Trade Hall of Fame"
+        description="Celebrating the trade partners who helped close out a set."
+      />
 
-        <TcdbTradeHallOfFameTable rows={hallOfFamers} />
-        <TcdbTradeHallOfFameInductionsTable rows={inductionRows} />
-      </Card>
-    </FullBleedPage>
+      <TcdbTradeHallOfFameTable rows={hallOfFamers} />
+      <TcdbTradeHallOfFameInductionsTable rows={inductionRows} />
+    </DataPageShell>
   );
 }

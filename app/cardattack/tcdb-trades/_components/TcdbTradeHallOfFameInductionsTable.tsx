@@ -4,7 +4,15 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { Card } from "@ui";
 
-import { Table, TBody, THead } from "@/components/ui/Table";
+import SectionHeader from "@/components/layout/SectionHeader";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import { tcdbTradeTableThemeStyle } from "@/lib/tcdb-theme";
 
@@ -61,14 +69,10 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
 
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-semibold tracking-tight text-ink">
-          Hall of Fame Inductions
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          The exact set completions that punched the ticket.
-        </p>
-      </div>
+      <SectionHeader
+        title="Hall of Fame Inductions"
+        description="The exact set completions that punched the ticket."
+      />
 
       <ul className="space-y-3 md:hidden">
         {sortedRows.length > 0 ? (
@@ -153,32 +157,14 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
         variant="bucks"
         aria-label="Hall of Fame inductions table"
         data-testid="tcdb-trade-hof-inductions-table"
-        className="[&_th.tcdb-trade-compact]:px-3 [&_td.tcdb-trade-compact]:px-3"
         themeStyle={tcdbTradeTableThemeStyle}
       >
         <THead variant="bucks">
-          <th scope="col">Set</th>
-          <th
-            scope="col"
-            className="tcdb-trade-compact w-[144px] whitespace-nowrap"
-          >
-            Inducted
-          </th>
-          <th
-            scope="col"
-            className="tcdb-trade-compact w-[112px] whitespace-nowrap"
-          >
-            Category
-          </th>
-          <th
-            scope="col"
-            className="tcdb-trade-compact w-[112px] whitespace-nowrap"
-          >
-            Trade ID
-          </th>
-          <th scope="col" className="w-[220px]">
-            Hall of Famer
-          </th>
+          <TableHeaderCell intent="grow">Set</TableHeaderCell>
+          <TableHeaderCell intent="date">Inducted</TableHeaderCell>
+          <TableHeaderCell intent="status">Category</TableHeaderCell>
+          <TableHeaderCell intent="identifier">Trade ID</TableHeaderCell>
+          <TableHeaderCell intent="name">Hall of Famer</TableHeaderCell>
         </THead>
         <TBody>
           {sortedRows.length > 0 ? (
@@ -189,42 +175,37 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
               return (
                 <tr
                   key={`${row.setSlug}-${row.tradeId}`}
-                  className="border-b border-[color:var(--table-row-divider)] last:border-0"
                   data-testid="tcdb-trade-hof-induction-row"
                 >
-                  <td>
+                  <TableCell intent="grow">
                     <Link href={setHref} className="link-blue font-medium">
                       {row.setName}
                     </Link>
-                  </td>
-                  <td className="tcdb-trade-compact whitespace-nowrap">
+                  </TableCell>
+                  <TableCell intent="date">
                     <time dateTime={row.inductedDate}>
                       {fmtDate(row.inductedDate)}
                     </time>
-                  </td>
-                  <td className="tcdb-trade-compact whitespace-nowrap">
+                  </TableCell>
+                  <TableCell intent="status">
                     {renderCategoryTag(row.categoryTag)}
-                  </td>
-                  <td className="tcdb-trade-compact whitespace-nowrap font-medium tabular-nums">
+                  </TableCell>
+                  <TableCell intent="identifier" className="font-medium">
                     <Link
                       href={`/cardattack/tcdb-trades/${row.tradeId}`}
                       className="link-blue"
                     >
                       {row.tradeId}
                     </Link>
-                  </td>
-                  <td className="[overflow-wrap:anywhere]">
-                    {renderHallOfFamer(row)}
-                  </td>
+                  </TableCell>
+                  <TableCell intent="name">{renderHallOfFamer(row)}</TableCell>
                 </tr>
               );
             })
           ) : (
-            <tr>
-              <td colSpan={5} className="text-sm text-ink/70">
-                No Hall of Fame inductions yet.
-              </td>
-            </tr>
+            <TableEmptyRow colSpan={5}>
+              No Hall of Fame inductions yet.
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

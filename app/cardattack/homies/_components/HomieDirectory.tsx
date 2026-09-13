@@ -4,7 +4,15 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 import * as Dialog from "@ui/dialog";
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import TablePager from "@/components/ui/TablePager";
 import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 import TrendPill from "@/components/tcdb/TrendPill";
@@ -99,8 +107,11 @@ export default function HomieDirectory({
       ),
     [searchedRows, trend],
   );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const emptyState =
+    rows.length === 0
+      ? "No homies are available yet."
+      : "No homies match these filters.";
   const changed = (row: HomieDirectoryRow) => {
     const draft = drafts[row.id];
     return !!draft && JSON.stringify(draft) !== JSON.stringify(values(row));
@@ -190,22 +201,22 @@ export default function HomieDirectory({
 
   return (
     <section className="space-y-4" aria-label="Homie directory">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <TableSearch
-          query={q}
-          onQueryChange={(query) => {
-            setQ(query);
-            setPage(1);
-          }}
-          label="Search homies"
-          resultCount={filtered.length}
-          resultLabel={(count) =>
-            `${count} homie${count === 1 ? "" : "s"} shown`
-          }
-        />
-        <div className="flex gap-2">
+      <DataToolbar
+        ariaLabel="Homie directory controls"
+        search={
+          <TableSearch
+            query={q}
+            onQueryChange={(query) => {
+              setQ(query);
+              setPage(1);
+            }}
+            label="Search homies"
+            ariaControls="homie-directory-data"
+          />
+        }
+        filters={
           <select
-            className="form-input h-9"
+            className="form-input w-full sm:w-auto"
             aria-label="Filter by trend"
             value={trend}
             onChange={(event) => {
@@ -218,7 +229,9 @@ export default function HomieDirectory({
             <option value="down">Down</option>
             <option value="flat">Flat</option>
           </select>
-          {canUpdate ? (
+        }
+        actions={
+          canUpdate ? (
             <button
               className="btn whitespace-nowrap"
               aria-pressed={unlocked}
@@ -231,73 +244,87 @@ export default function HomieDirectory({
                   ? "Lock Editing"
                   : "Unlock Editing"}
             </button>
-          ) : null}
-        </div>
-      </div>
+          ) : null
+        }
+        result={
+          <DataResultCount>
+            {filtered.length} homie{filtered.length === 1 ? "" : "s"}
+          </DataResultCount>
+        }
+      />
 
-      <ul className="space-y-3 md:hidden">
-        {visible.map((row) => (
-          <Card as="li" className="p-3" key={row.id}>
-            <div className="flex justify-between gap-3">
-              <div>
-                <Link
-                  href={`/cardattack/homies/${row.route_slug}`}
-                  className="font-semibold"
-                  data-testid="ranking-detail-trigger"
+      <ul id="homie-directory-data" className="space-y-3 md:hidden">
+        {visible.length > 0 ? (
+          visible.map((row) => (
+            <Card as="li" className="p-3" key={row.id}>
+              <div className="flex justify-between gap-3">
+                <div>
+                  <Link
+                    href={`/cardattack/homies/${row.route_slug}`}
+                    className="font-semibold"
+                    data-testid="ranking-detail-trigger"
+                  >
+                    {row.name}
+                  </Link>
+                  <p className="text-xs text-ink/70">Jersey {row.id}</p>
+                </div>
+                {row.trend_overall ? (
+                  <TrendPill trend={row.trend_overall} />
+                ) : (
+                  <span>{"—"}</span>
+                )}
+              </div>
+              <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <dt className="text-xs uppercase text-ink/60">Tag slug</dt>
+                  <dd>{row.tag_slug ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase text-ink/60">Drafted</dt>
+                  <dd>{row.drafted}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase text-ink/60">Cards</dt>
+                  <dd>
+                    {row.card_count === null
+                      ? "—"
+                      : integer.format(row.card_count)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase text-ink/60">Rank</dt>
+                  <dd>
+                    {row.ranking === null ? "—" : integer.format(row.ranking)}
+                  </dd>
+                </div>
+              </dl>
+              {canUpdate ? (
+                <button
+                  className="btn mt-3"
+                  onClick={() => {
+                    setMobileEdit(row.id);
+                    updateDraft(row, drafts[row.id] ?? values(row));
+                  }}
                 >
-                  {row.name}
-                </Link>
-                <p className="text-xs text-ink/70">Jersey {row.id}</p>
-              </div>
-              {row.trend_overall ? (
-                <TrendPill trend={row.trend_overall} />
-              ) : (
-                <span>{"—"}</span>
-              )}
-            </div>
-            <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <dt className="text-xs uppercase text-ink/60">Tag slug</dt>
-                <dd>{row.tag_slug ?? "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-ink/60">Drafted</dt>
-                <dd>{row.drafted}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-ink/60">Cards</dt>
-                <dd>
-                  {row.card_count === null
-                    ? "—"
-                    : integer.format(row.card_count)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-ink/60">Rank</dt>
-                <dd>
-                  {row.ranking === null ? "—" : integer.format(row.ranking)}
-                </dd>
-              </div>
-            </dl>
-            {canUpdate ? (
-              <button
-                className="btn mt-3"
-                onClick={() => {
-                  setMobileEdit(row.id);
-                  updateDraft(row, drafts[row.id] ?? values(row));
-                }}
-              >
-                Edit
-              </button>
-            ) : null}
+                  Edit
+                </button>
+              ) : null}
+            </Card>
+          ))
+        ) : (
+          <Card
+            as="li"
+            className="border-dashed p-3 text-sm text-ink/70 shadow-none"
+          >
+            {emptyState}
           </Card>
-        ))}
+        )}
       </ul>
 
       <Table
         variant="bucks"
         aria-label="Homie directory table"
-        className={`hidden md:table ${unlocked && canUpdate ? "table-fixed" : ""}`}
+        layout={unlocked && canUpdate ? "fixed" : "auto"}
       >
         {unlocked && canUpdate ? (
           <colgroup>
@@ -309,145 +336,155 @@ export default function HomieDirectory({
           </colgroup>
         ) : null}
         <THead variant="bucks">
-          <th>Jersey</th>
-          <th>Name</th>
-          <th>Tag slug</th>
-          <th>Drafted</th>
+          <TableHeaderCell intent="identifier">Jersey</TableHeaderCell>
+          <TableHeaderCell intent="grow">Name</TableHeaderCell>
+          <TableHeaderCell intent="nowrap">Tag slug</TableHeaderCell>
+          <TableHeaderCell intent="numeric">Drafted</TableHeaderCell>
           {!unlocked || !canUpdate ? (
             <>
-              <th>Cards</th>
-              <th>Rank</th>
-              <th>Trend</th>
+              <TableHeaderCell intent="numeric">Cards</TableHeaderCell>
+              <TableHeaderCell intent="numeric">Rank</TableHeaderCell>
+              <TableHeaderCell intent="status">Trend</TableHeaderCell>
             </>
           ) : null}
-          {unlocked && canUpdate ? <th>Actions</th> : null}
+          {unlocked && canUpdate ? (
+            <TableHeaderCell intent="compact">Actions</TableHeaderCell>
+          ) : null}
         </THead>
         <TBody>
-          {visible.map((row) => {
-            const draft = drafts[row.id] ?? values(row);
-            return (
-              <tr key={row.id}>
-                <td>
-                  <Link
-                    data-testid="ranking-detail-trigger"
-                    href={`/cardattack/homies/${row.route_slug}`}
-                    onClick={(event) => {
-                      if (
-                        changed(row) &&
-                        !window.confirm(
-                          "Discard unsaved changes and open this homie?",
+          {visible.length > 0 ? (
+            visible.map((row) => {
+              const draft = drafts[row.id] ?? values(row);
+              return (
+                <tr key={row.id}>
+                  <TableCell intent="identifier">
+                    <Link
+                      data-testid="ranking-detail-trigger"
+                      href={`/cardattack/homies/${row.route_slug}`}
+                      onClick={(event) => {
+                        if (
+                          changed(row) &&
+                          !window.confirm(
+                            "Discard unsaved changes and open this homie?",
+                          )
                         )
-                      )
-                        event.preventDefault();
-                    }}
-                  >
-                    {row.id}
-                  </Link>
-                </td>
-                <td>
-                  {unlocked && canUpdate ? (
-                    <input
-                      aria-label={`Name for ${row.name}`}
-                      className="form-input w-full min-w-0"
-                      value={draft.name}
-                      onChange={(e) =>
-                        updateDraft(row, { ...draft, name: e.target.value })
-                      }
-                    />
-                  ) : (
-                    row.name
-                  )}
-                </td>
-                <td>
-                  {unlocked && canUpdate ? (
-                    <div>
+                          event.preventDefault();
+                      }}
+                    >
+                      {row.id}
+                    </Link>
+                  </TableCell>
+                  <TableCell intent="grow">
+                    {unlocked && canUpdate ? (
                       <input
-                        aria-label={`Tag slug for ${row.name}`}
+                        aria-label={`Name for ${row.name}`}
                         className="form-input w-full min-w-0"
-                        value={draft.tag_slug ?? ""}
+                        value={draft.name}
+                        onChange={(e) =>
+                          updateDraft(row, { ...draft, name: e.target.value })
+                        }
+                      />
+                    ) : (
+                      row.name
+                    )}
+                  </TableCell>
+                  <TableCell intent="nowrap">
+                    {unlocked && canUpdate ? (
+                      <div>
+                        <input
+                          aria-label={`Tag slug for ${row.name}`}
+                          className="form-input w-full min-w-0"
+                          value={draft.tag_slug ?? ""}
+                          onChange={(e) =>
+                            updateDraft(row, {
+                              ...draft,
+                              tag_slug: e.target.value || null,
+                            })
+                          }
+                        />
+                        <span className="sr-only">
+                          Changing the tag slug changes the preferred homie URL.
+                        </span>
+                      </div>
+                    ) : (
+                      (row.tag_slug ?? "—")
+                    )}
+                  </TableCell>
+                  <TableCell intent="numeric">
+                    {unlocked && canUpdate ? (
+                      <input
+                        aria-label={`Drafted for ${row.name}`}
+                        className="form-input w-full min-w-0"
+                        type="number"
+                        min={0}
+                        max={65535}
+                        value={draft.drafted}
                         onChange={(e) =>
                           updateDraft(row, {
                             ...draft,
-                            tag_slug: e.target.value || null,
+                            drafted: Number(e.target.value),
                           })
                         }
                       />
-                      <span className="sr-only">
-                        Changing the tag slug changes the preferred homie URL.
-                      </span>
-                    </div>
-                  ) : (
-                    (row.tag_slug ?? "—")
-                  )}
-                </td>
-                <td>
+                    ) : (
+                      row.drafted
+                    )}
+                  </TableCell>
+                  {!unlocked || !canUpdate ? (
+                    <>
+                      <TableCell intent="numeric">
+                        {row.card_count === null
+                          ? "—"
+                          : integer.format(row.card_count)}
+                      </TableCell>
+                      <TableCell intent="numeric">
+                        {row.ranking === null
+                          ? "—"
+                          : integer.format(row.ranking)}
+                      </TableCell>
+                      <TableCell intent="status">
+                        {row.trend_overall ? (
+                          <TrendPill trend={row.trend_overall} />
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                    </>
+                  ) : null}
                   {unlocked && canUpdate ? (
-                    <input
-                      aria-label={`Drafted for ${row.name}`}
-                      className="form-input w-full min-w-0"
-                      type="number"
-                      min={0}
-                      max={65535}
-                      value={draft.drafted}
-                      onChange={(e) =>
-                        updateDraft(row, {
-                          ...draft,
-                          drafted: Number(e.target.value),
-                        })
-                      }
-                    />
-                  ) : (
-                    row.drafted
-                  )}
-                </td>
-                {!unlocked || !canUpdate ? (
-                  <>
-                    <td>
-                      {row.card_count === null
-                        ? "—"
-                        : integer.format(row.card_count)}
-                    </td>
-                    <td>
-                      {row.ranking === null ? "—" : integer.format(row.ranking)}
-                    </td>
-                    <td>
-                      {row.trend_overall ? (
-                        <TrendPill trend={row.trend_overall} />
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </>
-                ) : null}
-                {unlocked && canUpdate ? (
-                  <td>
-                    <div className="flex flex-col gap-2 lg:flex-row">
-                      <button
-                        className="btn"
-                        disabled={!changed(row) || pendingIds.has(row.id)}
-                        onClick={() => void save(row)}
-                      >
-                        {pendingIds.has(row.id) ? "Saving..." : "Save"}
-                      </button>
-                      <button
-                        className="btn"
-                        disabled={!changed(row) || pendingIds.has(row.id)}
-                        onClick={() =>
-                          setDrafts((current) => {
-                            const next = { ...current };
-                            delete next[row.id];
-                            return next;
-                          })
-                        }
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </td>
-                ) : null}
-              </tr>
-            );
-          })}
+                    <TableCell intent="compact">
+                      <div className="flex flex-col gap-2 lg:flex-row">
+                        <button
+                          className="btn"
+                          disabled={!changed(row) || pendingIds.has(row.id)}
+                          onClick={() => void save(row)}
+                        >
+                          {pendingIds.has(row.id) ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          className="btn"
+                          disabled={!changed(row) || pendingIds.has(row.id)}
+                          onClick={() =>
+                            setDrafts((current) => {
+                              const next = { ...current };
+                              delete next[row.id];
+                              return next;
+                            })
+                          }
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </TableCell>
+                  ) : null}
+                </tr>
+              );
+            })
+          ) : (
+            <TableEmptyRow colSpan={unlocked && canUpdate ? 5 : 7}>
+              {emptyState}
+            </TableEmptyRow>
+          )}
         </TBody>
       </Table>
 
@@ -461,6 +498,7 @@ export default function HomieDirectory({
           setPageSize(size);
           setPage(1);
         }}
+        pageSizeOptions={PAGE_SIZES}
       />
 
       <Dialog.Root

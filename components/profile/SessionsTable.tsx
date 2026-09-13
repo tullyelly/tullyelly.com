@@ -1,4 +1,11 @@
 import { formatDateTime } from "@/components/profile/utils";
+import {
+  Table,
+  TableCell,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import type { SanitizedSession } from "@/types/profile";
 
 export function SessionsTable({ sessions }: { sessions: SanitizedSession[] }) {
@@ -11,27 +18,23 @@ export function SessionsTable({ sessions }: { sessions: SanitizedSession[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
-      <table className="w-full min-w-[520px] table-fixed border-collapse text-sm">
-        <thead className="bg-muted/60">
-          <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold [&>th]:text-muted-foreground">
-            <th className="w-56">User</th>
-            <th className="w-40">Expires</th>
+    <Table showOnMobile density="compact" aria-label="Active sessions">
+      <THead>
+        <TableHeaderCell intent="grow">User</TableHeaderCell>
+        <TableHeaderCell intent="date">Expires</TableHeaderCell>
+      </THead>
+      <TBody>
+        {sessions.map((session) => (
+          <tr key={`${session.userId ?? "unknown"}-${session.expires}`}>
+            <TableCell intent="grow" className="break-all font-mono text-xs">
+              {session.userId ?? "Unknown"}
+            </TableCell>
+            <TableCell intent="date" className="text-muted-foreground">
+              {formatDateTime(session.expires)}
+            </TableCell>
           </tr>
-        </thead>
-        <tbody className="[&>tr>td]:px-4 [&>tr>td]:py-3">
-          {sessions.map((session) => (
-            <tr key={`${session.userId ?? "unknown"}-${session.expires}`}>
-              <td className="break-all font-mono text-xs">
-                {session.userId ?? "Unknown"}
-              </td>
-              <td className="text-muted-foreground">
-                {formatDateTime(session.expires)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </TBody>
+    </Table>
   );
 }

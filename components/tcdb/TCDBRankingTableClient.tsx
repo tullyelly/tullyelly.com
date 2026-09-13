@@ -11,7 +11,15 @@ import type {
   TCDBRankingSportOption,
   TCDBRankingTableTheme,
 } from "./TCDBRankingTable";
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import TablePager from "@/components/ui/TablePager";
 import { Card } from "@ui";
 import { BusyButton } from "@/components/ui/busy-button";
@@ -111,24 +119,24 @@ export default function TCDBRankingTableClient({
   return (
     <section
       className="space-y-4"
-      aria-live="polite"
       aria-busy={isPending ? "true" : undefined}
       role="region"
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <form
-          key={searchSnapshot}
-          onSubmit={onSubmit}
-          className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center"
-          role="search"
-          aria-label={labels.searchAriaLabel}
-        >
-          <div className="flex w-full items-center gap-2">
+      <DataToolbar
+        ariaLabel="Ranking controls"
+        search={
+          <form
+            key={searchSnapshot}
+            onSubmit={onSubmit}
+            className="flex w-full items-center gap-2"
+            role="search"
+            aria-label={labels.searchAriaLabel}
+          >
             <input
               name="q"
               defaultValue={searchQ}
               placeholder={labels.searchPlaceholder}
-              className="form-input h-9 w-full md:w-64"
+              className="form-input w-full sm:w-72"
               aria-label={labels.searchAriaLabel}
               type="search"
             />
@@ -140,19 +148,16 @@ export default function TCDBRankingTableClient({
             >
               Search
             </BusyButton>
-          </div>
-          <div aria-live="polite" className="sr-only">
-            {isPending ? "Updating results" : "Results ready"}
-          </div>
-        </form>
-        <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto">
-          {sportOptions?.length ? (
-            <div className="lg:min-w-[11rem]">
+          </form>
+        }
+        filters={
+          <>
+            {sportOptions?.length ? (
               <select
                 name="sport"
                 value={searchSport}
                 onChange={onSportChange}
-                className="form-input h-9 w-full"
+                className="form-input w-full sm:w-auto"
                 aria-label="Filter by sport"
               >
                 <option value="">All sports</option>
@@ -162,14 +167,12 @@ export default function TCDBRankingTableClient({
                   </option>
                 ))}
               </select>
-            </div>
-          ) : null}
-          <div className="lg:min-w-[11rem]">
+            ) : null}
             <select
               name="trend"
               value={searchTrend}
               onChange={onTrendChange}
-              className="form-input h-9 w-full"
+              className="form-input w-full sm:w-auto"
               aria-label="Filter by trend"
             >
               <option value="">All trends</option>
@@ -177,9 +180,19 @@ export default function TCDBRankingTableClient({
               <option value="down">Down</option>
               <option value="flat">Flat</option>
             </select>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+        result={
+          <>
+            <DataResultCount>
+              {meta.total} ranking result{meta.total === 1 ? "" : "s"}
+            </DataResultCount>
+            <span aria-live="polite" className="sr-only">
+              {isPending ? "Updating results" : "Results ready"}
+            </span>
+          </>
+        }
+      />
 
       <ul className="space-y-3 md:hidden">
         {hasRows ? (
@@ -199,60 +212,41 @@ export default function TCDBRankingTableClient({
         themeStyle={theme?.tableThemeStyle}
       >
         <THead variant="bucks">
-          <th scope="col" className="w-[140px]">
+          <TableHeaderCell intent="identifier">
             {labels.identifierColumn}
-          </th>
-          <th scope="col">Name</th>
-          <th scope="col" className="w-[140px]">
-            Cards
-          </th>
-          <th scope="col" className="w-[72px]">
-            Rank
-          </th>
-          <th scope="col" className="w-[160px]">
-            Trend
-          </th>
+          </TableHeaderCell>
+          <TableHeaderCell intent="grow">Name</TableHeaderCell>
+          <TableHeaderCell intent="numeric">Cards</TableHeaderCell>
+          <TableHeaderCell intent="numeric">Rank</TableHeaderCell>
+          <TableHeaderCell intent="status">Trend</TableHeaderCell>
         </THead>
         <TBody>
           {hasRows ? (
             rows.map((row) => (
-              <tr
-                key={row.key}
-                data-testid="tcdb-table-row"
-                className="border-b border-[color:var(--table-row-divider)] last:border-0"
-              >
-                <td className="text-ink/80">
+              <tr key={row.key} data-testid="tcdb-table-row">
+                <TableCell intent="identifier" className="text-ink/80">
                   <TCDBRankingRowClient href={row.href} name={row.name}>
                     <span className="block max-w-[10rem] truncate">
                       {row.identifierValue}
                     </span>
                   </TCDBRankingRowClient>
-                </td>
-                <td className="truncate text-ink">
-                  <span className="block" title={row.name}>
-                    {row.name}
-                  </span>
-                </td>
-                <td className="tabular-nums text-ink">
+                </TableCell>
+                <TableCell intent="grow" className="text-ink">
+                  {row.name}
+                </TableCell>
+                <TableCell intent="numeric" className="text-ink">
                   {integerFormatter.format(row.card_count)}
-                </td>
-                <td className="tabular-nums text-ink/80">
+                </TableCell>
+                <TableCell intent="numeric" className="text-ink/80">
                   {integerFormatter.format(row.ranking)}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell intent="status">
                   <TrendPill trend={row.trend_overall} />
-                </td>
+                </TableCell>
               </tr>
             ))
           ) : (
-            <tr>
-              <td
-                colSpan={5}
-                className="px-4 py-6 text-center text-sm text-ink/70"
-              >
-                {labels.emptyMessage}
-              </td>
-            </tr>
+            <TableEmptyRow colSpan={5}>{labels.emptyMessage}</TableEmptyRow>
           )}
         </TBody>
       </Table>

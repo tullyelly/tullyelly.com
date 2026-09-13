@@ -1,4 +1,5 @@
 import type { ClanCollectionScoreboard as ClanCollectionScoreboardData } from "@/lib/data/tcdb-clans";
+import { Stat, StatGrid } from "@/components/ui/StatGrid";
 
 type ClanCollectionScoreboardProps = {
   summary: ClanCollectionScoreboardData;
@@ -18,21 +19,17 @@ export default function ClanCollectionScoreboard({
 
   return (
     <section aria-label="Clan collection scoreboard">
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[color:var(--border-subtle)] bg-[color:var(--border-subtle)] md:grid-cols-4">
+      <StatGrid columns={4} variant="segmented">
         {stats.map((stat) => (
-          <div
+          <Stat
             key={stat.label}
-            className="min-w-0 bg-[color:var(--surface-card)] px-3 py-3 sm:px-4"
-          >
-            <dt className="text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.16em] text-ink/60 md:text-[0.72rem]">
-              {stat.label}
-            </dt>
-            <dd className="mt-1.5 break-words text-lg font-semibold leading-none tabular-nums text-ink md:text-xl">
-              {integerFormatter.format(stat.value)}
-            </dd>
-          </div>
+            variant="segmented"
+            label={stat.label}
+            value={integerFormatter.format(stat.value)}
+            valueClassName="break-words leading-none"
+          />
         ))}
-      </dl>
+      </StatGrid>
     </section>
   );
 }

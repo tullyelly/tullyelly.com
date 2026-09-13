@@ -119,7 +119,7 @@ export default async function Page({ params }: PageProps) {
     ) + 1;
 
   return (
-    <FullBleedPage articleClassName="md:max-w-[76rem] xl:max-w-[82rem]">
+    <FullBleedPage width="wide">
       <div className="space-y-8 px-1 py-6 md:px-2 md:py-8">
         <header className="overflow-hidden rounded-[28px] bg-[var(--blue)] text-white shadow-sm">
           <div className="space-y-6 px-4 py-5 md:px-7 md:py-7">

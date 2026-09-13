@@ -1,6 +1,14 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { Card } from "@ui";
+import SectionHeader from "@/components/layout/SectionHeader";
+import {
+  Table,
+  TableCell,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import type { HomieTagUsageDatum } from "./HomieTagUsageChart";
 import HomieTagUsageChart from "./HomieTagUsageChart";
 
@@ -11,17 +19,11 @@ export default function HomieTagUsageSummary({
 }) {
   return (
     <section aria-labelledby="homie-tag-usage-title" className="space-y-4">
-      <div>
-        <h2
-          id="homie-tag-usage-title"
-          className="!m-0 text-2xl font-bold text-ink"
-        >
-          Top Chronicle homie tags
-        </h2>
-        <p className="!m-0 mt-1 text-sm text-muted-foreground">
-          Published MDX mentions matched to the homie directory.
-        </p>
-      </div>
+      <SectionHeader
+        id="homie-tag-usage-title"
+        title="Top Chronicle homie tags"
+        description="Published MDX mentions matched to the homie directory."
+      />
 
       <div className="grid items-stretch gap-4 lg:grid-cols-2">
         <Card as="div" className="min-w-0 p-4 md:p-5 lg:h-full">
@@ -33,39 +35,34 @@ export default function HomieTagUsageSummary({
 
         <Card as="div" className="min-w-0 overflow-hidden p-0 lg:h-full">
           {rows.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead className="bg-[var(--green)] text-left text-white">
-                  <tr>
-                    <th className="px-4 py-3">Tag</th>
-                    <th className="px-4 py-3">Homie</th>
-                    <th className="px-4 py-3 text-right">Mentions</th>
-                    <th className="px-4 py-3 text-right">Chronicles</th>
+            <Table
+              showOnMobile
+              density="compact"
+              variant="bucks"
+              aria-label="Chronicle homie tag usage"
+              frameClassName="rounded-none border-0 shadow-none"
+            >
+              <THead variant="bucks">
+                <TableHeaderCell intent="identifier">Tag</TableHeaderCell>
+                <TableHeaderCell intent="grow">Homie</TableHeaderCell>
+                <TableHeaderCell intent="numeric">Mentions</TableHeaderCell>
+                <TableHeaderCell intent="numeric">Chronicles</TableHeaderCell>
+              </THead>
+              <TBody>
+                {rows.map((row) => (
+                  <tr key={row.tag}>
+                    <TableCell intent="identifier" className="font-bold">
+                      <Link href={row.href as Route} className="link-blue">
+                        #{row.tag}
+                      </Link>
+                    </TableCell>
+                    <TableCell intent="grow">{row.name}</TableCell>
+                    <TableCell intent="numeric">{row.count}</TableCell>
+                    <TableCell intent="numeric">{row.chronicleCount}</TableCell>
                   </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr
-                      key={row.tag}
-                      className="border-b border-ink/10 last:border-0 odd:bg-white even:bg-[var(--cream)]"
-                    >
-                      <td className="px-4 py-3 font-bold">
-                        <Link href={row.href as Route} className="link-blue">
-                          #{row.tag}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">{row.name}</td>
-                      <td className="px-4 py-3 text-right tabular-nums">
-                        {row.count}
-                      </td>
-                      <td className="px-4 py-3 text-right tabular-nums">
-                        {row.chronicleCount}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </TBody>
+            </Table>
           ) : (
             <p className="!m-0 p-5 text-sm text-muted-foreground">
               No homie tag usage is available yet.

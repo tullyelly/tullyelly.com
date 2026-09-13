@@ -1,11 +1,19 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 import {
@@ -38,6 +46,8 @@ type SetCollectorListClientProps = {
   tableTestId?: string;
   rowTestId?: string;
 };
+
+type SetSort = "default" | "name" | "year" | "progress";
 
 const getSetSearchValues = (row: SetCollectorListRow) => [
   row.id,
@@ -97,17 +107,81 @@ export default function SetCollectorListClient({
   rowTestId = "set-collector-row",
 }: SetCollectorListClientProps) {
   const [query, setQuery] = useState("");
-  const visibleRows = useTableSearch(rows, query, getSetSearchValues);
+  const [category, setCategory] = useState("");
+  const [sort, setSort] = useState<SetSort>("default");
+  const searchedRows = useTableSearch(rows, query, getSetSearchValues);
+  const categories = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          rows.flatMap((row) => (row.categoryTag ? [row.categoryTag] : [])),
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
+    [rows],
+  );
+  const visibleRows = useMemo(() => {
+    const filtered = searchedRows.filter(
+      (row) => !category || row.categoryTag === category,
+    );
+
+    if (sort === "default") return filtered;
+
+    return [...filtered].sort((a, b) => {
+      if (sort === "name") return a.setName.localeCompare(b.setName);
+      if (sort === "year") return b.releaseYear - a.releaseYear;
+      return (b.percentComplete ?? -1) - (a.percentComplete ?? -1);
+    });
+  }, [category, searchedRows, sort]);
+  const emptyState =
+    rows.length === 0 ? emptyMessage : "No tracked sets match these filters.";
 
   return (
     <div className="space-y-4" style={themeStyle}>
-      <TableSearch
-        query={query}
-        onQueryChange={setQuery}
-        label="Search tracked sets"
-        resultCount={visibleRows.length}
-        resultLabel={(count) =>
-          `${count} tracked set${count === 1 ? "" : "s"} shown`
+      <DataToolbar
+        ariaLabel="Set Collector controls"
+        search={
+          <TableSearch
+            query={query}
+            onQueryChange={setQuery}
+            label="Search tracked sets"
+            ariaControls="set-collector-table-view"
+          />
+        }
+        filters={
+          <>
+            {categories.length > 1 ? (
+              <select
+                className="form-input w-full sm:w-auto"
+                aria-label="Filter tracked sets by category"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+              >
+                <option value="">All categories</option>
+                {categories.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+            <select
+              className="form-input w-full sm:w-auto"
+              aria-label="Sort tracked sets"
+              value={sort}
+              onChange={(event) => setSort(event.target.value as SetSort)}
+            >
+              <option value="default">Default order</option>
+              <option value="name">Set name</option>
+              <option value="year">Newest release</option>
+              <option value="progress">Most complete</option>
+            </select>
+          </>
+        }
+        result={
+          <DataResultCount>
+            {visibleRows.length} tracked set
+            {visibleRows.length === 1 ? "" : "s"}
+          </DataResultCount>
         }
       />
       <ul className="space-y-4 md:hidden">
@@ -193,7 +267,7 @@ export default function SetCollectorListClient({
             as="li"
             className="rounded-[24px] border-2 border-[color:var(--collector-border)] bg-[color:var(--collector-surface)] p-4 text-sm text-[color:var(--collector-ink)]/80 shadow-sm"
           >
-            {emptyMessage}
+            {emptyState}
           </Card>
         )}
       </ul>
@@ -202,28 +276,17 @@ export default function SetCollectorListClient({
         variant="bucks"
         aria-label={tableAriaLabel}
         data-testid={tableTestId}
+        id="set-collector-table-view"
         themeStyle={themeStyle}
       >
         <THead variant="bucks">
-          <th scope="col">Set</th>
-          <th scope="col" className="w-[92px] whitespace-nowrap">
-            Year
-          </th>
-          <th scope="col" className="w-[168px] whitespace-nowrap">
-            Manufacturer
-          </th>
-          <th scope="col" className="w-[132px] whitespace-nowrap">
-            Category
-          </th>
-          <th scope="col" className="w-[150px] whitespace-nowrap">
-            Rating
-          </th>
-          <th scope="col" className="w-[168px] whitespace-nowrap">
-            Latest Progress
-          </th>
-          <th scope="col" className="w-[180px] whitespace-nowrap">
-            Latest Snapshot
-          </th>
+          <TableHeaderCell intent="grow">Set</TableHeaderCell>
+          <TableHeaderCell intent="numeric">Year</TableHeaderCell>
+          <TableHeaderCell intent="nowrap">Manufacturer</TableHeaderCell>
+          <TableHeaderCell intent="status">Category</TableHeaderCell>
+          <TableHeaderCell intent="status">Rating</TableHeaderCell>
+          <TableHeaderCell intent="compact">Latest Progress</TableHeaderCell>
+          <TableHeaderCell intent="date">Latest Snapshot</TableHeaderCell>
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
@@ -235,12 +298,8 @@ export default function SetCollectorListClient({
               );
 
               return (
-                <tr
-                  key={row.id}
-                  className="border-b border-[color:var(--table-row-divider)] last:border-0"
-                  data-testid={rowTestId}
-                >
-                  <td>
+                <tr key={row.id} data-testid={rowTestId}>
+                  <TableCell intent="grow">
                     <Link
                       href={`${detailBasePath}/${row.setSlug}`}
                       className="text-base font-semibold text-[color:var(--collector-link)] transition hover:text-[color:var(--collector-link-hover)]"
@@ -250,17 +309,26 @@ export default function SetCollectorListClient({
                     <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--collector-ink)]/60">
                       {`${row.snapshotCount} ${row.snapshotCount === 1 ? "snapshot" : "snapshots"}`}
                     </p>
-                  </td>
-                  <td className="whitespace-nowrap font-semibold tabular-nums text-[color:var(--collector-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="numeric"
+                    className="font-semibold text-[color:var(--collector-ink)]"
+                  >
                     {row.releaseYear}
-                  </td>
-                  <td className="whitespace-nowrap font-semibold text-[color:var(--collector-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="nowrap"
+                    className="font-semibold text-[color:var(--collector-ink)]"
+                  >
                     {row.manufacturer}
-                  </td>
-                  <td className="whitespace-nowrap font-semibold text-[color:var(--collector-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="status"
+                    className="font-semibold text-[color:var(--collector-ink)]"
+                  >
                     {row.categoryTag ?? "-"}
-                  </td>
-                  <td className="whitespace-nowrap">
+                  </TableCell>
+                  <TableCell intent="status">
                     {row.rating !== undefined ? (
                       <span className={ratingBadgeClassName}>
                         {formatSetCollectorRating(row.rating)}
@@ -270,14 +338,20 @@ export default function SetCollectorListClient({
                         Not rated
                       </span>
                     )}
-                  </td>
-                  <td className="font-semibold text-[color:var(--collector-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="compact"
+                    className="font-semibold text-[color:var(--collector-ink)]"
+                  >
                     <div>{progress.counts}</div>
                     <p className="mt-1 text-xs font-medium text-[color:var(--collector-ink)]/70">
                       {progress.percent}
                     </p>
-                  </td>
-                  <td className="whitespace-nowrap font-semibold text-[color:var(--collector-ink)]">
+                  </TableCell>
+                  <TableCell
+                    intent="date"
+                    className="font-semibold text-[color:var(--collector-ink)]"
+                  >
                     {row.latestSnapshotDate ? (
                       <time dateTime={row.latestSnapshotDate}>
                         {fmtDate(row.latestSnapshotDate)}
@@ -285,19 +359,17 @@ export default function SetCollectorListClient({
                     ) : (
                       "Not available"
                     )}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })
           ) : (
-            <tr>
-              <td
-                colSpan={7}
-                className="text-sm text-[color:var(--collector-ink)]/80"
-              >
-                {emptyMessage}
-              </td>
-            </tr>
+            <TableEmptyRow
+              colSpan={7}
+              className="text-[color:var(--collector-ink)]/80"
+            >
+              {emptyState}
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>

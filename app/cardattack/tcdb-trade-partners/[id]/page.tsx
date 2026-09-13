@@ -62,7 +62,7 @@ export default async function Page({ params }: Props) {
     contentTags,
   );
   return (
-    <FullBleedPage articleClassName="md:max-w-[76rem]">
+    <FullBleedPage width="wide">
       <div className="space-y-6 py-6">
         <Card as="section">
           <Link

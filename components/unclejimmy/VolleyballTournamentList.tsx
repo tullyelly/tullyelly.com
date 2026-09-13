@@ -2,11 +2,27 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { Card } from "@ui";
+import { useState } from "react";
 
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
-import { Table, TBody, THead } from "@/components/ui/Table";
+import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
+import {
+  MobileDataCard,
+  MobileDataEmptyState,
+  MobileDataField,
+  MobileDataGrid,
+  MobileDataCardHeader,
+} from "@/components/ui/MobileDataCard";
+import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import { formatVolleyballTournamentFinish } from "@/lib/volleyball-finish";
 import type { VolleyballTournamentListSummary } from "@/lib/volleyball-tournament-db";
@@ -19,24 +35,41 @@ const getFinishLabel = (finish: number | null) =>
   formatVolleyballTournamentFinish(finish) ?? "Not tracked";
 
 export default function VolleyballTournamentList({ rows }: Props) {
-  const sortedRows = rows;
+  const [query, setQuery] = useState("");
+  const filteredRows = useTableSearch(rows, query, (row) => [
+    row.tournamentName,
+    row.tournamentId,
+    row.overallRecord,
+    getFinishLabel(row.finish),
+  ]);
 
   return (
-    <>
+    <div className="space-y-4">
+      <DataToolbar
+        search={
+          <TableSearch
+            query={query}
+            onQueryChange={setQuery}
+            placeholder="Search tournaments"
+            label="Search volleyball tournaments"
+          />
+        }
+        result={
+          <DataResultCount>
+            {`${filteredRows.length} ${filteredRows.length === 1 ? "tournament" : "tournaments"}`}
+          </DataResultCount>
+        }
+      />
       <ul className="space-y-3 md:hidden">
-        {sortedRows.length > 0 ? (
-          sortedRows.map((row) => (
-            <Card
-              as="li"
+        {filteredRows.length > 0 ? (
+          filteredRows.map((row) => (
+            <MobileDataCard
               key={`mobile-${row.tournamentId}`}
-              className="p-3"
               data-testid="volleyball-tournament-card"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-ink/60">
-                    Tournament
-                  </p>
+              <MobileDataCardHeader
+                eyebrow="Tournament"
+                title={
                   <Link
                     href={
                       `/unclejimmy/squad/volleyball/${row.tournamentId}` as Route
@@ -45,47 +78,40 @@ export default function VolleyballTournamentList({ rows }: Props) {
                   >
                     {row.tournamentName}
                   </Link>
-                </div>
-                <Badge className={getBadgeClass("spike")}>
-                  {row.overallRecord}
-                </Badge>
-              </div>
-              <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-ink/60">
-                    Finish
-                  </dt>
-                  <dd>{getFinishLabel(row.finish)}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-ink/60">
-                    Days
-                  </dt>
-                  <dd className="tabular-nums">{row.tournamentDays}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-ink/60">
-                    Date
-                  </dt>
-                  <dd>
-                    <time dateTime={row.latestTournamentDate}>
-                      {fmtDate(row.latestTournamentDate)}
-                    </time>
-                  </dd>
-                </div>
-              </dl>
-              <div className="mt-2 text-sm">
-                <p className="text-xs uppercase tracking-wide text-ink/60">
-                  Tournament ID
-                </p>
-                <p className="tabular-nums">{row.tournamentId}</p>
-              </div>
-            </Card>
+                }
+                trailing={
+                  <Badge className={getBadgeClass("spike")}>
+                    {row.overallRecord}
+                  </Badge>
+                }
+              />
+              <MobileDataGrid>
+                <MobileDataField label="Finish">
+                  {getFinishLabel(row.finish)}
+                </MobileDataField>
+                <MobileDataField label="Days" valueClassName="tabular-nums">
+                  {row.tournamentDays}
+                </MobileDataField>
+                <MobileDataField label="Date">
+                  <time dateTime={row.latestTournamentDate}>
+                    {fmtDate(row.latestTournamentDate)}
+                  </time>
+                </MobileDataField>
+                <MobileDataField
+                  label="Tournament ID"
+                  valueClassName="tabular-nums"
+                >
+                  {row.tournamentId}
+                </MobileDataField>
+              </MobileDataGrid>
+            </MobileDataCard>
           ))
         ) : (
-          <Card as="li" className="p-3 text-sm text-ink/70">
-            No volleyball tournaments have been recorded yet.
-          </Card>
+          <MobileDataEmptyState>
+            {query
+              ? "No tournaments match your search."
+              : "No volleyball tournaments have been recorded yet."}
+          </MobileDataEmptyState>
         )}
       </ul>
 
@@ -95,29 +121,20 @@ export default function VolleyballTournamentList({ rows }: Props) {
         data-testid="volleyball-tournament-table"
       >
         <THead variant="bucks">
-          <th scope="col">Tournament</th>
-          <th scope="col" className="w-[130px] whitespace-nowrap">
-            Finish
-          </th>
-          <th scope="col" className="w-[120px] whitespace-nowrap">
-            Record
-          </th>
-          <th scope="col" className="w-[90px] whitespace-nowrap">
-            Days
-          </th>
-          <th scope="col" className="w-[170px] whitespace-nowrap">
-            Date
-          </th>
+          <TableHeaderCell intent="name">Tournament</TableHeaderCell>
+          <TableHeaderCell intent="status">Finish</TableHeaderCell>
+          <TableHeaderCell intent="status">Record</TableHeaderCell>
+          <TableHeaderCell intent="numeric">Days</TableHeaderCell>
+          <TableHeaderCell intent="date">Date</TableHeaderCell>
         </THead>
         <TBody>
-          {sortedRows.length > 0 ? (
-            sortedRows.map((row) => (
+          {filteredRows.length > 0 ? (
+            filteredRows.map((row) => (
               <tr
                 key={row.tournamentId}
-                className="border-b border-black/5 last:border-0"
                 data-testid="volleyball-tournament-row"
               >
-                <td>
+                <TableCell intent="name">
                   <Link
                     href={
                       `/unclejimmy/squad/volleyball/${row.tournamentId}` as Route
@@ -129,32 +146,30 @@ export default function VolleyballTournamentList({ rows }: Props) {
                   <p className="mt-1 text-xs text-ink/60">
                     {`Tournament ID ${row.tournamentId}`}
                   </p>
-                </td>
-                <td className="whitespace-nowrap font-medium">
+                </TableCell>
+                <TableCell intent="status" className="font-medium">
                   {getFinishLabel(row.finish)}
-                </td>
-                <td className="whitespace-nowrap font-medium tabular-nums">
+                </TableCell>
+                <TableCell intent="status" className="font-medium tabular-nums">
                   {row.overallRecord}
-                </td>
-                <td className="whitespace-nowrap tabular-nums">
-                  {row.tournamentDays}
-                </td>
-                <td className="whitespace-nowrap">
+                </TableCell>
+                <TableCell intent="numeric">{row.tournamentDays}</TableCell>
+                <TableCell intent="date">
                   <time dateTime={row.latestTournamentDate}>
                     {fmtDate(row.latestTournamentDate)}
                   </time>
-                </td>
+                </TableCell>
               </tr>
             ))
           ) : (
-            <tr>
-              <td colSpan={5} className="text-sm text-ink/70">
-                No volleyball tournaments have been recorded yet.
-              </td>
-            </tr>
+            <TableEmptyRow colSpan={5}>
+              {query
+                ? "No tournaments match your search."
+                : "No volleyball tournaments have been recorded yet."}
+            </TableEmptyRow>
           )}
         </TBody>
       </Table>
-    </>
+    </div>
   );
 }

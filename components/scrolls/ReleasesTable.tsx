@@ -5,7 +5,14 @@ import Link from "next/link";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
-import { Table, THead, TBody } from "@/components/ui/Table";
+import {
+  Table,
+  TableCell,
+  TableEmptyRow,
+  TableHeaderCell,
+  THead,
+  TBody,
+} from "@/components/ui/Table";
 import type { ReleaseRow } from "@/lib/scrolls";
 
 type ReleasesTableProps = {
@@ -27,57 +34,57 @@ export default function ReleasesTable({ rows }: ReleasesTableProps) {
       className="thead-sticky"
     >
       <THead variant="bucks">
-        <th scope="col" className="w-[64px] whitespace-nowrap">
-          ID
-        </th>
-        <th scope="col">Release Name</th>
-        <th scope="col" className="w-[112px] whitespace-nowrap">
-          Status
-        </th>
-        <th scope="col" className="w-[104px] whitespace-nowrap">
-          Type
-        </th>
-        <th scope="col" className="w-[148px] whitespace-nowrap">
-          Release Date
-        </th>
+        <TableHeaderCell intent="identifier">ID</TableHeaderCell>
+        <TableHeaderCell intent="grow">Release Name</TableHeaderCell>
+        <TableHeaderCell intent="status">Status</TableHeaderCell>
+        <TableHeaderCell intent="status">Type</TableHeaderCell>
+        <TableHeaderCell intent="date">Release Date</TableHeaderCell>
       </THead>
       <TBody>
-        {rows.map((r) => {
-          const releaseDateIso = r.release_date ?? undefined;
-          return (
-            <tr key={r.id} className="border-b border-black/5 last:border-0">
-              <td className="tabular-nums text-ink/80">
-                <Link
-                  href={`/mark2/shaolin-scrolls/${r.id}`}
-                  aria-label={`View release ${r.id} details`}
-                  className="link-blue"
+        {rows.length > 0 ? (
+          rows.map((r) => {
+            const releaseDateIso = r.release_date ?? undefined;
+            return (
+              <tr key={r.id}>
+                <TableCell intent="identifier" className="text-ink/80">
+                  <Link
+                    href={`/mark2/shaolin-scrolls/${r.id}`}
+                    aria-label={`View release ${r.id} details`}
+                    className="link-blue"
+                  >
+                    {r.id}
+                  </Link>
+                </TableCell>
+                <TableCell intent="grow" className="break-words">
+                  <span className="block" title={getReleaseName(r)}>
+                    {getReleaseName(r)}
+                  </span>
+                </TableCell>
+                <TableCell intent="status">
+                  <Badge className={getBadgeClass(r.status as any)}>
+                    {r.status}
+                  </Badge>
+                </TableCell>
+                <TableCell intent="status">
+                  <Badge className={getBadgeClass(r.type as any)}>
+                    {r.type}
+                  </Badge>
+                </TableCell>
+                <TableCell
+                  intent="date"
+                  data-testid="release-date"
+                  data-release-iso={releaseDateIso}
                 >
-                  {r.id}
-                </Link>
-              </td>
-              <td className="whitespace-normal break-words">
-                <span className="block" title={getReleaseName(r)}>
-                  {getReleaseName(r)}
-                </span>
-              </td>
-              <td className="whitespace-nowrap">
-                <Badge className={getBadgeClass(r.status as any)}>
-                  {r.status}
-                </Badge>
-              </td>
-              <td className="whitespace-nowrap">
-                <Badge className={getBadgeClass(r.type as any)}>{r.type}</Badge>
-              </td>
-              <td
-                className="whitespace-nowrap"
-                data-testid="release-date"
-                data-release-iso={releaseDateIso}
-              >
-                {formatReleaseDate(r.release_date)}
-              </td>
-            </tr>
-          );
-        })}
+                  {formatReleaseDate(r.release_date)}
+                </TableCell>
+              </tr>
+            );
+          })
+        ) : (
+          <TableEmptyRow colSpan={5}>
+            No scrolls match these filters.
+          </TableEmptyRow>
+        )}
       </TBody>
     </Table>
   );

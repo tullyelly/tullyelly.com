@@ -1,4 +1,11 @@
 import { formatDateTime } from "@/components/profile/utils";
+import {
+  Table,
+  TableCell,
+  TableHeaderCell,
+  TBody,
+  THead,
+} from "@/components/ui/Table";
 import type { AuthzMembership } from "@/types/profile";
 
 export function MembershipsTable({
@@ -15,33 +22,33 @@ export function MembershipsTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
-      <table className="w-full min-w-[640px] table-fixed border-collapse text-sm">
-        <thead className="bg-muted/60">
-          <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold [&>th]:text-muted-foreground">
-            <th className="w-48">App</th>
-            <th className="w-40">Role</th>
-            <th className="w-56">Granted at</th>
-            <th className="w-56">Email</th>
+    <Table showOnMobile density="compact" aria-label="Application memberships">
+      <THead>
+        <TableHeaderCell intent="name">App</TableHeaderCell>
+        <TableHeaderCell intent="status">Role</TableHeaderCell>
+        <TableHeaderCell intent="date">Granted at</TableHeaderCell>
+        <TableHeaderCell intent="grow">Email</TableHeaderCell>
+      </THead>
+      <TBody>
+        {memberships.map((membership) => (
+          <tr
+            key={`${membership.userId}-${membership.appSlug}-${membership.role}-${membership.grantedAt ?? "none"}`}
+          >
+            <TableCell intent="name" className="font-medium">
+              {membership.appSlug}
+            </TableCell>
+            <TableCell intent="status" className="text-muted-foreground">
+              {membership.role}
+            </TableCell>
+            <TableCell intent="date" className="text-muted-foreground">
+              {formatDateTime(membership.grantedAt)}
+            </TableCell>
+            <TableCell intent="grow" className="text-muted-foreground">
+              {membership.email ?? "Unknown"}
+            </TableCell>
           </tr>
-        </thead>
-        <tbody className="[&>tr>td]:px-4 [&>tr>td]:py-3">
-          {memberships.map((membership) => (
-            <tr
-              key={`${membership.userId}-${membership.appSlug}-${membership.role}-${membership.grantedAt ?? "none"}`}
-            >
-              <td className="font-medium">{membership.appSlug}</td>
-              <td className="text-muted-foreground">{membership.role}</td>
-              <td className="text-muted-foreground">
-                {formatDateTime(membership.grantedAt)}
-              </td>
-              <td className="text-muted-foreground">
-                {membership.email ?? "Unknown"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </TBody>
+    </Table>
   );
 }

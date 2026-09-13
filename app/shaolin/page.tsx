@@ -1,9 +1,9 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
-import { Card } from "@ui";
 import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
 import SectionHeader from "@/components/layout/SectionHeader";
+import { Stat, StatGrid } from "@/components/ui/StatGrid";
 import { ALTER_EGO_OPTIONS, type AlterEgo } from "@/lib/alterEgo";
 import { getPublishedPosts } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
@@ -73,8 +73,8 @@ export default async function Page({
       />
 
       <section aria-label="Chronicle metrics">
-        <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Metric
+        <StatGrid columns={4}>
+          <Stat
             label="Latest"
             value={
               latestChronicle ? (
@@ -88,8 +88,8 @@ export default async function Page({
               )
             }
           />
-          <Metric label="Chronicles" value={String(rows.length)} />
-          <Metric
+          <Stat label="Chronicles" value={String(rows.length)} />
+          <Stat
             label="Tags"
             value={
               <>
@@ -100,8 +100,8 @@ export default async function Page({
               </>
             }
           />
-          <Metric label="Infinity Stones" value={String(infinityStoneCount)} />
-        </dl>
+          <Stat label="Infinity Stones" value={String(infinityStoneCount)} />
+        </StatGrid>
       </section>
 
       <section className="space-y-4" aria-labelledby="chronicles-heading">
@@ -118,18 +118,5 @@ export default async function Page({
         />
       </section>
     </DataPageShell>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <Card as="div" className="p-3 md:p-4">
-      <dt className="text-xs font-medium uppercase tracking-wide text-ink/60">
-        {label}
-      </dt>
-      <dd className="mt-1 text-lg font-semibold tabular-nums text-ink">
-        {value}
-      </dd>
-    </Card>
   );
 }

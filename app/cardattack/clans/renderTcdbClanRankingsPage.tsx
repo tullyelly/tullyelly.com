@@ -1,7 +1,7 @@
-import { Card } from "@ui";
 import { unstable_cache } from "next/cache";
-import FullBleedPage from "@/components/layout/FullBleedPage";
+import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
+import SectionHeader from "@/components/layout/SectionHeader";
 import TCDBRankingTable, {
   clanRankingsToTableData,
 } from "@/components/tcdb/TCDBRankingTable";
@@ -75,58 +75,43 @@ export async function renderTcdbClanRankingsPage(
   ]);
 
   return (
-    <FullBleedPage articleClassName="md:max-w-[var(--content-max)]">
-      <Card
-        as="section"
-        className="border-0 px-1 pb-6 pt-0 shadow-none md:px-8 md:pb-8 md:pt-0"
-        style={tcdbTradePageThemeVars}
-      >
-        <div className="space-y-8">
-          <PageIntro title="Clans">
-            <p className="text-[16px] text-muted-foreground md:text-[18px]">
-              Team collections across CardAttack, with current TCDb rankings and
-              collection growth in one place.
-            </p>
-          </PageIntro>
+    <DataPageShell contentClassName="space-y-8">
+      <div style={tcdbTradePageThemeVars} className="space-y-8">
+        <PageIntro
+          title="Clans"
+          description="Team collections across CardAttack, with current TCDb rankings and collection growth in one place."
+        />
 
-          <ClanCollectionScoreboard summary={scoreboard} />
+        <ClanCollectionScoreboard summary={scoreboard} />
 
-          <section
-            aria-labelledby="clan-rankings-heading"
-            className="space-y-4"
-          >
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--trade-rust-deep)]/80">
-                collection directory
-              </p>
-              <h2
-                id="clan-rankings-heading"
-                className="text-2xl font-semibold leading-tight text-[color:var(--trade-charcoal)]"
-              >
-                Clan Rankings
-              </h2>
-            </div>
+        <section aria-labelledby="clan-rankings-heading" className="space-y-4">
+          <SectionHeader
+            id="clan-rankings-heading"
+            eyebrow="collection directory"
+            title="Clan Rankings"
+            eyebrowClassName="text-[color:var(--trade-rust-deep)]/80"
+            titleClassName="text-[color:var(--trade-charcoal)]"
+          />
 
-            <TCDBRankingTable
-              serverData={clanRankingsToTableData(data)}
-              sportOptions={scoreboard.sports.map((value) => ({
-                value,
-                label: formatClanSportLabel(value),
-              }))}
-              labels={{
-                searchPlaceholder: "Search clans",
-                searchAriaLabel: "Search clans",
-                identifierColumn: "Sport",
-                emptyMessage: "No clan rankings match your filters.",
-                tableAriaLabel: "TCDB clan rankings table",
-              }}
-              theme={{
-                tableThemeStyle: tcdbTradeTableThemeStyle,
-              }}
-            />
-          </section>
-        </div>
-      </Card>
-    </FullBleedPage>
+          <TCDBRankingTable
+            serverData={clanRankingsToTableData(data)}
+            sportOptions={scoreboard.sports.map((value) => ({
+              value,
+              label: formatClanSportLabel(value),
+            }))}
+            labels={{
+              searchPlaceholder: "Search clans",
+              searchAriaLabel: "Search clans",
+              identifierColumn: "Sport",
+              emptyMessage: "No clan rankings match your filters.",
+              tableAriaLabel: "TCDB clan rankings table",
+            }}
+            theme={{
+              tableThemeStyle: tcdbTradeTableThemeStyle,
+            }}
+          />
+        </section>
+      </div>
+    </DataPageShell>
   );
 }
