@@ -2,7 +2,6 @@ import { makeListGenerateMetadata } from "@/lib/seo/factories";
 import { unstable_cache } from "next/cache";
 import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
-import SectionHeader from "@/components/layout/SectionHeader";
 import { canCurrentUser } from "@/lib/authz";
 import { listHomieDirectory } from "@/lib/data/homies";
 import { listChroniclePersonTagCounts } from "@/lib/chronicle-person-tags";
@@ -82,13 +81,7 @@ export default async function Page(_props?: {
         }
       />
       <HomieTagUsageSummary rows={tagUsage} />
-      <section className="space-y-4" aria-labelledby="homie-directory-heading">
-        <SectionHeader
-          id="homie-directory-heading"
-          eyebrow="cardattack directory"
-          title="Homie Directory"
-          description="Search the roster or narrow it by current collection trend."
-        />
+      <section aria-labelledby="homie-directory-heading">
         <HomieDirectory initialRows={rows} canUpdate={canUpdate} />
       </section>
     </DataPageShell>

@@ -11,6 +11,29 @@ export type ActionBarProps = {
 
 const ENABLED = process.env.NEXT_PUBLIC_RELEASE_CREATION_ENABLED === "1";
 
+export function ReleaseCreationActions({ q }: { q: string | null }) {
+  if (!ENABLED) return null;
+
+  const qVal = q ?? "";
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <form method="post" action="/api/shaolin-scrolls/patch">
+        <input type="hidden" name="label" value={qVal} />
+        <button type="submit" className="btn" aria-label="Create Patch">
+          Create Patch
+        </button>
+      </form>
+      <form method="post" action="/api/shaolin-scrolls/minor">
+        <input type="hidden" name="label" value={qVal} />
+        <button type="submit" className="btn" aria-label="Create Minor">
+          Create Minor
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function ActionBar({ q, sort, total }: ActionBarProps) {
   const qVal = q ?? "";
   return (
@@ -47,46 +70,10 @@ export default function ActionBar({ q, sort, total }: ActionBarProps) {
         </form>
       }
       actions={
-        qVal || ENABLED ? (
-          <div id="action-zone" className="flex flex-wrap items-center gap-2">
-            {qVal ? (
-              <Link href="/mark2/shaolin-scrolls" className="btn">
-                Clear search
-              </Link>
-            ) : null}
-            {ENABLED ? (
-              <>
-                <form
-                  method="post"
-                  action="/api/shaolin-scrolls/patch"
-                  className="inline"
-                >
-                  <input type="hidden" name="label" value={qVal} />
-                  <button
-                    type="submit"
-                    className="btn"
-                    aria-label="Create Patch"
-                  >
-                    Create Patch
-                  </button>
-                </form>
-                <form
-                  method="post"
-                  action="/api/shaolin-scrolls/minor"
-                  className="inline"
-                >
-                  <input type="hidden" name="label" value={qVal} />
-                  <button
-                    type="submit"
-                    className="btn"
-                    aria-label="Create Minor"
-                  >
-                    Create Minor
-                  </button>
-                </form>
-              </>
-            ) : null}
-          </div>
+        qVal ? (
+          <Link href="/mark2/shaolin-scrolls" className="btn">
+            Clear search
+          </Link>
         ) : null
       }
       result={

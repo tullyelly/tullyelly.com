@@ -1,4 +1,4 @@
-import ActionBar from "./_components/ActionBar";
+import ActionBar, { ReleaseCreationActions } from "./_components/ActionBar";
 import ReleaseTypeLegend from "./_components/ReleaseTypeLegend";
 import ScrollsPageClient from "./_components/ScrollsPageClient";
 import PageIntro from "@/components/layout/PageIntro";
@@ -101,6 +101,7 @@ export async function renderScrollsPage(searchParams: ScrollsSearchParams) {
           <SectionHeader
             title="Release Directory"
             description="Search, sort, and review the full release ledger."
+            actions={<ReleaseCreationActions q={q} />}
           />
           <ActionBar q={q} sort={sort} total={total} />
           <ScrollsPageClient rows={items} meta={meta} />
