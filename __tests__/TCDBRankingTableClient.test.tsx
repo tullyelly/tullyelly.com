@@ -23,6 +23,7 @@ const labels = {
   searchAriaLabel: "Search clans",
   identifierColumn: "Sport",
   emptyMessage: "No clan rankings match your filters.",
+  emptyDatasetMessage: "No clan rankings are available yet.",
   tableAriaLabel: "TCDB clan rankings table",
 };
 
@@ -136,6 +137,42 @@ describe("TCDBRankingTableClient clan filters", () => {
         "/cardattack/clans?q=bucks&sport=football&trend=down&pageSize=20",
       ),
     );
+  });
+
+  it("distinguishes filtered no-results from an empty ranking dataset", () => {
+    const { rerender } = render(
+      <TCDBRankingTableClient
+        serverData={serverData}
+        labels={labels}
+        sportOptions={sportOptions}
+      />,
+    );
+
+    expect(
+      screen.getAllByText("No clan rankings match your filters."),
+    ).toHaveLength(2);
+    expect(
+      screen.getByRole("button", { name: "Clear filters" }),
+    ).toBeInTheDocument();
+
+    mockSearchParams = new URLSearchParams();
+    rerender(
+      <TCDBRankingTableClient
+        serverData={{
+          data: [],
+          meta: { page: 0, pageSize: 20, total: 0, totalPages: 0 },
+        }}
+        labels={labels}
+        sportOptions={[]}
+      />,
+    );
+
+    expect(
+      screen.getAllByText("No clan rankings are available yet."),
+    ).toHaveLength(2);
+    expect(
+      screen.queryByRole("button", { name: "Clear filters" }),
+    ).not.toBeInTheDocument();
   });
 
   it("retains the desktop ranking table and mobile clan card links", () => {

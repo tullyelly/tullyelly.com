@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
 import type { Sort } from "@/lib/scrolls";
 
@@ -45,28 +47,45 @@ export default function ActionBar({ q, sort, total }: ActionBarProps) {
         </form>
       }
       actions={
-        ENABLED ? (
+        qVal || ENABLED ? (
           <div id="action-zone" className="flex flex-wrap items-center gap-2">
-            <form
-              method="post"
-              action="/api/shaolin-scrolls/patch"
-              className="inline"
-            >
-              <input type="hidden" name="label" value={qVal} />
-              <button type="submit" className="btn" aria-label="Create Patch">
-                Create Patch
-              </button>
-            </form>
-            <form
-              method="post"
-              action="/api/shaolin-scrolls/minor"
-              className="inline"
-            >
-              <input type="hidden" name="label" value={qVal} />
-              <button type="submit" className="btn" aria-label="Create Minor">
-                Create Minor
-              </button>
-            </form>
+            {qVal ? (
+              <Link href="/mark2/shaolin-scrolls" className="btn">
+                Clear search
+              </Link>
+            ) : null}
+            {ENABLED ? (
+              <>
+                <form
+                  method="post"
+                  action="/api/shaolin-scrolls/patch"
+                  className="inline"
+                >
+                  <input type="hidden" name="label" value={qVal} />
+                  <button
+                    type="submit"
+                    className="btn"
+                    aria-label="Create Patch"
+                  >
+                    Create Patch
+                  </button>
+                </form>
+                <form
+                  method="post"
+                  action="/api/shaolin-scrolls/minor"
+                  className="inline"
+                >
+                  <input type="hidden" name="label" value={qVal} />
+                  <button
+                    type="submit"
+                    className="btn"
+                    aria-label="Create Minor"
+                  >
+                    Create Minor
+                  </button>
+                </form>
+              </>
+            ) : null}
           </div>
         ) : null
       }

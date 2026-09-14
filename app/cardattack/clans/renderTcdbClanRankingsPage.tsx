@@ -104,6 +104,7 @@ export async function renderTcdbClanRankingsPage(
               searchAriaLabel: "Search clans",
               identifierColumn: "Sport",
               emptyMessage: "No clan rankings match your filters.",
+              emptyDatasetMessage: "No clan rankings are available yet.",
               tableAriaLabel: "TCDB clan rankings table",
             }}
             theme={{

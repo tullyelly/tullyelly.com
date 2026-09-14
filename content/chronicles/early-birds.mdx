@@ -36,11 +36,7 @@ infinityStone: false
     <CipherSays>
         ## Improved Global Error Experience
 
-        Updated the global application error state to match the existing tullyelly.com design system and AppShell architecture.
-
-        The new error experience includes a clear message, an accessible error region, and a prominent Retry button. It remains inside the existing application shell without duplicating navigation, footer, or other global elements. Technical error details remain hidden from visitors while existing error logging is preserved.
-
-        Focused tests cover the displayed message, Retry behavior, accessibility, and the absence of duplicate application-shell landmarks.
+        The global error state now fits the existing site shell, with a clear message, an accessible error region, and a prominent Retry button. Technical details stay hidden while existing error logging remains intact.
     </CipherSays>
 
     ---
@@ -50,9 +46,7 @@ infinityStone: false
     <CipherSays>
         ## Cleaner Page States
 
-        I added a small shared component for error, missing-content, and access-denied pages.
-
-        I also fixed a Next.js development error triggered by missing Chronicles and corrected the invisible button text on the Chronicle not-found page.
+        Added a shared layout for error, missing-content, and access-denied pages. Also fixed the missing-Chronicle development error and restored visible button text on the Chronicle not-found page.
     </CipherSays>
 
     Maybe I can remember to use this more in the future. You'll have to trust me that when I first wrote this the first two <b>CipherSays</b> above were just plain text. Gross!
@@ -68,11 +62,17 @@ infinityStone: false
     <CipherSays>
         ## Detail Page Updates
 
-        Standardized the review detail pages using the shared detail-page layout.
+        Standardized review detail pages with the shared layout and stopped empty relationship groups from appearing on trade-partner pages. All 679 tests and validation checks passed.
+    </CipherSays>
 
-        Also updated trade-partner pages so empty relationship groups do not appear.
+    ---
 
-        All 679 tests, lint, typecheck, frontmatter, and SEO checks passed.
+    Last bit of sitewide cleanup (for tonight), take it away <PersonTag displayName="cloud god" tag="cipher" />:
+
+    <CipherSays>
+        ## Clearer Empty States
+
+        Standardized empty states across data-driven views so empty datasets and filtered results tell the right story. Search and filter controls remain available, with simple reset actions where they belong.
     </CipherSays>
 
 </ReleaseSection>

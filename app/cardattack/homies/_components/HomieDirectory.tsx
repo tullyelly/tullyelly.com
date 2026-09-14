@@ -112,6 +112,7 @@ export default function HomieDirectory({
     rows.length === 0
       ? "No homies are available yet."
       : "No homies match these filters.";
+  const hasActiveFilters = q.length > 0 || trend.length > 0;
   const changed = (row: HomieDirectoryRow) => {
     const draft = drafts[row.id];
     return !!draft && JSON.stringify(draft) !== JSON.stringify(values(row));
@@ -231,20 +232,35 @@ export default function HomieDirectory({
           </select>
         }
         actions={
-          canUpdate ? (
-            <button
-              className="btn whitespace-nowrap"
-              aria-pressed={unlocked}
-              disabled={pendingIds.size > 0}
-              onClick={toggleEditing}
-            >
-              {pendingIds.size > 0
-                ? "Saving changes..."
-                : unlocked
-                  ? "Lock Editing"
-                  : "Unlock Editing"}
-            </button>
-          ) : null
+          <>
+            {hasActiveFilters ? (
+              <button
+                type="button"
+                className="btn whitespace-nowrap"
+                onClick={() => {
+                  setQ("");
+                  setTrend("");
+                  setPage(1);
+                }}
+              >
+                Clear filters
+              </button>
+            ) : null}
+            {canUpdate ? (
+              <button
+                className="btn whitespace-nowrap"
+                aria-pressed={unlocked}
+                disabled={pendingIds.size > 0}
+                onClick={toggleEditing}
+              >
+                {pendingIds.size > 0
+                  ? "Saving changes..."
+                  : unlocked
+                    ? "Lock Editing"
+                    : "Unlock Editing"}
+              </button>
+            ) : null}
+          </>
         }
         result={
           <DataResultCount>

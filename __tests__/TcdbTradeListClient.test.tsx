@@ -57,4 +57,26 @@ describe("TcdbTradeListClient", () => {
       within(screen.getByTestId("tcdb-trade-row")).getByText("100"),
     ).toBeInTheDocument();
   });
+
+  it("distinguishes an empty ledger from filtered no-results and clears filters", () => {
+    const { rerender } = render(<TcdbTradeListClient rows={rows} />);
+    const search = screen.getByRole("searchbox", {
+      name: "Search TCDb trades",
+    });
+
+    fireEvent.change(search, { target: { value: "missing" } });
+    expect(
+      screen.getAllByText("No TCDb trades match these filters."),
+    ).toHaveLength(2);
+    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(search).toHaveValue("");
+    expect(screen.getAllByTestId("tcdb-trade-row")).toHaveLength(2);
+
+    rerender(<TcdbTradeListClient rows={[]} />);
+    expect(
+      screen.getAllByText(
+        "No TCDb trades have been referenced in chronicles yet.",
+      ),
+    ).toHaveLength(2);
+  });
 });

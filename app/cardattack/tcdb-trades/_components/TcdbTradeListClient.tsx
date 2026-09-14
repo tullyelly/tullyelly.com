@@ -95,6 +95,14 @@ export default function TcdbTradeListClient({ rows }: Props) {
     rows.length === 0
       ? "No TCDb trades have been referenced in chronicles yet."
       : "No TCDb trades match these filters.";
+  const hasActiveControls =
+    query.length > 0 || status.length > 0 || sort !== "newest";
+
+  function clearControls() {
+    setQuery("");
+    setStatus("");
+    setSort("newest");
+  }
 
   return (
     <section
@@ -136,6 +144,13 @@ export default function TcdbTradeListClient({ rows }: Props) {
               <option value="oldest">Oldest trade first</option>
             </select>
           </>
+        }
+        actions={
+          hasActiveControls ? (
+            <button type="button" className="btn" onClick={clearControls}>
+              Clear filters
+            </button>
+          ) : null
         }
         result={
           <DataResultCount>
