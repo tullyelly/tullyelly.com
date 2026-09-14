@@ -4,20 +4,16 @@ import { Analytics } from "@vercel/analytics/next";
 import { initSentry } from "@/lib/sentry";
 import type { Metadata } from "next";
 import Script from "next/script";
-import { headers } from "next/headers";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
-import { getMenu, getMenuDataCached } from "@/lib/menu/getMenu";
-import { resolvePersonaForPath } from "@/lib/menu/persona";
-import type { PersonaKey } from "@/lib/menu/types";
+import { getMenuDataCached } from "@/lib/menu/getMenu";
 import { CommandMenuProvider } from "@/components/nav/CommandMenu";
 import AppShell from "@/components/app-shell/AppShell";
 import InitialScrollGuard from "@/components/system/InitialScrollGuard";
 import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 import { MenuProvider } from "@/components/menu/MenuProvider";
-import { getMenuTree } from "@/lib/menu/tree";
-import { getCapabilities } from "@/app/_auth/session";
+import { getRootRequestData } from "@/lib/root-request-data";
 import {
   DEFAULT_TWITTER_HANDLE,
   SITE_DESCRIPTION,
@@ -57,22 +53,9 @@ const baseMetadata: Metadata = {
   },
 };
 
-function resolveRequestedPath(headersList: Headers): string {
-  const candidates = [
-    headersList.get("x-pathname"),
-    headersList.get("next-url"),
-    headersList.get("x-invoke-path"),
-    headersList.get("x-matched-path"),
-  ];
-  const match = candidates.find((value) => value && value.startsWith("/"));
-  return match ?? "/";
-}
-
 export async function generateMetadata(): Promise<Metadata> {
-  const hdrs = await headers();
-  const path = resolveRequestedPath(hdrs);
-  const { index } = await getMenu();
-  const { title } = buildMenuMetadata(path, index);
+  const { pathname, menu } = await getRootRequestData();
+  const { title } = buildMenuMetadata(pathname, menu.index);
 
   return {
     ...baseMetadata,
@@ -92,15 +75,15 @@ export default async function RootLayout({
   const isE2ERun = process.env.E2E === "1";
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
-  const [menu, hdrs, menuTree, capabilities] = await Promise.all([
-    getMenu(),
-    headers(),
-    getMenuTree(),
-    getCapabilities(),
-  ]);
-  const path = resolveRequestedPath(hdrs);
-  const resolvedPersona = resolvePersonaForPath(menu.tree, path);
-  const personaKey = (resolvedPersona?.persona ?? "mark2") as PersonaKey;
+  const {
+    pathname,
+    menu,
+    menuTree,
+    capabilities,
+    currentPersona,
+    personaKey,
+    breadcrumbDebugForced,
+  } = await getRootRequestData();
   const { menu: personaMenu, children: personaChildren } =
     await getMenuDataCached(personaKey, capabilities.all);
 
@@ -155,8 +138,9 @@ export default async function RootLayout({
                 menu={personaMenu}
                 menuChildren={personaChildren}
                 siteTitle={SITE_TITLE}
-                currentPersona={resolvedPersona}
-                pathname={path}
+                currentPersona={currentPersona}
+                pathname={pathname}
+                breadcrumbDebugForced={breadcrumbDebugForced}
               >
                 {children}
               </AppShell>

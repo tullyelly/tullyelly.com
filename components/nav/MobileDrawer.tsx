@@ -428,7 +428,7 @@ export default function MobileDrawer({
         id="nav-mobile-drawer"
         showCloseButton={false}
         onKeyDownCapture={handleSheetKeyDown}
-        overlayClassName="bg-black/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out"
+        overlayClassName="bg-black/45 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none motion-reduce:transition-none"
         className="z-[80] inset-x-0 bottom-0 h-[85vh] rounded-t-2xl border-t border-[color:var(--border-subtle)] bg-[color:var(--surface-page)] p-0 text-[color:var(--text-strong)] sm:h-[80vh]"
       >
         <div data-testid="nav-mobile-drawer" className="flex h-full flex-col">
@@ -443,7 +443,7 @@ export default function MobileDrawer({
             <SheetClose asChild>
               <button
                 type="button"
-                className="hit-target flex items-center justify-center rounded-full p-2 text-[color:var(--text-muted,#58708c)] transition hover:text-[color:var(--text-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue)]"
+                className="hit-target flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-[color:var(--text-muted,#58708c)] transition hover:text-[color:var(--text-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-blue)] motion-reduce:transition-none"
                 aria-label="Close menu"
               >
                 <Lucide.X className="size-5" aria-hidden="true" />

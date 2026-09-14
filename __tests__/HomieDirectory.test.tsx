@@ -36,6 +36,15 @@ describe("HomieDirectory desktop editing", () => {
   it("toggles a focused editing table with room for the full name", () => {
     render(<HomieDirectory initialRows={[giannis]} canUpdate />);
 
+    const heading = screen.getByRole("heading", { name: "Homie Directory" });
+    const headingHeader = heading.closest("header");
+    expect(headingHeader).not.toBeNull();
+    expect(
+      within(headingHeader as HTMLElement).getByRole("button", {
+        name: "Unlock Editing",
+      }),
+    ).toBeVisible();
+
     const table = screen.getByRole("table", {
       name: "Homie directory table",
     });
@@ -70,6 +79,14 @@ describe("HomieDirectory desktop editing", () => {
       screen.queryByRole("textbox", {
         name: "Name for Giannis Antetokounmpo",
       }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps editing authorization on the heading action", () => {
+    render(<HomieDirectory initialRows={[giannis]} canUpdate={false} />);
+
+    expect(
+      screen.queryByRole("button", { name: "Unlock Editing" }),
     ).not.toBeInTheDocument();
   });
 

@@ -66,7 +66,12 @@ export default function TableSearch({
         </button>
       ) : null}
       {resultCount !== undefined && resultLabel ? (
-        <p className="sr-only" aria-live="polite">
+        <p
+          className="sr-only"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {resultLabel(resultCount)}
         </p>
       ) : null}

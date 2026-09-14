@@ -59,7 +59,7 @@ describe("ChronicleListClient", () => {
   it("paginates and resets to page one when a filter changes", () => {
     renderList();
 
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     expect(screen.getByText("Page 2 of 2 • 12 total")).toBeInTheDocument();
 
     fireEvent.change(

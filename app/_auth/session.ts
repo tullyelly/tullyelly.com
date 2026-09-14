@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth/next";
+import { cache } from "react";
 import { authOptions } from "@/auth";
 import {
   buildCapabilities,
@@ -20,12 +21,12 @@ function readFeatureSource(user: SessionUserWithFeatures | undefined | null) {
   return user?.capabilities;
 }
 
-export async function getCapabilities(): Promise<Capabilities> {
+export const getCapabilities = cache(async (): Promise<Capabilities> => {
   const session = await getServerSession(authOptions);
   const user = session?.user as SessionUserWithFeatures | undefined;
   const source = readFeatureSource(user);
   return buildCapabilities(source ?? null);
-}
+});
 
 export async function hasCapability(key: CapabilityKey): Promise<boolean> {
   const capabilities = await getCapabilities();

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 import * as Dialog from "@ui/dialog";
+import SectionHeader from "@/components/layout/SectionHeader";
 import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
 import {
   Table,
@@ -201,7 +202,29 @@ export default function HomieDirectory({
   }
 
   return (
-    <section className="space-y-4" aria-label="Homie directory">
+    <div className="space-y-4">
+      <SectionHeader
+        id="homie-directory-heading"
+        eyebrow="cardattack directory"
+        title="Homie Directory"
+        description="Search the roster or narrow it by current collection trend."
+        actions={
+          canUpdate ? (
+            <button
+              className="btn whitespace-nowrap"
+              aria-pressed={unlocked}
+              disabled={pendingIds.size > 0}
+              onClick={toggleEditing}
+            >
+              {pendingIds.size > 0
+                ? "Saving changes..."
+                : unlocked
+                  ? "Lock Editing"
+                  : "Unlock Editing"}
+            </button>
+          ) : null
+        }
+      />
       <DataToolbar
         ariaLabel="Homie directory controls"
         search={
@@ -232,35 +255,19 @@ export default function HomieDirectory({
           </select>
         }
         actions={
-          <>
-            {hasActiveFilters ? (
-              <button
-                type="button"
-                className="btn whitespace-nowrap"
-                onClick={() => {
-                  setQ("");
-                  setTrend("");
-                  setPage(1);
-                }}
-              >
-                Clear filters
-              </button>
-            ) : null}
-            {canUpdate ? (
-              <button
-                className="btn whitespace-nowrap"
-                aria-pressed={unlocked}
-                disabled={pendingIds.size > 0}
-                onClick={toggleEditing}
-              >
-                {pendingIds.size > 0
-                  ? "Saving changes..."
-                  : unlocked
-                    ? "Lock Editing"
-                    : "Unlock Editing"}
-              </button>
-            ) : null}
-          </>
+          hasActiveFilters ? (
+            <button
+              type="button"
+              className="btn whitespace-nowrap"
+              onClick={() => {
+                setQ("");
+                setTrend("");
+                setPage(1);
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null
         }
         result={
           <DataResultCount>
@@ -559,6 +566,6 @@ export default function HomieDirectory({
             : null}
         </Dialog.Content>
       </Dialog.Root>
-    </section>
+    </div>
   );
 }
