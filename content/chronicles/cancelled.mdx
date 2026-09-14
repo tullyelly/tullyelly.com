@@ -7,6 +7,7 @@ infinityStone: false
 ---
 
 <ReleaseSection alterEgo="tullyelly" releaseId="184">
+    Since none of this clean-up work across the site is really all of that fun, I'm goingt to be lazy and let <PersonTag displayName="mr. robot" tag="cipher" /> just rattle off some shit for you. It's "important" work for the long term sustainability of the site, and also, completely boring and nerdy in the not so fun kind of nerdy way.
 
     <CipherSays>
         ## Consistent Page Actions
@@ -18,6 +19,12 @@ infinityStone: false
         ## Shared Accessibility Improvements
 
         Improved shared pagination, search announcements, drawer motion, and mobile close controls so accessibility fixes carry across the site without changing its design. All 685 tests and validation checks passed.
+    </CipherSays>
+
+    <CipherSays>
+        ## Root Layout Performance
+
+        Consolidated root layout, metadata, menu, persona, capability, and breadcrumb setup into one request-scoped data load. This removes repeated server work while keeping authentication and authorization data isolated to each request. All 687 tests, lint, typecheck, and content validation passed; the production build stalled during optimization without reporting a compilation error.
     </CipherSays>
 
 </ReleaseSection>

@@ -4,7 +4,6 @@ import { shouldDisableGlobalBreadcrumb } from "@/lib/breadcrumb-disable.server";
 import { breadcrumbDebug } from "@/lib/breadcrumb-debug";
 import type { Crumb } from "@/lib/breadcrumbs/types";
 import { cn } from "@/lib/utils";
-import { headers } from "next/headers";
 import type { CSSProperties } from "react";
 import type { NavItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
@@ -13,10 +12,7 @@ import Footer from "@/app/_components/Footer";
 import { CONTENT_GUTTER_CLASS } from "./constants";
 import Breadcrumbs from "@/components/breadcrumbs/Breadcrumbs";
 import PersistentBannerHost from "@/components/PersistentBannerHost";
-import {
-  isBreadcrumbDebugAllowed,
-  isPublicE2EModeEnabled,
-} from "@/lib/escape-hatches";
+import { isPublicE2EModeEnabled } from "@/lib/escape-hatches";
 
 type AppShellProps = {
   announcement?: string | null;
@@ -26,6 +22,7 @@ type AppShellProps = {
   siteTitle: string;
   currentPersona: ResolvedPersona;
   pathname: string;
+  breadcrumbDebugForced?: boolean;
   children: React.ReactNode;
 };
 
@@ -37,28 +34,12 @@ export default async function AppShell({
   siteTitle,
   currentPersona,
   pathname,
+  breadcrumbDebugForced = false,
   children,
 }: AppShellProps) {
   const DEV = process.env.NODE_ENV !== "production";
 
-  const hdrs = await headers();
-
-  const headerForce = (() => {
-    if (!isBreadcrumbDebugAllowed()) return false;
-    try {
-      const candidate =
-        hdrs.get("x-next-url") || hdrs.get("x-invoke-path") || null;
-      if (candidate) {
-        const url = new URL(candidate, "http://localhost");
-        return url.searchParams.get("debugBreadcrumb") === "1";
-      }
-    } catch {
-      /* noop */
-    }
-    return false;
-  })();
-
-  const forceBreadcrumb = breadcrumbDebug.force || headerForce;
+  const forceBreadcrumb = breadcrumbDebug.force || breadcrumbDebugForced;
 
   const disableGlobalBreadcrumb = await shouldDisableGlobalBreadcrumb(pathname);
   const forcedItems: Crumb[] | null = forceBreadcrumb
