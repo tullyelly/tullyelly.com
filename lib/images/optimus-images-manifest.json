@@ -492,6 +492,9 @@
     "/images/optimus/early-bedtime/jimmy.webp",
     "/images/optimus/early-birds/calazer.webp",
     "/images/optimus/early-birds/minecraft.webp",
+    "/images/optimus/early-birds/more/more-0.webp",
+    "/images/optimus/early-birds/more/more-1.webp",
+    "/images/optimus/early-birds/more/more-2.webp",
     "/images/optimus/eeeeeeeemma/bracelets-closer.webp",
     "/images/optimus/eeeeeeeemma/bracelets.webp",
     "/images/optimus/effective-immediately/1003887/1003887.webp",
@@ -4435,6 +4438,21 @@
       "src": "/images/optimus/early-birds/minecraft.webp",
       "width": 1920,
       "height": 2560
+    },
+    {
+      "src": "/images/optimus/early-birds/more/more-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/early-birds/more/more-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/early-birds/more/more-2.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/eeeeeeeemma/bracelets-closer.webp",
