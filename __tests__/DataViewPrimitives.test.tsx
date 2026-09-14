@@ -19,6 +19,8 @@ import {
   TBody,
   THead,
 } from "@/components/ui/Table";
+import TablePager from "@/components/ui/TablePager";
+import TableSearch from "@/components/ui/TableSearch";
 
 describe("data-view primitives", () => {
   it("applies table layout, density, and semantic column intents", () => {
@@ -71,6 +73,45 @@ describe("data-view primitives", () => {
       screen.getByRole("group", { name: "Directory controls" }),
     ).toBeVisible();
     expect(screen.getByRole("status")).toHaveTextContent("4 results");
+  });
+
+  it("announces search result changes atomically", () => {
+    render(
+      <TableSearch
+        query="alpha"
+        onQueryChange={jest.fn()}
+        label="Search records"
+        resultCount={2}
+        resultLabel={(count) => `${count} records found`}
+      />,
+    );
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toHaveAttribute("aria-atomic", "true");
+    expect(status).toHaveTextContent("2 records found");
+  });
+
+  it("exposes pagination as a labeled navigation landmark", () => {
+    render(
+      <TablePager
+        page={2}
+        pageSize={25}
+        total={80}
+        onPageChange={jest.fn()}
+        onPageSizeChange={jest.fn()}
+      />,
+    );
+
+    const pagination = screen.getByRole("navigation", {
+      name: "Table pagination",
+    });
+    expect(pagination).toHaveTextContent("Page 2 of 4");
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Next page" })).toBeEnabled();
+    expect(screen.getByRole("combobox", { name: "Rows per page" })).toHaveValue(
+      "25",
+    );
   });
 
   it("renders section actions and the standard data-page width", () => {

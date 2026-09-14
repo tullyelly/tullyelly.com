@@ -12,6 +12,7 @@ type TablePagerProps = {
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   pageSizeOptions?: number[];
+  ariaLabel?: string;
   className?: string;
 };
 
@@ -23,6 +24,7 @@ export default function TablePager({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions,
+  ariaLabel = "Table pagination",
   className,
 }: TablePagerProps) {
   const selectId = useId();
@@ -48,7 +50,9 @@ export default function TablePager({
   const canGoNext = totalPages > 0 && currentPage < totalPages;
 
   return (
-    <div
+    <nav
+      aria-label={ariaLabel}
+      aria-busy={isPending ? "true" : undefined}
       className={cn(
         "mt-4 flex flex-col gap-3 border-t border-[var(--border-subtle)] pt-3",
         className,
@@ -82,6 +86,7 @@ export default function TablePager({
           <button
             type="button"
             className="btn text-sm"
+            aria-label="Previous page"
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={isPending || !canGoPrev}
           >
@@ -90,6 +95,7 @@ export default function TablePager({
           <button
             type="button"
             className="btn text-sm"
+            aria-label="Next page"
             onClick={() =>
               onPageChange(Math.min(totalPages || 1, currentPage + 1))
             }
@@ -99,6 +105,6 @@ export default function TablePager({
           </button>
         </div>
       </div>
-    </div>
+    </nav>
   );
 }

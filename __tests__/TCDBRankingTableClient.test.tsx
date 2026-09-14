@@ -109,7 +109,7 @@ describe("TCDBRankingTableClient clan filters", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
 
     await waitFor(() =>
       expect(mockReplace).toHaveBeenCalledWith(
