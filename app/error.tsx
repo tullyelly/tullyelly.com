@@ -1,4 +1,6 @@
 "use client";
+
+import { PageState } from "@/components/ui/PageState";
 import { useEffect } from "react";
 
 export default function GlobalError({
@@ -17,11 +19,16 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div>
-      <h1>Something went sideways.</h1>
-      <button className="btn" onClick={reset}>
-        Retry
-      </button>
-    </div>
+    <PageState
+      role="alert"
+      eyebrow="Something failed"
+      title="We could not load this page"
+      description="Try again to reload the page content."
+      actions={
+        <button type="button" className="btn px-6" onClick={reset}>
+          Retry
+        </button>
+      }
+    />
   );
 }

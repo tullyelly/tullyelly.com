@@ -114,6 +114,11 @@ export default function TCDBRankingTableClient({
   );
 
   const hasRows = rows.length > 0;
+  const hasActiveFilters =
+    searchQ.length > 0 || searchSport.length > 0 || searchTrend.length > 0;
+  const emptyMessage = hasActiveFilters
+    ? labels.emptyMessage
+    : labels.emptyDatasetMessage;
   const { meta } = serverData;
 
   return (
@@ -182,6 +187,22 @@ export default function TCDBRankingTableClient({
             </select>
           </>
         }
+        actions={
+          hasActiveFilters ? (
+            <button
+              type="button"
+              className="btn whitespace-nowrap"
+              onClick={() =>
+                updateQuery(
+                  { q: undefined, sport: undefined, trend: undefined },
+                  { resetPage: true },
+                )
+              }
+            >
+              Clear filters
+            </button>
+          ) : null
+        }
         result={
           <>
             <DataResultCount>
@@ -199,7 +220,7 @@ export default function TCDBRankingTableClient({
           rows.map((row) => <MobileRankingCard key={row.key} row={row} />)
         ) : (
           <Card as="li" className="p-3 text-sm text-ink/70">
-            {labels.emptyMessage}
+            {emptyMessage}
           </Card>
         )}
       </ul>
@@ -246,7 +267,7 @@ export default function TCDBRankingTableClient({
               </tr>
             ))
           ) : (
-            <TableEmptyRow colSpan={5}>{labels.emptyMessage}</TableEmptyRow>
+            <TableEmptyRow colSpan={5}>{emptyMessage}</TableEmptyRow>
           )}
         </TBody>
       </Table>

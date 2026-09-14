@@ -17,13 +17,17 @@ import type { ReleaseRow } from "@/lib/scrolls";
 
 type ReleasesTableProps = {
   rows: ReleaseRow[];
+  emptyMessage?: string;
 };
 
 function getReleaseName(row: ReleaseRow) {
   return row.name || row.label || "";
 }
 
-export default function ReleasesTable({ rows }: ReleasesTableProps) {
+export default function ReleasesTable({
+  rows,
+  emptyMessage = "No scrolls have been recorded yet.",
+}: ReleasesTableProps) {
   return (
     <Table
       variant="bucks"
@@ -81,9 +85,7 @@ export default function ReleasesTable({ rows }: ReleasesTableProps) {
             );
           })
         ) : (
-          <TableEmptyRow colSpan={5}>
-            No scrolls match these filters.
-          </TableEmptyRow>
+          <TableEmptyRow colSpan={5}>{emptyMessage}</TableEmptyRow>
         )}
       </TBody>
     </Table>

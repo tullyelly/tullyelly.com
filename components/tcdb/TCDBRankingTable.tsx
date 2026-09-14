@@ -37,6 +37,7 @@ export type TCDBRankingTableLabels = {
   searchAriaLabel: string;
   identifierColumn: string;
   emptyMessage: string;
+  emptyDatasetMessage: string;
   tableAriaLabel: string;
 };
 

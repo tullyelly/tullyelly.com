@@ -4,6 +4,7 @@ import { getMenu } from "@/lib/menu/getMenu";
 import { flattenLinks, type FlatLink } from "@/lib/menu.flatten";
 import { cn } from "@/lib/utils";
 import { makeListGenerateMetadata } from "@/lib/seo/factories";
+import DataToolbar from "@/components/ui/DataToolbar";
 
 export const dynamic = "force-dynamic";
 
@@ -137,6 +138,36 @@ export default async function SearchPage({ searchParams }: PageProps) {
           </p>
         )}
       </header>
+      <DataToolbar
+        ariaLabel="Site search controls"
+        search={
+          <form
+            action="/search"
+            method="get"
+            role="search"
+            className="flex w-full items-center gap-2"
+          >
+            <input
+              type="search"
+              name="q"
+              aria-label="Search tullyelly"
+              placeholder="Search tullyelly"
+              defaultValue={query}
+              className="form-input min-w-0 flex-1 sm:max-w-72"
+            />
+            <button type="submit" className="btn shrink-0">
+              Search
+            </button>
+          </form>
+        }
+        actions={
+          query ? (
+            <Link href="/search" className="btn whitespace-nowrap">
+              Clear search
+            </Link>
+          ) : null
+        }
+      />
       {query ? (
         results.length ? (
           <ol className="space-y-3">

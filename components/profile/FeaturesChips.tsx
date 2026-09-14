@@ -32,9 +32,22 @@ export function FeaturesChips({ features }: { features: string[] }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {filtered.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No features match the filter.
-          </p>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <p>
+              {features.length === 0
+                ? "No features are available."
+                : "No features match the current filter."}
+            </p>
+            {features.length > 0 && query.length > 0 ? (
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setQuery("")}
+              >
+                Clear filter
+              </button>
+            ) : null}
+          </div>
         ) : (
           filtered.map((feature) => (
             <span

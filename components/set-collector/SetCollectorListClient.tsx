@@ -134,6 +134,14 @@ export default function SetCollectorListClient({
   }, [category, searchedRows, sort]);
   const emptyState =
     rows.length === 0 ? emptyMessage : "No tracked sets match these filters.";
+  const hasActiveControls =
+    query.length > 0 || category.length > 0 || sort !== "default";
+
+  function clearControls() {
+    setQuery("");
+    setCategory("");
+    setSort("default");
+  }
 
   return (
     <div className="space-y-4" style={themeStyle}>
@@ -176,6 +184,13 @@ export default function SetCollectorListClient({
               <option value="progress">Most complete</option>
             </select>
           </>
+        }
+        actions={
+          hasActiveControls ? (
+            <button type="button" className="btn" onClick={clearControls}>
+              Clear filters
+            </button>
+          ) : null
         }
         result={
           <DataResultCount>

@@ -135,50 +135,56 @@ export default async function Page({ params }: Props) {
           <Card as="section">
             <h2 className="text-2xl font-semibold">Interests</h2>
             <div className="mt-3 grid gap-5 md:grid-cols-3">
-              <div>
-                <h3 className="font-semibold">Homies</h3>
-                {homies.map((homie) => (
-                  <Link
-                    key={homie.id}
-                    className="link-blue mr-3 inline-block"
-                    href={`/cardattack/homies/${homie.tagSlug ?? homie.id}`}
-                  >
-                    {homie.name}
-                  </Link>
-                ))}
-              </div>
-              <div>
-                <h3 className="font-semibold">Clans</h3>
-                {clans.map((clan) => (
-                  <Link
-                    key={clan.id}
-                    className="link-blue mr-3 inline-block"
-                    href={`/cardattack/clans/${clan.slug}`}
-                  >
-                    {clan.name}
-                  </Link>
-                ))}
-              </div>
-              <div>
-                <h3 className="font-semibold">Tags</h3>
-                {tags.map((tag) => (
-                  <span
-                    key={`${tag.tagType}-${tag.id}`}
-                    className="mr-2 inline-block text-sm"
-                  >
-                    <span className="text-muted-foreground">
-                      {tag.tagType}:
-                    </span>{" "}
-                    {tag.href ? (
-                      <Link className="link-blue" href={tag.href}>
-                        {tag.displayName}
-                      </Link>
-                    ) : (
-                      tag.displayName
-                    )}
-                  </span>
-                ))}
-              </div>
+              {homies.length ? (
+                <div>
+                  <h3 className="font-semibold">Homies</h3>
+                  {homies.map((homie) => (
+                    <Link
+                      key={homie.id}
+                      className="link-blue mr-3 inline-block"
+                      href={`/cardattack/homies/${homie.tagSlug ?? homie.id}`}
+                    >
+                      {homie.name}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+              {clans.length ? (
+                <div>
+                  <h3 className="font-semibold">Clans</h3>
+                  {clans.map((clan) => (
+                    <Link
+                      key={clan.id}
+                      className="link-blue mr-3 inline-block"
+                      href={`/cardattack/clans/${clan.slug}`}
+                    >
+                      {clan.name}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+              {tags.length ? (
+                <div>
+                  <h3 className="font-semibold">Tags</h3>
+                  {tags.map((tag) => (
+                    <span
+                      key={`${tag.tagType}-${tag.id}`}
+                      className="mr-2 inline-block text-sm"
+                    >
+                      <span className="text-muted-foreground">
+                        {tag.tagType}:
+                      </span>{" "}
+                      {tag.href ? (
+                        <Link className="link-blue" href={tag.href}>
+                          {tag.displayName}
+                        </Link>
+                      ) : (
+                        tag.displayName
+                      )}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </Card>
         ) : null}

@@ -10,9 +10,13 @@ import { MobileDataEmptyState } from "@/components/ui/MobileDataCard";
 
 type ReleaseCardsProps = {
   rows: ReleaseRow[];
+  emptyMessage?: string;
 };
 
-export default function ReleaseCards({ rows }: ReleaseCardsProps) {
+export default function ReleaseCards({
+  rows,
+  emptyMessage = "No scrolls have been recorded yet.",
+}: ReleaseCardsProps) {
   return (
     <ul className="space-y-3" data-testid="scrolls-cards">
       {rows.length > 0 ? (
@@ -40,9 +44,7 @@ export default function ReleaseCards({ rows }: ReleaseCardsProps) {
           </Card>
         ))
       ) : (
-        <MobileDataEmptyState>
-          No scrolls match these filters.
-        </MobileDataEmptyState>
+        <MobileDataEmptyState>{emptyMessage}</MobileDataEmptyState>
       )}
     </ul>
   );

@@ -46,21 +46,30 @@ export default function TableSearch({
   className?: string;
 }) {
   return (
-    <>
+    <div className="flex w-full items-center gap-2">
       <input
         type="search"
-        className={cn("form-input w-full sm:w-72", className)}
+        className={cn("form-input min-w-0 flex-1 sm:max-w-72", className)}
         aria-label={label}
         aria-controls={ariaControls}
         placeholder={placeholder}
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
       />
+      {query.length > 0 ? (
+        <button
+          type="button"
+          className="btn shrink-0 whitespace-nowrap"
+          onClick={() => onQueryChange("")}
+        >
+          Clear search
+        </button>
+      ) : null}
       {resultCount !== undefined && resultLabel ? (
         <p className="sr-only" aria-live="polite">
           {resultLabel(resultCount)}
         </p>
       ) : null}
-    </>
+    </div>
   );
 }

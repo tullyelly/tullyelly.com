@@ -29,6 +29,9 @@ export default function ScrollsPageClient({
   const search = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const searchSnapshot = search?.toString() ?? "";
+  const emptyMessage = meta.q
+    ? "No scrolls match the current search."
+    : "No scrolls have been recorded yet.";
 
   function updateQuery(
     next: Record<string, string | undefined>,
@@ -57,9 +60,9 @@ export default function ScrollsPageClient({
       role="region"
     >
       <div className="md:hidden" suppressHydrationWarning>
-        <ReleaseCards rows={rows} />
+        <ReleaseCards rows={rows} emptyMessage={emptyMessage} />
       </div>
-      <ReleasesTable rows={rows} />
+      <ReleasesTable rows={rows} emptyMessage={emptyMessage} />
       <TablePager
         page={meta.page}
         pageSize={meta.pageSize}
