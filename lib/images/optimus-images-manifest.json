@@ -376,8 +376,10 @@
     "/images/optimus/cancelled/fern/fern-1.webp",
     "/images/optimus/cancelled/fern/fern-2.webp",
     "/images/optimus/cancelled/fern/fern-3.webp",
+    "/images/optimus/cancelled/sphere.webp",
     "/images/optimus/cancelled/vegas/vegas-0.webp",
     "/images/optimus/cancelled/vegas/vegas-1.webp",
+    "/images/optimus/cancelled/vegas/vegas-2.webp",
     "/images/optimus/card-and-coin/minnesota.webp",
     "/images/optimus/card-and-coin/rob-blake.webp",
     "/images/optimus/cartoon/derek.webp",
@@ -3868,6 +3870,11 @@
       "height": 1280
     },
     {
+      "src": "/images/optimus/cancelled/sphere.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
       "src": "/images/optimus/cancelled/vegas/vegas-0.webp",
       "width": 960,
       "height": 1280
@@ -3876,6 +3883,11 @@
       "src": "/images/optimus/cancelled/vegas/vegas-1.webp",
       "width": 960,
       "height": 1280
+    },
+    {
+      "src": "/images/optimus/cancelled/vegas/vegas-2.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/card-and-coin/minnesota.webp",
