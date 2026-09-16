@@ -27,10 +27,15 @@ describe("FruityLoops", () => {
   it("resolves another shared Fruity Loops asset", () => {
     render(<FruityLoops loop="67-kid" />);
 
-    expect(screen.getByAltText("looped animation")).toHaveAttribute(
+    const image = screen.getByAltText("looped animation");
+    expect(image).toHaveAttribute(
       "src",
       "/images/optimus/fruity-loops/67-kid.webp",
     );
+    expect(image).toHaveAttribute("width", "480");
+    expect(image).toHaveAttribute("height", "480");
+    expect(image).toHaveAttribute("sizes", "(max-width: 768px) 100vw, 520px");
+    expect(image).toHaveAttribute("decoding", "async");
   });
 
   it("resolves one-off relative Optimus assets without changing the extension", () => {

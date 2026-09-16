@@ -36,6 +36,7 @@ jest.mock("@/components/mdx/ReleaseSection", () => ({
 }));
 
 import LcsChronicleFeed from "@/components/lcs/LcsChronicleFeed";
+import UspsChronicleFeed from "@/components/usps/UspsChronicleFeed";
 
 describe("LcsChronicleFeed", () => {
   beforeEach(() => {
@@ -143,5 +144,31 @@ describe("LcsChronicleFeed", () => {
       | undefined;
     expect(firstMdxProps?.postDate).toBe("2026-02-14");
     expect(firstMdxProps?.components?.ReleaseSection).toBeDefined();
+  });
+
+  it("keeps domain labels and theme variables in each thin wrapper", async () => {
+    const lcsUi = await LcsChronicleFeed({
+      days: [],
+      entryLabel: "Visit",
+      emptyMessage: "No shop visits.",
+      missingContentMessage: "Missing shop content.",
+    });
+    const { rerender } = render(lcsUi);
+
+    expect(screen.getByText("No shop visits.")).toHaveStyle({
+      "--collection-feed-accent": "var(--lcs-accent)",
+    });
+
+    const uspsUi = await UspsChronicleFeed({
+      days: [],
+      entryLabel: "Stop",
+      emptyMessage: "No postal visits.",
+      missingContentMessage: "Missing postal content.",
+    });
+    rerender(uspsUi);
+
+    expect(screen.getByText("No postal visits.")).toHaveStyle({
+      "--collection-feed-accent": "var(--usps-accent)",
+    });
   });
 });

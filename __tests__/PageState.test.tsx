@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 
 import { PageState } from "@/components/ui/PageState";
 import ChronicleNotFound from "@/app/shaolin/not-found";
+import Forbidden from "@/components/auth/Forbidden";
 
 describe("PageState", () => {
   it("connects its heading and supporting text to the state region", () => {
@@ -51,5 +52,25 @@ describe("PageState", () => {
     expect(
       screen.getByRole("link", { name: "Back to chronicles" }).firstChild,
     ).toHaveClass("text-white");
+  });
+
+  it("uses the shared accessible page state for permission failures", () => {
+    const { container } = render(<Forbidden feature="admin.app.view" />);
+
+    const alert = screen.getByRole("alert");
+    const heading = screen.getByRole("heading", {
+      level: 1,
+      name: "You don’t have access",
+    });
+
+    expect(alert).toHaveAttribute("aria-labelledby", heading.id);
+    expect(alert).toHaveAccessibleDescription(
+      "Your account is missing the required permission: admin.app.view",
+    );
+    expect(screen.getByRole("link", { name: "Return home" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    expect(container.querySelector("main")).not.toBeInTheDocument();
   });
 });

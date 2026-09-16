@@ -1733,6 +1733,10 @@
     "/images/optimus/the-spot/complete.webp",
     "/images/optimus/the-spot/courtside.webp",
     "/images/optimus/the-spot/scared.webp",
+    "/images/optimus/the-venetian/session.webp",
+    "/images/optimus/the-venetian/sphere.webp",
+    "/images/optimus/the-venetian/venetian.webp",
+    "/images/optimus/the-venetian/why-not.webp",
     "/images/optimus/this-is-gay/stats.webp",
     "/images/optimus/thursday-surprise/963185/1-963185.webp",
     "/images/optimus/thursday-surprise/963185/2-963185.webp",
@@ -10653,6 +10657,26 @@
       "src": "/images/optimus/the-spot/scared.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/the-venetian/session.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/the-venetian/sphere.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/the-venetian/venetian.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/the-venetian/why-not.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/this-is-gay/stats.webp",
