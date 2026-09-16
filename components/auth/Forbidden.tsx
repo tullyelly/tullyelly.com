@@ -1,22 +1,26 @@
 import Link from "next/link";
+import { PageState } from "@/components/ui/PageState";
 
 export default function Forbidden({ feature }: { feature?: string }) {
   return (
-    <div
+    <PageState
       role="alert"
-      className="rounded border border-[var(--border-subtle)] p-4 space-y-2"
-    >
-      <div className="font-semibold">You don’t have access.</div>
-      {feature ? (
-        <div className="opacity-80">
-          Missing permission: <code className="font-mono">{feature}</code>
-        </div>
-      ) : null}
-      <div>
-        <Link className="underline" href="/">
-          Return home
+      title="You don’t have access"
+      description={
+        feature ? (
+          <>
+            Your account is missing the required permission:{" "}
+            <code className="font-mono">{feature}</code>
+          </>
+        ) : (
+          "Your account is not authorized for this page."
+        )
+      }
+      actions={
+        <Link className="btn px-6 no-underline" href="/">
+          <span className="text-white">Return home</span>
         </Link>
-      </div>
-    </div>
+      }
+    />
   );
 }
