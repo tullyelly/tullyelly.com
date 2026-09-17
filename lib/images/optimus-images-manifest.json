@@ -655,6 +655,11 @@
     "/images/optimus/garbage-collector/jordan.webp",
     "/images/optimus/garbage-collector/tyrese.webp",
     "/images/optimus/george/giannis-illusions.webp",
+    "/images/optimus/ghostbusters/ghostbusters.webp",
+    "/images/optimus/ghostbusters/sphere.webp",
+    "/images/optimus/ghostbusters/wax/wax-0.webp",
+    "/images/optimus/ghostbusters/wax/wax-1.webp",
+    "/images/optimus/ghostbusters/wax/wax-2.webp",
     "/images/optimus/giannis-chase/deion.webp",
     "/images/optimus/giannis-chase/giannis-funko.webp",
     "/images/optimus/giannis-chase/sterling.webp",
@@ -5267,6 +5272,31 @@
       "src": "/images/optimus/george/giannis-illusions.webp",
       "width": 1920,
       "height": 1322
+    },
+    {
+      "src": "/images/optimus/ghostbusters/ghostbusters.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/ghostbusters/sphere.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/ghostbusters/wax/wax-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/ghostbusters/wax/wax-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/ghostbusters/wax/wax-2.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/giannis-chase/deion.webp",
