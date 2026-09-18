@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 
 jest.mock("server-only", () => ({}));
 
@@ -21,10 +21,7 @@ jest.mock("@/lib/set-collector-content", () => ({
     `/cardattack/set-collector/${encodeURIComponent(slug)}`,
 }));
 
-import Page, {
-  dynamic,
-  revalidate,
-} from "@/app/cardattack/hof/page";
+import Page, { dynamic, revalidate } from "@/app/cardattack/hof/page";
 
 describe("TCDb Trade Hall of Fame route", () => {
   beforeEach(() => {
@@ -100,13 +97,26 @@ describe("TCDb Trade Hall of Fame route", () => {
     expect(screen.getAllByText("Hall of Famer").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Inductions").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Category").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("(basketball, football)").length).toBeGreaterThan(
-      0,
-    );
+    expect(
+      screen.getAllByText("(basketball, football)").length,
+    ).toBeGreaterThan(0);
     expect(screen.getAllByText("2").length).toBeGreaterThan(0);
     expect(screen.getByTestId("tcdb-trade-hof-table")).toBeInTheDocument();
     expect(
       screen.getByTestId("tcdb-trade-hof-inductions-table"),
     ).toBeInTheDocument();
+    const scoreboard = screen.getByRole("region", {
+      name: "Hall of Fame scoreboard",
+    });
+    expect(within(scoreboard).getByText("Hall of Famers")).toBeInTheDocument();
+    expect(
+      within(scoreboard).getByText("Total Inductions"),
+    ).toBeInTheDocument();
+    expect(
+      within(scoreboard).getByText("Latest Induction"),
+    ).toBeInTheDocument();
+    expect(within(scoreboard).getByText("1")).toBeInTheDocument();
+    expect(within(scoreboard).getByText("2")).toBeInTheDocument();
+    expect(within(scoreboard).getByText("2026-04-10")).toBeInTheDocument();
   });
 });

@@ -18,7 +18,7 @@ export const lcsTableThemeStyle: CSSProperties = {
   ...lcsPageThemeVars,
   ["--table-frame-border" as string]: "var(--lcs-accent)",
   ["--table-head-background" as string]:
-    "linear-gradient(135deg,var(--lcs-accent)_0%,var(--lcs-accent-deep)_100%)",
+    "linear-gradient(135deg, var(--lcs-accent) 0%, var(--lcs-accent-deep) 100%)",
   ["--table-head-text" as string]: "var(--white)",
   ["--table-row-even-bg" as string]: "var(--lcs-accent-wash)",
   ["--table-row-odd-bg" as string]: "var(--lcs-surface)",

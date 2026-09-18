@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
@@ -17,6 +17,11 @@ import {
 import { fmtDate } from "@/lib/datetime";
 import type { LcsSummary } from "@/lib/lcs-types";
 import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
+import {
+  filterAndSortVisitDirectoryRows,
+  getVisitDirectoryStates,
+  type VisitDirectorySort,
+} from "@/components/cardattack/visitDirectoryRows";
 
 type LcsListClientProps = {
   rows: LcsSummary[];
@@ -84,9 +89,22 @@ export default function LcsListClient({
   rowTestId = "lcs-row",
 }: LcsListClientProps) {
   const [query, setQuery] = useState("");
-  const visibleRows = useTableSearch(rows, query, getLcsSearchValues);
+  const [state, setState] = useState("");
+  const [sort, setSort] = useState<VisitDirectorySort>("latest");
+  const searchedRows = useTableSearch(rows, query, getLcsSearchValues);
+  const stateOptions = useMemo(() => getVisitDirectoryStates(rows), [rows]);
+  const visibleRows = useMemo(
+    () =>
+      filterAndSortVisitDirectoryRows(
+        searchedRows,
+        state,
+        sort,
+        (row) => row.name,
+      ),
+    [searchedRows, sort, state],
+  );
   const emptyState =
-    rows.length === 0 ? emptyMessage : "No card shops match this search.";
+    rows.length === 0 ? emptyMessage : "No card shops match these controls.";
 
   return (
     <div id="lcs-data-view" className="space-y-4" style={themeStyle}>
@@ -99,6 +117,36 @@ export default function LcsListClient({
             label="Search card shops"
             ariaControls="lcs-data-view"
           />
+        }
+        filters={
+          <>
+            <select
+              value={state}
+              onChange={(event) => setState(event.target.value)}
+              className="form-input w-full sm:w-auto"
+              aria-label="Filter card shops by state"
+            >
+              <option value="">All states</option>
+              {stateOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sort}
+              onChange={(event) =>
+                setSort(event.target.value as VisitDirectorySort)
+              }
+              className="form-input w-full sm:w-auto"
+              aria-label="Sort card shops"
+            >
+              <option value="latest">Latest visit</option>
+              <option value="rating">Highest rated</option>
+              <option value="visits">Most visited</option>
+              <option value="name">A-Z</option>
+            </select>
+          </>
         }
         result={
           <DataResultCount>

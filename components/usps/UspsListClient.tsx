@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@ui";
 
@@ -16,6 +16,11 @@ import {
 } from "@/components/ui/Table";
 import { fmtDate } from "@/lib/datetime";
 import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
+import {
+  filterAndSortVisitDirectoryRows,
+  getVisitDirectoryStates,
+  type VisitDirectorySort,
+} from "@/components/cardattack/visitDirectoryRows";
 
 type UspsListRow = {
   citySlug: string;
@@ -80,9 +85,24 @@ export default function UspsListClient({
   rowTestId = "usps-row",
 }: UspsListClientProps) {
   const [query, setQuery] = useState("");
-  const visibleRows = useTableSearch(rows, query, getUspsSearchValues);
+  const [state, setState] = useState("");
+  const [sort, setSort] = useState<VisitDirectorySort>("latest");
+  const searchedRows = useTableSearch(rows, query, getUspsSearchValues);
+  const stateOptions = useMemo(() => getVisitDirectoryStates(rows), [rows]);
+  const visibleRows = useMemo(
+    () =>
+      filterAndSortVisitDirectoryRows(
+        searchedRows,
+        state,
+        sort,
+        (row) => row.cityName,
+      ),
+    [searchedRows, sort, state],
+  );
   const emptyState =
-    rows.length === 0 ? emptyMessage : "No USPS locations match this search.";
+    rows.length === 0
+      ? emptyMessage
+      : "No USPS locations match these controls.";
 
   return (
     <div id="usps-data-view" className="space-y-4" style={themeStyle}>
@@ -95,6 +115,36 @@ export default function UspsListClient({
             label="Search USPS locations"
             ariaControls="usps-data-view"
           />
+        }
+        filters={
+          <>
+            <select
+              value={state}
+              onChange={(event) => setState(event.target.value)}
+              className="form-input w-full sm:w-auto"
+              aria-label="Filter USPS locations by state"
+            >
+              <option value="">All states</option>
+              {stateOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sort}
+              onChange={(event) =>
+                setSort(event.target.value as VisitDirectorySort)
+              }
+              className="form-input w-full sm:w-auto"
+              aria-label="Sort USPS locations"
+            >
+              <option value="latest">Latest visit</option>
+              <option value="rating">Highest rated</option>
+              <option value="visits">Most visited</option>
+              <option value="name">A-Z</option>
+            </select>
+          </>
         }
         result={
           <DataResultCount>
