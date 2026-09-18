@@ -99,7 +99,7 @@ async function PostContent({ slug }: { slug: string }) {
 
         <SectionDivider />
 
-        <ChroniclePostTailCards />
+        <ChroniclePostTailCards currentPost={post} posts={allPosts} />
 
         <SectionDivider />
 
