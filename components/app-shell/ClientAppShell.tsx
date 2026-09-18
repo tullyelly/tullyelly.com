@@ -15,6 +15,7 @@ import type { ResolvedPersona } from "@/lib/menu/persona";
 import { AppShellProvider, type PersonaSummary } from "./context";
 import MobileMenuButton from "./MobileMenuButton";
 import BrandHomeLink from "@/components/brand/BrandHomeLink";
+import RecentlyViewedTracker from "./RecentlyViewedTracker";
 
 type ClientAppShellProps = {
   announcement?: string | null;
@@ -107,6 +108,7 @@ export default function ClientAppShell({
 
   return (
     <AppShellProvider value={contextValue}>
+      <RecentlyViewedTracker menuItems={menuItems} />
       <NavControllerProvider>
         <div id="page-root" className="flex min-h-dvh flex-col">
           <div className="flex flex-col">

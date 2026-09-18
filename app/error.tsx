@@ -19,16 +19,18 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <PageState
-      role="alert"
-      eyebrow="Something failed"
-      title="We could not load this page"
-      description="Try again to reload the page content."
-      actions={
-        <button type="button" className="btn px-6" onClick={reset}>
-          Retry
-        </button>
-      }
-    />
+    <div data-recent-history-exclude>
+      <PageState
+        role="alert"
+        eyebrow="Something failed"
+        title="We could not load this page"
+        description="Try again to reload the page content."
+        actions={
+          <button type="button" className="btn px-6" onClick={reset}>
+            Retry
+          </button>
+        }
+      />
+    </div>
   );
 }
