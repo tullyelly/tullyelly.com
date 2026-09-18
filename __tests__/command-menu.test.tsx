@@ -38,6 +38,11 @@ function OpenMenuOnMount() {
   return null;
 }
 
+function OpenMenuButton() {
+  const { setOpen } = useCommandMenu();
+  return <button onClick={() => setOpen(true)}>Open search</button>;
+}
+
 const items: NavItem[] = [
   {
     id: "persona.mark2",
@@ -77,7 +82,7 @@ describe("CommandMenu", () => {
     mockRouterPush.mockReset();
   });
 
-  it("renders featured, recent, and persona sections", async () => {
+  it("shows concise discovery sections before switching to filtered personas", async () => {
     window.localStorage.setItem(
       RECENT_STORAGE_KEY,
       JSON.stringify([{ href: "/recent", title: "Recent" }]),
@@ -99,6 +104,17 @@ describe("CommandMenu", () => {
     expect(
       recentHeadings.some((node) => node.hasAttribute("cmdk-group-heading")),
     ).toBe(true);
+
+    expect(
+      Array.from(document.querySelectorAll("[cmdk-group-heading]")).some(
+        (node) => node.textContent === "Mark II",
+      ),
+    ).toBe(false);
+
+    fireEvent.change(
+      screen.getByPlaceholderText("Find a page or search tullyelly…"),
+      { target: { value: "Recent" } },
+    );
 
     const personaHeadings = await screen.findAllByText("Mark II");
     expect(
@@ -143,7 +159,9 @@ describe("CommandMenu", () => {
       </CommandMenuProvider>,
     );
 
-    const input = await screen.findByPlaceholderText("Type a page or feature…");
+    const input = await screen.findByPlaceholderText(
+      "Find a page or search tullyelly…",
+    );
     fireEvent.change(input, { target: { value: "Recent cards" } });
 
     expect(screen.queryByText("Spotlight")).toBeNull();
@@ -155,5 +173,25 @@ describe("CommandMenu", () => {
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith("/search?q=Recent%20cards");
     });
+  });
+
+  it("restores focus to its trigger when Escape closes the menu", async () => {
+    render(
+      <CommandMenuProvider items={items}>
+        <OpenMenuButton />
+        <CommandMenu />
+      </CommandMenuProvider>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Open search" });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const input = await screen.findByPlaceholderText(
+      "Find a page or search tullyelly…",
+    );
+    fireEvent.keyDown(input, { key: "Escape" });
+
+    await waitFor(() => expect(trigger).toHaveFocus());
   });
 });

@@ -6,15 +6,8 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { cn } from "@/lib/utils";
 import { useTopAnchor } from "@/components/hooks/useTopAnchor";
-import { useLeftAnchor } from "@/components/hooks/useLeftAnchor";
 
 const DIALOG_MARGIN = 16;
-const WIDTH_CAP = 720;
-const DESKTOP_MIN_WIDTH = 600;
-const TABLET_MIN_WIDTH = 440;
-const BREAKPOINT_TABLET = 640;
-const BREAKPOINT_DESKTOP = 1024;
-const TABLET_RATIO = 0.9;
 
 export const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
@@ -23,8 +16,7 @@ export const Command = React.forwardRef<
   <CommandPrimitive
     ref={ref}
     className={cn(
-      "flex h-full w-full flex-col overflow-visible rounded-b-2xl rounded-t-none",
-      "px-4 py-4 sm:px-6 md:px-8 lg:px-10",
+      "flex h-full w-full flex-col overflow-hidden rounded-2xl p-3 sm:p-4",
       className,
     )}
     {...props}
@@ -47,138 +39,6 @@ export function CommandDialog({
 }: CommandDialogProps) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const topPx = useTopAnchor();
-  const {
-    left: leftPx,
-    width: widthPx,
-    compute: recomputeLeft,
-  } = useLeftAnchor({
-    anchorSelector: "#content-pane",
-    margin: DIALOG_MARGIN,
-    fallbackWidth: 640,
-  });
-
-  const [viewportWidth, setViewportWidth] = React.useState<number>(0);
-
-  React.useEffect(() => {
-    const updateViewport = () => setViewportWidth(window.innerWidth || 0);
-    updateViewport();
-    window.addEventListener("resize", updateViewport, { passive: true });
-    window.addEventListener("orientationchange", updateViewport);
-    return () => {
-      window.removeEventListener("resize", updateViewport);
-      window.removeEventListener("orientationchange", updateViewport);
-    };
-  }, []);
-
-  const dialogWidth = React.useMemo(() => {
-    if (!Number.isFinite(widthPx) || widthPx <= 0) return undefined;
-    if (viewportWidth <= 0) return Math.round(widthPx);
-
-    if (viewportWidth < BREAKPOINT_TABLET) {
-      return Math.round(widthPx);
-    }
-
-    if (viewportWidth < BREAKPOINT_DESKTOP) {
-      const ninety = Math.min(widthPx * TABLET_RATIO, WIDTH_CAP);
-      const lowerBound = Math.min(widthPx, TABLET_MIN_WIDTH);
-      const finalWidth = Math.min(widthPx, Math.max(ninety, lowerBound));
-      return Math.round(finalWidth);
-    }
-
-    const capped = Math.min(widthPx, WIDTH_CAP);
-    const comfortable =
-      widthPx >= DESKTOP_MIN_WIDTH
-        ? Math.min(widthPx, Math.max(capped, DESKTOP_MIN_WIDTH))
-        : capped;
-    return Math.round(comfortable);
-  }, [viewportWidth, widthPx]);
-
-  React.useEffect(() => {
-    if (contentRef.current) {
-      recomputeLeft(contentRef.current);
-    }
-  }, [recomputeLeft, open, dialogWidth]);
-
-  React.useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-
-    const stableWidth =
-      typeof dialogWidth === "number" &&
-      Number.isFinite(dialogWidth) &&
-      dialogWidth > 0
-        ? dialogWidth
-        : null;
-    const widthStyle = stableWidth
-      ? (["width", `${stableWidth}px`] as [string, string])
-      : null;
-    const targetStyles: Array<[string, string]> = [
-      ["position", "fixed"],
-      ["top", `${Math.max(topPx - 8, 0)}px`],
-      ["left", `${leftPx}px`],
-      ["right", "auto"],
-      ["bottom", "auto"],
-      ["transform", "none"],
-      ["max-width", `calc(100vw - ${DIALOG_MARGIN * 2}px)`],
-    ];
-    if (widthStyle) targetStyles.push(widthStyle);
-
-    const guardClasses = [
-      "left-1/2",
-      "-translate-x-1/2",
-      "top-1/2",
-      "-translate-y-1/2",
-      "bottom-0",
-      "items-end",
-      "justify-end",
-      "data-[state=open]:slide-in-from-bottom",
-      "sm:items-end",
-    ];
-
-    const enforce = () => {
-      let changed = false;
-      for (const [prop, value] of targetStyles) {
-        if (el.style.getPropertyValue(prop) !== value) {
-          el.style.setProperty(prop, value);
-          changed = true;
-        }
-      }
-      if (!widthStyle && el.style.getPropertyValue("width")) {
-        el.style.removeProperty("width");
-        changed = true;
-      }
-      for (const cls of guardClasses) {
-        if (el.classList.contains(cls)) {
-          el.classList.remove(cls);
-          changed = true;
-        }
-      }
-      return changed;
-    };
-
-    const apply = () => {
-      const changed = enforce();
-      if (changed) {
-        recomputeLeft(el);
-      }
-    };
-
-    apply();
-
-    const mo = new MutationObserver(apply);
-    mo.observe(el, { attributes: true, attributeFilter: ["class", "style"] });
-
-    const ro = new ResizeObserver(() => {
-      recomputeLeft(el);
-      enforce();
-    });
-    ro.observe(el);
-
-    return () => {
-      mo.disconnect();
-      ro.disconnect();
-    };
-  }, [dialogWidth, leftPx, topPx, recomputeLeft]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -282,8 +142,11 @@ export function CommandDialog({
       <DialogPrimitive.Portal forceMount>
         <DialogPrimitive.Overlay
           data-overlay-layer
-          className="fixed inset-0 z-[98] bg-black/45 backdrop-blur-[2px] transition-opacity duration-120 data-[state=open]:opacity-100 data-[state=closed]:opacity-0"
-          style={{ pointerEvents: open ? "auto" : "none" }}
+          className="fixed inset-x-0 bottom-0 z-[98] bg-black/35 backdrop-blur-[1px] transition-opacity duration-120 data-[state=open]:opacity-100 data-[state=closed]:opacity-0"
+          style={{
+            pointerEvents: open ? "auto" : "none",
+            top: Math.max(topPx - 8, 0),
+          }}
         />
         <DialogPrimitive.Content forceMount asChild>
           <div
@@ -293,10 +156,8 @@ export function CommandDialog({
             data-overlay-root
             aria-hidden={open ? undefined : "true"}
             className={cn(
-              "fixed z-[99] p-0 !bottom-auto",
-              "w-[min(80vw,640px)] sm:w-full sm:max-w-lg",
-              "rounded-b-2xl rounded-t-none",
-              "border-[6px] border-[var(--green)]",
+              "fixed z-[99] p-0",
+              "rounded-2xl border border-[color:var(--border-subtle)]",
               "shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]",
               "bg-[var(--surface)] text-[var(--text)]",
               "opacity-0 data-[state=open]:opacity-100 transition-opacity duration-120",
@@ -305,12 +166,12 @@ export function CommandDialog({
             style={{
               boxSizing: "border-box",
               top: topPx,
-              left: leftPx,
+              left: "50%",
               right: "auto",
               bottom: "auto",
-              transform: "none",
-              width: dialogWidth,
-              maxWidth: `calc(100vw - ${DIALOG_MARGIN * 2}px)`,
+              transform: "translateX(-50%)",
+              width: `calc(100vw - ${DIALOG_MARGIN * 2}px)`,
+              maxWidth: "680px",
               pointerEvents: open ? "auto" : "none",
             }}
           >
@@ -341,10 +202,11 @@ export function CommandInput({
       className={cn(
         "relative z-10",
         "flex h-12 items-center gap-2 px-3",
-        "rounded-md",
+        "rounded-xl border border-[color:var(--border-subtle)]",
         "bg-[var(--surface)]",
-        "ring-1 ring-[var(--brand)] focus-within:ring-2",
-        "mb-2",
+        "focus-within:border-[color:var(--blue)] focus-within:ring-2 focus-within:ring-[color:var(--blue)]/20",
+        "[&>input:focus-visible]:outline-none [&>input:focus-visible]:outline-offset-0",
+        "mb-3",
       )}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-70">
@@ -378,7 +240,7 @@ export function CommandList({
   return (
     <CommandPrimitive.List
       className={cn(
-        "max-h-[60vh] overflow-auto bg-[var(--surface)] px-2 pb-2 pt-1",
+        "max-h-[55vh] overflow-auto bg-[var(--surface)] px-1 pb-1",
         className,
       )}
       {...props}
@@ -401,7 +263,7 @@ export const CommandGroup = (
   <CommandPrimitive.Group
     {...props}
     className={cn(
-      "mb-1",
+      "mb-1.5",
       "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1",
       "[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold",
       "[&_[cmdk-group-heading]]:text-[var(--muted)]",
@@ -416,7 +278,7 @@ export const CommandItem = (
   <CommandPrimitive.Item
     {...props}
     className={cn(
-      "flex h-10 items-center rounded-lg px-2 text-[var(--text)]",
+      "flex min-h-11 items-center rounded-lg px-2.5 py-1.5 text-[var(--text)]",
       "relative transition-colors",
       "hover:bg-[var(--surface-2)] data-[selected=true]:bg-[var(--surface-2)]",
       "data-[selected=true]:ring-1 ring-[var(--brand)] ring-inset",

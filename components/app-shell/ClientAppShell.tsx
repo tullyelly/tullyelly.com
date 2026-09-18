@@ -116,14 +116,14 @@ export default function ClientAppShell({
               {announcement ? (
                 <AnnouncementBanner message={announcement} dismissible />
               ) : null}
-              <div className="sticky top-0 z-50 bg-[var(--blue)]/95 text-white shadow-sm pt-[max(env(safe-area-inset-top),0px)] backdrop-blur md:hidden">
+              <div className="sticky top-0 z-50 bg-[var(--blue)]/95 text-white shadow-sm pt-[max(env(safe-area-inset-top),0px)] backdrop-blur lg:hidden">
                 <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-start gap-2 px-3 sm:px-4 lg:px-6">
                   <MobileMenuButton />
                   <BrandHomeLink />
                 </div>
               </div>
               <NavDesktop menu={menu} childrenMap={menuChildren} />
-              <div className="md:hidden">
+              <div className="lg:hidden">
                 <MobileDrawer
                   open={mobileNavOpen}
                   onOpenChange={setMobileNavOpen}
