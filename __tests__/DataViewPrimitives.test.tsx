@@ -160,6 +160,7 @@ describe("data-view primitives", () => {
         backLabel="All sets"
         eyebrow="Set"
         title="First set"
+        shareTitle="First set"
         stats={[{ label: "Cards", value: 10 }]}
         sectionId="history"
         sectionTitle="History"
@@ -176,6 +177,10 @@ describe("data-view primitives", () => {
     expect(screen.getByRole("link", { name: /All sets/ })).toHaveAttribute(
       "href",
       "/sets",
+    );
+    expect(screen.getByRole("button", { name: "Share this page" })).toHaveClass(
+      "bg-white",
+      "text-[color:var(--collection-detail-link)]",
     );
     expect(
       screen.getByRole("heading", { level: 2, name: "History" }),

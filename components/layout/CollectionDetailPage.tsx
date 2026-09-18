@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 
 import { Stat, StatGrid } from "@/components/ui/StatGrid";
+import ShareButton from "@/components/share/ShareButton";
 import FullBleedPage from "./FullBleedPage";
 import SectionHeader from "./SectionHeader";
 
@@ -18,6 +19,8 @@ type CollectionDetailPageProps = {
   eyebrow: ReactNode;
   title: ReactNode;
   subtitle?: ReactNode;
+  shareTitle?: string;
+  shareDescription?: string;
   stats: CollectionDetailStat[];
   statColumns?: 3 | 4 | 5;
   sectionId: string;
@@ -42,6 +45,8 @@ export default function CollectionDetailPage({
   eyebrow,
   title,
   subtitle,
+  shareTitle,
+  shareDescription,
   stats,
   statColumns = 3,
   sectionId,
@@ -90,12 +95,20 @@ export default function CollectionDetailPage({
                   ) : null}
                 </div>
               </div>
-              <span
-                aria-hidden="true"
-                className={`${backLinkClassName} invisible hidden whitespace-nowrap md:inline-flex`}
-              >
-                {`← ${backLabel}`}
-              </span>
+              {shareTitle ? (
+                <ShareButton
+                  title={shareTitle}
+                  description={shareDescription}
+                  className="border-white bg-white text-[color:var(--collection-detail-link)] hover:bg-[color:var(--collection-detail-accent-soft)] hover:text-[color:var(--collection-detail-link-hover)]"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className={`${backLinkClassName} invisible hidden whitespace-nowrap md:inline-flex`}
+                >
+                  {`← ${backLabel}`}
+                </span>
+              )}
             </div>
 
             <StatGrid columns={statColumns} variant="hero">

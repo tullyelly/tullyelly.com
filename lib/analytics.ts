@@ -7,6 +7,8 @@ export type EventName =
   | "menu.cmdk.search"
   | "menu.cmdk.select"
   | "nav.search.submit"
+  | "share.native"
+  | "share.copy_link"
   | "menu_expand";
 
 export interface Analytics {

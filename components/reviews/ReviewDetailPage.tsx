@@ -69,6 +69,7 @@ export default async function ReviewDetailPage({
       backLabel={config.detailBackLabel}
       eyebrow={config.detailHeroEyebrow}
       title={review.name}
+      shareTitle={review.name}
       stats={summaryStats}
       statColumns={5}
       sectionId={`${config.type}-chronicle-feed`}

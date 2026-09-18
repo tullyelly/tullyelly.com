@@ -10,6 +10,7 @@ import { CommentsSection } from "@/components/chronicles/CommentsSection";
 import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
 import { TcdbCardTrafficChart } from "@/components/chronicles/TcdbCardTrafficChart";
 import PageIntro from "@/components/layout/PageIntro";
+import ShareButton from "@/components/share/ShareButton";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
 import { getTagMetadataBatch } from "@/lib/tags-server";
@@ -70,6 +71,9 @@ async function PostContent({ slug }: { slug: string }) {
           <PageIntro
             title={`${fmtDate(post.date)}: ${post.title}`}
             showProductionLink={false}
+            actions={
+              <ShareButton title={post.title} description={post.summary} />
+            }
           >
             <ChronicleMdxRenderer
               code={post.body.code}
