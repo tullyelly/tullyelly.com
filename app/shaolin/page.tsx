@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "Search and explore the Shaolin Chronicles archive by alter ego and tag.",
     canonical: canonicalFor("/shaolin"),
     type: "website",
-    twitterCard: "summary",
+    twitterCard: "summary_large_image",
   });
 }
 

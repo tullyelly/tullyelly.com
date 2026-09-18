@@ -4,10 +4,16 @@ import { fmtDate } from "@/lib/datetime";
 import type { LcsPageData } from "@/lib/lcs-content";
 import { getLcsRouteConfig } from "@/lib/lcs-route-config";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
-function formatLocation(lcsData: Pick<LcsPageData, "city" | "state">): string | null {
-  const parts = [lcsData.city, lcsData.state].filter(
-    (value): value is string => Boolean(value),
+function formatLocation(
+  lcsData: Pick<LcsPageData, "city" | "state">,
+): string | null {
+  const parts = [lcsData.city, lcsData.state].filter((value): value is string =>
+    Boolean(value),
   );
 
   return parts.length > 0 ? parts.join(", ") : null;
@@ -21,13 +27,14 @@ export function getLcsCollectionMetadata(): Metadata {
     description: config.collectionMetaDescription,
     alternates: { canonical: canonicalUrl(config.collectionPath.slice(1)) },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
       url: config.collectionPath,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
     },
@@ -72,13 +79,14 @@ export function getLcsDetailMetadata(
       ),
     },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description,
       url: `${config.collectionPath}/${encodedSlug}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title,
       description,
     },

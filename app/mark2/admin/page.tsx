@@ -2,6 +2,10 @@ import AdminAuthzPanel from "./authz/ClientPanel";
 import { listMemberships } from "./authz/actions";
 import DataPageShell from "@/components/layout/DataPageShell";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,13 +19,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("mark2/admin") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/mark2/admin",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },

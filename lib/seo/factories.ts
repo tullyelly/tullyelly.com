@@ -32,7 +32,7 @@ export function makeListGenerateMetadata({
       description,
       canonical,
       type: "website",
-      twitterCard: "summary",
+      twitterCard: "summary_large_image",
     });
   };
 }
@@ -78,7 +78,7 @@ export function makeDetailGenerateMetadata<T>({
       canonical: canonicalFor(out.canonicalPath),
       robots: { index: out.index ?? true, follow: out.index ?? true },
       type: "website",
-      twitterCard: "summary",
+      twitterCard: "summary_large_image",
     });
   };
 }

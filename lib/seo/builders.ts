@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { DEFAULT_TWITTER_HANDLE, SITE_NAME } from "./constants";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+  SITE_NAME,
+} from "./constants";
 import { clampDescription } from "./url";
 import type { SeoInput, PageFrontmatter } from "./types";
 
-/**
- * Build metadata for any page. Image fields are accepted (future) but NOT emitted yet.
- * Switch to include images by filling the images arrays where noted.
- */
+/** Build metadata with the site-wide preview image unless a route supplies one. */
 export function buildMetadata(input: SeoInput): Metadata {
   const {
     title,
@@ -14,8 +15,8 @@ export function buildMetadata(input: SeoInput): Metadata {
     canonical,
     type = "website",
     robots,
-    ogImage, // future
-    twitterCard, // future-aware
+    ogImage,
+    twitterCard,
     jsonld,
   } = input;
 
@@ -26,21 +27,21 @@ export function buildMetadata(input: SeoInput): Metadata {
     description: desc,
     alternates: canonical ? { canonical } : undefined,
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description: desc,
       type,
       siteName: SITE_NAME,
-      // Future: include images when you're ready.
-      // images: ogImage ? [ogImage] : undefined,
+      images: ogImage ? [ogImage] : SHARED_OPEN_GRAPH_FIELDS.images,
     },
     twitter: {
-      card: twitterCard ?? "summary",
+      ...SHARED_TWITTER_FIELDS,
+      card: twitterCard ?? "summary_large_image",
       title,
       description: desc,
-      site: DEFAULT_TWITTER_HANDLE,
-      creator: DEFAULT_TWITTER_HANDLE,
-      // Future: include images when you're ready.
-      // images: ogImage ? [ogImage.url] : undefined,
+      images: ogImage
+        ? [{ url: ogImage.url, alt: ogImage.alt }]
+        : SHARED_TWITTER_FIELDS.images,
     },
     robots: {
       index: robots?.index ?? true,
@@ -69,6 +70,6 @@ export function buildArticleMetadata(
       index: frontmatter.published !== false,
       follow: frontmatter.published !== false,
     },
-    // Future: map hero -> ogImage and switch twitterCard to 'summary_large_image'
+    // A future route may map its hero to ogImage.
   });
 }

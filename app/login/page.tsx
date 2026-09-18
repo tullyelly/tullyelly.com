@@ -1,5 +1,9 @@
 import LoginClient from "./LoginClient";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +16,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("login") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/login",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },

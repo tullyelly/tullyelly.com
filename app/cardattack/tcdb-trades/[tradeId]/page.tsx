@@ -11,6 +11,10 @@ import {
 } from "@/lib/tcdb-trade-db";
 import { getTcdbTradeNarrativeDays } from "@/lib/tcdb-trades";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import TcdbTradeChronicleFeed from "./_components/TcdbTradeTimelineSection";
 
 type Params = { tradeId: string };
@@ -89,13 +93,14 @@ export async function generateMetadata({
       canonical: canonicalUrl(`cardattack/tcdb-trades/${tradeId}`),
     },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description,
       url: `/cardattack/tcdb-trades/${tradeId}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title,
       description,
     },

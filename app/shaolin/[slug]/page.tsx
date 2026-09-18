@@ -14,6 +14,7 @@ import ShareButton from "@/components/share/ShareButton";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
 import { getTagMetadataBatch } from "@/lib/tags-server";
+import { buildChronicleMetadata } from "@/lib/seo/chronicle-metadata";
 
 type Params = { slug: string };
 
@@ -32,12 +33,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = allPosts.find((p) => p.slug === slug && !p.draft);
   if (!post) return {};
-  return {
+  return buildChronicleMetadata({
     title: post.title,
-    description: post.summary,
-    alternates: { canonical: post.canonical ?? undefined },
-    openGraph: { title: post.title, description: post.summary },
-  };
+    summary: post.summary,
+    canonical: post.canonical ?? undefined,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {

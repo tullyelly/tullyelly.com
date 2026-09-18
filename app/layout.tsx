@@ -2,7 +2,6 @@
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { initSentry } from "@/lib/sentry";
-import type { Metadata } from "next";
 import Script from "next/script";
 import Providers from "./providers";
 import { inter, jbMono } from "./fonts";
@@ -14,12 +13,8 @@ import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 import { MenuProvider } from "@/components/menu/MenuProvider";
 import { getRootRequestData } from "@/lib/root-request-data";
-import {
-  DEFAULT_TWITTER_HANDLE,
-  SITE_DESCRIPTION,
-  SITE_TITLE,
-  SITE_URL,
-} from "@/lib/seo/constants";
+import { SITE_TITLE } from "@/lib/seo/constants";
+import { buildRootMetadata } from "@/lib/seo/root-metadata";
 import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 
 // Ensure menu data is always fetched at runtime (not during build),
@@ -30,41 +25,11 @@ export const revalidate = 0;
 
 await initSentry();
 
-const baseMetadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: SITE_TITLE,
-    template: `%s; ${SITE_TITLE}`,
-  },
-  description: SITE_DESCRIPTION,
-  openGraph: {
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    type: "website",
-  },
-  twitter: {
-    card: "summary",
-    site: DEFAULT_TWITTER_HANDLE,
-    creator: DEFAULT_TWITTER_HANDLE,
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
-
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata() {
   const { pathname, menu } = await getRootRequestData();
   const { title } = buildMenuMetadata(pathname, menu.index);
 
-  return {
-    ...baseMetadata,
-    title: title || SITE_TITLE,
-    openGraph: {
-      ...baseMetadata.openGraph,
-      title: title ? `${title}; ${SITE_TITLE}` : SITE_TITLE,
-    },
-  };
+  return buildRootMetadata(title || undefined);
 }
 
 export default async function RootLayout({

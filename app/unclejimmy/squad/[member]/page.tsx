@@ -7,10 +7,12 @@ import type { Metadata } from "next";
 import { SectionDivider } from "@/components/SectionDivider";
 import { getCartoonByTagId } from "@/lib/cartoon/getCartoonByTagId";
 import { getCommentsByUserId } from "@/lib/comments/getCommentsByUserId";
-import {
-  getSecretIdentitySquadMember,
-} from "@/lib/unclejimmy/secretIdentitySquadMembers";
+import { getSecretIdentitySquadMember } from "@/lib/unclejimmy/secretIdentitySquadMembers";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import { getTaggedPosts } from "@/lib/blog";
 import { fmtDate, fmtDateTime } from "@/lib/datetime";
 
@@ -51,13 +53,14 @@ export async function generateMetadata({
       canonical: canonicalUrl(`unclejimmy/squad/${canonicalMemberSlug}`),
     },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description,
       url: `/unclejimmy/squad/${canonicalMemberSlug}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title,
       description,
     },

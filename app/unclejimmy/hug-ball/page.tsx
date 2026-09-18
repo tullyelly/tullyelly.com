@@ -1,6 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 const pageTitle = "hug ball";
 const pageDescription = "What is a hug ball? Can we ever truly know?";
@@ -10,13 +14,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("unclejimmy/hug-ball") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/unclejimmy/hug-ball",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },

@@ -19,7 +19,7 @@ export async function generateMetadata() {
     description,
     canonical: canonicalFor("/shaolin/tags"),
     type: "website",
-    twitterCard: "summary",
+    twitterCard: "summary_large_image",
   });
 }
 

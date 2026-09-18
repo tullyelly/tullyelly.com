@@ -6,6 +6,7 @@ import {
 } from "@/lib/tcdb-trade-hall-of-fame";
 import { getSetCollectorDetailHref } from "@/lib/set-collector-content";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import { SHARED_OPEN_GRAPH_FIELDS } from "@/lib/seo/constants";
 import TcdbTradeHallOfFameInductionsTable from "../tcdb-trades/_components/TcdbTradeHallOfFameInductionsTable";
 import TcdbTradeHallOfFameTable from "../tcdb-trades/_components/TcdbTradeHallOfFameTable";
 
@@ -18,6 +19,7 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("cardattack/hof") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/cardattack/hof",

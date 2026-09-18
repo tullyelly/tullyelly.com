@@ -7,6 +7,10 @@ import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
 import VolleyballTournamentDirectory from "@/components/unclejimmy/VolleyballTournamentDirectory";
 import { getTaggedPosts } from "@/lib/blog";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 const pageTitle = "jeff meff | 🎙unclejimmy squad";
 const pageDescription =
@@ -17,13 +21,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("unclejimmy/squad/jeff-meff") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/unclejimmy/squad/jeff-meff",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },
@@ -42,10 +47,14 @@ export default function UncleJimmySquadJeffMeffPage() {
           jeff meff
         </h1>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          <i>jeff meff</i> is the next dedicated page in 🎙<i>unclejimmy</i>&rsquo;s squad. He's the greatest teammate, always sporting a smile, might lose an occasional phone or two, and most importantly, our #1 living his best life guy. 
+          <i>jeff meff</i> is the next dedicated page in 🎙<i>unclejimmy</i>
+          &rsquo;s squad. He's the greatest teammate, always sporting a smile,
+          might lose an occasional phone or two, and most importantly, our #1
+          living his best life guy.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          I hope to keep evolving his page as we grow together. Scroll through for the latest and greatest. 
+          I hope to keep evolving his page as we grow together. Scroll through
+          for the latest and greatest.
         </p>
         <p>
           <Link
@@ -83,7 +92,8 @@ export default function UncleJimmySquadJeffMeffPage() {
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Next up, I wrote a performance piece to go along with the painting
-          that I performed during last year&rsquo;s xmas party. Here's mr. meff's specific script:
+          that I performed during last year&rsquo;s xmas party. Here's mr.
+          meff's specific script:
         </p>
         <div className="rounded-lg border border-border bg-white p-2 shadow-sm">
           <iframe

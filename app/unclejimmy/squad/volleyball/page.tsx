@@ -5,6 +5,10 @@ import PageIntro from "@/components/layout/PageIntro";
 import PersonCard from "@/components/mdx/PersonTag";
 import VolleyballTournamentList from "@/components/unclejimmy/VolleyballTournamentList";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import { getVolleyballTournamentListSummaries } from "@/lib/volleyball-tournament-db";
 
 const pageTitle = "Volleyball Tournaments | 🎙unclejimmy squad";
@@ -16,13 +20,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("unclejimmy/squad/volleyball") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/unclejimmy/squad/volleyball",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },

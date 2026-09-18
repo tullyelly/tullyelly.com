@@ -12,6 +12,10 @@ import {
   type ShaolinReleaseActivity,
 } from "@/lib/shaolin-release-detail";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,8 +104,14 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: canonicalUrl(path.slice(1)) },
-    openGraph: { title, description, url: path, type: "website" },
-    twitter: { card: "summary", title, description },
+    openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
+      title,
+      description,
+      url: path,
+      type: "website",
+    },
+    twitter: { ...SHARED_TWITTER_FIELDS, title, description },
     robots: { index: true },
   };
 }
