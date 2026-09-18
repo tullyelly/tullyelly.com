@@ -15,6 +15,12 @@ export function buildRootMetadata(pageTitle?: string): Metadata {
     metadataBase: new URL(SITE_URL),
     title: pageTitle || SITE_TITLE,
     description: SITE_DESCRIPTION,
+    applicationName: SITE_TITLE,
+    appleWebApp: {
+      capable: true,
+      title: SITE_TITLE,
+      statusBarStyle: "default",
+    },
     openGraph: {
       ...SHARED_OPEN_GRAPH_FIELDS,
       title: openGraphTitle,

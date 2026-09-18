@@ -7,6 +7,9 @@ export const SITE_DESCRIPTION =
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+export const GREAT_LAKES_BLUE = "#0077C0";
+export const CREAM_CITY_CREAM = "#EEE1C6";
+
 export const DEFAULT_TWITTER_HANDLE = "@tullyelly"; // adjust if needed
 
 export const SOCIAL_IMAGE_PATH = "/opengraph-image";

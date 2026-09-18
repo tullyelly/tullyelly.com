@@ -18,6 +18,12 @@ describe("shared social preview metadata", () => {
     expect(metadata.openGraph?.images).toEqual(SHARED_OPEN_GRAPH_FIELDS.images);
     expect(metadata.twitter).toMatchObject(SHARED_TWITTER_FIELDS);
     expect(metadata.metadataBase).toEqual(new URL(SITE_URL));
+    expect(metadata.applicationName).toBe(SITE_TITLE);
+    expect(metadata.appleWebApp).toEqual({
+      capable: true,
+      title: SITE_TITLE,
+      statusBarStyle: "default",
+    });
   });
 
   it("retains the fallback image for a normal route override", () => {

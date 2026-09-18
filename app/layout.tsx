@@ -1,6 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import type { Viewport } from "next";
 import { initSentry } from "@/lib/sentry";
 import Script from "next/script";
 import Providers from "./providers";
@@ -13,7 +14,7 @@ import GlobalProgressProvider from "./_components/GlobalProgressProvider";
 import { buildPageMetadata as buildMenuMetadata } from "@/app/_menu/metadata";
 import { MenuProvider } from "@/components/menu/MenuProvider";
 import { getRootRequestData } from "@/lib/root-request-data";
-import { SITE_TITLE } from "@/lib/seo/constants";
+import { GREAT_LAKES_BLUE, SITE_TITLE } from "@/lib/seo/constants";
 import { buildRootMetadata } from "@/lib/seo/root-metadata";
 import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 
@@ -22,6 +23,10 @@ import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
+
+export const viewport: Viewport = {
+  themeColor: GREAT_LAKES_BLUE,
+};
 
 await initSentry();
 
