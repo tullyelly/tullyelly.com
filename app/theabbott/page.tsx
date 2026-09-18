@@ -2,6 +2,10 @@ import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 const pageTitle = "🪶theabbott cipher | tullyelly";
 const pageDescription =
@@ -12,13 +16,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("theabbott") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/theabbott",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },

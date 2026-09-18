@@ -58,6 +58,7 @@ export default async function UspsDetailPage({
       backLabel={config.detailBackLabel}
       eyebrow={config.detailHeroEyebrow}
       title={`${usps.cityName}, ${usps.state}`}
+      shareTitle={`${usps.cityName}, ${usps.state}`}
       stats={summaryStats}
       statColumns={3}
       sectionId="usps-chronicle-feed"

@@ -11,9 +11,9 @@ export type SeoInput = {
   canonical?: string;
   type?: "website" | "article" | "profile" | "book" | "music.song";
   robots?: { index?: boolean; follow?: boolean };
-  // image-ready future (not used yet)
+  // Routes can replace the site-wide fallback image when needed.
   ogImage?: OgImageInput;
-  twitterCard?: TwitterCardType; // defaults to "summary" unless an image is present later
+  twitterCard?: TwitterCardType; // defaults to "summary_large_image"
   // optional structured data object
   jsonld?: Record<string, unknown>;
 };

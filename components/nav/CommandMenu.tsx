@@ -18,7 +18,12 @@ import {
 import * as Lucide from "lucide-react";
 import { analytics } from "@/lib/analytics";
 import { flattenLinks, type FlatLink } from "@/lib/menu.flatten";
-import { readRecent, saveRecent, upsertRecent } from "@/lib/menu.recents";
+import {
+  readRecent,
+  RECENTS_UPDATED_EVENT,
+  saveRecent,
+  upsertRecent,
+} from "@/lib/menu.recents";
 import { TEST_MENU_ITEMS } from "@/lib/menu.test-data";
 import { isTestMenuModeEnabled } from "@/lib/escape-hatches";
 
@@ -193,15 +198,17 @@ export default function CommandMenu() {
   const { open, setOpen, items, restoreFocus } = useCommandMenu();
   const router = useRouter();
   const flat = React.useMemo(() => flattenLinks(items), [items]);
-  const [recentIds, setRecentIds] = React.useState<string[]>(() =>
-    readRecent(),
-  );
+  const [recentItems, setRecentItems] = React.useState(() => readRecent());
   const prevOpenRef = React.useRef(open);
   const lastSearchLen = React.useRef<number | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const openViaTest = React.useCallback(() => setOpen(true), [setOpen]);
 
   React.useEffect(() => {
-    setRecentIds(readRecent());
+    const refresh = () => setRecentItems(readRecent());
+    refresh();
+    window.addEventListener(RECENTS_UPDATED_EVENT, refresh);
+    return () => window.removeEventListener(RECENTS_UPDATED_EVENT, refresh);
   }, []);
 
   React.useEffect(() => {
@@ -211,6 +218,7 @@ export default function CommandMenu() {
     prevOpenRef.current = open;
     if (!open) {
       lastSearchLen.current = null;
+      setSearchQuery("");
     }
   }, [open]);
 
@@ -247,21 +255,35 @@ export default function CommandMenu() {
 
   const recentLinks = React.useMemo(() => {
     const items: FlatLink[] = [];
-    for (const href of recentIds) {
-      const link = byHref.get(href);
-      if (link) {
-        items.push(link);
-      }
+    for (const recent of recentItems) {
+      const link = byHref.get(recent.href);
+      items.push(
+        link ?? {
+          id: `recent:${recent.href}`,
+          kind: "link",
+          label: recent.title,
+          href: recent.href,
+          featured: false,
+          pathLabels: recent.category
+            ? [recent.category, recent.title]
+            : [recent.title],
+          keywords: [recent.title, recent.category ?? ""].filter(Boolean),
+        },
+      );
     }
     return items;
-  }, [byHref, recentIds]);
+  }, [byHref, recentItems]);
 
   const personaGroups = React.useMemo(() => buildPersonaGroups(flat), [flat]);
 
   const handleSelect = React.useCallback(
     (link: FlatLink) => {
-      setRecentIds((prev) => {
-        const next = upsertRecent(prev, link.href);
+      setRecentItems((prev) => {
+        const next = upsertRecent(prev, {
+          href: link.href,
+          title: link.label,
+          ...(link.persona?.label ? { category: link.persona.label } : {}),
+        });
         saveRecent(next);
         return next;
       });
@@ -290,6 +312,13 @@ export default function CommandMenu() {
     },
     [router, setOpen],
   );
+
+  const handleSiteSearch = React.useCallback(() => {
+    const query = searchQuery.trim();
+    if (!query) return;
+    setOpen(false);
+    router.push(`/search?q=${encodeURIComponent(query)}` as Route);
+  }, [router, searchQuery, setOpen]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -401,7 +430,7 @@ export default function CommandMenu() {
       nodes.push({
         key: "recent",
         element: (
-          <CommandGroup heading="Recent">
+          <CommandGroup heading="Recently Viewed">
             {recentLinks.map((link) => renderItem(link))}
           </CommandGroup>
         ),
@@ -438,6 +467,7 @@ export default function CommandMenu() {
         <CommandInput
           placeholder="Type a page or feature…"
           onValueChange={(value) => {
+            setSearchQuery(value);
             const trimmed = value.trim();
             const length = trimmed.length;
             if (lastSearchLen.current === length) return;
@@ -447,6 +477,19 @@ export default function CommandMenu() {
         />
         <CommandList>
           <CommandEmpty>No results.</CommandEmpty>
+          {searchQuery.trim() ? (
+            <>
+              <CommandGroup heading="Site search">
+                <CommandItem
+                  value={`Search all tullyelly ${searchQuery}`}
+                  onSelect={handleSiteSearch}
+                >
+                  Search all tullyelly for &quot;{searchQuery.trim()}&quot;
+                </CommandItem>
+              </CommandGroup>
+              {sections.length ? <CommandSeparator /> : null}
+            </>
+          ) : null}
           {sections.map((section, index) => (
             <React.Fragment key={section.key}>
               {section.element}

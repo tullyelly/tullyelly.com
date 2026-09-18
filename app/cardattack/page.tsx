@@ -2,6 +2,10 @@ import PersonTag from "@/components/mdx/PersonTag";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 const pageTitle = "🃏cardattack vault | tullyelly";
 const pageDescription =
@@ -12,13 +16,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("cardattack") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/cardattack",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },
@@ -129,8 +134,8 @@ export default function CardattackPage() {
           🃏cardattack
         </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Full credit to <PersonTag tag="nikkigirl" />{" "}
-          for the 🃏cardattack name. While I&apos;m ⚒️tullyelly on{" "}
+          Full credit to <PersonTag tag="nikkigirl" /> for the 🃏cardattack
+          name. While I&apos;m ⚒️tullyelly on{" "}
           <a
             href="https://www.tcdb.com/Profile.cfm/tullyelly"
             className="underline hover:no-underline"

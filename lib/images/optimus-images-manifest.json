@@ -1248,6 +1248,16 @@
     "/images/optimus/rafa/walk/walk-0.webp",
     "/images/optimus/rafa/walk/walk-1.webp",
     "/images/optimus/rafa/walk/walk-2.webp",
+    "/images/optimus/raider-ruckus/mel.webp",
+    "/images/optimus/raider-ruckus/metallica.webp",
+    "/images/optimus/raider-ruckus/raider/raider-0.webp",
+    "/images/optimus/raider-ruckus/raider/raider-1.webp",
+    "/images/optimus/raider-ruckus/raider/raider-2.webp",
+    "/images/optimus/raider-ruckus/raider/raider-3.webp",
+    "/images/optimus/raider-ruckus/raider/raider-4.webp",
+    "/images/optimus/raider-ruckus/travel/travel-0.webp",
+    "/images/optimus/raider-ruckus/travel/travel-1.webp",
+    "/images/optimus/raider-ruckus/wolverine.webp",
     "/images/optimus/raindrops/cypress.webp",
     "/images/optimus/raindrops/fern.webp",
     "/images/optimus/raindrops/raindrops.webp",
@@ -8237,6 +8247,56 @@
       "src": "/images/optimus/rafa/walk/walk-2.webp",
       "width": 1920,
       "height": 2560
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/mel.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/metallica.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/raider/raider-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/raider/raider-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/raider/raider-2.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/raider/raider-3.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/raider/raider-4.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/travel/travel-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/travel/travel-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/raider-ruckus/wolverine.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/raindrops/cypress.webp",

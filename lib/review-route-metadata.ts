@@ -4,6 +4,10 @@ import { fmtDate } from "@/lib/datetime";
 import { getReviewRouteConfig } from "@/lib/review-route-config";
 import type { ReviewPageData } from "@/lib/review-content";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import type { ReviewType } from "@/lib/review-types";
 
 export function getReviewCollectionMetadata(reviewType: ReviewType): Metadata {
@@ -14,13 +18,14 @@ export function getReviewCollectionMetadata(reviewType: ReviewType): Metadata {
     description: config.collectionMetaDescription,
     alternates: { canonical: canonicalUrl(config.collectionPath.slice(1)) },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
       url: config.collectionPath,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
     },
@@ -33,11 +38,14 @@ export function getReviewDetailMetadata(
   reviewData: ReviewPageData | null,
 ): Metadata {
   const config = getReviewRouteConfig(reviewType);
-  const subjectName = reviewData?.name ?? `${config.singularLabel} ${externalId}`;
+  const subjectName =
+    reviewData?.name ?? `${config.singularLabel} ${externalId}`;
   const averageRating = reviewData?.summary.averageRating ?? 0;
   const visitCount = reviewData?.summary.visitCount ?? 0;
   const visitLabel =
-    visitCount === 1 ? config.countSingularLabel : config.countLabel.toLowerCase();
+    visitCount === 1
+      ? config.countSingularLabel
+      : config.countLabel.toLowerCase();
   const latestPostDate = reviewData?.summary.latestPostDate;
   const latestPhrase = latestPostDate
     ? ` Latest chronicle: ${fmtDate(latestPostDate)}.`
@@ -54,13 +62,14 @@ export function getReviewDetailMetadata(
       ),
     },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description,
       url: `${config.collectionPath}/${encodeURIComponent(externalId)}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title,
       description,
     },

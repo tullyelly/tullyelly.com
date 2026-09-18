@@ -14,6 +14,6 @@ export function buildPageMetadata(input: LegacyInput): Metadata {
     description: input.description,
     canonical: input.canonical,
     type: "website",
-    twitterCard: "summary",
+    twitterCard: "summary_large_image",
   });
 }

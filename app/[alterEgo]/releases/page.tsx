@@ -18,6 +18,10 @@ import {
   type PersonaReleaseFeed,
 } from "@/lib/persona-release-feeds";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import { getTagMetadataBatch } from "@/lib/tags-server";
 
 type Params = { alterEgo: string };
@@ -27,7 +31,11 @@ type ReleaseSearchParams = SearchParams & { order?: string | string[] };
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
   const { alterEgo } = await params;
   const config = getPersonaReleaseFeed(alterEgo);
   if (!config) return {};
@@ -37,8 +45,18 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title,
     description: config.description,
     alternates: { canonical: url },
-    openGraph: { title, description: config.description, url, type: "website" },
-    twitter: { card: "summary", title, description: config.description },
+    openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
+      title,
+      description: config.description,
+      url,
+      type: "website",
+    },
+    twitter: {
+      ...SHARED_TWITTER_FIELDS,
+      title,
+      description: config.description,
+    },
   };
 }
 
@@ -72,31 +90,53 @@ export default async function PersonaReleasesPage({
   const result = paginateReleaseEntries(orderedEntries, requested);
   if (result.outOfRange) notFound();
   const dateRange = getReleasePageDateRange(result.entries);
-  const tags = Array.from(new Set(result.entries.flatMap((entry) => entry.postTags)));
+  const tags = Array.from(
+    new Set(result.entries.flatMap((entry) => entry.postTags)),
+  );
   const tagMetadataBySlug = await releaseTagMetadata(tags);
 
   return (
     <div className="-mx-2 md:mx-0">
       <main className="w-full max-w-none space-y-10 pt-12 md:mx-auto md:max-w-3xl md:pt-14">
         <header className="space-y-3 px-2 md:px-0">
-          <Link href={config.baseRoute} className="link-blue">← back to {config.displayName}</Link>
-          <h1 className="text-2xl font-semibold leading-snug md:text-3xl">{config.displayName} release log</h1>
+          <Link href={config.baseRoute} className="link-blue">
+            ← back to {config.displayName}
+          </Link>
+          <h1 className="text-2xl font-semibold leading-snug md:text-3xl">
+            {config.displayName} release log
+          </h1>
           <p className="text-muted-foreground">{config.description}</p>
-          <p className="text-sm text-muted-foreground">{result.total} {result.total === 1 ? "release" : "releases"} · Page {result.page} of {result.pageCount}</p>
-          <div className="flex flex-wrap items-center gap-2" aria-label="Release order">
+          <p className="text-sm text-muted-foreground">
+            {result.total} {result.total === 1 ? "release" : "releases"} · Page{" "}
+            {result.page} of {result.pageCount}
+          </p>
+          <div
+            className="flex flex-wrap items-center gap-2"
+            aria-label="Release order"
+          >
             <span className="text-sm text-muted-foreground">Order:</span>
             <Link
               href={getPersonaReleaseLogHref(alterEgo as PersonaReleaseFeed)}
               aria-current={order === "newest" ? "page" : undefined}
-              className={order === "newest" ? "font-semibold text-ink" : "link-blue"}
+              className={
+                order === "newest" ? "font-semibold text-ink" : "link-blue"
+              }
             >
               newest first
             </Link>
-            <span aria-hidden="true" className="text-muted-foreground">·</span>
+            <span aria-hidden="true" className="text-muted-foreground">
+              ·
+            </span>
             <Link
-              href={getPersonaReleaseLogHref(alterEgo as PersonaReleaseFeed, 1, "oldest")}
+              href={getPersonaReleaseLogHref(
+                alterEgo as PersonaReleaseFeed,
+                1,
+                "oldest",
+              )}
               aria-current={order === "oldest" ? "page" : undefined}
-              className={order === "oldest" ? "font-semibold text-ink" : "link-blue"}
+              className={
+                order === "oldest" ? "font-semibold text-ink" : "link-blue"
+              }
             >
               chronological
             </Link>
@@ -113,11 +153,17 @@ export default async function PersonaReleasesPage({
         />
 
         {result.entries.length === 0 ? (
-          <p className="px-2 text-muted-foreground md:px-0">No releases have landed here yet.</p>
+          <p className="px-2 text-muted-foreground md:px-0">
+            No releases have landed here yet.
+          </p>
         ) : (
           <div className="space-y-12">
             {result.entries.map((entry) => (
-              <PersonaReleaseLogEntry key={`${entry.postSlug}-${entry.sectionOrdinal}`} entry={entry} tagMetadataBySlug={tagMetadataBySlug} />
+              <PersonaReleaseLogEntry
+                key={`${entry.postSlug}-${entry.sectionOrdinal}`}
+                entry={entry}
+                tagMetadataBySlug={tagMetadataBySlug}
+              />
             ))}
           </div>
         )}

@@ -58,7 +58,7 @@ export async function generateMetadata({
     canonical: canonicalFor(getTcdbClanRankingHref(ranking)),
     robots: { index: true, follow: true },
     type: "website",
-    twitterCard: "summary",
+    twitterCard: "summary_large_image",
   });
 }
 

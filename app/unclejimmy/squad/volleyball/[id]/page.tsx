@@ -6,6 +6,10 @@ import { Card } from "@ui";
 import FullBleedPage from "@/components/layout/FullBleedPage";
 import VolleyballTournamentSections from "@/components/unclejimmy/VolleyballTournamentSections";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import { getVolleyballTournamentSections } from "@/lib/volleyball-tournaments";
 import { getVolleyballTournamentSummaryByKey } from "@/lib/volleyball-tournament-db";
 import { formatVolleyballTournamentFinish } from "@/lib/volleyball-finish";
@@ -32,15 +36,18 @@ export async function generateMetadata({
   return {
     title: pageTitle,
     description: pageDescription,
-    alternates: { canonical: canonicalUrl(`unclejimmy/squad/volleyball/${id}`) },
+    alternates: {
+      canonical: canonicalUrl(`unclejimmy/squad/volleyball/${id}`),
+    },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title: pageTitle,
       description: pageDescription,
       url: `/unclejimmy/squad/volleyball/${id}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title: pageTitle,
       description: pageDescription,
     },

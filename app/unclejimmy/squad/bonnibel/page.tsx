@@ -4,6 +4,10 @@ import { SectionDivider } from "@/components/SectionDivider";
 import RedditEmbed from "@/components/unclejimmy/RedditEmbed";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import { getTaggedPosts } from "@/lib/blog";
 
 const pageTitle = "bonnibel | 🎙unclejimmy squad";
@@ -15,13 +19,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("unclejimmy/squad/bonnibel") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/unclejimmy/squad/bonnibel",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },

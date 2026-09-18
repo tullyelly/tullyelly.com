@@ -4,6 +4,10 @@ import { fmtDate } from "@/lib/datetime";
 import type { BricksPageData } from "@/lib/bricks-content";
 import { getBricksRouteConfig } from "@/lib/bricks-route-config";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import type { BricksSubset } from "@/lib/bricks-types";
 
 export function getBricksCollectionMetadata(subset: BricksSubset): Metadata {
@@ -14,13 +18,14 @@ export function getBricksCollectionMetadata(subset: BricksSubset): Metadata {
     description: config.collectionMetaDescription,
     alternates: { canonical: canonicalUrl(config.collectionPath.slice(1)) },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
       url: config.collectionPath,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
     },
@@ -66,13 +71,14 @@ export function getBricksDetailMetadata(
       ),
     },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description,
       url: `${config.collectionPath}/${encodedPublicId}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title,
       description,
     },

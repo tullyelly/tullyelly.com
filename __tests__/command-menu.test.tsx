@@ -1,5 +1,5 @@
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import CommandMenu, {
   CommandMenuProvider,
   useCommandMenu,
@@ -7,11 +7,12 @@ import CommandMenu, {
 import type { NavItem } from "@/types/nav";
 import { RECENT_STORAGE_KEY } from "@/lib/menu.recents";
 
+const mockRouterPush = jest.fn();
+const mockUseRouter = jest.fn(() => ({ push: mockRouterPush }));
+
 jest.mock("next/navigation", () => ({
   usePathname: () => "/current",
-  useRouter: () => ({
-    push: jest.fn(),
-  }),
+  useRouter: () => mockUseRouter(),
 }));
 
 beforeAll(() => {
@@ -72,12 +73,14 @@ const items: NavItem[] = [
 describe("CommandMenu", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    mockUseRouter.mockClear();
+    mockRouterPush.mockReset();
   });
 
   it("renders featured, recent, and persona sections", async () => {
     window.localStorage.setItem(
       RECENT_STORAGE_KEY,
-      JSON.stringify(["/recent"]),
+      JSON.stringify([{ href: "/recent", title: "Recent" }]),
     );
 
     render(
@@ -92,7 +95,7 @@ describe("CommandMenu", () => {
       featuredHeadings.some((node) => node.hasAttribute("cmdk-group-heading")),
     ).toBe(true);
 
-    const recentHeadings = await screen.findAllByText("Recent");
+    const recentHeadings = await screen.findAllByText("Recently Viewed");
     expect(
       recentHeadings.some((node) => node.hasAttribute("cmdk-group-heading")),
     ).toBe(true);
@@ -102,5 +105,55 @@ describe("CommandMenu", () => {
       personaHeadings.some((node) => node.hasAttribute("cmdk-group-heading")),
     ).toBe(true);
     expect(screen.queryByText("Hidden")).toBeNull();
+  });
+
+  it("renders and navigates to a recently viewed item outside the menu", async () => {
+    window.localStorage.setItem(
+      RECENT_STORAGE_KEY,
+      JSON.stringify([
+        {
+          href: "/shaolin/a-deep-cut",
+          title: "A Deep Cut",
+          category: "Chronicle",
+        },
+      ]),
+    );
+
+    render(
+      <CommandMenuProvider items={items}>
+        <OpenMenuOnMount />
+        <CommandMenu />
+      </CommandMenuProvider>,
+    );
+
+    expect(await screen.findByText("Recently Viewed")).toBeInTheDocument();
+    const recent = await screen.findByText("A Deep Cut");
+    fireEvent.click(recent);
+
+    await waitFor(() => {
+      expect(mockRouterPush).toHaveBeenCalledWith("/shaolin/a-deep-cut");
+    });
+  });
+
+  it("keeps navigation filtering and offers an encoded full-site search", async () => {
+    render(
+      <CommandMenuProvider items={items}>
+        <OpenMenuOnMount />
+        <CommandMenu />
+      </CommandMenuProvider>,
+    );
+
+    const input = await screen.findByPlaceholderText("Type a page or feature…");
+    fireEvent.change(input, { target: { value: "Recent cards" } });
+
+    expect(screen.queryByText("Spotlight")).toBeNull();
+    const action = await screen.findByText(
+      'Search all tullyelly for "Recent cards"',
+    );
+    fireEvent.click(action);
+
+    await waitFor(() => {
+      expect(mockRouterPush).toHaveBeenCalledWith("/search?q=Recent%20cards");
+    });
   });
 });

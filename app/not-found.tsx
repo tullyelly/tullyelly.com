@@ -3,6 +3,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <section
+      data-recent-history-exclude
       aria-labelledby="not-found-heading"
       className="not-found-screen relative isolate flex min-h-[50vh] w-full flex-col items-center justify-center gap-8 overflow-hidden px-4 py-8 sm:gap-10 sm:px-6 sm:py-12 lg:py-16"
     >

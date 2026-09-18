@@ -10,9 +10,11 @@ import { CommentsSection } from "@/components/chronicles/CommentsSection";
 import { ChronicleMdxRenderer } from "@/components/chronicles/ChronicleMdxRenderer";
 import { TcdbCardTrafficChart } from "@/components/chronicles/TcdbCardTrafficChart";
 import PageIntro from "@/components/layout/PageIntro";
+import ShareButton from "@/components/share/ShareButton";
 import { SectionDivider } from "@/components/SectionDivider";
 import { fmtDate } from "@/lib/datetime";
 import { getTagMetadataBatch } from "@/lib/tags-server";
+import { buildChronicleMetadata } from "@/lib/seo/chronicle-metadata";
 
 type Params = { slug: string };
 
@@ -31,12 +33,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = allPosts.find((p) => p.slug === slug && !p.draft);
   if (!post) return {};
-  return {
+  return buildChronicleMetadata({
     title: post.title,
-    description: post.summary,
-    alternates: { canonical: post.canonical ?? undefined },
-    openGraph: { title: post.title, description: post.summary },
-  };
+    summary: post.summary,
+    canonical: post.canonical ?? undefined,
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
@@ -70,6 +71,9 @@ async function PostContent({ slug }: { slug: string }) {
           <PageIntro
             title={`${fmtDate(post.date)}: ${post.title}`}
             showProductionLink={false}
+            actions={
+              <ShareButton title={post.title} description={post.summary} />
+            }
           >
             <ChronicleMdxRenderer
               code={post.body.code}
@@ -95,7 +99,7 @@ async function PostContent({ slug }: { slug: string }) {
 
         <SectionDivider />
 
-        <ChroniclePostTailCards />
+        <ChroniclePostTailCards currentPost={post} posts={allPosts} />
 
         <SectionDivider />
 

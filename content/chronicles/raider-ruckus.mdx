@@ -1,0 +1,137 @@
+---
+title: "raider ruckus"
+date: "2026-09-17"
+summary: "Take 2; Day 239, Simon says."
+draft: false
+infinityStone: false
+---
+
+<ReleaseSection alterEgo="george" divider={false}>
+    Today started off with the support of a colleague giving a presentation. I've only recently learned of her existence and it turns out she'll be a key player in one of the 36 paths laid out in front of me.
+
+    ![mel](mel.webp)
+
+    She killed it. Here's me watching her kill it.
+
+    New bestie unlocked.
+
+    ---
+
+    I think I had to take a dump or something, but let's check in on [The Sphere](https://www.thesphere.com/):
+
+    ![metallica](metallica.webp)
+
+    Pretty sure that's a <PersonTag tag="metallica" /> ad (it is, click the next link) and I'd go see them shred it at [The Sphere](https://www.thesphere.com/shows/metallica) in a heartbeat.
+
+    ---
+
+    I'll be honest though, other than supporting a few different pals from [redacted] today, I was mostly checked out of the conference. I shook the right hands, found a bit of directional correctness, and leave firmer in my resolve.
+
+    Oh, plus I told the gal that reports to me that I should get some face time with a particular individual......and he was in Vegas with me the whole time. Literally could have not timed that better.
+
+    Kismet.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="cardattack" lcs="cardvault">
+    Before I get super into the nerd of it all, side quest! I'm traveling and that means I have to try to hit up at least one [local card shop](/shaolin/lcs).
+
+    <FolderImageCarousel folder="travel" />
+
+    I skipped a party that I'd imagine gets pretty wild to instead hop on a bus and......end up in Egypt?
+
+    <FolderImageCarousel folder="raider" />
+    - <ClanSnapshot tag="bucks-n-six" />
+
+    Nah, we still here in our collapsing empire. Before it collapses though, we ended up at <PersonTag displayName="tom brady" tag="patriots" />'s local card shop. It was equal parts underwhelming and cool to have visited.
+
+    Those two slabs are lowkey kinda cool. One generic <PersonTag displayName="brady" tag="patriots" /> slab and one for local sports stars. I'll snag one of each fo sho.
+
+    The rating here is greatly increased by the novelty of it all. Decent spot.
+
+    ![wolverine](wolverine.webp)
+
+    Once back to the (temporary) crib, we grabbed a quick snap of <PersonTag tag="wolverine" />. Dope.
+
+    PS......shouts to <PersonTag tag="freak" /> and our <PersonTag displayName="bucks" tag="bucks-n-six" />.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="tullyelly" releaseId="184">
+    After I got back from the [local card shop](/cardattack/lcs), I got to hacking away at the site. First up, I asked <PersonTag tag="cipher" /> to let me know the #1 thing they would enhance the site with, and, well, here's the what happened next:
+
+    <CipherSays>
+        ## Site-Wide Search
+
+        Expanded search beyond navigation links into one ranked server-side index of capability-filtered pages and published Chronicles. Kept the command menu fast with its existing navigation filtering while adding a handoff to full search, preserved mobile search behavior, labeled Page and Chronicle results, and corrected the Clear search action so its text stays visible. All 700 tests, lint, typecheck, formatting, and content validation passed.
+    </CipherSays>
+
+    While this [search](/search) (click the link, damnit) funtionality is fairly hidden on the site at this point, we will be circling back to this later to bring this functionality to the forefront. I'm on a clean up the fundamentals mission right now and am less concerned about how awesome it presents as opposed to making sure that the underlying codebase is ready to rip as soon as I am ready to rip.
+
+    Measure twice. Cut once.
+
+    <CipherSays>
+        ## Recently Viewed
+
+        Expanded the command menu's recent items into site-wide Recently Viewed history. Meaningful pages are now recorded as they are visited, including Chronicles and detail pages outside the menu tree, while query variations, system routes, errors, missing pages, and unauthorized pages stay out. History remains local, deduplicated, legacy-compatible, and capped at eight items. All 706 tests, lint, and typecheck passed.
+    </CipherSays>
+
+    Just like the rest of your digital life, this site will track your travel with a bit more clarity and depth now. Just like the rest of your digital life, I'm doing to to benefit your usage of the site. Making it easier, more intuititve, and all that jazz. Just like the rest of your digital life, of course I would never use this against you or intentionally modify your behavior.
+
+    <CipherSays>
+        ## Share and Copy Link
+
+        Added one reusable sharing control to Chronicles and shared collection detail pages. Mobile devices use native sharing when available, while other browsers copy the canonical page link with accessible feedback and graceful failure handling. All 711 tests, lint, typecheck, formatting, and content validation passed.
+    </CipherSays>
+
+    Meaning......there's a share button at the top of the page. Go ahead and click it, the functionality was more than I expected. Nice job <PersonTag displayName="mr. robot" tag="cipher" />.
+
+    <CipherSays>
+        ## Branded Link Previews
+
+        Added one shared tullyelly Open Graph image so links pasted into messages, Slack, Discord, and social platforms now carry recognizable site branding. Root metadata and page-level overrides now preserve the fallback image and use large-image Twitter cards, while Chronicles keep their own titles, summaries, and canonical URLs. Existing route-specific artwork can still override the fallback. All 714 tests, lint, typecheck, formatting, and SEO validation passed.
+    </CipherSays>
+
+    We will have to test this one after it is deployed to production.
+
+    <CipherSays>
+        ## Related Chronicles
+
+        Added a compact Related Chronicles section near the end of each Chronicle using deterministic metadata already available in the site. Shared tags carry the strongest weight, matching personas add context, and structured reasons explain each connection. Drafts, the current post, duplicates, and weak matches stay out, while stable tie-breaking keeps results predictable. The existing recent Chronicles and Infinity Stones cards remain together, with contextual recommendations in a new row below them. The reusable scoring foundation is ready for future content types without coupling recommendations to Site Search. All 720 tests, lint, typecheck, and formatting passed.
+    </CipherSays>
+
+    That's kinda cool. Scroll past TCDb Card Traffic, Blog Boi, Infinity Stones (needs a refresh), and you will see Related Chronicles.
+
+    <CipherSays>
+        ## Installable App Foundation
+
+        Added a native web app manifest and mobile metadata so tullyelly can be installed or saved as an app on supported phones and desktops. Installed launches use the site name, branded colors, root URL, standalone display, and appropriately sized Android, Chrome, and Apple icons. The implementation uses built-in Next.js conventions and the existing site identity, with no PWA library, custom install prompt, service worker, offline cache, or routing changes.
+    </CipherSays>
+
+    LOL, if you say so dude. Imma have to test this out some other time as the night gets away from me.
+
+    And thus concludes me asking <PersonTag displayName="tha homie" tag="cipher" /> what are the obvious ways to improve the site. At least for today.
+
+    Iterate.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="theabbott" divider={false}>
+    So here's how we landed on the name of today's chronicle - <PersonTag displayName="tom brady" tag="patriots" /> is part-owner of the <PersonTag tag="raiders" /> and when I think of the <PersonTag tag="raiders" />, out comes Raider Ruckus. From there, Raider Ruckus leads us to this banger to close the chronicle (IYKYK):
+
+    <YouTubeVideo id="7KS3pI5bRMg" artist="pharoahe monch" song="simon says [remix]" album="internal affairs" />
+
+    <i>
+        GET THE FUCK UP! <br />
+        Simon says "GET THE FUCK UP!" <br />
+        Throw ya hands in the sky (buck buck buck buck buck!) <br />
+        Queens is in the back sippin 'Gnac, y'all wassup? <br />
+        Girls, rub on your titties (yeah) <br />
+        Yeah fuck it I said it rub on ya titties <br />
+        New York City gritty committee, pity the fool that act shitty <br />
+        In the midst of the calm, the witty
+    </i>
+
+    My apologies for all the titty talk. All respect due.
+
+</ReleaseSection>

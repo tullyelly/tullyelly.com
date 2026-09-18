@@ -3,6 +3,10 @@ import type { Metadata } from "next";
 import { fmtDate } from "@/lib/datetime";
 import type { UspsPageData } from "@/lib/usps-content";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 import { getUspsRouteConfig } from "@/lib/usps-route-config";
 
 export function getUspsCollectionMetadata(): Metadata {
@@ -13,13 +17,14 @@ export function getUspsCollectionMetadata(): Metadata {
     description: config.collectionMetaDescription,
     alternates: { canonical: canonicalUrl(config.collectionPath.slice(1)) },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
       url: config.collectionPath,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title: config.collectionMetaTitle,
       description: config.collectionMetaDescription,
     },
@@ -62,13 +67,14 @@ export function getUspsDetailMetadata(
       ),
     },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description,
       url: `${config.collectionPath}/${encodedCitySlug}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title,
       description,
     },

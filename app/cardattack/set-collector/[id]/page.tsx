@@ -6,6 +6,10 @@ import { fmtDate } from "@/lib/datetime";
 import { getSetCollectorPageData } from "@/lib/set-collector-content";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
+import {
   formatSetCollectorPercentComplete,
   normalizeSetCollectorSlug,
 } from "@/lib/set-collector-types";
@@ -74,13 +78,14 @@ export async function generateMetadata({
       ),
     },
     openGraph: {
+      ...SHARED_OPEN_GRAPH_FIELDS,
       title,
       description,
       url: `/cardattack/set-collector/${encodeURIComponent(normalizedSlug)}`,
       type: "website",
     },
     twitter: {
-      card: "summary",
+      ...SHARED_TWITTER_FIELDS,
       title,
       description,
     },

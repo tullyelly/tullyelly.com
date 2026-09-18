@@ -94,6 +94,7 @@ export default async function LcsDetailPage({
       backLabel={config.detailBackLabel}
       eyebrow={config.detailHeroEyebrow}
       title={lcs.name}
+      shareTitle={lcs.name}
       subtitle={location}
       stats={summaryStats}
       statColumns={3}

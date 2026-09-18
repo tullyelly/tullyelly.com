@@ -66,6 +66,7 @@ export default async function BricksDetailPage({
       backLabel={config.detailBackLabel}
       eyebrow={config.detailHeroEyebrow}
       title={bricks.setName}
+      shareTitle={bricks.setName}
       stats={summaryStats}
       statColumns={4}
       sectionId={`${config.subset}-chronicle-feed`}

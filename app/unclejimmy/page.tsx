@@ -2,6 +2,10 @@ import PersonTag from "@/components/mdx/PersonTag";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 const pageTitle = "🎙unclejimmy circus | tullyelly";
 const pageDescription =
@@ -12,13 +16,14 @@ export const metadata = {
   description: pageDescription,
   alternates: { canonical: canonicalUrl("unclejimmy") },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/unclejimmy",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },
@@ -38,8 +43,7 @@ export default function UncleJimmyPage() {
           the rabble. If there are any number of people in a room debating
           whether or not to try something, I&rsquo;ll immediately try it.
           I&rsquo;ve gotten better at controlling this impulse over the years,
-          but not enough to where{" "}
-          <PersonTag tag="nikkigirl" /> doesn&rsquo;t
+          but not enough to where <PersonTag tag="nikkigirl" /> doesn&rsquo;t
           still get worried every time I leave the house without her.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">

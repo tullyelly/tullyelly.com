@@ -17,6 +17,10 @@ import { ShaolinScrollsSection } from "@/components/ShaolinScrollsSection";
 import { getPublishedPosts } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
+import {
+  SHARED_OPEN_GRAPH_FIELDS,
+  SHARED_TWITTER_FIELDS,
+} from "@/lib/seo/constants";
 
 const pageTitle = "ruins | tullyelly";
 const pageDescription =
@@ -29,13 +33,14 @@ export const metadata = {
     canonical: canonicalUrl("tullyelly/ruins"),
   },
   openGraph: {
+    ...SHARED_OPEN_GRAPH_FIELDS,
     title: pageTitle,
     description: pageDescription,
     url: "/tullyelly/ruins",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    ...SHARED_TWITTER_FIELDS,
     title: pageTitle,
     description: pageDescription,
   },
