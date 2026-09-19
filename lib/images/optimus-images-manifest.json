@@ -1536,6 +1536,9 @@
     "/images/optimus/sp-authentic/supplies/supplies-4.webp",
     "/images/optimus/sp-authentic/supplies/supplies-5.webp",
     "/images/optimus/speed-racer/speed-racer.webp",
+    "/images/optimus/sphere/fern.webp",
+    "/images/optimus/sphere/the-sphere/sphere-0.webp",
+    "/images/optimus/sphere/the-sphere/sphere-1.webp",
     "/images/optimus/spinal/spinal.webp",
     "/images/optimus/stair-master/bosnov-67.webp",
     "/images/optimus/staticize/build-fail.webp",
@@ -9687,6 +9690,21 @@
       "src": "/images/optimus/speed-racer/speed-racer.webp",
       "width": 962,
       "height": 1280
+    },
+    {
+      "src": "/images/optimus/sphere/fern.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/sphere/the-sphere/sphere-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/sphere/the-sphere/sphere-1.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/spinal/spinal.webp",

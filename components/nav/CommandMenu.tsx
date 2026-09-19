@@ -255,7 +255,12 @@ export default function CommandMenu() {
 
   const recentLinks = React.useMemo(() => {
     const items: FlatLink[] = [];
+    const featuredHrefs = new Set(featured.map((link) => link.href));
+    const seenHrefs = new Set<string>();
     for (const recent of recentItems) {
+      if (featuredHrefs.has(recent.href) || seenHrefs.has(recent.href))
+        continue;
+      seenHrefs.add(recent.href);
       const link = byHref.get(recent.href);
       items.push(
         link ?? {
@@ -272,7 +277,7 @@ export default function CommandMenu() {
       );
     }
     return items;
-  }, [byHref, recentItems]);
+  }, [byHref, featured, recentItems]);
 
   const personaGroups = React.useMemo(() => buildPersonaGroups(flat), [flat]);
 
@@ -379,9 +384,11 @@ export default function CommandMenu() {
           data-featured={link.featured ? "true" : undefined}
           data-testid={menuItemTestId}
         >
-          <span className="mr-2 inline-flex size-5 items-center justify-center rounded-md border">
-            {link.icon ? <Icon name={link.icon} className="size-3.5" /> : null}
-          </span>
+          {link.icon ? (
+            <span className="mr-2 inline-flex size-6 items-center justify-center rounded-md bg-[color:var(--surface-page)] text-[color:var(--blue-contrast)]">
+              <Icon name={link.icon} className="size-3.5" />
+            </span>
+          ) : null}
           <span className="min-w-0 flex-1">
             <span className="block truncate font-medium">{link.label}</span>
             {contextText ? (
@@ -414,8 +421,9 @@ export default function CommandMenu() {
 
   const sections = React.useMemo(() => {
     const nodes: Array<{ key: string; element: React.ReactNode }> = [];
+    const isSearching = searchQuery.trim().length > 0;
 
-    if (featured.length) {
+    if (!isSearching && featured.length) {
       nodes.push({
         key: "featured",
         element: (
@@ -426,7 +434,7 @@ export default function CommandMenu() {
       });
     }
 
-    if (recentLinks.length) {
+    if (!isSearching && recentLinks.length) {
       nodes.push({
         key: "recent",
         element: (
@@ -437,7 +445,7 @@ export default function CommandMenu() {
       });
     }
 
-    if (personaGroups.length) {
+    if (isSearching && personaGroups.length) {
       nodes.push({
         key: "all",
         element: (
@@ -453,7 +461,7 @@ export default function CommandMenu() {
     }
 
     return nodes;
-  }, [featured, personaGroups, recentLinks, renderItem]);
+  }, [featured, personaGroups, recentLinks, renderItem, searchQuery]);
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
@@ -465,7 +473,7 @@ export default function CommandMenu() {
         className="bg-[var(--surface)] text-[var(--text)]"
       >
         <CommandInput
-          placeholder="Type a page or feature…"
+          placeholder="Find a page or search tullyelly…"
           onValueChange={(value) => {
             setSearchQuery(value);
             const trimmed = value.trim();
@@ -476,26 +484,34 @@ export default function CommandMenu() {
           }}
         />
         <CommandList>
-          <CommandEmpty>No results.</CommandEmpty>
-          {searchQuery.trim() ? (
-            <>
-              <CommandGroup heading="Site search">
-                <CommandItem
-                  value={`Search all tullyelly ${searchQuery}`}
-                  onSelect={handleSiteSearch}
-                >
-                  Search all tullyelly for &quot;{searchQuery.trim()}&quot;
-                </CommandItem>
-              </CommandGroup>
-              {sections.length ? <CommandSeparator /> : null}
-            </>
-          ) : null}
+          <CommandEmpty>
+            {searchQuery.trim()
+              ? "No navigation matches."
+              : "Start typing to find a destination."}
+          </CommandEmpty>
           {sections.map((section, index) => (
             <React.Fragment key={section.key}>
               {section.element}
               {index < sections.length - 1 ? <CommandSeparator /> : null}
             </React.Fragment>
           ))}
+          {searchQuery.trim() ? (
+            <div className="sticky bottom-0 mt-2 border-t border-black/10 bg-[var(--surface)] pt-2">
+              <CommandGroup heading="Search the whole site" className="mb-0">
+                <CommandItem
+                  value={`Search all tullyelly ${searchQuery}`}
+                  onSelect={handleSiteSearch}
+                  className="font-medium text-[color:var(--blue-contrast)]"
+                >
+                  <Icon name="Search" className="mr-2 size-4" />
+                  <span className="truncate">
+                    Search all tullyelly for &quot;{searchQuery.trim()}&quot;
+                  </span>
+                  <Icon name="ArrowRight" className="ml-auto size-4" />
+                </CommandItem>
+              </CommandGroup>
+            </div>
+          ) : null}
         </CommandList>
       </Command>
     </CommandDialog>

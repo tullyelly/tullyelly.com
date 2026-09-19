@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
+import LegacyPostDate from "@/components/layout/LegacyPostDate";
+import InteractiveImage from "@/components/media/InteractiveImage";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
   SHARED_OPEN_GRAPH_FIELDS,
@@ -30,6 +32,7 @@ export const metadata = {
 export default function UncleJimmyHugBallPage() {
   return (
     <div className="space-y-12">
+      <LegacyPostDate date="2025-11-13">November 13, 2025</LegacyPostDate>
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           What is a hug ball?
@@ -43,14 +46,23 @@ export default function UncleJimmyHugBallPage() {
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
-              src="/images/optimus/unclejimmy/hug-ball/hug-ball.webp"
-              alt="Milwaukee Bucks hug ball"
-              width={1920}
-              height={2550}
-              sizes="(max-width: 640px) 100vw, 50vw"
-              className="h-auto w-full rounded-xl object-cover"
-            />
+            <InteractiveImage
+              slide={{
+                src: "/images/optimus/unclejimmy/hug-ball/hug-ball.webp",
+                alt: "Milwaukee Bucks hug ball",
+                width: 1920,
+                height: 2550,
+              }}
+            >
+              <Image
+                src="/images/optimus/unclejimmy/hug-ball/hug-ball.webp"
+                alt="Milwaukee Bucks hug ball"
+                width={1920}
+                height={2550}
+                sizes="(max-width: 640px) 100vw, 50vw"
+                className="h-auto w-full rounded-xl object-cover"
+              />
+            </InteractiveImage>
             <figcaption className="sr-only">
               Milwaukee Bucks hug ball
             </figcaption>
@@ -108,14 +120,23 @@ export default function UncleJimmyHugBallPage() {
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
-              src="/images/optimus/unclejimmy/hug-ball/THE-hug-ball.webp"
-              alt="A ball of tape. THE hug ball."
-              width={1920}
-              height={2550}
-              sizes="(max-width: 640px) 100vw, 50vw"
-              className="h-auto w-full rounded-xl object-cover"
-            />
+            <InteractiveImage
+              slide={{
+                src: "/images/optimus/unclejimmy/hug-ball/THE-hug-ball.webp",
+                alt: "A ball of tape. THE hug ball.",
+                width: 1920,
+                height: 2550,
+              }}
+            >
+              <Image
+                src="/images/optimus/unclejimmy/hug-ball/THE-hug-ball.webp"
+                alt="A ball of tape. THE hug ball."
+                width={1920}
+                height={2550}
+                sizes="(max-width: 640px) 100vw, 50vw"
+                className="h-auto w-full rounded-xl object-cover"
+              />
+            </InteractiveImage>
             <figcaption className="sr-only">
               A ball of tape. THE hug ball.
             </figcaption>

@@ -1,5 +1,6 @@
 import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
+import { Stat, StatGrid } from "@/components/ui/StatGrid";
 import {
   listTcdbTradeHallOfFameInductions,
   listTcdbTradeHallOfFamers,
@@ -9,10 +10,12 @@ import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { SHARED_OPEN_GRAPH_FIELDS } from "@/lib/seo/constants";
 import TcdbTradeHallOfFameInductionsTable from "../tcdb-trades/_components/TcdbTradeHallOfFameInductionsTable";
 import TcdbTradeHallOfFameTable from "../tcdb-trades/_components/TcdbTradeHallOfFameTable";
+import { fmtDate } from "@/lib/datetime";
 
 const pageTitle = "TCDb Trade Hall of Fame | tullyelly";
 const pageDescription =
   "Meet the TCDb trade partners inducted into the tullyelly Hall of Fame and the completed sets behind each induction.";
+const integerFormatter = new Intl.NumberFormat("en-US");
 
 export const metadata = {
   title: pageTitle,
@@ -39,6 +42,10 @@ export default async function Page() {
     ...induction,
     setHref: getSetCollectorDetailHref(induction.setSlug),
   }));
+  const latestInduction = inductions
+    .map((induction) => induction.inductedDate)
+    .filter(Boolean)
+    .sort((a, b) => Date.parse(b) - Date.parse(a))[0];
 
   return (
     <DataPageShell>
@@ -46,6 +53,30 @@ export default async function Page() {
         title="TCDb Trade Hall of Fame"
         description="Celebrating the trade partners who helped close out a set."
       />
+
+      <section aria-label="Hall of Fame scoreboard">
+        <StatGrid columns={3} variant="segmented">
+          <Stat
+            variant="segmented"
+            label="Hall of Famers"
+            value={integerFormatter.format(hallOfFamers.length)}
+          />
+          <Stat
+            variant="segmented"
+            label="Total Inductions"
+            value={integerFormatter.format(inductions.length)}
+          />
+          <Stat
+            variant="segmented"
+            label="Latest Induction"
+            value={
+              latestInduction
+                ? fmtDate(latestInduction, "America/Chicago", "long")
+                : "Not available"
+            }
+          />
+        </StatGrid>
+      </section>
 
       <TcdbTradeHallOfFameTable rows={hallOfFamers} />
       <TcdbTradeHallOfFameInductionsTable rows={inductionRows} />

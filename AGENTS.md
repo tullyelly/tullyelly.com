@@ -21,9 +21,14 @@ Humans: see `README.md` for introductions and contributor docs.
 - Tests (unit/e2e if present): `npm test`
 - Dev server: `npm run dev`
 - Build: `npm run build`
+- Canonical validation: `npm run verify:agent` (prepares once, then runs lint,
+  typecheck, Jest validation, and a production build). Do not rerun those checks
+  individually after this command passes.
 - Required env: `DATABASE_URL`, `NEXTAUTH_SECRET` (or `AUTH_SECRET`), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_SITE_URL` (defaults to localhost). Tests and Playwright use `TEST_DATABASE_URL` (`.env.test`).
 - Local flags: `NEXT_PUBLIC_MENU_SHOW_ALL=1` (bypass menu gating), `SKIP_DB=true` (explicitly fail DB access), `E2E_MODE=1` (stubbed pool for scrolls reads).
 - Local DB note: never write to prod; honor `assertDbSafety` and `.env*` rules.
+- Image-manifest generation is incremental. It reuses dimensions for unchanged
+  files from the ignored `.cache/` directory and inspects only changed images.
 
 ## Content & Pages
 

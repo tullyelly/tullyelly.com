@@ -21,10 +21,10 @@ export default function MobileMenuButton({ className }: MobileMenuButtonProps) {
       onClick={() => openMobileNav()}
       data-testid="nav-mobile-trigger"
       className={cn(
-        "md:hidden inline-flex items-center justify-center gap-2 rounded-full",
+        "inline-flex items-center justify-center gap-2 rounded-full lg:hidden",
         "h-11 min-h-[44px] px-4 leading-none text-base",
         "border border-white/20 bg-white/10 text-white transition hover:bg-white/20",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:h-auto md:min-h-0 md:px-0 md:text-inherit",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
         className,
       )}
     >

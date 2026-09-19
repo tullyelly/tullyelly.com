@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { Card } from "@ui";
@@ -45,6 +45,8 @@ type ReviewListClientProps = {
   rowTestId?: string;
 };
 
+type ReviewSort = "latest" | "highest-rated" | "most-visited" | "a-z";
+
 const ratingBadgeClassName =
   "inline-flex min-h-[2.25rem] items-center rounded-full bg-[color:var(--review-accent)] px-3 py-1 text-sm font-semibold text-[color:var(--review-pill-fg)] shadow-sm";
 const mobileMetaLabelClassName =
@@ -73,7 +75,26 @@ export default function ReviewListClient({
   rowTestId = "review-row",
 }: ReviewListClientProps) {
   const [query, setQuery] = useState("");
-  const visibleRows = useTableSearch(rows, query, getReviewSearchValues);
+  const [sort, setSort] = useState<ReviewSort>("latest");
+  const searchedRows = useTableSearch(rows, query, getReviewSearchValues);
+  const visibleRows = useMemo(
+    () =>
+      [...searchedRows].sort((a, b) => {
+        switch (sort) {
+          case "highest-rated":
+            return b.averageRating - a.averageRating;
+          case "most-visited":
+            return b.visitCount - a.visitCount;
+          case "a-z":
+            return a.name.localeCompare(b.name, undefined, {
+              sensitivity: "base",
+            });
+          case "latest":
+            return Date.parse(b.latestPostDate) - Date.parse(a.latestPostDate);
+        }
+      }),
+    [searchedRows, sort],
+  );
   const emptyState =
     rows.length === 0 ? emptyMessage : "No review subjects match this search.";
 
@@ -88,6 +109,19 @@ export default function ReviewListClient({
             label="Search reviews"
             ariaControls="review-data-view"
           />
+        }
+        filters={
+          <select
+            className="form-input h-10 w-full sm:w-auto"
+            aria-label="Sort reviews"
+            value={sort}
+            onChange={(event) => setSort(event.target.value as ReviewSort)}
+          >
+            <option value="latest">Latest</option>
+            <option value="highest-rated">Highest rated</option>
+            <option value="most-visited">Most visited</option>
+            <option value="a-z">A-Z</option>
+          </select>
         }
         result={
           <DataResultCount>

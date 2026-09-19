@@ -83,16 +83,12 @@ export async function navigateToSlug(
   let targetPath = `/${slug}`;
 
   if (!navResult.handled) {
-    const top = page.getByTestId(`nav-top-${slug}`);
-    if ((await top.count()) > 0) {
-      const trigger = top.first();
-      const tagName = await trigger.evaluate((el) => el.tagName.toLowerCase());
-      await trigger.click();
-      if (tagName !== "a") {
-        const overview = page.getByTestId(`nav-menu-${slug}-overview`);
-        await expect(overview.first()).toBeVisible();
-        await overview.first().click();
-      }
+    const desktopMenu = page.getByTestId("nav-desktop-menu");
+    if ((await desktopMenu.count()) > 0 && (await desktopMenu.isVisible())) {
+      await desktopMenu.click();
+      const overview = page.getByTestId(`nav-menu-${slug}-overview`);
+      await expect(overview.first()).toBeVisible();
+      await overview.first().click();
     } else {
       await page.goto(`/${slug}`);
     }

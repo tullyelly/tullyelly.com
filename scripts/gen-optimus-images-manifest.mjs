@@ -5,8 +5,10 @@ import { pathToFileURL } from "node:url";
 
 const optimusRoot = path.resolve("public/images/optimus");
 const outputPath = path.resolve("lib/images/optimus-images-manifest.json");
+const cachePath = path.resolve(".cache/optimus-images-manifest.json");
 const allowedExtensions = new Set([".webp", ".png", ".jpg", ".jpeg", ".gif"]);
 const outputRootUrl = "/images/optimus";
+const cacheVersion = 1;
 
 const toPosixPath = (value) => value.replace(/\\/g, "/");
 
@@ -28,7 +30,7 @@ async function* walk(dir) {
   }
 }
 
-async function collectUrls() {
+async function collectFiles() {
   try {
     await fs.access(optimusRoot);
   } catch (error) {
@@ -36,32 +38,79 @@ async function collectUrls() {
     throw error;
   }
 
-  const urls = [];
+  const files = [];
   for await (const filePath of walk(optimusRoot)) {
     const ext = path.extname(filePath).toLowerCase();
     if (!allowedExtensions.has(ext)) {
       continue;
     }
-    urls.push(toImageUrl(filePath));
+    const stats = await fs.stat(filePath);
+    files.push({
+      filePath,
+      src: toImageUrl(filePath),
+      size: stats.size,
+      mtimeMs: stats.mtimeMs,
+    });
   }
 
-  urls.sort();
-  return urls;
+  files.sort((left, right) =>
+    left.src < right.src ? -1 : left.src > right.src ? 1 : 0,
+  );
+  return files;
+}
+
+async function readCache() {
+  try {
+    const cache = JSON.parse(await fs.readFile(cachePath, "utf8"));
+    if (cache.version === cacheVersion && cache.images) return cache.images;
+  } catch (error) {
+    if (error.code !== "ENOENT" && !(error instanceof SyntaxError)) throw error;
+  }
+  return {};
+}
+
+async function writeJsonAtomic(filePath, value) {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const temporaryPath = `${filePath}.${process.pid}.tmp`;
+  await fs.writeFile(
+    temporaryPath,
+    `${JSON.stringify(value, null, 2)}\n`,
+    "utf8",
+  );
+  await fs.rename(temporaryPath, filePath);
 }
 
 export async function writeManifest() {
-  const urls = await collectUrls();
+  const files = await collectFiles();
+  const previousCache = await readCache();
+  const nextCache = {};
   const images = [];
-  for (const src of urls) {
-    const filePath = path.join(
-      optimusRoot,
-      src.slice(outputRootUrl.length + 1),
-    );
+  let reused = 0;
+  let inspected = 0;
+
+  for (const file of files) {
+    const cached = previousCache[file.src];
+    if (
+      cached?.size === file.size &&
+      cached?.mtimeMs === file.mtimeMs &&
+      Number.isInteger(cached.width) &&
+      Number.isInteger(cached.height)
+    ) {
+      images.push({
+        src: file.src,
+        width: cached.width,
+        height: cached.height,
+      });
+      nextCache[file.src] = cached;
+      reused += 1;
+      continue;
+    }
+
     let metadata;
     try {
-      metadata = await sharp(filePath).metadata();
+      metadata = await sharp(file.filePath).metadata();
     } catch (error) {
-      throw new Error(`Unable to read image dimensions: ${src}`, {
+      throw new Error(`Unable to read image dimensions: ${file.src}`, {
         cause: error,
       });
     }
@@ -77,20 +126,31 @@ export async function writeManifest() {
       width <= 0 ||
       height <= 0
     ) {
-      throw new Error(`Invalid image dimensions: ${src}`);
+      throw new Error(`Invalid image dimensions: ${file.src}`);
     }
-    images.push({ src, width, height });
+    const image = { src: file.src, width, height };
+    images.push(image);
+    nextCache[file.src] = {
+      size: file.size,
+      mtimeMs: file.mtimeMs,
+      width,
+      height,
+    };
+    inspected += 1;
   }
+  const urls = files.map(({ src }) => src);
   const manifest = { urls, images };
+  const removed = Object.keys(previousCache).filter(
+    (src) => nextCache[src] === undefined,
+  ).length;
 
-  await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  await fs.writeFile(
-    outputPath,
-    `${JSON.stringify(manifest, null, 2)}\n`,
-    "utf8",
-  );
+  await writeJsonAtomic(outputPath, manifest);
+  await writeJsonAtomic(cachePath, {
+    version: cacheVersion,
+    images: nextCache,
+  });
   console.log(
-    `Wrote ${path.relative(process.cwd(), outputPath)} with ${urls.length} images.`,
+    `Image manifest: ${urls.length} images, ${reused} reused, ${inspected} inspected, ${removed} removed`,
   );
 }
 

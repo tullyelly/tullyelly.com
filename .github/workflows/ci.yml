@@ -47,19 +47,10 @@ jobs:
           SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Test
-        run: npm run test:ci
-
-      - name: Build
+      - name: Validate
         env:
           SKIP_DB: "true"
-        run: npm run build
+        run: npm run verify:agent
 
       - name: Check security headers
         env:

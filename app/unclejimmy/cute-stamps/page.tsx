@@ -1,5 +1,7 @@
 import Image from "next/image";
 import FlowersInline from "@/components/flowers/FlowersInline";
+import LegacyPostDate from "@/components/layout/LegacyPostDate";
+import InteractiveImage from "@/components/media/InteractiveImage";
 import PersonTag from "@/components/mdx/PersonTag";
 import { buildPageMetadata } from "@/lib/page-metadata";
 import type { PageFrontmatter } from "@/types/frontmatter";
@@ -19,22 +21,54 @@ const frontmatter = {
 
 export const metadata = buildPageMetadata(frontmatter);
 
+type ContentImageProps = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  sizes: string;
+  className?: string;
+};
+
+function ContentImage({
+  src,
+  alt,
+  width,
+  height,
+  sizes,
+  className = "h-auto w-full rounded-xl object-cover",
+}: ContentImageProps) {
+  return (
+    <InteractiveImage slide={{ src, alt, width, height }}>
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        sizes={sizes}
+        className={className}
+      />
+    </InteractiveImage>
+  );
+}
+
 export default function Page() {
   return (
     <article className="space-y-12">
       <header className="space-y-3">
         <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-          2025-09-19; Cute Stamps
+          Cute Stamps
         </h1>
+        <LegacyPostDate date="2025-09-19">September 19, 2025</LegacyPostDate>
       </header>
 
       <section className="space-y-4">
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
-          As you may or may not have heard, our little{" "}
-          <PersonTag tag="lulu" /> is getting married!
-          Thankfully, I am in charge of very little up until now. That said,
-          this week I was tasked with finding &quot;cute stamps&quot; for her
-          save the date letters and this is the adventure that ensued.
+          As you may or may not have heard, our little <PersonTag tag="lulu" />{" "}
+          is getting married! Thankfully, I am in charge of very little up until
+          now. That said, this week I was tasked with finding &quot;cute
+          stamps&quot; for her save the date letters and this is the adventure
+          that ensued.
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           In other news, I&apos;ve also started walking to my favorite mailboxes
@@ -53,7 +87,7 @@ export default function Page() {
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/uw-stevens-point.webp"
               alt="UW-Stevens Point postcard with bold purple lettering"
               width={1920}
@@ -66,7 +100,7 @@ export default function Page() {
             </figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/bucks-n-six.webp"
               alt="Milwaukee Bucks in six celebration poster"
               width={1920}
@@ -93,13 +127,12 @@ export default function Page() {
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           Speaking of our father, I walked out of there with a toothpick because
-          I was raised right. Plus,{" "}
-          <PersonTag tag="nikkigirl" /> gets a little
+          I was raised right. Plus, <PersonTag tag="nikkigirl" /> gets a little
           randy when unclejimmy shows up with a toothpick in his mouth.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/little-diner-xpress.webp"
               alt="Little Diner Xpress postcard with playful signage"
               width={1920}
@@ -112,7 +145,7 @@ export default function Page() {
             </figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/menu.webp"
               alt="Retro breakfast menu layout in warm colors"
               width={1920}
@@ -123,7 +156,7 @@ export default function Page() {
             <figcaption className="sr-only">Vintage menu reference</figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/brunch.webp"
               alt="Brunch poster celebrating weekend specials"
               width={1920}
@@ -136,7 +169,7 @@ export default function Page() {
             </figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/toothpick.webp"
               alt="Toothpick illustration with bright diner palette"
               width={1920}
@@ -160,25 +193,24 @@ export default function Page() {
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           My plan was to walk up to one of the associates behind the counter
           that would recognize me and have some fun with them, asking for some
-          cute stamps and a selfie so I could show{" "}
-          <PersonTag tag="lulu" />. Instead, it was someone
-          I do not interact with much, and when I tell you she was dead inside,
-          I mean she was really dead inside. There was no fun to be had. USPS
-          workers are the real MVP - they hate their job regardless of the
-          current president, so in some ways, we could all take some inspiration
-          from them.
+          cute stamps and a selfie so I could show <PersonTag tag="lulu" />.
+          Instead, it was someone I do not interact with much, and when I tell
+          you she was dead inside, I mean she was really dead inside. There was
+          no fun to be had. USPS workers are the real MVP - they hate their job
+          regardless of the current president, so in some ways, we could all
+          take some inspiration from them.
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           I also forgot to take a selfie of the Post Office, but guess what? A
           truck stopped on the street on my way home. I was very excited for the
           help, as per usual. You can see the middle school the little two went
           too behind us. Middle school is for suckers. So says{" "}
-          <PersonTag tag="lulu" /> and my teacher friends -
-          I do not make up the rules.
+          <PersonTag tag="lulu" /> and my teacher friends - I do not make up the
+          rules.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/usps-mailbox.webp"
               alt="USPS mailbox illustration with friendly lettering"
               width={1920}
@@ -189,7 +221,7 @@ export default function Page() {
             <figcaption className="sr-only">USPS mailbox postcard</figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/usps-truck.webp"
               alt="USPS delivery truck graphic in motion"
               width={1920}
@@ -210,13 +242,13 @@ export default function Page() {
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           Oops!…I Did It Again. Somehow I bought cards for me and legos for{" "}
-          <PersonTag tag="nikkigirl" />. Both were on
-          sale, so bingo bango. Walgreens is the best place to find discounted
-          NBA cards in all of the land. Good job, Walgreens.
+          <PersonTag tag="nikkigirl" />. Both were on sale, so bingo bango.
+          Walgreens is the best place to find discounted NBA cards in all of the
+          land. Good job, Walgreens.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/walgreens.webp"
               alt="Walgreens storefront rendered with soft gradients"
               width={1920}
@@ -227,7 +259,7 @@ export default function Page() {
             <figcaption className="sr-only">Walgreens postcard</figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/22-23-prizm.webp"
               alt="Twenty two to twenty three Prizm basketball card box art"
               width={1920}
@@ -240,7 +272,7 @@ export default function Page() {
             </figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm sm:col-span-2">
-            <Image
+            <ContentImage
               src="/images/optimus/lego-f1.webp"
               alt="LEGO Formula One car kit posed on a reflective surface"
               width={1920}
@@ -270,7 +302,7 @@ export default function Page() {
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/emma-car.webp"
               alt="Emma smiling in a vintage car illustration"
               width={1920}
@@ -283,7 +315,7 @@ export default function Page() {
             </figcaption>
           </figure>
           <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-            <Image
+            <ContentImage
               src="/images/optimus/appleton-west-rock.webp"
               alt="Appleton West rock wall postcard with blue accents"
               width={1920}
@@ -301,15 +333,15 @@ export default function Page() {
       <section className="space-y-4">
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           Finally, we arrive at the cute stamps. Here is what I came home with.
-          I THINK SPONGEBOB STAMPS ARE CUTE.......and{" "}
-          <PersonTag tag="lulu" /> does not. She chose the
-          baby wild animals. Coming soon to an inbox near you.
+          I THINK SPONGEBOB STAMPS ARE CUTE.......and <PersonTag tag="lulu" />{" "}
+          does not. She chose the baby wild animals. Coming soon to an inbox
+          near you.
         </p>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           That is cool though, more SpongeBob for me an my trading partners.
         </p>
         <figure className="rounded-2xl border border-border/40 bg-white p-2 shadow-sm">
-          <Image
+          <ContentImage
             src="/images/optimus/cute-stamps.webp"
             alt="Cute stamps collage in coral tones"
             width={1920}
@@ -367,8 +399,7 @@ export default function Page() {
           <FlowersInline>
             <PersonTag tag="lulu" />
             {", "}uw-stevens point, giannis, little diner xpress, pete&apos;s
-            auto, george webb, the brew crew, dad,{" "}
-            <PersonTag tag="nikkigirl" />
+            auto, george webb, the brew crew, dad, <PersonTag tag="nikkigirl" />
             {", "}breakfast, toothpicks, usps, walgreens, lego, f1, prisons,
             conrad, spongebob, tcdb, shin, & wyoming
           </FlowersInline>

@@ -1,6 +1,13 @@
 /** @jest-environment node */
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  utimes,
+  writeFile,
+} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -69,6 +76,46 @@ describe("Optimus image manifest generation", () => {
       { cwd: tempDir },
     );
     expect(await readFile(manifestPath, "utf8")).toBe(firstOutput);
+  });
+
+  it("adds, refreshes, and removes only changed image metadata", async () => {
+    const firstPath = path.join(imageDir, "first.png");
+    const removedPath = path.join(imageDir, "removed.png");
+    await createImage(10, 20).png().toFile(firstPath);
+    await createImage(30, 40).png().toFile(removedPath);
+
+    await generate();
+
+    const addedPath = path.join(imageDir, "added.png");
+    await createImage(50, 60).png().toFile(addedPath);
+    await createImage(70, 80).png().toFile(firstPath);
+    await rm(removedPath);
+
+    await generate();
+    expect(JSON.parse(await readFile(manifestPath, "utf8"))).toEqual({
+      urls: ["/images/optimus/added.png", "/images/optimus/first.png"],
+      images: [
+        { src: "/images/optimus/added.png", width: 50, height: 60 },
+        { src: "/images/optimus/first.png", width: 70, height: 80 },
+      ],
+    });
+  });
+
+  it("reuses cached dimensions when the filesystem fingerprint is unchanged", async () => {
+    const imagePath = path.join(imageDir, "cached.png");
+    const timestamp = new Date("2026-01-01T00:00:00.000Z");
+    await createImage(22, 33).png().toFile(imagePath);
+    await utimes(imagePath, timestamp, timestamp);
+    await generate();
+
+    const original = await readFile(imagePath);
+    await writeFile(imagePath, Buffer.alloc(original.length));
+    await utimes(imagePath, timestamp, timestamp);
+
+    await expect(generate()).resolves.toBeDefined();
+    expect(JSON.parse(await readFile(manifestPath, "utf8")).images).toEqual([
+      { src: "/images/optimus/cached.png", width: 22, height: 33 },
+    ]);
   });
 
   it("uses display dimensions for every EXIF orientation", async () => {

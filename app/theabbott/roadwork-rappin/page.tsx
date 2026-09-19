@@ -1,8 +1,8 @@
-import React from "react";
-import { Card, CardGrid, type CardItem, mapDomainToCardItem } from "@ui";
-import { Badge } from "@/app/ui/Badge";
-import { getBadgeClass } from "@/app/ui/badge-maps";
-import { YearBadge } from "@/app/ui/YearBadge";
+import YouTubeVideo from "@/components/mdx/YouTubeVideo";
+import LegacyPostDate from "@/components/layout/LegacyPostDate";
+import ArtistAlbumGrid, {
+  type ArtistAlbum,
+} from "@/components/theabbott/ArtistAlbumGrid";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 
 export const metadata = {
@@ -41,13 +41,7 @@ export const metadata = {
   },
 };
 
-type Album = {
-  title: string;
-  year: number;
-  note: string;
-};
-
-const albums: Album[] = [
+const albums: ArtistAlbum[] = [
   {
     title: "Labor Days",
     year: 2001,
@@ -85,15 +79,6 @@ const albums: Album[] = [
   },
 ];
 
-const items: CardItem[] = mapDomainToCardItem(albums, (a) => ({
-  id: a.title,
-  title: a.title,
-  meta: a.year,
-  description: a.note,
-}));
-
-const isFav = (item: CardItem) => item.title === "Spirit World Field Guide";
-
 export default function Page() {
   return (
     <article className="space-y-12">
@@ -101,6 +86,7 @@ export default function Page() {
         <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
           Roadwork Rappin’
         </h1>
+        <LegacyPostDate date="2025-08-19">August 19, 2025</LegacyPostDate>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           Welcome to my newest experiment. Please excuse any bugs or lack of
           polish. Early days.
@@ -128,18 +114,13 @@ export default function Page() {
         >
           Roadwork Rappin’ Video
         </h2>
-        <figure className="space-y-2">
-          <div className="yt-wrapper-bucks">
-            <iframe
-              src="https://www.youtube-nocookie.com/embed/jRHqjDnEFiE?si=-aVzrmGAmDuJ0PL0&loop=1&playlist=jRHqjDnEFiE"
-              title="Aesop Rock; Roadwork Rappin’ music video"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
-        </figure>
+        <YouTubeVideo
+          id="jRHqjDnEFiE"
+          loop
+          artist="Aesop Rock"
+          song="Roadwork Rappin’"
+          album="Black Hole Superette"
+        />
       </section>
 
       <section className="space-y-6">
@@ -159,32 +140,10 @@ export default function Page() {
           </p>
         </header>
 
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Albums to Explore</h3>
-          <CardGrid>
-            {items.map((item) => (
-              <Card
-                key={item.id}
-                className={`relative ${isFav(item) ? "border-[4px] border-[var(--blue)]" : ""}`}
-              >
-                {item.meta && <YearBadge year={item.meta} />}
-                <h4 className="pr-16 font-semibold italic">{item.title}</h4>
-                {item.description && (
-                  <p className="mt-2 text-sm text-fg/80 leading-relaxed">
-                    {item.description}
-                  </p>
-                )}
-                {isFav(item) && (
-                  <Badge
-                    className={`${getBadgeClass("classic")} absolute bottom-2 right-2`}
-                  >
-                    unclejimmy classic
-                  </Badge>
-                )}
-              </Card>
-            ))}
-          </CardGrid>
-        </div>
+        <ArtistAlbumGrid
+          albums={albums}
+          classicTitle="Spirit World Field Guide"
+        />
       </section>
     </article>
   );

@@ -139,24 +139,29 @@ curl -s http://localhost:3000/api/health
 
 ## Common Commands
 
-| Command                          | Purpose                                                                                         |
-| -------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `npm run prepare:content`        | Regenerate `lib/build-info.ts`, `lib/images/optimus-images-manifest.json`, and `.contentlayer`. |
-| `npm run lint`                   | Run ESLint with the repo config.                                                                |
-| `npm run typecheck`              | Run TypeScript; preflight regenerates content.                                                  |
-| `npm run format:check`           | Check Prettier formatting for changed tracked files.                                            |
-| `npm run format`                 | Format JS/TS/MD/MDX/JSON/YAML/CSS files.                                                        |
-| `npm test`                       | Run Jest; preflight regenerates content.                                                        |
-| `npm run test:smoke`             | Run related Jest smoke tests.                                                                   |
-| `npm run test:coverage`          | Run Jest with coverage thresholds.                                                              |
-| `npm run test:components`        | Run Vitest tests under `vitest/`.                                                               |
-| `npm run test:e2e`               | Run Playwright E2E tests.                                                                       |
-| `npm run build`                  | Generate content, run `prisma generate`, then `next build`.                                     |
-| `npm run start`                  | Start a built Next app.                                                                         |
-| `npm run analyze`                | Run bundle analyzer build.                                                                      |
-| `npm run check:emdash`           | Reject em dashes in user-visible MD/MDX/JSX copy.                                               |
-| `npm run secrets:scan`           | Run secretlint over the repo.                                                                   |
-| `npm run security-headers:check` | Verify expected security headers against a URL.                                                 |
+| Command                          | Purpose                                                                                |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `npm run prepare:content`        | Regenerate build info and Contentlayer data; incrementally refresh the image manifest. |
+| `npm run verify:agent`           | Prepare once, then run lint, typecheck, Jest validation, and a production build.       |
+| `npm run lint`                   | Run ESLint with the repo config.                                                       |
+| `npm run typecheck`              | Prepare generated content, then run TypeScript.                                        |
+| `npm run format:check`           | Check Prettier formatting for changed tracked files.                                   |
+| `npm run format`                 | Format JS/TS/MD/MDX/JSON/YAML/CSS files.                                               |
+| `npm test`                       | Prepare generated content, then run Jest.                                              |
+| `npm run test:smoke`             | Run related Jest smoke tests.                                                          |
+| `npm run test:coverage`          | Run Jest with coverage thresholds.                                                     |
+| `npm run test:components`        | Run Vitest tests under `vitest/`.                                                      |
+| `npm run test:e2e`               | Run Playwright E2E tests.                                                              |
+| `npm run build`                  | Generate content, run `prisma generate`, then `next build`.                            |
+| `npm run start`                  | Start a built Next app.                                                                |
+| `npm run analyze`                | Run bundle analyzer build.                                                             |
+| `npm run check:emdash`           | Reject em dashes in user-visible MD/MDX/JSX copy.                                      |
+| `npm run secrets:scan`           | Run secretlint over the repo.                                                          |
+| `npm run security-headers:check` | Verify expected security headers against a URL.                                        |
+
+Use `npm run verify:agent` for the complete pre-review validation cycle. It
+prepares generated files exactly once, so do not follow a successful run with
+the same lint, typecheck, test, and build commands individually.
 
 ## Content and Assets
 

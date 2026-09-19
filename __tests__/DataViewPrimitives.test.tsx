@@ -152,6 +152,9 @@ describe("data-view primitives", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Sets" }),
     ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "View this page in production" }),
+    ).toHaveClass("!text-white/80", "hover:!text-white");
     expect(screen.getByText("Directory content")).toBeVisible();
 
     rerender(

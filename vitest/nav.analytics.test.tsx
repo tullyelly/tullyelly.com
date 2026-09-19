@@ -202,21 +202,15 @@ describe("navigation analytics instrumentation", () => {
     cleanup();
   });
 
-  it("tracks desktop hover open and click, with accessible markup", async () => {
+  it("tracks desktop menu open and click, with accessible markup", async () => {
     const { container } = render(
       <Wrapper>
         <NavDesktop menu={menuPayloadData} childrenMap={menuChildrenData} />
       </Wrapper>,
     );
 
-    const trigger = await screen.findByTestId("nav-top-mark2");
-    fireEvent.pointerEnter(trigger);
-
-    await waitFor(() => {
-      expect((globalThis as any).__navTest?.openPersona).toBeTypeOf("function");
-    });
-
-    (globalThis as any).__navTest.openPersona("persona.mark2");
+    const trigger = await screen.findByTestId("nav-desktop-menu");
+    fireEvent.click(trigger);
 
     await waitFor(() => {
       expect(events.some((event) => event.name === "menu.desktop.open")).toBe(
@@ -310,7 +304,7 @@ describe("navigation analytics instrumentation", () => {
       );
     });
 
-    const command = await screen.findByPlaceholderText(/type a page/i);
+    const command = await screen.findByPlaceholderText(/find a page/i);
     fireEvent.change(command, { target: { value: "scrolls" } });
 
     await waitFor(() => {

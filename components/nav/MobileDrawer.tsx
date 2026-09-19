@@ -540,7 +540,7 @@ export default function MobileDrawer({
                     persona={menu.persona}
                     onSubmitted={closeDrawer}
                     onCancel={exitSearch}
-                    placeholder="Search pages, personas, and posts..."
+                    placeholder="Search tullyelly..."
                     className="flex-1"
                     suggestions={inlineSuggestions}
                     onSuggestionClick={() => setSearchQuery("")}

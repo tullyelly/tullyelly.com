@@ -69,7 +69,7 @@ export default function CollectionDirectoryPage({
                   <h1 className="!m-0 text-[1.9rem] font-bold leading-none md:text-[2.35rem]">
                     {title}
                   </h1>
-                  <ProductionPageLink className="border-white/30 text-white/80 hover:bg-white/10 hover:text-white" />
+                  <ProductionPageLink className="border-white/30 !text-white/80 hover:bg-white/10 hover:!text-white" />
                 </div>
                 <p className="!m-0 max-w-3xl text-[15px] leading-7 text-white/88 md:text-[17px]">
                   {description}
