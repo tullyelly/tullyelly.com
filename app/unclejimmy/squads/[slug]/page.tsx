@@ -13,6 +13,7 @@ export default async function Page({
       kind="group"
       noun="Squad"
       directoryHref="/unclejimmy/squads"
+      directoryLabel="Squads"
     />
   );
 }

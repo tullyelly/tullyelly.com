@@ -13,6 +13,7 @@ export default async function Page({
       kind="group"
       noun="Clan"
       directoryHref="/theabbott/clans"
+      directoryLabel="Clans"
     />
   );
 }

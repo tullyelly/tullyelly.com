@@ -20,12 +20,14 @@ export default async function IdentityDetailPage({
   kind,
   noun,
   directoryHref,
+  directoryLabel,
 }: {
   slug: string;
   context: IdentityContext;
   kind: IdentityKind;
   noun: string;
   directoryHref: string;
+  directoryLabel: string;
 }) {
   const identity = await getIdentityBySlug(slug);
   if (!identity || identity.metadata.kind !== kind) notFound();
@@ -43,7 +45,7 @@ export default async function IdentityDetailPage({
         description={`Shared identity #${identity.slug} in the ${context} context.`}
         actions={
           <Link href={directoryHref} className="btn">
-            Back to {noun}s
+            Back to {directoryLabel}
           </Link>
         }
       />

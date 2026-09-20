@@ -17,6 +17,7 @@ export default async function Page({
       kind="person"
       noun="Fam"
       directoryHref="/unclejimmy/fam"
+      directoryLabel="Fam"
     />
   );
 }

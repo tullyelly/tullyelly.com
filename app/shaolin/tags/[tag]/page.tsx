@@ -1,127 +1,110 @@
-import type { Route } from "next";
-import Link from "next/link";
-import { Badge } from "@/app/ui/Badge";
-import { getBadgeClass } from "@/app/ui/badge-maps";
-import FlowersInline from "@/components/flowers/FlowersInline";
-import { SectionDivider } from "@/components/SectionDivider";
-import { TagCommentsSection } from "@/components/chronicles/TagCommentsSection";
-import { Card } from "@ui";
+import type { Metadata } from "next";
 import { allPosts } from "contentlayer/generated";
 import { notFound } from "next/navigation";
-import { getPublishedPosts, byDateDesc } from "@/lib/blog";
-import { fmtDate } from "@/lib/datetime";
-import {
-  getHashtagDisplayName,
-  getKnownTagDisplayName,
-  normalizeTagSlug,
-} from "@/lib/tags";
+import ChronicleListClient, {
+  type ChronicleListRow,
+} from "@/app/shaolin/_components/ChronicleListClient";
+import { TagCommentsSection } from "@/components/chronicles/TagCommentsSection";
+import DataPageShell from "@/components/layout/DataPageShell";
+import PageIntro from "@/components/layout/PageIntro";
+import SectionHeader from "@/components/layout/SectionHeader";
+import type { AlterEgo } from "@/lib/alterEgo";
+import { getPublishedPosts } from "@/lib/blog";
+import { buildMetadata } from "@/lib/seo/builders";
+import { canonicalFor } from "@/lib/seo/url";
+import { getKnownTagDisplayName, normalizeTagSlug } from "@/lib/tags";
+import { getTagMetadataBatch } from "@/lib/tags-server";
 
 type Params = { tag: string };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateStaticParams() {
   const tags = new Set<string>();
-  for (const p of allPosts) {
-    if (p.draft) continue;
-    for (const t of p.tags ?? []) tags.add(t.toLowerCase());
+  for (const post of allPosts) {
+    if (post.draft) continue;
+    for (const tag of post.tags ?? []) tags.add(normalizeTagSlug(tag));
   }
-  return Array.from(tags).map((t) => ({ tag: t }));
+  return Array.from(tags).map((tag) => ({ tag }));
+}
+
+async function getTagDisplayNames(tags: readonly string[]) {
+  try {
+    const metadata = await getTagMetadataBatch(tags);
+    return Object.fromEntries(
+      Array.from(metadata, ([slug, value]) => [slug, value.displayName]),
+    );
+  } catch (error) {
+    console.warn("[chronicle-tags] Failed to resolve tag metadata", error);
+    return {};
+  }
 }
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<Params>;
-}) {
+}): Promise<Metadata> {
   const { tag: rawTag } = await params;
   const tag = normalizeTagSlug(rawTag);
-  const displayTag = getKnownTagDisplayName(tag);
-  return {
-    title: `${getHashtagDisplayName(tag)} · chronicles`,
-    description: `Posts tagged ${displayTag}`,
-  };
+  const displayNames = await getTagDisplayNames([tag]);
+  const displayName = displayNames[tag] ?? getKnownTagDisplayName(tag);
+  return buildMetadata({
+    title: `#${displayName} Chronicles | tullyelly`,
+    description: `Browse published Shaolin Chronicles tagged ${displayName}.`,
+    canonical: canonicalFor(`/shaolin/tags/${encodeURIComponent(tag)}`),
+    type: "website",
+    twitterCard: "summary_large_image",
+  });
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { tag: rawTag } = await params;
   const tag = normalizeTagSlug(rawTag);
-  const displayTag = getKnownTagDisplayName(tag);
-  const posts = getPublishedPosts()
-    .filter((p) => (p.tags ?? []).map((t) => normalizeTagSlug(t)).includes(tag))
-    .sort(byDateDesc);
-
+  const posts = getPublishedPosts().filter((post) =>
+    (post.tags ?? []).some((value) => normalizeTagSlug(value) === tag),
+  );
   if (posts.length === 0) notFound();
 
+  const rows: ChronicleListRow[] = posts.map((post) => ({
+    slug: post.slug,
+    url: post.url,
+    title: post.title,
+    summary: post.summary,
+    date: post.date,
+    alterEgo: post.resolvedAlterEgo as AlterEgo,
+    tags: Array.from(new Set((post.tags ?? []).map(normalizeTagSlug))),
+    infinityStone: post.infinityStone,
+  }));
+  const tags = Array.from(new Set(rows.flatMap((row) => row.tags)));
+  const tagDisplayNames = await getTagDisplayNames(tags);
+  const displayName = tagDisplayNames[tag] ?? getKnownTagDisplayName(tag);
+  const alterEgos = Array.from(new Set(rows.map((row) => row.alterEgo))).sort(
+    (a, b) => a.localeCompare(b),
+  );
+
   return (
-    <main className="max-w-4xl mx-auto space-y-10 py-6 md:py-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">{getHashtagDisplayName(tag)}</h1>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Entries that carry the {displayTag} label; same chronicle voice with
-          a focused thread.
-        </p>
-      </header>
-      <ul className="space-y-6">
-        {posts.map((p) => (
-          <Card as="li" key={p.slug} className="p-6 space-y-4">
-            <header className="space-y-1">
-              <h2 className="text-2xl font-semibold leading-snug">
-                <Link href={p.url as Route} className="link-blue">
-                  {p.title}
-                </Link>
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                {fmtDate(p.date)}
-              </span>
-            </header>
-            <p className="text-[16px] md:text-[18px] leading-relaxed text-muted-foreground">
-              {p.summary}
-            </p>
-            {(p.tags ?? []).length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {(p.tags ?? []).map((t) => (
-                  <Link
-                    key={t}
-                    href={
-                      `/shaolin/tags/${encodeURIComponent(
-                        normalizeTagSlug(t),
-                      )}` as Route
-                    }
-                    className="inline-flex"
-                    prefetch={false}
-                  >
-                    <Badge className={getBadgeClass("planned")}>
-                      {getHashtagDisplayName(t)}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-          </Card>
-        ))}
-      </ul>
-
+    <DataPageShell>
+      <PageIntro
+        title={`#${displayName}`}
+        description={`Published Shaolin Chronicles that carry the ${displayName} tag.`}
+      />
+      <section className="space-y-4" aria-labelledby="tag-chronicles-heading">
+        <SectionHeader
+          id="tag-chronicles-heading"
+          title="Chronicles"
+          description={`${rows.length} chronicle${rows.length === 1 ? "" : "s"} in this tag archive.`}
+        />
+        <ChronicleListClient
+          rows={rows}
+          alterEgos={alterEgos}
+          tagDisplayNames={tagDisplayNames}
+          archiveLabel={`${displayName} Chronicle archive`}
+          controlsLabel={`${displayName} Chronicle controls`}
+        />
+      </section>
       <TagCommentsSection tag={tag} />
-
-      <SectionDivider />
-
-      <footer className="space-y-4">
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          <FlowersInline>
-            <a
-              href="https://github.com/contentlayerdev/contentlayer"
-              className="underline hover:no-underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Contentlayer contributors
-            </a>
-            {"; keep the MDX flowing."}
-          </FlowersInline>
-        </p>
-        <Link href={"/shaolin" as Route} className="link-blue">
-          ← Back to chronicles
-        </Link>
-      </footer>
-    </main>
+    </DataPageShell>
   );
 }
