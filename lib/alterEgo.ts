@@ -26,6 +26,18 @@ export type PersonTagUsage = {
   displayName: string;
 };
 
+export type ChronicleMusicUsage = {
+  type: "video" | "playlist";
+  id?: string;
+  url?: string;
+  title?: string;
+  artist?: string;
+  artistTag?: string;
+  song?: string;
+  album?: string;
+  alterEgo?: AlterEgo;
+};
+
 export type InferOptions = {
   errorPrefix?: string;
   allowedAlterEgos?: readonly string[];
@@ -291,6 +303,83 @@ export function inferYouTubeVideoArtistTagsFromTree(
 
   visitNode(tree);
   return Array.from(new Set(foundTags));
+}
+
+function literalAttribute(node: MdxNode, name: string): string | undefined {
+  const matches = (node.attributes ?? []).filter(
+    (attribute) =>
+      attribute?.type === "mdxJsxAttribute" && attribute.name === name,
+  );
+  if (matches.length > 1) return undefined;
+  const value = matches[0]?.value;
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+export function inferChronicleMusicUsagesFromTree(
+  tree: MdxNode,
+  { errorPrefix = "Chronicle" }: InferOptions = {},
+): ChronicleMusicUsage[] {
+  const usages: ChronicleMusicUsage[] = [];
+
+  const visitNode = (node: MdxNode | undefined, alterEgo?: AlterEgo) => {
+    if (!node) return;
+    const isElement =
+      node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement";
+    let context = alterEgo;
+
+    if (isElement && node.name === "ReleaseSection") {
+      const rawContext = literalAttribute(node, "alterEgo");
+      if (rawContext && ALTER_EGO_OPTIONS.includes(rawContext as AlterEgo)) {
+        context = rawContext as AlterEgo;
+      }
+    }
+
+    if (isElement && node.name === "YouTubeVideo") {
+      const id = literalAttribute(node, "id");
+      if (!id) {
+        throw new Error(
+          `${errorPrefix}: YouTubeVideo id must be a string literal.`,
+        );
+      }
+      const artist = literalAttribute(node, "artist");
+      usages.push({
+        type: "video",
+        id,
+        ...(artist ? { artist, artistTag: normalizeTagSlug(artist) } : {}),
+        ...(literalAttribute(node, "song")
+          ? { song: literalAttribute(node, "song") }
+          : {}),
+        ...(literalAttribute(node, "album")
+          ? { album: literalAttribute(node, "album") }
+          : {}),
+        ...(context ? { alterEgo: context } : {}),
+      });
+    }
+
+    if (isElement && node.name === "YouTubeMusicPlaylist") {
+      const id = literalAttribute(node, "id");
+      const url = literalAttribute(node, "url");
+      if (!id && !url) {
+        throw new Error(
+          `${errorPrefix}: YouTubeMusicPlaylist requires a string literal id or url.`,
+        );
+      }
+      usages.push({
+        type: "playlist",
+        ...(id ? { id } : {}),
+        ...(url ? { url } : {}),
+        ...(literalAttribute(node, "title")
+          ? { title: literalAttribute(node, "title") }
+          : {}),
+        ...(context ? { alterEgo: context } : {}),
+      });
+    }
+
+    for (const child of node.children ?? []) visitNode(child, context);
+  };
+
+  visitNode(tree);
+  return usages;
 }
 
 export function mergeChronicleTags(

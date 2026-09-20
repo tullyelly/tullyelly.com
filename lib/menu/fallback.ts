@@ -118,6 +118,20 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       feature: "menu.unclejimmy.overview",
     },
     {
+      id: "fam",
+      label: "Fam",
+      href: "/unclejimmy/fam",
+      iconKey: "Users",
+      feature: "menu.unclejimmy.fam",
+    },
+    {
+      id: "squads",
+      label: "Squads",
+      href: "/unclejimmy/squads",
+      iconKey: "Users",
+      feature: "menu.unclejimmy.squads",
+    },
+    {
       id: "cute-cards",
       label: "Cute Cards",
       href: "/unclejimmy/cute-cards",
@@ -146,6 +160,13 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       href: "/cardattack/homies",
       iconKey: "Trophy",
       feature: "menu.cardattack.homies",
+    },
+    {
+      id: "clans",
+      label: "Clans",
+      href: "/cardattack/clans",
+      iconKey: "Users",
+      feature: "menu.cardattack.clans",
     },
     {
       id: "tcdb-trades",
@@ -183,6 +204,27 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       href: "/theabbott",
       iconKey: "Feather",
       feature: "menu.theabbott.overview",
+    },
+    {
+      id: "crates",
+      label: "The Crates",
+      href: "/theabbott/crates",
+      iconKey: "Archive",
+      feature: "menu.theabbott.crates",
+    },
+    {
+      id: "homies",
+      label: "Homies",
+      href: "/theabbott/homies",
+      iconKey: "Users",
+      feature: "menu.theabbott.homies",
+    },
+    {
+      id: "clans",
+      label: "Clans",
+      href: "/theabbott/clans",
+      iconKey: "Users",
+      feature: "menu.theabbott.clans",
     },
     {
       id: "heels-have-eyes",

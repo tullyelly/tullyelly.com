@@ -140,13 +140,16 @@ export function groupSquadPageContentRows(
 export function getSquadPageItemHref(
   item: Pick<SquadPageItem, "href" | "kind" | "slug">,
 ): string | null {
+  if (item.kind === "person") {
+    return `/unclejimmy/fam/${encodeURIComponent(item.slug)}`;
+  }
+  if (item.kind === "team") {
+    return `/unclejimmy/squads/${encodeURIComponent(item.slug)}`;
+  }
+
   const explicitHref = trimToValue(item.href);
   if (explicitHref) {
     return explicitHref;
-  }
-
-  if (item.kind === "person" || item.kind === "team") {
-    return `/unclejimmy/squad/${encodeURIComponent(item.slug)}`;
   }
 
   return null;

@@ -17,6 +17,8 @@ const mockListRecentTcdbClanRisers = jest.fn();
 const mockListTopTcdbClanRankings = jest.fn();
 const mockGetTcdbClanRankingsBySlug = jest.fn();
 const mockListClanTcdbSnapshotHistory = jest.fn();
+const mockListIdentityGroups = jest.fn();
+const mockListGroupMembers = jest.fn();
 
 jest.mock("server-only", () => ({}));
 jest.mock("next/cache", () => ({
@@ -62,6 +64,11 @@ jest.mock("@/lib/data/homies", () => ({
 jest.mock("@/lib/tags-server", () => ({
   getStoredTagMetadataForHrefKind: (...args: unknown[]) =>
     mockGetStoredTagMetadataForHrefKind(...args),
+}));
+jest.mock("@/lib/identity-server", () => ({
+  getIdentityHref: jest.fn((_identity, _context) => null),
+  listIdentityGroups: (...args: unknown[]) => mockListIdentityGroups(...args),
+  listGroupMembers: (...args: unknown[]) => mockListGroupMembers(...args),
 }));
 jest.mock("@/lib/chronicle-person-tags", () => ({
   listChronicleTagDisplayNames: (...args: unknown[]) =>
@@ -223,6 +230,8 @@ describe("TCDB rankings pages", () => {
         difference: 75,
       },
     ]);
+    mockListIdentityGroups.mockReset().mockResolvedValue([]);
+    mockListGroupMembers.mockReset().mockResolvedValue([]);
   });
 
   it("renders the homies list page and preferred detail links", async () => {

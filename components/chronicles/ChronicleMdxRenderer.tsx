@@ -8,6 +8,7 @@ import { resolveChronicleCarouselFolder } from "@/lib/images/resolve-chronicle-i
 import { createNextOriginalReleaseSection } from "@/lib/release-section-colours";
 import type { TagMetadata } from "@/lib/tags-server";
 import { normalizeTagSlug } from "@/lib/tags";
+import { resolveIdentityHref, type IdentityContext } from "@/lib/identity";
 
 type ChronicleMdxRendererProps = {
   code: string;
@@ -15,6 +16,7 @@ type ChronicleMdxRendererProps = {
   postDate: string;
   source: string;
   tagMetadataBySlug?: ReadonlyMap<string, TagMetadata>;
+  identityContext?: IdentityContext;
 };
 
 const countReleaseSections = (source: string): number =>
@@ -40,6 +42,7 @@ export function ChronicleMdxRenderer({
   postDate,
   source,
   tagMetadataBySlug,
+  identityContext,
 }: ChronicleMdxRendererProps) {
   const totalSections = countReleaseSections(source);
   const nextReleaseSection = createNextOriginalReleaseSection(
@@ -62,7 +65,12 @@ export function ChronicleMdxRenderer({
     if (props.href) return <PersonTag {...props} />;
 
     const metadata = tagMetadataBySlug?.get(normalizeTagSlug(props.tag));
-    return <PersonTag {...props} href={metadata?.href ?? undefined} />;
+    const href = metadata
+      ? identityContext
+        ? resolveIdentityHref(metadata.meta, identityContext, metadata.href)
+        : metadata.href
+      : undefined;
+    return <PersonTag {...props} href={href ?? undefined} />;
   }
 
   function ChronicleFolderImageCarousel({

@@ -44,6 +44,13 @@ export const mockPersonaMenus: PersonaItem[] = [
         href: "/cardattack/homies",
       },
       {
+        id: "cardattack-clans",
+        kind: "link",
+        label: "Clans",
+        href: "/cardattack/clans",
+        featureKey: "menu.cardattack.clans",
+      },
+      {
         id: "cardattack-sets",
         kind: "link",
         label: "Sets",
