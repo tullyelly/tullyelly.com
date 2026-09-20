@@ -70,6 +70,11 @@ export default async function AppShell({
           appshell-mounted
         </span>
       ) : null}
+      <Breadcrumbs
+        pathname={disableGlobalBreadcrumb ? pathname : undefined}
+        forced={forcedItems}
+        suppressed={!showBreadcrumbs}
+      />
       <div
         id="pane-body"
         className={cn(
@@ -80,11 +85,6 @@ export default async function AppShell({
         <PersistentBannerHost />
         {children}
       </div>
-      <Breadcrumbs
-        pathname={disableGlobalBreadcrumb ? pathname : undefined}
-        forced={forcedItems}
-        suppressed={!showBreadcrumbs}
-      />
     </div>
   );
 
