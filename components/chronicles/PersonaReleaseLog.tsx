@@ -11,6 +11,7 @@ import { getOriginalReleaseSectionColour } from "@/lib/release-section-colours";
 import { normalizeTagSlug } from "@/lib/tags";
 import type { TagMetadata } from "@/lib/tags-server";
 import { getReleaseSectionHref } from "@/lib/release-section-anchor";
+import { resolveIdentityHref } from "@/lib/identity";
 
 type ReleaseProps = ComponentProps<typeof ReleaseSection>;
 type PersonTagProps = ComponentProps<typeof PersonTag>;
@@ -38,9 +39,24 @@ export async function PersonaReleaseLogEntry({
     return (
       <PersonTag
         {...props}
-        href={
-          tagMetadataBySlug.get(normalizeTagSlug(props.tag))?.href ?? undefined
-        }
+        href={(() => {
+          const metadata = tagMetadataBySlug.get(normalizeTagSlug(props.tag));
+          if (!metadata) return undefined;
+          if (
+            entry.alterEgo === "cardattack" ||
+            entry.alterEgo === "theabbott" ||
+            entry.alterEgo === "unclejimmy"
+          ) {
+            return (
+              resolveIdentityHref(
+                metadata.meta,
+                entry.alterEgo,
+                metadata.href,
+              ) ?? undefined
+            );
+          }
+          return metadata.href ?? undefined;
+        })()}
       />
     );
   }

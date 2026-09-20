@@ -22,6 +22,8 @@ import { getStoredTagMetadataForHrefKind } from "@/lib/tags-server";
 import { getHomieTcdbRankingHref } from "@/lib/tcdb-homie-routes";
 import { makeDetailGenerateMetadata } from "@/lib/seo/factories";
 import { listTradePartnersForHomieFromDb } from "@/lib/tcdb-trade-partners-db";
+import { listIdentityGroups } from "@/lib/identity-server";
+import RelatedIdentities from "@/components/identity/RelatedIdentities";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -144,6 +146,9 @@ export default async function Page({ params }: PageProps) {
     listHomieTcdbSnapshotHistory(ranking.homie_id),
     listTradePartnersForHomieFromDb(ranking.homie_id),
   ]);
+  const relatedClans = chronicleTagMetadata
+    ? await listIdentityGroups(chronicleTagMetadata.slug)
+    : [];
 
   return (
     <RankingDetailPage
@@ -185,6 +190,11 @@ export default async function Page({ params }: PageProps) {
       ]}
     >
       <TradePartnerRelations partners={tradePartners} />
+      <RelatedIdentities
+        title="Clans"
+        identities={relatedClans}
+        context="cardattack"
+      />
       {chronicleTagMetadata ? (
         <HomieChronicleDisplayNamesSection
           tagMetadata={chronicleTagMetadata}

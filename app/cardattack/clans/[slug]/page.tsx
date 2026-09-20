@@ -27,6 +27,8 @@ import {
 } from "@/lib/tcdb-clan-routes";
 import { canonicalFor } from "@/lib/seo/url";
 import { listTradePartnersForClanFromDb } from "@/lib/tcdb-trade-partners-db";
+import { listGroupMembers } from "@/lib/identity-server";
+import RelatedIdentities from "@/components/identity/RelatedIdentities";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -163,6 +165,9 @@ export default async function Page({ params }: PageProps) {
     listClanTcdbSnapshotHistory(ranking.clan_id),
     listTradePartnersForClanFromDb(ranking.clan_id),
   ]);
+  const relatedHomies = chronicleTagMetadata
+    ? await listGroupMembers(chronicleTagMetadata.slug)
+    : [];
   const rankSnapshotsBySport = new Map<string, typeof rankSnapshots>();
   for (const snapshot of rankSnapshots) {
     const snapshotsForSport = rankSnapshotsBySport.get(snapshot.sport) ?? [];
@@ -218,6 +223,11 @@ export default async function Page({ params }: PageProps) {
       })}
     >
       <TradePartnerRelations partners={tradePartners} />
+      <RelatedIdentities
+        title="Homies"
+        identities={relatedHomies}
+        context="cardattack"
+      />
       {chronicleTagMetadata ? (
         <ClanChronicleDisplayNamesSection
           tagMetadata={chronicleTagMetadata}

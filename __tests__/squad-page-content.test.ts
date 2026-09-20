@@ -121,21 +121,21 @@ describe("squadPageContent", () => {
         kind: "person",
         href: "/shaolin/tags/nikkigirl",
       }),
-    ).toBe("/shaolin/tags/nikkigirl");
+    ).toBe("/unclejimmy/fam/nikkigirl");
 
     expect(
       getSquadPageItemHref({
         slug: "jeff-meff",
         kind: "person",
       }),
-    ).toBe("/unclejimmy/squad/jeff-meff");
+    ).toBe("/unclejimmy/fam/jeff-meff");
 
     expect(
       getSquadPageItemHref({
         slug: "future team",
         kind: "team",
       }),
-    ).toBe("/unclejimmy/squad/future%20team");
+    ).toBe("/unclejimmy/squads/future%20team");
 
     expect(
       getSquadPageItemHref({

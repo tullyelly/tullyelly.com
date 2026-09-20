@@ -1261,6 +1261,28 @@
     "/images/optimus/raindrops/cypress.webp",
     "/images/optimus/raindrops/fern.webp",
     "/images/optimus/raindrops/raindrops.webp",
+    "/images/optimus/rainy-dayz/1050461/1050461-0.webp",
+    "/images/optimus/rainy-dayz/1050461/1050461-1.webp",
+    "/images/optimus/rainy-dayz/67-0.webp",
+    "/images/optimus/rainy-dayz/67-1.webp",
+    "/images/optimus/rainy-dayz/67-2.webp",
+    "/images/optimus/rainy-dayz/crosscourt/crosscourt-0.webp",
+    "/images/optimus/rainy-dayz/crosscourt/crosscourt-1.webp",
+    "/images/optimus/rainy-dayz/dave-hash.webp",
+    "/images/optimus/rainy-dayz/match-1/match-1-0.webp",
+    "/images/optimus/rainy-dayz/match-1/match-1-1.webp",
+    "/images/optimus/rainy-dayz/match-1/match-1-2.webp",
+    "/images/optimus/rainy-dayz/match-1/match-1-3.webp",
+    "/images/optimus/rainy-dayz/match-1/match-1-4.webp",
+    "/images/optimus/rainy-dayz/match-2/match-2-0.webp",
+    "/images/optimus/rainy-dayz/match-2/match-2-1.webp",
+    "/images/optimus/rainy-dayz/match-3/match-3-0.webp",
+    "/images/optimus/rainy-dayz/match-3/match-3-1.webp",
+    "/images/optimus/rainy-dayz/match-5/match-5-0.webp",
+    "/images/optimus/rainy-dayz/match-5/match-5-1.webp",
+    "/images/optimus/rainy-dayz/shoes.webp",
+    "/images/optimus/rainy-dayz/squad/squad-0.webp",
+    "/images/optimus/rainy-dayz/squad/squad-1.webp",
     "/images/optimus/raistlin black robes.webp",
     "/images/optimus/randomness/22-twos/22-twos1.webp",
     "/images/optimus/randomness/22-twos/22-twos2.webp",
@@ -8315,6 +8337,116 @@
       "src": "/images/optimus/raindrops/raindrops.webp",
       "width": 960,
       "height": 1280
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/1050461/1050461-0.webp",
+      "width": 1920,
+      "height": 1446
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/1050461/1050461-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/67-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/67-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/67-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/crosscourt/crosscourt-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/crosscourt/crosscourt-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/dave-hash.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-1/match-1-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-1/match-1-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-1/match-1-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-1/match-1-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-1/match-1-4.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-2/match-2-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-2/match-2-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-3/match-3-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-3/match-3-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-5/match-5-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/match-5/match-5-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/shoes.webp",
+      "width": 480,
+      "height": 853
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/squad/squad-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/squad/squad-1.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/raistlin black robes.webp",

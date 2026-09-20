@@ -24,7 +24,17 @@ const nextConfig = {
   images: {
     // Use Next.js defaults; no custom loader/path.
   },
-  // No legacy redirects required.
+  async redirects() {
+    return [
+      ...["nikkigirl", "bonnibel", "lulu", "jeff-meff", "eeeeeeeemma"].map(
+        (slug) => ({
+          source: `/unclejimmy/squad/${slug}`,
+          destination: `/unclejimmy/fam/${slug}`,
+          permanent: true,
+        }),
+      ),
+    ];
+  },
   async headers() {
     return [
       {
@@ -62,10 +72,10 @@ const nextConfig = {
         const msg = String(warning?.message || "");
         const fromContentlayer =
           /@contentlayer2[\\/]+core[\\/]+dist[\\/]+generation[\\/]+generate-dotpkg\.js/.test(
-            resource
+            resource,
           );
         const isCacheWarning = msg.includes(
-          "Build dependencies behind this expression are ignored and might cause incorrect cache invalidation."
+          "Build dependencies behind this expression are ignored and might cause incorrect cache invalidation.",
         );
         return fromContentlayer && isCacheWarning;
       },

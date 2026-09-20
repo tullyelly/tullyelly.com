@@ -81,6 +81,13 @@ async function PostContent({ slug }: { slug: string }) {
               postDate={post.date}
               source={post.body.raw}
               tagMetadataBySlug={tagMetadataBySlug}
+              identityContext={
+                post.resolvedAlterEgo === "cardattack" ||
+                post.resolvedAlterEgo === "theabbott" ||
+                post.resolvedAlterEgo === "unclejimmy"
+                  ? post.resolvedAlterEgo
+                  : undefined
+              }
             />
             <ChronicleSignature
               title={post.title}

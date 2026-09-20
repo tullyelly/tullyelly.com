@@ -155,8 +155,8 @@ a:focus {
 }
 
 [data-scroll-amendment] {
-  --person-tag-color: var(--text-on-blue);
-  --person-tag-hover-bg: var(--surface-card);
+  --person-tag-color: var(--blue);
+  --person-tag-hover-bg: var(--cream);
   --person-tag-hover-color: var(--blue);
 }
 

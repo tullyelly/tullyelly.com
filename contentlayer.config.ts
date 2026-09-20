@@ -6,10 +6,12 @@ import {
   DEFAULT_ALTER_EGO,
   inferAlterEgosFromTree,
   inferClanSnapshotTagUsagesFromTree,
+  inferChronicleMusicUsagesFromTree,
   inferPersonTagUsagesFromTree,
   inferYouTubeVideoArtistTagsFromTree,
   mergeChronicleTags,
   type MdxNode,
+  type ChronicleMusicUsage,
   type PersonTagUsage,
 } from "./lib/alterEgo";
 
@@ -20,6 +22,7 @@ const inferredClanSnapshotTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredPersonTags = new Map<string, string[]>();
 const inferredPersonTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredYouTubeVideoArtistTags = new Map<string, string[]>();
+const inferredMusicUsages = new Map<string, ChronicleMusicUsage[]>();
 
 function resolveInferenceSourceFilePath(file: any): string | undefined {
   const rawDocPath = file?.data?.rawDocumentData?.sourceFilePath;
@@ -123,11 +126,19 @@ function remarkInferYouTubeVideoArtistTags() {
     const foundTags = inferYouTubeVideoArtistTagsFromTree(tree, {
       errorPrefix,
     });
+    const musicUsages = inferChronicleMusicUsagesFromTree(tree, {
+      errorPrefix,
+    });
 
     if (foundTags.length > 0) {
       inferredYouTubeVideoArtistTags.set(sourceFilePath, foundTags);
     } else {
       inferredYouTubeVideoArtistTags.delete(sourceFilePath);
+    }
+    if (musicUsages.length > 0) {
+      inferredMusicUsages.set(sourceFilePath, musicUsages);
+    } else {
+      inferredMusicUsages.delete(sourceFilePath);
     }
   };
 }
@@ -205,6 +216,10 @@ const Post = defineDocumentType(() => ({
       type: "json",
       resolve: (doc) =>
         inferredClanSnapshotTagUsages.get(doc._raw.sourceFilePath) ?? [],
+    },
+    musicUsages: {
+      type: "json",
+      resolve: (doc) => inferredMusicUsages.get(doc._raw.sourceFilePath) ?? [],
     },
   },
 }));

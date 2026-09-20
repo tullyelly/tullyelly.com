@@ -17,15 +17,18 @@ describe("ScrollAmendment", () => {
     expect(wrapper).toHaveClass("block");
     expect(wrapper).toHaveClass("w-full");
     expect(wrapper.className).toContain("bg-[var(--blue)]");
-    expect(wrapper.className).toContain("text-[color:var(--text-on-blue)]");
-    expect(wrapper.className).toContain("[&_a]:!text-white");
-    expect(wrapper.className).toContain("[&_a:hover]:bg-white");
-    expect(wrapper.className).toContain(
-      "[&_a:hover]:!text-[color:var(--blue)]",
+    const content = screen
+      .getByText("Only chronicles 1-10 were updated.")
+      .closest("span");
+    expect(content).toHaveClass("!text-[color:var(--text-on-blue)]");
+    expect(content?.className).toContain(
+      "[&_*]:!text-[color:var(--text-on-blue)]",
     );
+    expect(content?.className).toContain("[&_a]:bg-white");
+    expect(content?.className).toContain("[&_a]:!text-[color:var(--blue)]");
     expect(wrapper).toHaveAttribute("data-scroll-amendment");
     expect(wrapper.className).not.toContain("border-[var(--blue-contrast)]");
-    expect(wrapper.className).toContain(
+    expect(content?.className).toContain(
       "[&_ul>li]:marker:text-[color:var(--text-on-blue)]",
     );
 
@@ -42,16 +45,16 @@ describe("ScrollAmendment", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps inline person tags on the white text treatment", () => {
+  it("renders inline person tags with the inverse link treatment", () => {
     render(
       <ScrollAmendment date="2026-07-19">
         <PersonTag tag="nikkigirl" /> sent in the correction.
       </ScrollAmendment>,
     );
 
-    const wrapper = screen.getByRole("note");
-    expect(wrapper.className).toContain(
-      "[&_[data-person-tag]]:!text-[color:var(--text-on-blue)]",
+    const content = screen.getByText("nikkigirl").closest("span");
+    expect(content?.className).toContain(
+      "[&_[data-person-tag]]:!text-[color:var(--blue)]",
     );
 
     expect(screen.getByText("nikkigirl")).toHaveAttribute(

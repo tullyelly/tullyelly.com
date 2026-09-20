@@ -9,7 +9,10 @@ interface ScrollAmendmentProps {
 }
 
 const scrollAmendmentBodyClassName =
-  "bg-[var(--blue)] text-[color:var(--text-on-blue)] [&_a]:!text-white [&_a:hover]:bg-white [&_a:hover]:!text-[color:var(--blue)] [&_a:focus-visible]:outline-white [&_[data-person-tag]]:!text-[color:var(--text-on-blue)] [&_ul>li]:marker:text-[color:var(--text-on-blue)]";
+  "bg-[var(--blue)] [&_a:focus-visible]:outline-white";
+
+const scrollAmendmentContentClassName =
+  "!text-[color:var(--text-on-blue)] [&_*]:!text-[color:var(--text-on-blue)] [&_a]:bg-white [&_a]:!text-[color:var(--blue)] [&_a:hover]:bg-[var(--cream)] [&_a:hover]:!text-[color:var(--blue)] [&_[data-person-tag]]:bg-white [&_[data-person-tag]]:!text-[color:var(--blue)] [&_ul>li]:marker:text-[color:var(--text-on-blue)]";
 
 const scrollAmendmentLabelClassName = "text-[color:var(--ink)]";
 
@@ -33,6 +36,7 @@ export function ScrollAmendment({
       bodyClassName={scrollAmendmentBodyClassName}
       labelClassName={scrollAmendmentLabelClassName}
       labelStyle={scrollAmendmentLabelStyle}
+      contentClassName={scrollAmendmentContentClassName}
       className={className}
     >
       {children}
