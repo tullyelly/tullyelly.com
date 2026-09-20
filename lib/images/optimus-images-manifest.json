@@ -1266,6 +1266,13 @@
     "/images/optimus/rainy-dayz/67-0.webp",
     "/images/optimus/rainy-dayz/67-1.webp",
     "/images/optimus/rainy-dayz/67-2.webp",
+    "/images/optimus/rainy-dayz/abbott/abbott-0.webp",
+    "/images/optimus/rainy-dayz/abbott/abbott-1.webp",
+    "/images/optimus/rainy-dayz/abbott/abbott-2.webp",
+    "/images/optimus/rainy-dayz/abbott/abbott-3.webp",
+    "/images/optimus/rainy-dayz/abbott/abbott-4.webp",
+    "/images/optimus/rainy-dayz/abbott/abbott-5.webp",
+    "/images/optimus/rainy-dayz/abbott/abbott-6.webp",
     "/images/optimus/rainy-dayz/crosscourt/crosscourt-0.webp",
     "/images/optimus/rainy-dayz/crosscourt/crosscourt-1.webp",
     "/images/optimus/rainy-dayz/dave-hash.webp",
@@ -8362,6 +8369,41 @@
       "src": "/images/optimus/rainy-dayz/67-2.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/abbott/abbott-0.webp",
+      "width": 900,
+      "height": 1600
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/abbott/abbott-1.webp",
+      "width": 900,
+      "height": 1600
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/abbott/abbott-2.webp",
+      "width": 900,
+      "height": 1600
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/abbott/abbott-3.webp",
+      "width": 750,
+      "height": 1333
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/abbott/abbott-4.webp",
+      "width": 750,
+      "height": 1333
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/abbott/abbott-5.webp",
+      "width": 750,
+      "height": 1333
+    },
+    {
+      "src": "/images/optimus/rainy-dayz/abbott/abbott-6.webp",
+      "width": 750,
+      "height": 1333
     },
     {
       "src": "/images/optimus/rainy-dayz/crosscourt/crosscourt-0.webp",
