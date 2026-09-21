@@ -206,6 +206,73 @@ export async function listIdentityGroups(slug: string): Promise<Identity[]> {
   return relations.map((relation) => relation.target);
 }
 
+export async function listIdentityAncestorGroups(
+  slug: string,
+): Promise<Identity[]> {
+  const normalized = normalizeTagSlug(slug);
+  const rows = await sql<IdentityRow>`
+    WITH RECURSIVE group_ids(group_tag_id) AS (
+      SELECT relation.target_tag_id
+      FROM dojo.tag_relation AS relation
+      JOIN dojo.tags AS source ON source.id = relation.source_tag_id
+      WHERE source.slug = ${normalized}
+        AND relation.relation_type = 'member_of'
+
+      UNION
+
+      SELECT relation.target_tag_id
+      FROM group_ids
+      JOIN dojo.tag_relation AS relation
+        ON relation.source_tag_id = group_ids.group_tag_id
+      WHERE relation.relation_type = 'member_of'
+    )
+    SELECT target.id,
+           target.slug,
+           target.name,
+           target.display_name,
+           target.href,
+           target.meta
+    FROM group_ids
+    JOIN dojo.tags AS target ON target.id = group_ids.group_tag_id
+    ORDER BY COALESCE(target.display_name, target.name), target.slug
+  `;
+  return rows.map(identityFromRow);
+}
+
+export async function listIdentityDescendants(
+  slug: string,
+): Promise<Identity[]> {
+  const normalized = normalizeTagSlug(slug);
+  const rows = await sql<IdentityRow>`
+    WITH RECURSIVE descendant_ids(descendant_tag_id) AS (
+      SELECT relation.source_tag_id
+      FROM dojo.tag_relation AS relation
+      JOIN dojo.tags AS target ON target.id = relation.target_tag_id
+      WHERE target.slug = ${normalized}
+        AND relation.relation_type = 'member_of'
+
+      UNION
+
+      SELECT relation.source_tag_id
+      FROM descendant_ids
+      JOIN dojo.tag_relation AS relation
+        ON relation.target_tag_id = descendant_ids.descendant_tag_id
+      WHERE relation.relation_type = 'member_of'
+    )
+    SELECT descendant.id,
+           descendant.slug,
+           descendant.name,
+           descendant.display_name,
+           descendant.href,
+           descendant.meta
+    FROM descendant_ids
+    JOIN dojo.tags AS descendant
+      ON descendant.id = descendant_ids.descendant_tag_id
+    ORDER BY COALESCE(descendant.display_name, descendant.name), descendant.slug
+  `;
+  return rows.map(identityFromRow);
+}
+
 export async function listGroupMembers(slug: string): Promise<Identity[]> {
   const relations = await listIncomingIdentityRelations(slug, "member_of");
   return relations.map((relation) => relation.source);

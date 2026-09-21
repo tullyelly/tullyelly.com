@@ -10,7 +10,7 @@ import RankingDetailPage, {
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
-import { getTaggedPosts } from "@/lib/blog";
+import { getTaggedPostsForTags } from "@/lib/blog";
 import type { ChronicleTagDisplayName } from "@/lib/chronicle-person-tags";
 import { listChronicleTagDisplayNames } from "@/lib/chronicle-person-tags";
 import {
@@ -27,7 +27,11 @@ import {
 } from "@/lib/tcdb-clan-routes";
 import { canonicalFor } from "@/lib/seo/url";
 import { listTradePartnersForClanFromDb } from "@/lib/tcdb-trade-partners-db";
-import { listGroupMembers } from "@/lib/identity-server";
+import {
+  listGroupMembers,
+  listIdentityDescendants,
+  listIdentityGroups,
+} from "@/lib/identity-server";
 import RelatedIdentities from "@/components/identity/RelatedIdentities";
 
 export const dynamic = "force-dynamic";
@@ -158,15 +162,22 @@ export default async function Page({ params }: PageProps) {
   const chronicleDisplayNames = chronicleTagMetadata
     ? listChronicleTagDisplayNames(chronicleTagMetadata.slug)
     : [];
-  const taggedChronicles = chronicleTagMetadata
-    ? getTaggedPosts(chronicleTagMetadata.slug)
-    : [];
   const [rankSnapshots, tradePartners] = await Promise.all([
     listClanTcdbSnapshotHistory(ranking.clan_id),
     listTradePartnersForClanFromDb(ranking.clan_id),
   ]);
-  const relatedHomies = chronicleTagMetadata
-    ? await listGroupMembers(chronicleTagMetadata.slug)
+  const [parentClans, relatedMembers, descendants] = chronicleTagMetadata
+    ? await Promise.all([
+        listIdentityGroups(chronicleTagMetadata.slug),
+        listGroupMembers(chronicleTagMetadata.slug),
+        listIdentityDescendants(chronicleTagMetadata.slug),
+      ])
+    : [[], [], []];
+  const inheritedHomieTags = descendants
+    .filter((descendant) => descendant.metadata.kind === "person")
+    .map((descendant) => descendant.slug);
+  const taggedChronicles = chronicleTagMetadata
+    ? getTaggedPostsForTags([chronicleTagMetadata.slug, ...inheritedHomieTags])
     : [];
   const rankSnapshotsBySport = new Map<string, typeof rankSnapshots>();
   for (const snapshot of rankSnapshots) {
@@ -224,8 +235,13 @@ export default async function Page({ params }: PageProps) {
     >
       <TradePartnerRelations partners={tradePartners} />
       <RelatedIdentities
-        title="Homies"
-        identities={relatedHomies}
+        title="Member of"
+        identities={parentClans}
+        context="cardattack"
+      />
+      <RelatedIdentities
+        title="Members"
+        identities={relatedMembers}
         context="cardattack"
       />
       {chronicleTagMetadata ? (
@@ -238,6 +254,7 @@ export default async function Page({ params }: PageProps) {
         <SquadMemberPosts
           tag={chronicleTagMetadata.slug}
           posts={taggedChronicles}
+          includesAffiliatedMembers={inheritedHomieTags.length > 0}
         />
       ) : null}
     </RankingDetailPage>

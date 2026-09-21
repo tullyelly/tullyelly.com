@@ -7,26 +7,24 @@ import SectionHeader from "@/components/layout/SectionHeader";
 import { Card } from "@ui";
 import { listIdentities } from "@/lib/identity-server";
 import { collectCrateAppearances } from "@/lib/music/crates";
+import { getTagMetadataBatch } from "@/lib/tags-server";
 
 export default async function Page() {
-  const [homies, clans] = await Promise.all([
-    listIdentities({ context: "theabbott", kind: "person" }),
-    listIdentities({ context: "theabbott", kind: "group" }),
-  ]);
   const appearances = collectCrateAppearances(allPosts);
-  const artistTags = Array.from(
-    new Map(
+  const artistSlugs = Array.from(
+    new Set(
       appearances.flatMap((appearance) =>
-        appearance.artistTag
-          ? [
-              [
-                appearance.artistTag,
-                appearance.artist ?? appearance.artistTag,
-              ] as const,
-            ]
-          : [],
+        appearance.artistTag ? [appearance.artistTag] : [],
       ),
     ),
+  );
+  const [homies, clans, artistMetadata] = await Promise.all([
+    listIdentities({ context: "theabbott", kind: "person" }),
+    listIdentities({ context: "theabbott", kind: "group" }),
+    getTagMetadataBatch(artistSlugs),
+  ]);
+  const artistTags = artistSlugs.map(
+    (slug) => [slug, artistMetadata.get(slug)?.displayName ?? slug] as const,
   );
 
   return (
@@ -84,12 +82,17 @@ export default async function Page() {
                     {appearance.song ??
                       appearance.title ??
                       appearance.album ??
-                      appearance.artist ??
+                      (appearance.artistTag
+                        ? artistMetadata.get(appearance.artistTag)?.displayName
+                        : undefined) ??
                       appearance.id ??
                       "Music appearance"}
                   </h3>
-                  {appearance.artist ? (
-                    <p className="mt-1 text-sm">{appearance.artist}</p>
+                  {appearance.artistTag ? (
+                    <p className="mt-1 text-sm">
+                      {artistMetadata.get(appearance.artistTag)?.displayName ??
+                        appearance.artistTag}
+                    </p>
                   ) : null}
                   <Link
                     href={appearance.chronicleUrl as Route}

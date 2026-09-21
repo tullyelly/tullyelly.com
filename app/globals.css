@@ -465,6 +465,8 @@ p {
 
   .btn {
     @apply inline-flex min-h-10 items-center justify-center rounded bg-[var(--blue)] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--blue-contrast)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60;
+    color: var(--white) !important;
+    text-decoration: none;
   }
 
   .control-compact {

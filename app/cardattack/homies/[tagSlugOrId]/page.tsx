@@ -10,7 +10,7 @@ import RankingDetailPage, {
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
-import { getTaggedPosts } from "@/lib/blog";
+import { getTaggedPostsForTags } from "@/lib/blog";
 import {
   getHomieTcdbRankingByRouteKey,
   listHomieTcdbSnapshotHistory,
@@ -22,7 +22,7 @@ import { getStoredTagMetadataForHrefKind } from "@/lib/tags-server";
 import { getHomieTcdbRankingHref } from "@/lib/tcdb-homie-routes";
 import { makeDetailGenerateMetadata } from "@/lib/seo/factories";
 import { listTradePartnersForHomieFromDb } from "@/lib/tcdb-trade-partners-db";
-import { listIdentityGroups } from "@/lib/identity-server";
+import { listIdentityAncestorGroups } from "@/lib/identity-server";
 import RelatedIdentities from "@/components/identity/RelatedIdentities";
 
 export const dynamic = "force-dynamic";
@@ -139,15 +139,18 @@ export default async function Page({ params }: PageProps) {
   const chronicleDisplayNames = chronicleTagMetadata
     ? listChronicleTagDisplayNames(chronicleTagMetadata.slug)
     : [];
-  const taggedChronicles = chronicleTagMetadata
-    ? getTaggedPosts(chronicleTagMetadata.slug)
-    : [];
   const [rankSnapshots, tradePartners] = await Promise.all([
     listHomieTcdbSnapshotHistory(ranking.homie_id),
     listTradePartnersForHomieFromDb(ranking.homie_id),
   ]);
   const relatedClans = chronicleTagMetadata
-    ? await listIdentityGroups(chronicleTagMetadata.slug)
+    ? await listIdentityAncestorGroups(chronicleTagMetadata.slug)
+    : [];
+  const taggedChronicles = chronicleTagMetadata
+    ? getTaggedPostsForTags([
+        chronicleTagMetadata.slug,
+        ...relatedClans.map((clan) => clan.slug),
+      ])
     : [];
 
   return (
@@ -205,6 +208,7 @@ export default async function Page({ params }: PageProps) {
         <SquadMemberPosts
           tag={chronicleTagMetadata.slug}
           posts={taggedChronicles}
+          includesAffiliatedClans={relatedClans.length > 0}
         />
       ) : null}
     </RankingDetailPage>

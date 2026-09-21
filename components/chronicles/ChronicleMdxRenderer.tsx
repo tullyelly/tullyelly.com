@@ -3,6 +3,7 @@ import type { ComponentProps } from "react";
 import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
 import PersonTag from "@/components/mdx/PersonTag";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
+import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
 import { resolveChronicleCarouselFolder } from "@/lib/images/resolve-chronicle-image-path";
 import { createNextOriginalReleaseSection } from "@/lib/release-section-colours";
@@ -24,6 +25,7 @@ const countReleaseSections = (source: string): number =>
 
 type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
 type PersonTagProps = ComponentProps<typeof PersonTag>;
+type YouTubeVideoProps = ComponentProps<typeof YouTubeVideo>;
 type ChronicleCarouselProps = Omit<
   ComponentProps<typeof FolderImageCarousel>,
   "folder"
@@ -73,6 +75,19 @@ export function ChronicleMdxRenderer({
     return <PersonTag {...props} href={href ?? undefined} />;
   }
 
+  function TaggedYouTubeVideo(props: YouTubeVideoProps) {
+    if (!props.tag) return <YouTubeVideo {...props} />;
+
+    const metadata = tagMetadataBySlug?.get(normalizeTagSlug(props.tag));
+    return (
+      <YouTubeVideo
+        {...props}
+        displayName={metadata?.displayName}
+        href={metadata?.href ?? undefined}
+      />
+    );
+  }
+
   function ChronicleFolderImageCarousel({
     folder,
     ...props
@@ -95,6 +110,7 @@ export function ChronicleMdxRenderer({
         FolderImageCarousel: ChronicleFolderImageCarousel,
         PersonTag: RoutedPersonTag,
         ReleaseSection: RainbowReleaseSection,
+        YouTubeVideo: TaggedYouTubeVideo,
       }}
     />
   );

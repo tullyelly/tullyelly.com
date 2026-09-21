@@ -13,7 +13,6 @@ describe("The Crates aggregation", () => {
           {
             type: "video",
             id: "one",
-            artist: "Mystery Group",
             artistTag: "mystery-group",
           },
         ],

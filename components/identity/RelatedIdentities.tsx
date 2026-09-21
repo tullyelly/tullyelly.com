@@ -17,8 +17,8 @@ export default function RelatedIdentities({
   if (identities.length === 0) return null;
   return (
     <Card as="section">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      <ul className="mt-3 flex flex-wrap gap-2">
+      <h2 className="!m-0 text-xl font-semibold">{title}</h2>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
         {identities.map((identity) => {
           const href = getIdentityHref(identity, context);
           return (

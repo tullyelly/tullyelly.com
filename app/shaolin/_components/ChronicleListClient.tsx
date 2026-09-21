@@ -46,7 +46,13 @@ const getChronicleSearchValues = (row: ChronicleListRow) => [
   ...row.tags,
 ];
 
-function TagLinks({ tags }: { tags: string[] }) {
+function TagLinks({
+  tags,
+  tagDisplayNames,
+}: {
+  tags: string[];
+  tagDisplayNames: Record<string, string>;
+}) {
   const visibleTags = tags.slice(0, VISIBLE_TAGS);
   const hiddenTagCount = tags.length - visibleTags.length;
 
@@ -60,7 +66,7 @@ function TagLinks({ tags }: { tags: string[] }) {
           prefetch={false}
         >
           <Badge className={getBadgeClass("planned")}>
-            {getHashtagDisplayName(tag)}
+            #{tagDisplayNames[tag] ?? getHashtagDisplayName(tag).slice(1)}
           </Badge>
         </Link>
       ))}
@@ -79,10 +85,16 @@ export default function ChronicleListClient({
   rows,
   alterEgos,
   initialAlterEgo = "",
+  tagDisplayNames = {},
+  archiveLabel = "Chronicles archive",
+  controlsLabel = "Chronicle controls",
 }: {
   rows: ChronicleListRow[];
   alterEgos: readonly AlterEgo[];
   initialAlterEgo?: AlterEgo | "";
+  tagDisplayNames?: Record<string, string>;
+  archiveLabel?: string;
+  controlsLabel?: string;
 }) {
   const [query, setQuery] = useState("");
   const [alterEgo, setAlterEgo] = useState<AlterEgo | "">(initialAlterEgo);
@@ -114,9 +126,9 @@ export default function ChronicleListClient({
   }
 
   return (
-    <div className="space-y-4" aria-label="Chronicles archive">
+    <div className="space-y-4" aria-label={archiveLabel}>
       <DataToolbar
-        ariaLabel="Chronicle controls"
+        ariaLabel={controlsLabel}
         search={
           <TableSearch
             query={query}
@@ -218,7 +230,9 @@ export default function ChronicleListClient({
                   <dd>{row.alterEgo}</dd>
                 </div>
               </dl>
-              {row.tags.length > 0 ? <TagLinks tags={row.tags} /> : null}
+              {row.tags.length > 0 ? (
+                <TagLinks tags={row.tags} tagDisplayNames={tagDisplayNames} />
+              ) : null}
             </Card>
           ))
         ) : (
@@ -275,7 +289,10 @@ export default function ChronicleListClient({
                 </TableCell>
                 <TableCell intent="descriptive" className="align-top">
                   {row.tags.length > 0 ? (
-                    <TagLinks tags={row.tags} />
+                    <TagLinks
+                      tags={row.tags}
+                      tagDisplayNames={tagDisplayNames}
+                    />
                   ) : (
                     <span className="text-muted-foreground">No tags</span>
                   )}

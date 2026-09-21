@@ -4,6 +4,7 @@ import type { ComponentProps } from "react";
 import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSectionMdxRenderer";
 import PersonTag from "@/components/mdx/PersonTag";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
+import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import type { AlterEgoReleaseEntry } from "@/lib/alter-ego-release-content";
 import { fmtDate } from "@/lib/datetime";
 import { compileMdxToCode } from "@/lib/mdx/compile";
@@ -15,6 +16,7 @@ import { resolveIdentityHref } from "@/lib/identity";
 
 type ReleaseProps = ComponentProps<typeof ReleaseSection>;
 type PersonTagProps = ComponentProps<typeof PersonTag>;
+type YouTubeVideoProps = ComponentProps<typeof YouTubeVideo>;
 
 export async function PersonaReleaseLogEntry({
   entry,
@@ -61,6 +63,18 @@ export async function PersonaReleaseLogEntry({
     );
   }
 
+  function TaggedYouTubeVideo(props: YouTubeVideoProps) {
+    if (!props.tag) return <YouTubeVideo {...props} />;
+    const metadata = tagMetadataBySlug.get(normalizeTagSlug(props.tag));
+    return (
+      <YouTubeVideo
+        {...props}
+        displayName={metadata?.displayName}
+        href={metadata?.href ?? undefined}
+      />
+    );
+  }
+
   return (
     <article className="space-y-4">
       <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border/70 pb-3">
@@ -90,6 +104,7 @@ export async function PersonaReleaseLogEntry({
         components={{
           PersonTag: RoutedPersonTag,
           ReleaseSection: OriginalReleaseSection,
+          YouTubeVideo: TaggedYouTubeVideo,
         }}
       />
     </article>

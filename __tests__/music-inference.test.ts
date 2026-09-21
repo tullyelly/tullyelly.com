@@ -23,7 +23,7 @@ describe("Chronicle music inference", () => {
               name: "YouTubeVideo",
               attributes: [
                 attr("id", "video-1"),
-                attr("artist", "Run the Jewels"),
+                attr("tag", "run-the-jewels"),
                 attr("song", "Legend Has It"),
                 attr("album", "RTJ3"),
               ],
@@ -45,7 +45,6 @@ describe("Chronicle music inference", () => {
       {
         type: "video",
         id: "video-1",
-        artist: "Run the Jewels",
         artistTag: "run-the-jewels",
         song: "Legend Has It",
         album: "RTJ3",

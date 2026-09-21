@@ -27,6 +27,9 @@ export function Card<T extends React.ElementType = "div">({
       className={cn(
         // Base surface with Bucks green 2px borders by default
         "rounded-2xl bg-white p-4 shadow-sm",
+        // Card padding owns the outer rhythm; global prose margins should not
+        // add extra space at the first or last edge of a compact card.
+        "[&>h1:first-child]:m-0 [&>h2:first-child]:m-0 [&>h3:first-child]:m-0 [&>p:last-child]:mb-0",
         // Standardize on a 2px border; remove rings to avoid inner edges
         "border-2",
         ACCENT[accent],

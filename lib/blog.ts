@@ -80,12 +80,25 @@ export function getPostsByTag(tag: string): Post[] {
 }
 
 export function getTaggedPosts(tag: string): TaggedPost[] {
-  return getPostsByTag(tag).map((post) => ({
-    slug: post.slug,
-    title: post.title,
-    summary: post.summary ?? "",
-    date: post.date,
-    url: post.url,
-    tags: (post.tags ?? []).map((t) => t.toLowerCase()),
-  }));
+  return getTaggedPostsForTags([tag]);
+}
+
+export function getTaggedPostsForTags(tags: readonly string[]): TaggedPost[] {
+  const targets = new Set(
+    tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean),
+  );
+  if (targets.size === 0) return [];
+
+  return getPublishedPosts()
+    .filter((post) =>
+      (post.tags ?? []).some((tag) => targets.has(tag.toLowerCase())),
+    )
+    .map((post) => ({
+      slug: post.slug,
+      title: post.title,
+      summary: post.summary ?? "",
+      date: post.date,
+      url: post.url,
+      tags: (post.tags ?? []).map((t) => t.toLowerCase()),
+    }));
 }

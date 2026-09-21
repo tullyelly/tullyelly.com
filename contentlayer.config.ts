@@ -8,7 +8,7 @@ import {
   inferClanSnapshotTagUsagesFromTree,
   inferChronicleMusicUsagesFromTree,
   inferPersonTagUsagesFromTree,
-  inferYouTubeVideoArtistTagsFromTree,
+  inferYouTubeVideoTagsFromTree,
   mergeChronicleTags,
   type MdxNode,
   type ChronicleMusicUsage,
@@ -21,7 +21,7 @@ const inferredClanSnapshotTags = new Map<string, string[]>();
 const inferredClanSnapshotTagUsages = new Map<string, PersonTagUsage[]>();
 const inferredPersonTags = new Map<string, string[]>();
 const inferredPersonTagUsages = new Map<string, PersonTagUsage[]>();
-const inferredYouTubeVideoArtistTags = new Map<string, string[]>();
+const inferredYouTubeVideoTags = new Map<string, string[]>();
 const inferredMusicUsages = new Map<string, ChronicleMusicUsage[]>();
 
 function resolveInferenceSourceFilePath(file: any): string | undefined {
@@ -111,19 +111,19 @@ function remarkInferPersonTags() {
   };
 }
 
-function remarkInferYouTubeVideoArtistTags() {
+function remarkInferYouTubeVideoTags() {
   return (tree: MdxNode, file: any) => {
     const sourceFilePath = resolveInferenceSourceFilePath(file);
 
     if (!sourceFilePath || sourceFilePath.startsWith("..")) {
       throw new Error(
-        "YouTubeVideo artist inference failed because the source file path could not be resolved.",
+        "YouTubeVideo tag inference failed because the source file path could not be resolved.",
       );
     }
 
     const errorPrefix = `Chronicle ${sourceFilePath}`;
 
-    const foundTags = inferYouTubeVideoArtistTagsFromTree(tree, {
+    const foundTags = inferYouTubeVideoTagsFromTree(tree, {
       errorPrefix,
     });
     const musicUsages = inferChronicleMusicUsagesFromTree(tree, {
@@ -131,9 +131,9 @@ function remarkInferYouTubeVideoArtistTags() {
     });
 
     if (foundTags.length > 0) {
-      inferredYouTubeVideoArtistTags.set(sourceFilePath, foundTags);
+      inferredYouTubeVideoTags.set(sourceFilePath, foundTags);
     } else {
-      inferredYouTubeVideoArtistTags.delete(sourceFilePath);
+      inferredYouTubeVideoTags.delete(sourceFilePath);
     }
     if (musicUsages.length > 0) {
       inferredMusicUsages.set(sourceFilePath, musicUsages);
@@ -186,7 +186,7 @@ const Post = defineDocumentType(() => ({
         const inferredInlineClanSnapshotTags = inferredClanSnapshotTags.get(
           doc._raw.sourceFilePath,
         );
-        const inferredVideoArtistTags = inferredYouTubeVideoArtistTags.get(
+        const inferredVideoTags = inferredYouTubeVideoTags.get(
           doc._raw.sourceFilePath,
         );
 
@@ -196,7 +196,7 @@ const Post = defineDocumentType(() => ({
           inferredAlterEgoTags ?? [],
           inferredInlinePersonTags ?? [],
           inferredInlineClanSnapshotTags ?? [],
-          inferredVideoArtistTags ?? [],
+          inferredVideoTags ?? [],
         );
       },
     },
@@ -232,7 +232,7 @@ export default makeSource({
     remarkPlugins: [
       remarkInferReleaseSectionAlterEgo,
       remarkInferPersonTags,
-      remarkInferYouTubeVideoArtistTags,
+      remarkInferYouTubeVideoTags,
     ],
     rehypePlugins: [],
   },

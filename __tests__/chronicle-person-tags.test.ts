@@ -80,6 +80,22 @@ describe("collectChronicleTagDisplayNames", () => {
       { displayName: "seminoles", count: 1, chronicleCount: 1 },
     ]);
   });
+
+  it("can restrict display names to PersonTag usages", () => {
+    expect(
+      collectChronicleTagDisplayNames(
+        [
+          {
+            slug: "one",
+            personTagUsages: [{ tag: "noles", displayName: "Seminoles" }],
+            clanTagUsages: [{ tag: "noles", displayName: "NOLES" }],
+          },
+        ],
+        "noles",
+        { includeClanTagUsages: false },
+      ),
+    ).toEqual([{ displayName: "Seminoles", count: 1, chronicleCount: 1 }]);
+  });
 });
 
 describe("collectChroniclePersonTagCounts", () => {

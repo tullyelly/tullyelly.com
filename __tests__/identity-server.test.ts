@@ -9,6 +9,8 @@ import {
   getIdentityBySlug,
   getIdentityHref,
   listGroupMembers,
+  listIdentityAncestorGroups,
+  listIdentityDescendants,
   listIdentityGroups,
   listIncomingIdentityRelations,
   listOutgoingIdentityRelations,
@@ -102,5 +104,73 @@ describe("identity server helpers", () => {
       "member_of",
       "member_of",
     ]);
+  });
+
+  test("allows a group identity to be a member of another group", async () => {
+    mockSql.mockResolvedValue([
+      {
+        ...relationRow,
+        source_id: 3,
+        source_slug: "method-man-and-redman",
+        source_name: "Method Man and Redman",
+        source_display_name: "Method Man and Redman",
+        source_meta: { identity: { kind: "group" } },
+      },
+    ]);
+
+    await expect(
+      listIdentityGroups("method-man-and-redman"),
+    ).resolves.toMatchObject([{ slug: "wu-tang-clan" }]);
+  });
+
+  test("lists every ancestor group through recursive membership", async () => {
+    mockSql.mockResolvedValue([
+      {
+        id: 2,
+        slug: "wu-tang-clan",
+        name: "Wu-Tang Clan",
+        display_name: "Wu-Tang Clan",
+        href: "/theabbott/clans/wu-tang-clan",
+        meta: { identity: { kind: "group" } },
+      },
+      {
+        id: 4,
+        slug: "hip-hop",
+        name: "Hip-Hop",
+        display_name: "Hip-Hop",
+        href: "/theabbott/clans/hip-hop",
+        meta: { identity: { kind: "group" } },
+      },
+    ]);
+
+    await expect(listIdentityAncestorGroups("rza")).resolves.toMatchObject([
+      { slug: "wu-tang-clan" },
+      { slug: "hip-hop" },
+    ]);
+    const query = (mockSql.mock.calls[0]?.[0] as string[]).join("?");
+    expect(query).toContain("WITH RECURSIVE group_ids");
+    expect(query).toContain("UNION");
+    expect(mockSql.mock.calls[0]?.[1]).toEqual(["rza"]);
+  });
+
+  test("lists nested descendants through recursive membership", async () => {
+    mockSql.mockResolvedValue([
+      {
+        id: 1,
+        slug: "rza",
+        name: "RZA",
+        display_name: "RZA",
+        href: "/theabbott/homies/rza",
+        meta: { identity: { kind: "person" } },
+      },
+    ]);
+
+    await expect(
+      listIdentityDescendants("wu-tang-clan"),
+    ).resolves.toMatchObject([{ slug: "rza" }]);
+    const query = (mockSql.mock.calls[0]?.[0] as string[]).join("?");
+    expect(query).toContain("WITH RECURSIVE descendant_ids");
+    expect(query).toContain("relation.target_tag_id");
+    expect(mockSql.mock.calls[0]?.[1]).toEqual(["wu-tang-clan"]);
   });
 });

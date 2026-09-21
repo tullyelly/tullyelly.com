@@ -73,9 +73,9 @@ describe("legacy media route integrations", () => {
       expect.stringContaining("youtube-nocookie.com/embed/jRHqjDnEFiE"),
     );
     expect(iframe).toHaveAttribute("src", expect.stringContaining("loop=1"));
-    expect(screen.getByText("aesop-rock")).toHaveAttribute(
+    expect(screen.getByText("aesop")).toHaveAttribute(
       "data-person-tag",
-      "aesop-rock",
+      "aesop",
     );
     expect(screen.getAllByText("Black Hole Superette")).toHaveLength(2);
     expect(

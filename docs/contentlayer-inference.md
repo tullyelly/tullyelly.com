@@ -20,7 +20,7 @@ Supported inferred tag sources:
 - `ReleaseSection alterEgo="..."` adds alter ego tags.
 - `PersonTag tag="..."` adds inline person or concept tags.
 - `ClanSnapshot tag="..."` adds clan snapshot tags.
-- `YouTubeVideo artist="..."` adds artist tags when `artist` is present.
+- `YouTubeVideo tag="..."` adds artist tags when `tag` is present.
 
 ## How Tags Merge
 
@@ -30,14 +30,14 @@ The computed `tags` field merges values in this order:
 2. Inferred `ReleaseSection` alter ego tags
 3. Inferred `PersonTag` tags
 4. Inferred `ClanSnapshot` tags
-5. Inferred `YouTubeVideo artist` tags
+5. Inferred `YouTubeVideo` tags
 
 Duplicates are removed after merging, and the first occurrence wins. That means
 a tag already listed in frontmatter keeps its frontmatter position.
 
 `PersonTag`, `ClanSnapshot`, and `ReleaseSection` tags are merged as authored.
-`YouTubeVideo artist` values are normalized with `normalizeTagSlug`, so
-`artist="DJ Shadow"` becomes `dj-shadow`.
+`YouTubeVideo tag` values are normalized with `normalizeTagSlug`. Authors
+should pass the canonical tag slug, such as `tag="dj-shadow"`.
 
 Example:
 
@@ -52,7 +52,7 @@ tags: ["volleyball", "jeff-meff"]
 <ReleaseSection alterEgo="unclejimmy">
   <PersonTag displayName="noah" tag="jeff-meff" />
   <ClanSnapshot tag="t-wolves" />
-  <YouTubeVideo id="abc123" artist="DJ Shadow" />
+  <YouTubeVideo id="abc123" tag="dj-shadow" />
 </ReleaseSection>
 ```
 
@@ -116,14 +116,16 @@ This adds `t-wolves` to computed tags and records this clan usage:
 ```mdx
 <YouTubeVideo
   id="HORLJvUMs08"
-  artist="DJ Shadow"
+  tag="dj-shadow"
   album="endtroducing....."
   song="building steam with a single grain of salt"
 />
 ```
 
-This adds `dj-shadow` to computed tags. `artist` is optional; a YouTube video
-without `artist` does not add a tag.
+This adds `dj-shadow` to computed tags. `tag` is optional; a YouTube video
+without `tag` does not add an artist tag. On Chronicle pages, the component
+uses the matching `dojo.tags.display_name` and route metadata for its artist
+link.
 
 ## What Can Break Inference
 
@@ -135,7 +137,7 @@ These patterns can fail or skip inference:
   - `PersonTag` without `tag`
   - `ClanSnapshot` without `tag`
 - Duplicate inferred props, such as two `tag` props on one `PersonTag`.
-- Non-string props, such as `tag={personTag}` or `artist={artistName}`.
+- Non-string props, such as `tag={personTag}`.
 - An unknown `ReleaseSection alterEgo` value outside the allowed list.
 - Renaming or aliasing the component in MDX, such as using `<Tag />` instead of
   `<PersonTag />`; the inference checks exact component names.

@@ -13,6 +13,7 @@ export default async function Page({
       kind="person"
       noun="Homie"
       directoryHref="/theabbott/homies"
+      directoryLabel="Homies"
     />
   );
 }

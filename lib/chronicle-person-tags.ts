@@ -38,10 +38,13 @@ function isChroniclePersonTagUsage(
 
 function getPersonTagUsages(
   post: ChroniclePersonTagSource,
+  includeClanTagUsages = true,
 ): ChroniclePersonTagUsage[] {
   const usages = [
     ...(Array.isArray(post.personTagUsages) ? post.personTagUsages : []),
-    ...(Array.isArray(post.clanTagUsages) ? post.clanTagUsages : []),
+    ...(includeClanTagUsages && Array.isArray(post.clanTagUsages)
+      ? post.clanTagUsages
+      : []),
   ];
 
   return usages.filter(isChroniclePersonTagUsage);
@@ -55,6 +58,7 @@ function trimToValue(value: string): string | null {
 export function collectChronicleTagDisplayNames(
   posts: readonly ChroniclePersonTagSource[],
   tag: string,
+  options: { includeClanTagUsages?: boolean } = {},
 ): ChronicleTagDisplayName[] {
   const targetSlug = normalizeTagSlug(tag);
   if (!targetSlug) return [];
@@ -67,7 +71,10 @@ export function collectChronicleTagDisplayNames(
   for (const post of posts) {
     if (post.draft) continue;
 
-    for (const usage of getPersonTagUsages(post)) {
+    for (const usage of getPersonTagUsages(
+      post,
+      options.includeClanTagUsages ?? true,
+    )) {
       if (normalizeTagSlug(usage.tag) !== targetSlug) continue;
 
       const displayName = trimToValue(usage.displayName) ?? usage.tag;
@@ -105,6 +112,16 @@ export function listChronicleTagDisplayNames(
   return collectChronicleTagDisplayNames(
     allPosts as readonly ChroniclePersonTagSource[],
     tag,
+  );
+}
+
+export function listChroniclePersonTagDisplayNames(
+  tag: string,
+): ChronicleTagDisplayName[] {
+  return collectChronicleTagDisplayNames(
+    allPosts as readonly ChroniclePersonTagSource[],
+    tag,
+    { includeClanTagUsages: false },
   );
 }
 

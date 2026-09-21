@@ -1,107 +1,119 @@
-import type { Route } from "next";
-import Link from "next/link";
-import { Badge } from "@/app/ui/Badge";
-import { getBadgeClass } from "@/app/ui/badge-maps";
-import FlowersInline from "@/components/flowers/FlowersInline";
-import { SectionDivider } from "@/components/SectionDivider";
-import { Card } from "@ui";
+import type { Metadata } from "next";
+import DataPageShell from "@/components/layout/DataPageShell";
+import PageIntro from "@/components/layout/PageIntro";
+import SectionHeader from "@/components/layout/SectionHeader";
 import { getPublishedPosts, getTagsWithCounts } from "@/lib/blog";
+import { listChroniclePersonTagDisplayNames } from "@/lib/chronicle-person-tags";
 import { buildMetadata } from "@/lib/seo/builders";
 import { canonicalFor } from "@/lib/seo/url";
-import { getHashtagDisplayName } from "@/lib/tags";
+import { getKnownTagDisplayName, normalizeTagSlug } from "@/lib/tags";
+import { getTagMetadataBatch } from "@/lib/tags-server";
+import type { TagHrefKind, TagMetadata } from "@/lib/tags-server";
+import TagDirectoryClient, {
+  type TagDirectoryRow,
+} from "./_components/TagDirectoryClient";
 
-export async function generateMetadata() {
-  const title = "Chronicle tags | tullyelly";
-  const description =
-    "Browse Shaolin chronicle tags, ordered by how often each label appears.";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata({
-    title,
-    description,
+    title: "Chronicle tags | tullyelly",
+    description:
+      "Search and browse tags from the published Shaolin Chronicles.",
     canonical: canonicalFor("/shaolin/tags"),
     type: "website",
     twitterCard: "summary_large_image",
   });
 }
 
-export default function Page() {
-  const posts = getPublishedPosts();
-  const tags = Object.entries(getTagsWithCounts(posts)).sort(
-    ([tagA, countA], [tagB, countB]) =>
-      countB - countA || tagA.localeCompare(tagB),
-  );
+async function getDisplayNames(tags: readonly string[]) {
+  try {
+    return await getTagMetadataBatch(tags);
+  } catch (error) {
+    console.warn("[chronicle-tags] Failed to resolve tag metadata", error);
+    return new Map();
+  }
+}
+
+const ALIAS_LABELS: Partial<Record<TagHrefKind, string>> = {
+  persona: "Alter ego page",
+  squad: "Squad page",
+  homie: "Homie page",
+  clan: "Clan page",
+  custom: "Related page",
+  external: "External page",
+};
+
+function getTagAlias(metadata: TagMetadata | undefined, archiveHref: string) {
+  if (
+    !metadata?.isClickable ||
+    !metadata.href ||
+    metadata.href === archiveHref ||
+    metadata.hrefKind === "tag" ||
+    metadata.hrefKind === "none"
+  ) {
+    return null;
+  }
+
+  const label = metadata.href.startsWith("/unclejimmy/fam/")
+    ? "Fam page"
+    : metadata.href.startsWith("/unclejimmy/squads/")
+      ? "Squad page"
+      : (ALIAS_LABELS[metadata.hrefKind] ?? "Related page");
+
+  return {
+    href: metadata.href,
+    label,
+    external: metadata.hrefKind === "external",
+  };
+}
+
+export default async function Page() {
+  const counts = getTagsWithCounts(getPublishedPosts());
+  const normalizedCounts = Object.entries(counts).reduce<
+    Record<string, number>
+  >((result, [tag, count]) => {
+    const slug = normalizeTagSlug(tag);
+    result[slug] = (result[slug] ?? 0) + count;
+    return result;
+  }, {});
+  const tags = Object.keys(normalizedCounts);
+  const metadataBySlug = await getDisplayNames(tags);
+  const rows: TagDirectoryRow[] = tags.map((slug) => {
+    const metadata = metadataBySlug.get(slug);
+    const archiveHref = `/shaolin/tags/${encodeURIComponent(slug)}`;
+    const personTagNames = listChroniclePersonTagDisplayNames(slug);
+    return {
+      slug,
+      canonicalDisplayName:
+        metadata?.displayName ?? getKnownTagDisplayName(slug),
+      chronicleCount: normalizedCounts[slug] ?? 0,
+      alias: getTagAlias(metadata, archiveHref),
+      personTagNames: personTagNames
+        .slice(0, 5)
+        .map(({ displayName, count }) => ({
+          displayName,
+          count,
+        })),
+      remainingPersonTagNameCount: Math.max(0, personTagNames.length - 5),
+    };
+  });
 
   return (
-    <main className="max-w-4xl mx-auto space-y-10 py-6 md:py-8">
-      <header className="space-y-3">
-        <h1 className="text-3xl font-semibold">chronicle tags</h1>
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Every tag in the Shaolin feed, sorted by usage; jump straight to the
-          entries that match your current thread.
-        </p>
-      </header>
-
-      {tags.length > 0 ? (
-        <Card as="section" className="p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium leading-snug">Tags by usage</h2>
-            <span className="text-sm text-muted-foreground">
-              {tags.length} {tags.length === 1 ? "tag" : "tags"}
-            </span>
-          </div>
-          <ul className="flex flex-wrap gap-3">
-            {tags.map(([tag, count]) => (
-              <li key={tag}>
-                <Link
-                  href={`/shaolin/tags/${encodeURIComponent(tag)}` as Route}
-                  className="inline-flex"
-                  prefetch={false}
-                >
-                  <Badge className={getBadgeClass("classic")}>
-                    {getHashtagDisplayName(tag)}{" "}
-                    <span className="pl-1 text-[11px] opacity-80">
-                      ({count})
-                    </span>
-                  </Badge>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : (
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          No tags to show yet.
-        </p>
-      )}
-
-      <SectionDivider />
-
-      <footer className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          <FlowersInline>
-            <a
-              href="https://www.contentlayer.dev/"
-              className="underline hover:no-underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Contentlayer
-            </a>
-            {", "}
-            <a
-              href="https://nextjs.org/"
-              className="underline hover:no-underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Next.js
-            </a>
-            {"; keeps the pages light."}
-          </FlowersInline>
-        </p>
-        <Link href={"/shaolin" as Route} className="link-blue">
-          ← Back to chronicles
-        </Link>
-      </footer>
-    </main>
+    <DataPageShell>
+      <PageIntro
+        title="Chronicle tags"
+        description="Browse the labels used across the published Shaolin Chronicles."
+      />
+      <section className="space-y-4" aria-labelledby="tag-directory-heading">
+        <SectionHeader
+          id="tag-directory-heading"
+          title="Tag directory"
+          description="Search by tag name, then sort by usage or alphabetically."
+        />
+        <TagDirectoryClient rows={rows} />
+      </section>
+    </DataPageShell>
   );
 }

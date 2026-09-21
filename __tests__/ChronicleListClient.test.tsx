@@ -69,4 +69,20 @@ describe("ChronicleListClient", () => {
 
     expect(screen.getByText("Page 1 of 1 • 6 total")).toBeInTheDocument();
   });
+
+  it("accepts canonical tag display names without changing archive links", () => {
+    render(
+      <ChronicleListClient
+        rows={rows.slice(0, 1)}
+        alterEgos={ALTER_EGO_OPTIONS}
+        tagDisplayNames={{ builds: "Build Journal" }}
+      />,
+    );
+
+    const links = screen.getAllByRole("link", { name: "#Build Journal" });
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      expect(link).toHaveAttribute("href", "/shaolin/tags/builds");
+    }
+  });
 });

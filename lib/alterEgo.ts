@@ -31,7 +31,6 @@ export type ChronicleMusicUsage = {
   id?: string;
   url?: string;
   title?: string;
-  artist?: string;
   artistTag?: string;
   song?: string;
   album?: string;
@@ -253,7 +252,7 @@ export function inferClanSnapshotTagsFromTree(
   return Array.from(new Set(usages.map((usage) => usage.tag)));
 }
 
-export function inferYouTubeVideoArtistTagsFromTree(
+export function inferYouTubeVideoTagsFromTree(
   tree: MdxNode,
   { errorPrefix = "Chronicle" }: InferOptions = {},
 ): string[] {
@@ -267,26 +266,26 @@ export function inferYouTubeVideoArtistTagsFromTree(
       node.name === "YouTubeVideo";
 
     if (isYouTubeVideo) {
-      const artistAttrs = (node.attributes ?? []).filter(
-        (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "artist",
+      const tagAttrs = (node.attributes ?? []).filter(
+        (attr) => attr?.type === "mdxJsxAttribute" && attr.name === "tag",
       );
 
-      if (artistAttrs.length > 1) {
+      if (tagAttrs.length > 1) {
         throw new Error(
-          `${errorPrefix}: YouTubeVideo should declare exactly one artist prop.`,
+          `${errorPrefix}: YouTubeVideo should declare exactly one tag prop.`,
         );
       }
 
-      const artistAttr = artistAttrs[0];
+      const tagAttr = tagAttrs[0];
 
-      if (artistAttr) {
-        if (typeof artistAttr.value !== "string") {
+      if (tagAttr) {
+        if (typeof tagAttr.value !== "string") {
           throw new Error(
-            `${errorPrefix}: YouTubeVideo artist must be a string literal.`,
+            `${errorPrefix}: YouTubeVideo tag must be a string literal.`,
           );
         }
 
-        const normalizedArtistTag = normalizeTagSlug(artistAttr.value);
+        const normalizedArtistTag = normalizeTagSlug(tagAttr.value);
 
         if (normalizedArtistTag) {
           foundTags.push(normalizedArtistTag);
@@ -341,11 +340,11 @@ export function inferChronicleMusicUsagesFromTree(
           `${errorPrefix}: YouTubeVideo id must be a string literal.`,
         );
       }
-      const artist = literalAttribute(node, "artist");
+      const artistTag = literalAttribute(node, "tag");
       usages.push({
         type: "video",
         id,
-        ...(artist ? { artist, artistTag: normalizeTagSlug(artist) } : {}),
+        ...(artistTag ? { artistTag: normalizeTagSlug(artistTag) } : {}),
         ...(literalAttribute(node, "song")
           ? { song: literalAttribute(node, "song") }
           : {}),

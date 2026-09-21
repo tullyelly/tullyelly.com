@@ -37,10 +37,8 @@ describe("YouTubeVideo", () => {
     );
   });
 
-  it("renders only artist metadata when only artist is provided", () => {
-    const { container } = render(
-      <YouTubeVideo id="gSJeHDlhYls" artist="DOOM" />,
-    );
+  it("renders only artist metadata when only a tag is provided", () => {
+    const { container } = render(<YouTubeVideo id="gSJeHDlhYls" tag="doom" />);
 
     const artist = screen.getByText("DOOM");
     expect(artist).toBeInTheDocument();
@@ -54,7 +52,7 @@ describe("YouTubeVideo", () => {
     render(
       <YouTubeVideo
         id="gSJeHDlhYls"
-        artist="DOOM"
+        tag="doom"
         song="Doomsday"
         album="Operation: Doomsday"
       />,
@@ -75,6 +73,21 @@ describe("YouTubeVideo", () => {
     expect(screen.getByText("Doomsday")).toBeInTheDocument();
     expect(screen.getByText("album:")).toBeInTheDocument();
     expect(screen.getByText("Operation: Doomsday")).toBeInTheDocument();
+  });
+
+  it("uses resolved tag metadata for the artist label and link", () => {
+    render(
+      <YouTubeVideo
+        id="nKkgSp39HO8"
+        tag="showbiz-and-ag"
+        displayName="Showbiz & A.G."
+        href="/theabbott/clans/showbiz-and-ag"
+      />,
+    );
+
+    const artist = screen.getByRole("link", { name: "Showbiz & A.G." });
+    expect(artist).toHaveAttribute("data-person-tag", "showbiz-and-ag");
+    expect(artist).toHaveAttribute("href", "/theabbott/clans/showbiz-and-ag");
   });
 
   it("does not render a metadata wrapper when metadata props are omitted", () => {

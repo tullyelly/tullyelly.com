@@ -5,7 +5,7 @@ import {
   inferAlterEgosFromTree,
   inferPersonTagUsagesFromTree,
   inferPersonTagsFromTree,
-  inferYouTubeVideoArtistTagsFromTree,
+  inferYouTubeVideoTagsFromTree,
   mergeChronicleTags,
   mergeTagsWithAlterEgo,
 } from "@/lib/alterEgo";
@@ -67,15 +67,15 @@ const clanSnapshotNode = (
 });
 
 const youTubeVideoNode = (
-  artist?: unknown,
+  tag?: unknown,
   children: TestNode[] = [],
 ): TestNode => ({
   type: "mdxJsxFlowElement",
   name: "YouTubeVideo",
   attributes:
-    artist === undefined
+    tag === undefined
       ? []
-      : [{ type: "mdxJsxAttribute", name: "artist", value: artist }],
+      : [{ type: "mdxJsxAttribute", name: "tag", value: tag }],
   children,
 });
 
@@ -292,34 +292,34 @@ describe("inferClanSnapshotTagUsagesFromTree", () => {
   });
 });
 
-describe("inferYouTubeVideoArtistTagsFromTree", () => {
+describe("inferYouTubeVideoTagsFromTree", () => {
   const errorPrefix = "Chronicle sample.mdx";
 
-  it("normalizes and deduplicates YouTubeVideo artist tags", () => {
+  it("normalizes and deduplicates YouTubeVideo tags", () => {
     const tree = root([
       youTubeVideoNode("DJ Shadow"),
       youTubeVideoNode("dj shadow"),
       youTubeVideoNode("Gang Starr"),
     ]);
 
-    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+    expect(inferYouTubeVideoTagsFromTree(tree, { errorPrefix })).toEqual([
       "dj-shadow",
       "gang-starr",
     ]);
   });
 
-  it("throws when YouTubeVideo artist is duplicated", () => {
+  it("throws when YouTubeVideo tag is duplicated", () => {
     expect(() =>
-      inferYouTubeVideoArtistTagsFromTree(
+      inferYouTubeVideoTagsFromTree(
         root([
           {
             type: "mdxJsxFlowElement",
             name: "YouTubeVideo",
             attributes: [
-              { type: "mdxJsxAttribute", name: "artist", value: "DOOM" },
+              { type: "mdxJsxAttribute", name: "tag", value: "DOOM" },
               {
                 type: "mdxJsxAttribute",
-                name: "artist",
+                name: "tag",
                 value: "Gang Starr",
               },
             ],
@@ -328,7 +328,7 @@ describe("inferYouTubeVideoArtistTagsFromTree", () => {
         { errorPrefix },
       ),
     ).toThrow(
-      `${errorPrefix}: YouTubeVideo should declare exactly one artist prop.`,
+      `${errorPrefix}: YouTubeVideo should declare exactly one tag prop.`,
     );
   });
 });
@@ -351,7 +351,7 @@ describe("Chronicle inference pipeline examples", () => {
     const clanTagUsages = inferClanSnapshotTagUsagesFromTree(tree, {
       errorPrefix,
     });
-    const youtubeArtistTags = inferYouTubeVideoArtistTagsFromTree(tree, {
+    const youtubeVideoTags = inferYouTubeVideoTagsFromTree(tree, {
       errorPrefix,
     });
 
@@ -363,14 +363,14 @@ describe("Chronicle inference pipeline examples", () => {
     expect(clanTagUsages).toEqual([
       { tag: "t-wolves", displayName: "t-wolves" },
     ]);
-    expect(youtubeArtistTags).toEqual(["dj-shadow"]);
+    expect(youtubeVideoTags).toEqual(["dj-shadow"]);
     expect(
       mergeChronicleTags(
         ["frontmatter", "jeff-meff"],
         alterEgoTags,
         personTagUsages.map((usage) => usage.tag),
         clanTagUsages.map((usage) => usage.tag),
-        youtubeArtistTags,
+        youtubeVideoTags,
       ),
     ).toEqual([
       "frontmatter",

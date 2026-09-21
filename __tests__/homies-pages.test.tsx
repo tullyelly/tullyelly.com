@@ -18,6 +18,7 @@ const mockListTopTcdbClanRankings = jest.fn();
 const mockGetTcdbClanRankingsBySlug = jest.fn();
 const mockListClanTcdbSnapshotHistory = jest.fn();
 const mockListIdentityGroups = jest.fn();
+const mockListIdentityDescendants = jest.fn();
 const mockListGroupMembers = jest.fn();
 
 jest.mock("server-only", () => ({}));
@@ -67,7 +68,11 @@ jest.mock("@/lib/tags-server", () => ({
 }));
 jest.mock("@/lib/identity-server", () => ({
   getIdentityHref: jest.fn((_identity, _context) => null),
+  listIdentityAncestorGroups: (...args: unknown[]) =>
+    mockListIdentityGroups(...args),
   listIdentityGroups: (...args: unknown[]) => mockListIdentityGroups(...args),
+  listIdentityDescendants: (...args: unknown[]) =>
+    mockListIdentityDescendants(...args),
   listGroupMembers: (...args: unknown[]) => mockListGroupMembers(...args),
 }));
 jest.mock("@/lib/chronicle-person-tags", () => ({
@@ -77,6 +82,7 @@ jest.mock("@/lib/chronicle-person-tags", () => ({
 }));
 jest.mock("@/lib/blog", () => ({
   getTaggedPosts: (...args: unknown[]) => mockGetTaggedPosts(...args),
+  getTaggedPostsForTags: (...args: unknown[]) => mockGetTaggedPosts(...args),
 }));
 jest.mock("@/components/tcdb/HomieCardCountSparkline", () => ({
   __esModule: true,
@@ -231,6 +237,7 @@ describe("TCDB rankings pages", () => {
       },
     ]);
     mockListIdentityGroups.mockReset().mockResolvedValue([]);
+    mockListIdentityDescendants.mockReset().mockResolvedValue([]);
     mockListGroupMembers.mockReset().mockResolvedValue([]);
   });
 
@@ -397,7 +404,7 @@ describe("TCDB rankings pages", () => {
       hrefKind: "homie",
     });
     expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith("freak");
-    expect(mockGetTaggedPosts).toHaveBeenCalledWith("freak");
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith(["freak"]);
   });
 
   it("does not render Chronicle display names for non-homie tag metadata", async () => {
@@ -420,6 +427,66 @@ describe("TCDB rankings pages", () => {
     expect(screen.queryByText("Chronicle names")).not.toBeInTheDocument();
     expect(mockListChronicleTagDisplayNames).not.toHaveBeenCalled();
     expect(mockGetTaggedPosts).not.toHaveBeenCalled();
+  });
+
+  it("inherits Chronicles and ancestor memberships from affiliated clans", async () => {
+    mockGetHomieTcdbRankingByRouteKey.mockResolvedValue(homieRanking);
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
+      slug: "freak",
+      displayName: "Giannis Antetokounmpo",
+      href: "/cardattack/homies/freak",
+      hrefKind: "homie",
+      isClickable: true,
+      meta: {},
+    });
+    mockListIdentityGroups.mockResolvedValue([
+      {
+        id: 20,
+        slug: "bucks-n-six",
+        displayName: "Milwaukee Bucks",
+        href: "/cardattack/clans/milwaukee-bucks",
+        metadata: { kind: "group", contexts: {} },
+        meta: {},
+      },
+      {
+        id: 21,
+        slug: "wisconsin-clans",
+        displayName: "Wisconsin Clans",
+        href: "/cardattack/clans/wisconsin-clans",
+        metadata: { kind: "group", contexts: {} },
+        meta: {},
+      },
+    ]);
+    mockGetTaggedPosts.mockReturnValue([
+      {
+        slug: "wu-tang-clans",
+        title: "wu-tang clans",
+        summary: "A Chronicle tagged to an affiliated clan.",
+        date: "2026-07-06",
+        url: "/shaolin/wu-tang-clans",
+        tags: ["bucks-n-six"],
+      },
+    ]);
+
+    render(
+      await HomieDetailPage({
+        params: Promise.resolve({ tagSlugOrId: "freak" }),
+      }),
+    );
+
+    expect(mockListIdentityGroups).toHaveBeenCalledWith("freak");
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith([
+      "freak",
+      "bucks-n-six",
+      "wisconsin-clans",
+    ]);
+    expect(screen.getByText("Milwaukee Bucks")).toBeVisible();
+    expect(screen.getByText("Wisconsin Clans")).toBeVisible();
+    expect(screen.getByRole("link", { name: "wu-tang clans" })).toHaveAttribute(
+      "href",
+      "/shaolin/wu-tang-clans",
+    );
+    expect(screen.getByText(/or an affiliated clan/)).toBeVisible();
   });
 
   it("renders homie detail with numeric fallback when no tag slug exists", async () => {
@@ -478,7 +545,7 @@ describe("TCDB rankings pages", () => {
       hrefKind: "homie",
     });
     expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith("freak");
-    expect(mockGetTaggedPosts).toHaveBeenCalledWith("freak");
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith(["freak"]);
   });
 
   it("renders clan detail as a page", async () => {
@@ -587,8 +654,85 @@ describe("TCDB rankings pages", () => {
     expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith(
       "bucks-n-six",
     );
-    expect(mockGetTaggedPosts).toHaveBeenCalledWith("bucks-n-six");
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith(["bucks-n-six"]);
     expect(mockListClanTcdbSnapshotHistory).toHaveBeenCalledWith(12);
+  });
+
+  it("renders a clan's parent clan only when the linkage exists", async () => {
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
+      slug: "bucks-n-six",
+      displayName: "Milwaukee Bucks",
+      href: "/cardattack/clans/milwaukee-bucks",
+      hrefKind: "clan",
+      isClickable: true,
+      meta: {},
+    });
+    mockGetTcdbClanRankingsBySlug.mockResolvedValue([clanRanking]);
+    mockListIdentityGroups.mockResolvedValue([
+      {
+        id: 20,
+        slug: "wisconsin-clans",
+        displayName: "Wisconsin Clans",
+        href: "/cardattack/clans/wisconsin-clans",
+        metadata: { kind: "group", contexts: {} },
+        meta: {},
+      },
+    ]);
+
+    render(
+      await ClanDetailPage({
+        params: Promise.resolve({ slug: "milwaukee-bucks" }),
+      }),
+    );
+
+    expect(screen.getByRole("heading", { name: "Member of" })).toBeVisible();
+    expect(screen.getByText("Wisconsin Clans")).toBeVisible();
+    expect(mockListIdentityGroups).toHaveBeenCalledWith("bucks-n-six");
+  });
+
+  it("inherits Homie Chronicles on the Clan detail page", async () => {
+    mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
+      slug: "bucks-n-six",
+      displayName: "Milwaukee Bucks",
+      href: "/cardattack/clans/milwaukee-bucks",
+      hrefKind: "clan",
+      isClickable: true,
+      meta: {},
+    });
+    mockGetTcdbClanRankingsBySlug.mockResolvedValue([clanRanking]);
+    mockListIdentityDescendants.mockResolvedValue([
+      {
+        id: 34,
+        slug: "freak",
+        displayName: "Giannis Antetokounmpo",
+        href: "/cardattack/homies/freak",
+        metadata: { kind: "person", contexts: {} },
+        meta: {},
+      },
+    ]);
+    mockGetTaggedPosts.mockReturnValue([
+      {
+        slug: "ultralight-beam",
+        title: "Ultralight Beam",
+        summary: "A Chronicle tagged to a clan member.",
+        date: "2026-07-06",
+        url: "/shaolin/ultralight-beam",
+        tags: ["freak"],
+      },
+    ]);
+
+    render(
+      await ClanDetailPage({
+        params: Promise.resolve({ slug: "milwaukee-bucks" }),
+      }),
+    );
+
+    expect(mockListIdentityDescendants).toHaveBeenCalledWith("bucks-n-six");
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith(["bucks-n-six", "freak"]);
+    expect(
+      screen.getByRole("link", { name: "Ultralight Beam" }),
+    ).toHaveAttribute("href", "/shaolin/ultralight-beam");
+    expect(screen.getByText(/or an affiliated member/)).toBeVisible();
   });
 
   it("renders TCDB ranking row links without dialog attributes", () => {
