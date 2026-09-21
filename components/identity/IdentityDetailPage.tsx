@@ -3,14 +3,16 @@ import { notFound } from "next/navigation";
 
 import DataPageShell from "@/components/layout/DataPageShell";
 import SectionHeader from "@/components/layout/SectionHeader";
+import RelatedIdentities from "@/components/identity/RelatedIdentities";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
 import { Card } from "@ui";
-import { getTaggedPosts } from "@/lib/blog";
+import { getTaggedPostsForTags } from "@/lib/blog";
 import type { IdentityContext, IdentityKind } from "@/lib/identity";
 import {
   getIdentityBySlug,
-  getIdentityHref,
   listGroupMembers,
+  listIdentityAncestorGroups,
+  listIdentityDescendants,
   listIdentityGroups,
 } from "@/lib/identity-server";
 
@@ -31,11 +33,24 @@ export default async function IdentityDetailPage({
 }) {
   const identity = await getIdentityBySlug(slug);
   if (!identity || identity.metadata.kind !== kind) notFound();
-  const related =
+  const [parentGroups, members, descendants] =
     kind === "person"
-      ? await listIdentityGroups(identity.slug)
-      : await listGroupMembers(identity.slug);
-  const posts = getTaggedPosts(identity.slug);
+      ? [await listIdentityAncestorGroups(identity.slug), [], []]
+      : await Promise.all([
+          listIdentityGroups(identity.slug),
+          listGroupMembers(identity.slug),
+          listIdentityDescendants(identity.slug),
+        ]);
+  const inheritedChronicleTags =
+    kind === "person"
+      ? parentGroups.map((group) => group.slug)
+      : descendants
+          .filter((descendant) => descendant.metadata.kind === "person")
+          .map((descendant) => descendant.slug);
+  const posts = getTaggedPostsForTags([
+    identity.slug,
+    ...inheritedChronicleTags,
+  ]);
 
   return (
     <DataPageShell width="wide">
@@ -49,34 +64,37 @@ export default async function IdentityDetailPage({
           </Link>
         }
       />
-      <Card as="section">
-        <h2 className="text-xl font-semibold">
-          {kind === "person" ? "Clans and squads" : "Members"}
-        </h2>
-        {related.length > 0 ? (
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            {related.map((item) => {
-              const href = getIdentityHref(item, context);
-              return (
-                <li key={item.id}>
-                  {href ? (
-                    <Link href={href} className="link-blue">
-                      {item.displayName}
-                    </Link>
-                  ) : (
-                    item.displayName
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="mt-3 text-muted-foreground">
+      <RelatedIdentities
+        title={kind === "person" ? "Clans and squads" : "Member of"}
+        identities={parentGroups}
+        context={context}
+      />
+      {kind === "group" ? (
+        <RelatedIdentities
+          title="Members"
+          identities={members}
+          context={context}
+        />
+      ) : null}
+      {parentGroups.length === 0 &&
+      (kind === "person" || members.length === 0) ? (
+        <Card as="section">
+          <h2 className="!m-0 text-xl font-semibold">
+            {kind === "person" ? "Clans and squads" : "Members"}
+          </h2>
+          <p className="!mb-0 mt-3 text-muted-foreground">
             No relationships are recorded yet.
           </p>
-        )}
-      </Card>
-      <SquadMemberPosts tag={identity.slug} posts={posts} />
+        </Card>
+      ) : null}
+      <SquadMemberPosts
+        tag={identity.slug}
+        posts={posts}
+        includesAffiliatedClans={kind === "person" && parentGroups.length > 0}
+        includesAffiliatedMembers={
+          kind === "group" && inheritedChronicleTags.length > 0
+        }
+      />
     </DataPageShell>
   );
 }

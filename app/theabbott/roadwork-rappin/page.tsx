@@ -117,7 +117,7 @@ export default function Page() {
         <YouTubeVideo
           id="jRHqjDnEFiE"
           loop
-          artist="Aesop Rock"
+          tag="aesop"
           song="Roadwork Rappin’"
           album="Black Hole Superette"
         />

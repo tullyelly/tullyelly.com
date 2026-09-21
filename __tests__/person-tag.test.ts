@@ -1,7 +1,7 @@
 import {
   inferClanSnapshotTagsFromTree,
   inferPersonTagsFromTree,
-  inferYouTubeVideoArtistTagsFromTree,
+  inferYouTubeVideoTagsFromTree,
   mergeChronicleTags,
 } from "@/lib/alterEgo";
 
@@ -23,15 +23,15 @@ const personTagNode = (tag?: string, children: TestNode[] = []): TestNode => ({
 });
 
 const youTubeVideoNode = (
-  artist?: unknown,
+  tag?: unknown,
   children: TestNode[] = [],
 ): TestNode => ({
   type: "mdxJsxFlowElement",
   name: "YouTubeVideo",
   attributes:
-    artist === undefined
+    tag === undefined
       ? []
-      : [{ type: "mdxJsxAttribute", name: "artist", value: artist }],
+      : [{ type: "mdxJsxAttribute", name: "tag", value: tag }],
   children,
 });
 
@@ -89,54 +89,52 @@ describe("inferPersonTagsFromTree", () => {
   });
 });
 
-describe("inferYouTubeVideoArtistTagsFromTree", () => {
+describe("inferYouTubeVideoTagsFromTree", () => {
   const errorPrefix = "Chronicle sample.mdx";
 
-  it("extracts an artist tag from YouTubeVideo", () => {
+  it("extracts a tag from YouTubeVideo", () => {
     const tree = root([youTubeVideoNode("gang-starr")]);
-    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+    expect(inferYouTubeVideoTagsFromTree(tree, { errorPrefix })).toEqual([
       "gang-starr",
     ]);
   });
 
-  it("normalizes artist values into tag slugs", () => {
+  it("normalizes tag values into tag slugs", () => {
     const tree = root([
       youTubeVideoNode("Gang Starr"),
       youTubeVideoNode("DOOM"),
     ]);
-    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+    expect(inferYouTubeVideoTagsFromTree(tree, { errorPrefix })).toEqual([
       "gang-starr",
       "doom",
     ]);
   });
 
-  it("deduplicates repeated YouTubeVideo artist tags", () => {
+  it("deduplicates repeated YouTubeVideo tags", () => {
     const tree = root([
       youTubeVideoNode("gang-starr"),
       youTubeVideoNode("gang-starr"),
     ]);
-    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual([
+    expect(inferYouTubeVideoTagsFromTree(tree, { errorPrefix })).toEqual([
       "gang-starr",
     ]);
   });
 
-  it("ignores YouTubeVideo nodes without an artist prop", () => {
+  it("ignores YouTubeVideo nodes without a tag prop", () => {
     const tree = root([youTubeVideoNode(undefined)]);
-    expect(inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix })).toEqual(
-      [],
-    );
+    expect(inferYouTubeVideoTagsFromTree(tree, { errorPrefix })).toEqual([]);
   });
 
-  it("throws when artist is not a string literal", () => {
+  it("throws when tag is not a string literal", () => {
     const tree = root([youTubeVideoNode({ foo: "bar" })]);
-    expect(() =>
-      inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix }),
-    ).toThrow(`${errorPrefix}: YouTubeVideo artist must be a string literal.`);
+    expect(() => inferYouTubeVideoTagsFromTree(tree, { errorPrefix })).toThrow(
+      `${errorPrefix}: YouTubeVideo tag must be a string literal.`,
+    );
   });
 });
 
 describe("mergeChronicleTags", () => {
-  it("merges inferred clan and artist tags alongside frontmatter and person tags", () => {
+  it("merges inferred video tags alongside frontmatter and other inferred tags", () => {
     const errorPrefix = "Chronicle sample.mdx";
     const tree = root([
       personTagNode("ron"),
@@ -151,15 +149,8 @@ describe("mergeChronicleTags", () => {
         ["mark2", "cardattack"],
         inferPersonTagsFromTree(tree, { errorPrefix }),
         inferClanSnapshotTagsFromTree(tree, { errorPrefix }),
-        inferYouTubeVideoArtistTagsFromTree(tree, { errorPrefix }),
+        inferYouTubeVideoTagsFromTree(tree, { errorPrefix }),
       ),
-    ).toEqual([
-      "alpha",
-      "mark2",
-      "cardattack",
-      "ron",
-      "noles",
-      "gang-starr",
-    ]);
+    ).toEqual(["alpha", "mark2", "cardattack", "ron", "noles", "gang-starr"]);
   });
 });

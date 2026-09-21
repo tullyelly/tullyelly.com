@@ -8,7 +8,9 @@ export type YouTubeVideoProps = {
   playlist?: string;
   loop?: boolean;
   className?: string;
-  artist?: string;
+  tag?: string;
+  displayName?: string;
+  href?: string;
   song?: string;
   album?: string;
 };
@@ -19,7 +21,9 @@ export default function YouTubeVideo({
   playlist,
   loop = false,
   className,
-  artist,
+  tag,
+  displayName,
+  href,
   song,
   album,
 }: YouTubeVideoProps) {
@@ -37,7 +41,7 @@ export default function YouTubeVideo({
   }
 
   const embedSrc = `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
-  const artistTag = artist ? normalizeTagSlug(artist) : "";
+  const artistTag = tag ? normalizeTagSlug(tag) : "";
   const songTitle = song?.trim();
   const albumTitle = album?.trim();
   const hasMetadata = Boolean(artistTag || songTitle || albumTitle);
@@ -74,7 +78,8 @@ export default function YouTubeVideo({
           {artistTag ? (
             <PersonTag
               tag={artistTag}
-              displayName={getTagDisplayName(artistTag)}
+              displayName={displayName ?? getTagDisplayName(artistTag)}
+              href={href}
             />
           ) : null}
           {songTitle ? (

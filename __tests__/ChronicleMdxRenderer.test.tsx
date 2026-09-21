@@ -168,6 +168,50 @@ describe("ChronicleMdxRenderer", () => {
     expect(freakLinks[1]).toHaveAttribute("href", "/custom-route");
   });
 
+  it("resolves YouTubeVideo artist labels from tag metadata", () => {
+    const tagMetadataBySlug = new Map([
+      [
+        "showbiz-and-ag",
+        {
+          slug: "showbiz-and-ag",
+          displayName: "Showbiz & A.G.",
+          href: "/shaolin/tags/showbiz-and-ag",
+          hrefKind: "tag" as const,
+          isClickable: true,
+          meta: {},
+        },
+      ],
+    ]);
+
+    render(
+      <ChronicleMdxRenderer
+        code="compiled-mdx"
+        slug="still-diggin"
+        postDate="2026-04-10"
+        source={'<YouTubeVideo id="video" tag="showbiz-and-ag" />'}
+        tagMetadataBySlug={tagMetadataBySlug}
+      />,
+    );
+
+    const props = chronicleSectionMdxRendererMock.mock.calls[0]?.[0] as
+      | { components?: Record<string, unknown> }
+      | undefined;
+    const TaggedYouTubeVideo = props?.components?.YouTubeVideo as
+      | ComponentType<{ id: string; tag: string }>
+      | undefined;
+
+    expect(TaggedYouTubeVideo).toBeDefined();
+    if (!TaggedYouTubeVideo) {
+      throw new Error("Expected YouTubeVideo metadata override");
+    }
+
+    render(<TaggedYouTubeVideo id="video" tag="showbiz-and-ag" />);
+
+    expect(
+      screen.getByRole("link", { name: "Showbiz & A.G." }),
+    ).toHaveAttribute("href", "/shaolin/tags/showbiz-and-ag");
+  });
+
   it("routes the Chronicle slug through the shared section image renderer", () => {
     render(
       <ChronicleMdxRenderer

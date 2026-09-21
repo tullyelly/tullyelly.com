@@ -11,12 +11,16 @@ type SquadMemberPostsProps = {
   tag: string;
   posts: TaggedPost[];
   pageSize?: number;
+  includesAffiliatedClans?: boolean;
+  includesAffiliatedMembers?: boolean;
 };
 
 export default function SquadMemberPosts({
   tag,
   posts,
   pageSize = 10,
+  includesAffiliatedClans = false,
+  includesAffiliatedMembers = false,
 }: SquadMemberPostsProps) {
   const safeSize = Number.isFinite(pageSize) ? Math.max(1, pageSize) : 10;
   const resetKey = `${tag}-${safeSize}-${posts?.length ?? 0}`;
@@ -27,6 +31,8 @@ export default function SquadMemberPosts({
       tag={tag}
       posts={posts}
       safeSize={safeSize}
+      includesAffiliatedClans={includesAffiliatedClans}
+      includesAffiliatedMembers={includesAffiliatedMembers}
     />
   );
 }
@@ -35,12 +41,16 @@ type SquadMemberPostsInnerProps = {
   tag: string;
   posts: TaggedPost[];
   safeSize: number;
+  includesAffiliatedClans: boolean;
+  includesAffiliatedMembers: boolean;
 };
 
 function SquadMemberPostsInner({
   tag,
   posts,
   safeSize,
+  includesAffiliatedClans,
+  includesAffiliatedMembers,
 }: SquadMemberPostsInnerProps) {
   const totalPages = Math.max(1, Math.ceil((posts?.length ?? 0) / safeSize));
   const [page, setPage] = useState(1);
@@ -59,8 +69,13 @@ function SquadMemberPostsInner({
           recent chronicles for {tag.toLowerCase()}
         </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          Latest entries tagged {tag.toLowerCase()}; follow along with the
-          journey.
+          Latest entries tagged {tag.toLowerCase()}
+          {includesAffiliatedClans
+            ? " or an affiliated clan"
+            : includesAffiliatedMembers
+              ? " or an affiliated member"
+              : ""}
+          ; follow along with the journey.
         </p>
       </header>
 
