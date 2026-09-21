@@ -1580,6 +1580,7 @@
     "/images/optimus/sterling-sharpe/today/today-1.webp",
     "/images/optimus/still-diggin/1052598.webp",
     "/images/optimus/still-diggin/1099919.webp",
+    "/images/optimus/still-diggin/1101063.webp",
     "/images/optimus/still-diggin/jeff.webp",
     "/images/optimus/strange-brew/griffey423.webp",
     "/images/optimus/strange-brew/inserts.webp",
@@ -9942,6 +9943,11 @@
       "src": "/images/optimus/still-diggin/1099919.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/still-diggin/1101063.webp",
+      "width": 731,
+      "height": 834
     },
     {
       "src": "/images/optimus/still-diggin/jeff.webp",
