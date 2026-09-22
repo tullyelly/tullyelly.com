@@ -578,6 +578,10 @@
     "/images/optimus/everything-remains-raw/dunk.webp",
     "/images/optimus/false-media/lulu.webp",
     "/images/optimus/false-media/walk.webp",
+    "/images/optimus/fifth-disciple/1091634.webp",
+    "/images/optimus/fifth-disciple/1099404.webp",
+    "/images/optimus/fifth-disciple/1100243.webp",
+    "/images/optimus/fifth-disciple/1101077.webp",
     "/images/optimus/finally/box/box-0.webp",
     "/images/optimus/finally/box/box-1.webp",
     "/images/optimus/finally/nine.webp",
@@ -4933,6 +4937,26 @@
       "src": "/images/optimus/false-media/walk.webp",
       "width": 1920,
       "height": 2560
+    },
+    {
+      "src": "/images/optimus/fifth-disciple/1091634.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/fifth-disciple/1099404.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/fifth-disciple/1100243.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/fifth-disciple/1101077.webp",
+      "width": 1418,
+      "height": 1883
     },
     {
       "src": "/images/optimus/finally/box/box-0.webp",
