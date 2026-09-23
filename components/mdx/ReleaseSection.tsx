@@ -243,7 +243,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const {
     alterEgo,
     children,
-    divider = true,
+    divider,
     releaseId,
     tcdbTradeId,
     tournamentId,
@@ -580,6 +580,14 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       : resolvedLcsName;
   const showLcsVisuals = Boolean(lcs);
   const shouldRenderLcs = showLcsVisuals;
+  const hasPlainVisualContainer =
+    showTournamentVisuals ||
+    showUspsVisuals ||
+    showLcsVisuals ||
+    showBricksVisuals ||
+    showReviewVisuals;
+  const effectiveDivider =
+    divider ?? (showReleaseDetails || hasPlainVisualContainer);
   const resolvedLcsVisitLabel =
     resolvedLcsVisitCount === undefined
       ? undefined
@@ -911,12 +919,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     );
 
   if (!showReleaseDetails) {
-    const hasPlainVisualContainer =
-      showTournamentVisuals ||
-      showUspsVisuals ||
-      showLcsVisuals ||
-      showBricksVisuals ||
-      showReviewVisuals;
     const reviewContainerClassName =
       review?.type === "table-schema"
         ? "rounded-lg border-[4px] border-solid border-[var(--table-schema-spice)] px-4 py-4"
@@ -969,7 +971,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     return withSourceAnchor(
       <>
         {plainContent}
-        {divider && !hasPlainVisualContainer ? (
+        {effectiveDivider && !hasPlainVisualContainer ? (
           <hr
             className="my-10 h-[4px] w-full rounded border-0 bg-[var(--blue)]"
             style={
@@ -1004,7 +1006,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
 
   const releaseContainerClassName = [
     "relative rounded-lg border-[4px] px-4 pt-10 pb-4 md:pt-8",
-    divider ? "mb-10" : "",
+    effectiveDivider ? "mb-10" : "",
   ]
     .filter(Boolean)
     .join(" ");

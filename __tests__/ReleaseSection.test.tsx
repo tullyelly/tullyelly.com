@@ -133,16 +133,23 @@ describe("ReleaseSection", () => {
     getLcsSummaryFromDbMock.mockResolvedValue(null);
   });
 
-  it("renders the default layout when releaseId is missing", async () => {
+  it("renders a plain section without a divider by default", async () => {
     const ui = await ReleaseSection(baseProps);
     const { container } = render(ui);
 
     expect(getScrollMock).not.toHaveBeenCalled();
     expect(screen.getByText("hello world")).toBeInTheDocument();
     expect(screen.getByText("#mark2")).toBeInTheDocument();
-    expect(container.querySelector("hr")).toBeInTheDocument();
+    expect(container.querySelector("hr")).not.toBeInTheDocument();
     expect(container.querySelector("[data-release-name]")).toBeNull();
     expect(container.querySelector(".relative")).toBeNull();
+  });
+
+  it("renders a divider when a plain section explicitly requests one", async () => {
+    const ui = await ReleaseSection({ ...baseProps, divider: true });
+    const { container } = render(ui);
+
+    expect(container.querySelector("hr")).toBeInTheDocument();
   });
 
   it("renders a source-order anchor with a persistent-header scroll offset", async () => {
