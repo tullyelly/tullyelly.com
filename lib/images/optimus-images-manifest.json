@@ -884,6 +884,19 @@
     "/images/optimus/jump-around/lions.webp",
     "/images/optimus/jump-around/marvel.webp",
     "/images/optimus/jump-around/pistons.webp",
+    "/images/optimus/kaukauna/1100528.webp",
+    "/images/optimus/kaukauna/1101063/1101063-0.webp",
+    "/images/optimus/kaukauna/1101063/1101063-1.webp",
+    "/images/optimus/kaukauna/67.webp",
+    "/images/optimus/kaukauna/dad.webp",
+    "/images/optimus/kaukauna/squad.webp",
+    "/images/optimus/kaukauna/sunshine.webp",
+    "/images/optimus/kaukauna/terrors/terrors-0.webp",
+    "/images/optimus/kaukauna/terrors/terrors-1.webp",
+    "/images/optimus/kaukauna/terrors/terrors-2.webp",
+    "/images/optimus/kaukauna/terrors/terrors-3.webp",
+    "/images/optimus/kaukauna/terrors/terrors-4.webp",
+    "/images/optimus/kaukauna/victory.webp",
     "/images/optimus/ketchup/outside.webp",
     "/images/optimus/labor-day/1085367.webp",
     "/images/optimus/labor-day/1088776.webp",
@@ -6467,6 +6480,71 @@
       "src": "/images/optimus/jump-around/pistons.webp",
       "width": 743,
       "height": 1020
+    },
+    {
+      "src": "/images/optimus/kaukauna/1100528.webp",
+      "width": 709,
+      "height": 1399
+    },
+    {
+      "src": "/images/optimus/kaukauna/1101063/1101063-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/1101063/1101063-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/dad.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kaukauna/squad.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kaukauna/sunshine.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kaukauna/terrors/terrors-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/terrors/terrors-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/terrors/terrors-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/terrors/terrors-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/terrors/terrors-4.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kaukauna/victory.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/ketchup/outside.webp",
