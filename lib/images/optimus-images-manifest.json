@@ -861,6 +861,8 @@
     "/images/optimus/jimmy-was-a-rock-star/1030822.webp",
     "/images/optimus/jimmy-was-a-rock-star/fern/fern-0.webp",
     "/images/optimus/jimmy-was-a-rock-star/fern/fern-1.webp",
+    "/images/optimus/jitterized/1052044.webp",
+    "/images/optimus/jitterized/rough.webp",
     "/images/optimus/jump-around/andretti.webp",
     "/images/optimus/jump-around/example.webp",
     "/images/optimus/jump-around/jeff-meff.webp",
@@ -6365,6 +6367,16 @@
       "src": "/images/optimus/jimmy-was-a-rock-star/fern/fern-1.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/jitterized/1052044.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/jitterized/rough.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/jump-around/andretti.webp",
