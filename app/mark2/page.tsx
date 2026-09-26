@@ -151,7 +151,7 @@ export default function Mark2Page() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              jigga
+              jay-z
             </a>
             {" & "}
             <a
