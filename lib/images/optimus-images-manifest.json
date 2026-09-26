@@ -1641,6 +1641,9 @@
     "/images/optimus/sun-day-fun-day/gators.webp",
     "/images/optimus/sun-day-fun-day/sisters.webp",
     "/images/optimus/sun-day-fun-day/trunks.webp",
+    "/images/optimus/supergirl/90s.webp",
+    "/images/optimus/supergirl/fern/fern-0.webp",
+    "/images/optimus/supergirl/fern/fern-1.webp",
     "/images/optimus/tcdb-partners/1084724.webp",
     "/images/optimus/tcdb-partners/1085556.webp",
     "/images/optimus/tcdb-partners/1091254.webp",
@@ -10279,6 +10282,21 @@
       "src": "/images/optimus/sun-day-fun-day/trunks.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/supergirl/90s.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/supergirl/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/supergirl/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/tcdb-partners/1084724.webp",
