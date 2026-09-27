@@ -1133,6 +1133,7 @@
     "/images/optimus/nice/giannis3.webp",
     "/images/optimus/nice/giannis4.webp",
     "/images/optimus/nice/giannis5.webp",
+    "/images/optimus/night-owl/fern.webp",
     "/images/optimus/no-bars/67/67-0.webp",
     "/images/optimus/no-bars/67/67-1.webp",
     "/images/optimus/no-bars/67/67-2.webp",
@@ -7742,6 +7743,11 @@
       "src": "/images/optimus/nice/giannis5.webp",
       "width": 960,
       "height": 1032
+    },
+    {
+      "src": "/images/optimus/night-owl/fern.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/no-bars/67/67-0.webp",
