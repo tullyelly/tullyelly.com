@@ -1035,6 +1035,11 @@
     "/images/optimus/mexico/airplane.webp",
     "/images/optimus/mexico/dragon.webp",
     "/images/optimus/mexico/water.webp",
+    "/images/optimus/midnight-marauders/1101107.webp",
+    "/images/optimus/midnight-marauders/1103850.webp",
+    "/images/optimus/midnight-marauders/1104411.webp",
+    "/images/optimus/midnight-marauders/1105223.webp",
+    "/images/optimus/midnight-marauders/1106146.webp",
     "/images/optimus/mihms/80s.webp",
     "/images/optimus/mihms/me.webp",
     "/images/optimus/mihms/mihms.webp",
@@ -7253,6 +7258,31 @@
       "src": "/images/optimus/mexico/water.webp",
       "width": 960,
       "height": 1280
+    },
+    {
+      "src": "/images/optimus/midnight-marauders/1101107.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/midnight-marauders/1103850.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/midnight-marauders/1104411.webp",
+      "width": 748,
+      "height": 1524
+    },
+    {
+      "src": "/images/optimus/midnight-marauders/1105223.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/midnight-marauders/1106146.webp",
+      "width": 731,
+      "height": 461
     },
     {
       "src": "/images/optimus/mihms/80s.webp",
