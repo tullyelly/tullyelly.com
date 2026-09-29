@@ -1061,6 +1061,7 @@
     "/images/optimus/mojo-so-dope/fern.webp",
     "/images/optimus/mojo-so-dope/joey.webp",
     "/images/optimus/mojo-so-dope/puzzle.webp",
+    "/images/optimus/monotony/sunshine.webp",
     "/images/optimus/mood/arthur.webp",
     "/images/optimus/more-bucks/961193/961193.webp",
     "/images/optimus/more-bucks/961193/metal.webp",
@@ -7388,6 +7389,11 @@
       "src": "/images/optimus/mojo-so-dope/puzzle.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/monotony/sunshine.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/mood/arthur.webp",
