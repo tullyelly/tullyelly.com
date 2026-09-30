@@ -709,6 +709,14 @@
     "/images/optimus/holiday-checkout/james-hr.webp",
     "/images/optimus/holy-grail/box.webp",
     "/images/optimus/homepage.webp",
+    "/images/optimus/hortonville/67.webp",
+    "/images/optimus/hortonville/877264.webp",
+    "/images/optimus/hortonville/george.webp",
+    "/images/optimus/hortonville/noah.webp",
+    "/images/optimus/hortonville/volleyball/hortonville-0.webp",
+    "/images/optimus/hortonville/volleyball/hortonville-1.webp",
+    "/images/optimus/hortonville/volleyball/hortonville-2.webp",
+    "/images/optimus/hortonville/volleyball/hortonville-3.webp",
     "/images/optimus/hotfix/oh-no.webp",
     "/images/optimus/hug-ball/hug-ball.webp",
     "/images/optimus/hug-ball/jean-grae.webp",
@@ -5629,6 +5637,46 @@
       "src": "/images/optimus/homepage.webp",
       "width": 1280,
       "height": 853
+    },
+    {
+      "src": "/images/optimus/hortonville/67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hortonville/877264.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hortonville/george.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/hortonville/noah.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hortonville/volleyball/hortonville-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hortonville/volleyball/hortonville-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hortonville/volleyball/hortonville-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hortonville/volleyball/hortonville-3.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/hotfix/oh-no.webp",
