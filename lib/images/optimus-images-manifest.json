@@ -1114,6 +1114,13 @@
     "/images/optimus/naps/1085357/1085357-1.webp",
     "/images/optimus/naps/fern.webp",
     "/images/optimus/naps/theraflu.webp",
+    "/images/optimus/nature-preserve/doom.webp",
+    "/images/optimus/nature-preserve/fern/fern-0.webp",
+    "/images/optimus/nature-preserve/fern/fern-1.webp",
+    "/images/optimus/nature-preserve/fern/fern-2.webp",
+    "/images/optimus/nature-preserve/first.webp",
+    "/images/optimus/nature-preserve/second.webp",
+    "/images/optimus/nature-preserve/wax.webp",
     "/images/optimus/new-besties/besties/besties-0.webp",
     "/images/optimus/new-besties/besties/besties-1.webp",
     "/images/optimus/new-besties/besties/besties-2.webp",
@@ -7662,6 +7669,41 @@
       "src": "/images/optimus/naps/theraflu.webp",
       "width": 372,
       "height": 253
+    },
+    {
+      "src": "/images/optimus/nature-preserve/doom.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/nature-preserve/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/nature-preserve/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/nature-preserve/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/nature-preserve/first.webp",
+      "width": 480,
+      "height": 853
+    },
+    {
+      "src": "/images/optimus/nature-preserve/second.webp",
+      "width": 480,
+      "height": 853
+    },
+    {
+      "src": "/images/optimus/nature-preserve/wax.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/new-besties/besties/besties-0.webp",
