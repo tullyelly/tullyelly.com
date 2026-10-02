@@ -1040,6 +1040,10 @@
     "/images/optimus/mercy/analytics.webp",
     "/images/optimus/mercy/devices.webp",
     "/images/optimus/mercy/frankenstein.webp",
+    "/images/optimus/messy-middle/1103121.webp",
+    "/images/optimus/messy-middle/dairy-bird.webp",
+    "/images/optimus/messy-middle/doom.webp",
+    "/images/optimus/messy-middle/wiscopullz.webp",
     "/images/optimus/mexico/airplane.webp",
     "/images/optimus/mexico/dragon.webp",
     "/images/optimus/mexico/water.webp",
@@ -7299,6 +7303,26 @@
       "src": "/images/optimus/mercy/frankenstein.webp",
       "width": 1000,
       "height": 1482
+    },
+    {
+      "src": "/images/optimus/messy-middle/1103121.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/messy-middle/dairy-bird.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/messy-middle/doom.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/messy-middle/wiscopullz.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/mexico/airplane.webp",
