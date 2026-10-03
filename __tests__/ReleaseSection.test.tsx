@@ -100,6 +100,7 @@ jest.mock("@/lib/volleyball-tournament-db", () => ({
 }));
 
 import ReleaseSection from "@/components/mdx/ReleaseSection";
+import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
 import { mdxComponents } from "@/mdx-components";
 
 const toRgb = (hex: string) => {
@@ -223,9 +224,7 @@ describe("ReleaseSection", () => {
       "1",
       "2026-02-14",
     );
-    expect(
-      screen.getByText("Midwest Boys Point Series: 2-1"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Record: 2-1")).toBeInTheDocument();
 
     const content = container.querySelector(
       "[data-tournament-id]",
@@ -315,12 +314,9 @@ describe("ReleaseSection", () => {
     const { container } = render(ui);
 
     expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent ===
-          "Antique Shop: Little Red Barn Antiques (9.2/10)",
-      ),
-    ).toBeInTheDocument();
+      container.querySelector("[data-release-section-header]"),
+    ).toHaveTextContent("Antique Shop: Little Red Barn Antiques");
+    expect(container.querySelector("footer")).toHaveTextContent("9.2/10");
     const shopLink = screen.getByText("Little Red Barn Antiques").closest("a");
     expect(shopLink).toBeInTheDocument();
     expect(shopLink).toHaveAttribute(
@@ -359,10 +355,9 @@ describe("ReleaseSection", () => {
     const { container } = render(ui);
 
     expect(
-      screen.getByText(
-        (_, node) => node?.textContent === "Table Schema: Pizza Shack (9/10)",
-      ),
-    ).toBeInTheDocument();
+      container.querySelector("[data-release-section-header]"),
+    ).toHaveTextContent("Table Schema: Pizza Shack");
+    expect(container.querySelector("footer")).toHaveTextContent("9/10");
     const tableSchemaLink = screen.getByText("Pizza Shack").closest("a");
     expect(tableSchemaLink).toBeInTheDocument();
     expect(tableSchemaLink).toHaveAttribute(
@@ -372,12 +367,14 @@ describe("ReleaseSection", () => {
     expect(tableSchemaLink).toHaveAttribute("target", "_blank");
     expect(tableSchemaLink).toHaveAttribute("rel", "noopener noreferrer");
     expect(getScrollMock).not.toHaveBeenCalled();
-    expect(container.querySelector("div.relative")).toBeNull();
+    expect(
+      container.querySelector("[data-release-section-header]"),
+    ).toBeInTheDocument();
     expect(container.querySelector(".tcdb-frame")).toBeNull();
 
     const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper.className).toContain("border-solid");
-    expect(wrapper.className).toContain("border-[var(--table-schema-spice)]");
+    expect(wrapper.className).toContain("border-[var(--blue)]");
 
     const content = container.querySelector(
       "[data-review-name]",
@@ -403,10 +400,9 @@ describe("ReleaseSection", () => {
     const { container } = render(ui);
 
     expect(
-      screen.getByText(
-        (_, node) => node?.textContent === "Save Point: Chrono Trigger (10/10)",
-      ),
-    ).toBeInTheDocument();
+      container.querySelector("[data-release-section-header]"),
+    ).toHaveTextContent("Save Point: Chrono Trigger");
+    expect(container.querySelector("footer")).toHaveTextContent("10/10");
     const savePointLink = screen.getByText("Chrono Trigger").closest("a");
     expect(savePointLink).toBeInTheDocument();
     expect(savePointLink).toHaveAttribute(
@@ -438,10 +434,8 @@ describe("ReleaseSection", () => {
     const { container } = render(ui);
 
     expect(
-      screen.getByText(
-        (_, node) => node?.textContent === "Antique Shop: little-red-barn",
-      ),
-    ).toBeInTheDocument();
+      container.querySelector("[data-release-section-header]"),
+    ).toHaveTextContent("Antique Shop: little-red-barn");
 
     const content = container.querySelector(
       "[data-review-name]",
@@ -475,12 +469,9 @@ describe("ReleaseSection", () => {
       "little-red-barn",
     );
     expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent ===
-          "Antique Shop: Little Red Barn Antiques (8.8/10)",
-      ),
-    ).toBeInTheDocument();
+      container.querySelector("[data-release-section-header]"),
+    ).toHaveTextContent("Antique Shop: Little Red Barn Antiques");
+    expect(container.querySelector("footer")).toHaveTextContent("8.8/10");
 
     const content = container.querySelector(
       "[data-review-name]",
@@ -513,11 +504,9 @@ describe("ReleaseSection", () => {
 
     expect(getBricksSummaryFromDbMock).toHaveBeenCalledWith("lego", "10330");
     expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent === "McLaren MP4/4 & Ayrton Senna (9.3/10)",
-      ),
-    ).toBeInTheDocument();
+      container.querySelector("[data-release-section-header]"),
+    ).toHaveTextContent("McLaren MP4/4 & Ayrton Senna");
+    expect(container.querySelector("footer")).toHaveTextContent("9.3/10");
     expect(
       screen.getByText(
         (_, node) => node?.textContent === "LEGO ID: 10330; 693 pieces; f1",
@@ -568,13 +557,12 @@ describe("ReleaseSection", () => {
         reviewScore: 8.7,
       },
     });
-    render(ui);
+    const { container } = render(ui);
 
     expect(
-      screen.getByText(
-        (_, node) => node?.textContent === "Mercedes-AMG F1 W14 (8.7/10)",
-      ),
-    ).toBeInTheDocument();
+      container.querySelector("[data-release-section-header]"),
+    ).toHaveTextContent("Mercedes-AMG F1 W14");
+    expect(container.querySelector("footer")).toHaveTextContent("8.7/10");
     expect(
       screen.getByText(
         (_, node) => node?.textContent === "LEGO ID: 42171; 1642 pieces; f1",
@@ -604,12 +592,10 @@ describe("ReleaseSection", () => {
     const { container } = render(ui);
 
     expect(getUspsSummaryFromDbMock).toHaveBeenCalledWith("menasha");
-    expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent === "Menasha, Wisconsin (8.7/10; 4 visits)",
-      ),
-    ).toBeInTheDocument();
+    expect(container).toHaveTextContent("Menasha, Wisconsin");
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "8.7/10; 4 visits",
+    );
 
     const uspsLink = screen.getByText("Menasha, Wisconsin").closest("a");
     expect(uspsLink).toBeInTheDocument();
@@ -662,17 +648,17 @@ describe("ReleaseSection", () => {
     expect(getScrollMock).toHaveBeenCalledWith("55");
     expect(getUspsSummaryFromDbMock).toHaveBeenCalledWith("appleton-sdc");
 
-    const tab = container.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = container.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab).toHaveAttribute("href", "/mark2/shaolin-scrolls/55");
     expect(tab).toHaveTextContent("International Bricks");
 
-    expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent === "Appleton, Wisconsin (9.1/10; 6 visits)",
-      ),
-    ).toBeInTheDocument();
+    expect(container).toHaveTextContent("Appleton, Wisconsin");
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "9.1/10; 6 visits",
+    );
 
     const uspsLink = screen.getByText("Appleton, Wisconsin").closest("a");
     expect(uspsLink).toBeInTheDocument();
@@ -711,17 +697,15 @@ describe("ReleaseSection", () => {
     const { container } = render(ui);
 
     expect(getLcsSummaryFromDbMock).toHaveBeenCalledWith("walgreens-college");
-    expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent ===
-          "Walgreens: College; Appleton, WI (6.5/10; 1 visit)",
-      ),
-    ).toBeInTheDocument();
+    expect(container.querySelector("header")).toHaveTextContent(
+      "Walgreens: College",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent("Appleton, WI");
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "6.5/10; 1 visit",
+    );
 
-    const lcsLink = screen
-      .getByText("Walgreens: College; Appleton, WI")
-      .closest("a");
+    const lcsLink = screen.getByText("Walgreens: College").closest("a");
     expect(lcsLink).toBeInTheDocument();
     expect(lcsLink).toHaveAttribute(
       "href",
@@ -781,15 +765,20 @@ describe("ReleaseSection", () => {
 
     expect(getScrollMock).toHaveBeenCalledWith("55");
     expect(getLcsSummaryFromDbMock).toHaveBeenCalledWith("walgreens-college");
-    expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent ===
-          "Walgreens: College; Appleton, WI (6.5/10; 1 visit)",
-      ),
-    ).toBeInTheDocument();
+    expect(container.querySelector("header")).toHaveTextContent(
+      "International Bricks",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "Walgreens: College",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent("Appleton, WI");
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "6.5/10; 1 visit",
+    );
 
-    const tab = container.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = container.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab).toHaveAttribute("href", "/mark2/shaolin-scrolls/55");
 
@@ -908,12 +897,14 @@ describe("ReleaseSection", () => {
 
     expect(getScrollMock).toHaveBeenCalledWith("12");
 
-    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
     expect(wrapper.className).toContain("mb-10");
 
-    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = wrapper.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab.tagName.toLowerCase()).toBe("a");
     expect(tab.getAttribute("href")).toBe("/mark2/shaolin-scrolls/12");
@@ -967,15 +958,17 @@ describe("ReleaseSection", () => {
 
     expect(getScrollMock).not.toHaveBeenCalled();
 
-    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper.className).not.toContain("tcdb-border");
     expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
 
-    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = wrapper.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab.getAttribute("href")).toBe("/cardattack/tcdb-trades/359632");
-    expect(tab).toHaveTextContent("TCDb Trade: 359632; Partner collect-a-set");
+    expect(tab).toHaveTextContent("TCDb Trade: 359632");
 
     expect(screen.getByText("Trade Partner:")).toBeInTheDocument();
     const partnerLink = screen.getByText("collect-a-set").closest("a");
@@ -1283,10 +1276,12 @@ describe("ReleaseSection", () => {
     });
     const { container } = render(ui);
 
-    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
 
-    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = wrapper.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab).toHaveTextContent("TCDb Trade: 359632");
 
@@ -1404,11 +1399,13 @@ describe("ReleaseSection", () => {
     });
     const { container } = render(ui);
 
-    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
 
-    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = wrapper.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
     expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
@@ -1440,12 +1437,14 @@ describe("ReleaseSection", () => {
     });
     const { container } = render(ui);
 
-    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper.className).not.toContain("chrome-foil-border");
     expect(wrapper).toHaveStyle({ borderColor: toRgb(rainbowColour) });
 
-    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = wrapper.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab).toBeInTheDocument();
     expect(tab.style.getPropertyValue("--tab-bg")).toBe(rainbowColour);
     expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
@@ -1482,7 +1481,7 @@ describe("ReleaseSection", () => {
     });
     const { container } = render(ui);
 
-    const wrapper = container.querySelector("div.relative") as HTMLDivElement;
+    const wrapper = container.querySelector("div.rounded-lg") as HTMLDivElement;
     expect(wrapper).toBeInTheDocument();
     expect(wrapper).toHaveStyle({ borderColor: toRgb("#0077C0") });
     expect(wrapper.className).not.toContain("mb-10");
@@ -1491,7 +1490,9 @@ describe("ReleaseSection", () => {
       "[data-release-color]",
     ) as HTMLDivElement;
     expect(content).toHaveAttribute("data-release-color", "#0077C0");
-    const tab = wrapper.querySelector(".absolute") as HTMLAnchorElement;
+    const tab = wrapper.querySelector(
+      "[data-release-section-header] a",
+    ) as HTMLAnchorElement;
     expect(tab.style.getPropertyValue("--tab-bg")).toBe("#0077C0");
     expect(tab.style.getPropertyValue("--tab-fg")).toBe("#FFFFFF");
     expect(tab.style.getPropertyValue("--tab-hover-bg")).toBe("#FFFFFF");
@@ -1500,5 +1501,289 @@ describe("ReleaseSection", () => {
     expect(tab.className).toContain("hover:!text-[color:var(--tab-hover-fg");
 
     expect(container.querySelector("hr")).toBeNull();
+  });
+  it("keeps unlinked review headers static and all metadata in the closing footer", async () => {
+    const { container } = render(
+      await ReleaseSection({
+        ...baseProps,
+        guestMage: "Guest Writer",
+        rainbowColour: "#FFFF00",
+        review: { type: "save-point", id: "unknown", rating: 0 },
+      }),
+    );
+    const header = container.querySelector("header")!;
+    expect(header).toHaveTextContent("Save Point: unknown");
+    expect(header.querySelector("a")).toBeNull();
+    expect(header.closest("section")).toBe(
+      container.querySelector("footer")?.closest("section"),
+    );
+    expect(header).not.toHaveTextContent("›");
+    expect(header.innerHTML).not.toContain("hover:");
+    expect(container.querySelector("footer")).toHaveTextContent("Rating: 0");
+    expect(container.querySelector("footer")).toHaveTextContent("#mark2");
+    expect(
+      screen
+        .getByText("Guest Mage: Guest Writer")
+        .compareDocumentPosition(screen.getByText("hello world")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it.each([
+    { releaseId: "55" },
+    { tcdbTradeId: "359632" },
+    { review: { type: "save-point" as const, id: "game" } },
+    { bricks: "10330" },
+    { usps: "menasha" },
+    { lcs: "shop" },
+  ])("preserves supplemental tournament metadata with %j", async (subject) => {
+    getVolleyballTournamentDayByKeyAndDateMock.mockResolvedValue({
+      tournamentKey: "2",
+      tournamentName: "Tournament name",
+      tournamentDate: "2026-02-22",
+      wins: 3,
+      losses: 0,
+      finish: 1,
+    });
+    const { container } = render(
+      await ReleaseSection({
+        ...baseProps,
+        ...subject,
+        tournamentId: "2",
+        tournamentDate: "2026-02-22",
+      }),
+    );
+    expect(container.querySelectorAll("header")).toHaveLength(1);
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "Tournament name: 3-0",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent("1st Place");
+    expect(container.querySelector("footer img")).toBeInTheDocument();
+  });
+
+  it("keeps the trade partner exclusively in the footer", async () => {
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue({
+      partner: "Partner",
+      tradePartnerId: 42,
+      received: 0,
+      sent: 2,
+      total: 2,
+      sectionCount: 2,
+      status: "Completed",
+    });
+    const { container } = render(
+      await ReleaseSection({ ...baseProps, tcdbTradeId: "359632" }),
+    );
+    expect(container.querySelector("header")).not.toHaveTextContent("Partner");
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "Trade Partner: Partner",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "0 received; 2 sent; 2 total",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "359632: completed",
+    );
+  });
+  it.each([
+    {},
+    { releaseId: "55" },
+    { review: { type: "save-point" as const, id: "unknown" } },
+    { usps: "unknown" },
+    { lcs: "unknown" },
+    { tcdbTradeId: "unknown" },
+  ])(
+    "omits the separator and empty metadata area for persona-only footers: %j",
+    async (subject) => {
+      const { container } = render(
+        await ReleaseSection({ ...baseProps, ...subject }),
+      );
+      const footer = container.querySelector("footer")!;
+      expect(footer).not.toHaveClass("border-t-2", "pt-4", "gap-4");
+      expect(footer).toHaveTextContent("#mark2");
+      expect(footer.children).toHaveLength(1);
+    },
+  );
+
+  it.each([{ usps: "menasha" }, { lcs: "shop" }])(
+    "retains the separator for supplemental release metadata: %j",
+    async (subject) => {
+      const { container } = render(
+        await ReleaseSection({ ...baseProps, releaseId: "55", ...subject }),
+      );
+      expect(container.querySelector("footer")).toHaveClass(
+        "border-t-2",
+        "pt-4",
+      );
+    },
+  );
+
+  it("retains the separator for review ratings, including zero", async () => {
+    const { container } = render(
+      await ReleaseSection({
+        ...baseProps,
+        review: { type: "save-point", id: "unknown", rating: 0 },
+      }),
+    );
+    expect(container.querySelector("footer")).toHaveClass("border-t-2", "pt-4");
+    expect(container.querySelector("footer")).toHaveTextContent("Rating: 0");
+  });
+  it.each([
+    { releaseId: "55" },
+    { review: { type: "save-point" as const, id: "unknown" } },
+  ])(
+    "fills the ribbon corner inside the rounded section border: %j",
+    async (subject) => {
+      const { container } = render(
+        await ReleaseSection({ ...baseProps, ...subject }),
+      );
+      const ribbon = container.querySelector("header")!.firstElementChild!;
+      expect(ribbon).not.toHaveClass("rounded-tl-md");
+      expect(ribbon).toHaveClass("rounded-br-md", "border-t-0", "border-l-0");
+      expect(container.querySelector("div.rounded-lg")).toBeInTheDocument();
+    },
+  );
+  it("renders returned scroll metadata only in the footer using the release date formatter", async () => {
+    getScrollMock.mockResolvedValue({
+      id: " 55 ",
+      release_name: " Release name ",
+      release_type: " hotfix ",
+      status: " Planned ",
+      release_date: " 2026-09-29 ",
+      label: " Sprint 42 ",
+    });
+    const { container } = render(
+      await ReleaseSection({ ...baseProps, releaseId: "55" }),
+    );
+    const footer = container.querySelector("footer")!;
+    expect(footer).toHaveTextContent("Status: Planned");
+    expect(footer).toHaveTextContent("Type: hotfix");
+    expect(footer).toHaveTextContent(
+      `Date: ${formatReleaseDate("2026-09-29")}`,
+    );
+    expect(footer).toHaveTextContent("Release ID: 55");
+    expect(footer).toHaveTextContent("Label: Sprint 42");
+    expect(footer).not.toHaveTextContent("Name:");
+    expect(footer).not.toHaveTextContent("completed");
+    expect(footer).toHaveClass("border-t-2");
+    expect(container.querySelector("header")).toHaveTextContent("Release name");
+    expect(container.querySelector("header a")).toHaveAttribute(
+      "href",
+      "/mark2/shaolin-scrolls/55",
+    );
+    expect(getScrollMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([" Release name ", " Planned ", " hotfix ", " 55 "])(
+    "omits a redundant release label: %j",
+    async (label) => {
+      getScrollMock.mockResolvedValue({
+        id: "55",
+        release_name: "Release name",
+        release_type: "hotfix",
+        status: "Planned",
+        label,
+      });
+      const { container } = render(
+        await ReleaseSection({ ...baseProps, releaseId: "55" }),
+      );
+      expect(container.querySelector("footer")).not.toHaveTextContent("Label:");
+      expect(container.querySelector("footer")).not.toHaveTextContent("Name:");
+    },
+  );
+
+  it.each([null, "", "   "])(
+    "omits missing scroll metadata without adding a separator: %j",
+    async (value) => {
+      getScrollMock.mockResolvedValue({
+        id: value,
+        release_name: "Release name",
+        release_type: value,
+        status: value,
+        release_date: value,
+        label: value,
+      });
+      const { container } = render(
+        await ReleaseSection({ ...baseProps, releaseId: "55" }),
+      );
+      expect(container.querySelector("footer")).toHaveTextContent("#mark2");
+      expect(container.querySelector("footer")).not.toHaveClass("border-t-2");
+      expect(container.querySelector("footer")!.textContent).toBe("#mark2");
+    },
+  );
+
+  it("omits the release ID when the unchanged header already displays it", async () => {
+    getScrollMock.mockResolvedValue({
+      id: " 55 ",
+      release_name: null,
+      status: "Open",
+      label: " 55 ",
+    });
+    const { container } = render(
+      await ReleaseSection({ ...baseProps, releaseId: "55" }),
+    );
+    expect(container.querySelector("header")).toHaveTextContent("55");
+    expect(container.querySelector("footer")!.textContent).toBe(
+      "Status: Open#mark2",
+    );
+  });
+
+  it.each([{ usps: "menasha" }, { lcs: "shop" }])(
+    "keeps entity details alongside scroll metadata: %j",
+    async (subject) => {
+      getScrollMock.mockResolvedValue({
+        id: "55",
+        release_name: "Release name",
+        status: "Open",
+        release_type: "chore",
+        label: "Release name",
+      });
+      getUspsSummaryFromDbMock.mockResolvedValue({
+        cityName: "Menasha",
+        state: "Wisconsin",
+        rating: 8.7,
+        visitCount: 4,
+      });
+      getLcsSummaryFromDbMock.mockResolvedValue({
+        name: "Local Shop",
+        city: "Appleton",
+        state: "WI",
+        rating: 8,
+        visitCount: 1,
+      });
+      const { container } = render(
+        await ReleaseSection({ ...baseProps, releaseId: "55", ...subject }),
+      );
+      const footer = container.querySelector("footer")!;
+      expect(footer).toHaveTextContent("Status: Open");
+      expect(footer).toHaveTextContent("Type: chore");
+      expect(footer.querySelector("a.link-blue")).toHaveAttribute(
+        "href",
+        "usps" in subject ? "/cardattack/usps/menasha" : "/cardattack/lcs/shop",
+      );
+      expect(footer).toHaveTextContent(
+        "usps" in subject ? "4 visits" : "1 visit",
+      );
+      expect(footer).not.toHaveTextContent("Label:");
+    },
+  );
+  it("omits a scroll label repeated by supplemental entity details", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "55",
+      release_name: "Release name",
+      label: " Menasha, Wisconsin ",
+    });
+    getUspsSummaryFromDbMock.mockResolvedValue({
+      cityName: "Menasha",
+      state: "Wisconsin",
+      visitCount: 1,
+    });
+    const { container } = render(
+      await ReleaseSection({ ...baseProps, releaseId: "55", usps: "menasha" }),
+    );
+    expect(container.querySelector("footer")).not.toHaveTextContent("Label:");
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "Menasha, Wisconsin",
+    );
   });
 });
