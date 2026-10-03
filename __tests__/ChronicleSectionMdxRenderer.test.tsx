@@ -37,6 +37,15 @@ function CustomThing() {
   return <div data-testid="custom-thing" />;
 }
 
+jest.mock("@/components/media/FolderImageCarousel.server", () => ({
+  __esModule: true,
+  default: ({ folder, altPrefix }: { folder: string; altPrefix?: string }) => (
+    <div data-testid="folder-carousel" data-alt-prefix={altPrefix}>
+      {folder}
+    </div>
+  ),
+}));
+
 jest.mock("@/components/mdx-renderer", () => ({
   MdxRenderer: (props: {
     code: string;
@@ -145,6 +154,34 @@ describe("ChronicleSectionMdxRenderer", () => {
       snapshotDate: "2026-04-10",
     });
   });
+
+  it.each([
+    ["doom", "prius-c/doom"],
+    [undefined, "prius-c"],
+    ["prius-c/doom", "prius-c/doom"],
+  ])(
+    "resolves section carousel folder %s against its source Chronicle",
+    (folder, expected) => {
+      render(
+        <ChronicleSectionMdxRenderer
+          code="compiled-mdx"
+          chronicleSlug="prius-c"
+          postDate="2026-10-02"
+        />,
+      );
+      const Carousel = mdxRendererMock.mock.calls[0][0].components
+        ?.FolderImageCarousel as ComponentType<{
+        folder?: string;
+        altPrefix?: string;
+      }>;
+      render(<Carousel folder={folder} altPrefix="Doctor Doom" />);
+      expect(screen.getByTestId("folder-carousel")).toHaveTextContent(expected);
+      expect(screen.getByTestId("folder-carousel")).toHaveAttribute(
+        "data-alt-prefix",
+        "Doctor Doom",
+      );
+    },
+  );
 
   it("routes ClanSnapshot through clan tag metadata while preserving explicit href overrides", () => {
     const tagMetadataBySlug = new Map([
