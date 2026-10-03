@@ -4,8 +4,6 @@ import { ChronicleSectionMdxRenderer } from "@/components/chronicles/ChronicleSe
 import PersonTag from "@/components/mdx/PersonTag";
 import ReleaseSection from "@/components/mdx/ReleaseSection";
 import YouTubeVideo from "@/components/mdx/YouTubeVideo";
-import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
-import { resolveChronicleCarouselFolder } from "@/lib/images/resolve-chronicle-image-path";
 import { createNextOriginalReleaseSection } from "@/lib/release-section-colours";
 import type { TagMetadata } from "@/lib/tags-server";
 import { normalizeTagSlug } from "@/lib/tags";
@@ -26,13 +24,6 @@ const countReleaseSections = (source: string): number =>
 type ReleaseSectionProps = ComponentProps<typeof ReleaseSection>;
 type PersonTagProps = ComponentProps<typeof PersonTag>;
 type YouTubeVideoProps = ComponentProps<typeof YouTubeVideo>;
-type ChronicleCarouselProps = Omit<
-  ComponentProps<typeof FolderImageCarousel>,
-  "folder"
-> & {
-  folder?: string;
-};
-
 /**
  * Chronicle-specific MDX wrapper that enables per-page rainbow assignment for
  * ReleaseSection blocks and date-bound MDX helpers without changing other MDX
@@ -88,18 +79,6 @@ export function ChronicleMdxRenderer({
     );
   }
 
-  function ChronicleFolderImageCarousel({
-    folder,
-    ...props
-  }: ChronicleCarouselProps) {
-    return (
-      <FolderImageCarousel
-        {...props}
-        folder={resolveChronicleCarouselFolder(slug, folder)}
-      />
-    );
-  }
-
   return (
     <ChronicleSectionMdxRenderer
       code={code}
@@ -107,7 +86,6 @@ export function ChronicleMdxRenderer({
       postDate={postDate}
       tagMetadataBySlug={tagMetadataBySlug}
       components={{
-        FolderImageCarousel: ChronicleFolderImageCarousel,
         PersonTag: RoutedPersonTag,
         ReleaseSection: RainbowReleaseSection,
         YouTubeVideo: TaggedYouTubeVideo,
