@@ -1,3 +1,9 @@
+# Archived WU-375 authorization spike
+
+Status: historical design; superseded by the
+[current authz contract](../authz/AUTHZ-CONTRACT.md) and
+[workflow](../authz/WORKFLOW.md). Original proposal follows unchanged.
+
 # SCHEMA DRAFT ; WU-375 (Spike)
 
 > This is the blueprint for WU-376 migrations. New authz tables live in **`dojo`** and use the repo’s audit + trigger pattern.

@@ -1,6 +1,6 @@
 ## Summary
 
-Explain what this PR changes and why.
+Explain the problem, resulting behavior, scope, and rationale.
 
 ## Jira
 
@@ -12,9 +12,14 @@ WU-XXX
 
 ## Checks
 
-- [ ] Lint passes locally (`npm run lint`)
-- [ ] Typecheck passes locally (`npm run typecheck`) _(if present)_
-- [ ] Builds locally (`npm run build`)
-- [ ] Docs updated if needed
+Follow [validation](../docs/validation.md).
+
+- [ ] `npm run verify:agent` passes (lint, typecheck, Jest smoke/coverage, build)
+- [ ] Applicable additional checks pass; list results and unavailable prerequisites
+- [ ] Owning docs updated for behavior/procedure changes
+
+## Risk notes
+
+Describe material risks and limitations.
 
 ## Screenshots (if UI)
