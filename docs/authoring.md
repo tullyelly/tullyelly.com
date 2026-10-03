@@ -42,3 +42,28 @@ budgets in the [archived v2 proposal](archive/static-page-template-v2.md) remain
 proposals, not enforced guarantees.
 
 User previews are handled locally; agents must not start the dev server.
+
+## Editorial callouts
+
+These components are available in MDX without imports. All accept normal prose,
+lists, links, emphasis, PersonTag, and an optional className.
+CipherSays and LuluLearns are dateless. ScrollAmendment inherits the Chronicle's
+frontmatter calendar date, including separately rendered sections; a nonblank
+explicit date wins. Outside Chronicles, an omitted date leaves only the label.
+Dates display as YYYY-MM-DD; no current-date fallback is used.
+LuluLearns uses a soft pink surface with dark plum prose, links, and list markers;
+its plum label and hovered links use white text.
+
+```mdx
+<LuluLearns>Small discoveries deserve a place to grow.</LuluLearns>
+
+<CipherSays>Keep the shared behavior in one place.</CipherSays>
+
+<ScrollAmendment>
+  This note uses the Chronicle's frontmatter date.
+</ScrollAmendment>
+
+<ScrollAmendment date="2026-10-03">
+  This correction has its own date.
+</ScrollAmendment>
+```

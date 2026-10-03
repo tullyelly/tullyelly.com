@@ -11,6 +11,7 @@ import YouTubeMusicPlaylist from "@/components/mdx/YouTubeMusicPlaylist";
 import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
 import InteractiveImage from "@/components/media/InteractiveImage";
+import { LuluLearns } from "@/components/scrolls/LuluLearns";
 import { CipherSays } from "@/components/scrolls/CipherSays";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import { XEmbed } from "@/components/Tweet";
@@ -46,6 +47,7 @@ type CustomMDXComponents = MDXComponents & {
   PersonTag: typeof PersonTag;
   ReleaseSection: typeof ReleaseSection;
   SetCollector: typeof SetCollector;
+  LuluLearns: typeof LuluLearns;
   CipherSays: typeof CipherSays;
   ScrollAmendment: typeof ScrollAmendment;
   YouTubeMusicPlaylist: typeof YouTubeMusicPlaylist;
@@ -284,6 +286,7 @@ export const mdxComponents: CustomMDXComponents = {
   PersonTag,
   ReleaseSection,
   SetCollector,
+  LuluLearns,
   CipherSays,
   ScrollAmendment,
   YouTubeMusicPlaylist,

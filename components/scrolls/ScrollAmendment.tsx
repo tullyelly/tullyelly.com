@@ -5,7 +5,7 @@ import { ScrollCallout } from "@/components/scrolls/ScrollCallout";
 interface ScrollAmendmentProps {
   children: ReactNode;
   className?: string;
-  date: string;
+  date?: string;
 }
 
 const scrollAmendmentBodyClassName =
@@ -32,7 +32,9 @@ export function ScrollAmendment({
   return (
     <ScrollCallout
       data-scroll-amendment
-      label={`scroll amendment · ${date}`}
+      label={
+        date?.trim() ? `scroll amendment · ${date.trim()}` : "scroll amendment"
+      }
       bodyClassName={scrollAmendmentBodyClassName}
       labelClassName={scrollAmendmentLabelClassName}
       labelStyle={scrollAmendmentLabelStyle}

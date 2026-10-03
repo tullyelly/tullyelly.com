@@ -154,13 +154,34 @@ a:focus {
   color: var(--blue-contrast);
 }
 
+[data-scroll-callout] a:focus-visible {
+  outline: 2px solid var(--scroll-callout-focus, var(--blue-contrast));
+  outline-offset: 2px;
+}
+
 [data-scroll-amendment] {
+  --scroll-callout-focus: var(--white);
+  --mdx-marker-color: var(--text-on-blue);
   --person-tag-color: var(--blue);
   --person-tag-hover-bg: var(--cream);
   --person-tag-hover-color: var(--blue);
 }
 
+[data-lulu-learns] {
+  --lulu-surface: #f9d4e5;
+  --lulu-surface-soft: #fce7f0;
+  --lulu-plum: #592442;
+  --lulu-border: #d9a0bb;
+  --scroll-callout-focus: var(--lulu-plum);
+  --mdx-marker-color: var(--lulu-plum);
+  --person-tag-color: var(--lulu-plum);
+  --person-tag-hover-bg: var(--lulu-plum);
+  --person-tag-hover-color: var(--white);
+}
+
 [data-cipher-says] {
+  --scroll-callout-focus: var(--tc-chrome-silver);
+  --mdx-marker-color: var(--tc-chrome-hi);
   --person-tag-color: var(--tc-chrome-hi);
   --person-tag-hover-bg: var(--tc-chrome-silver);
   --person-tag-hover-color: var(--ink);
