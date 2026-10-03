@@ -28,4 +28,10 @@ infinityStone: false
 
     <LuluLearns>A scroll amendment can borrow its Chronicle's date, but a little lesson needs no date at all.</LuluLearns>
 
+    <CipherSays>
+    ## Search Focus & Chart Sizing
+
+    Fixed the search dialog's focus lifecycle so closed content unmounts, opening focuses the input, and every dismissal returns focus to a connected opener or a suitable fallback. Preserved keyboard navigation and background interaction. Corrected sizing across all six Recharts charts with existing explicit heights and native measurement for relative sparklines; kept scrolling, labels, tooltips, and empty states. Added regression tests and real Chromium coverage that reproduced the original warnings and confirmed the fixes. All 859 Jest tests, lint, typechecking, formatting, and five chart browser tests passed. The production build stalled and remains unverified; full app browser checks were blocked by test database setup, with navigation covered through isolated component remounts.
+    </CipherSays>
+
 </ReleaseSection>

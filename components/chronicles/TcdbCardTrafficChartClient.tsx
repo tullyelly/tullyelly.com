@@ -175,7 +175,7 @@ export function TcdbCardTrafficChartClient({ rows }: Props) {
       data-testid="tcdb-card-traffic-chart"
     >
       <div className="h-[320px] min-w-[360px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={320}>
           <LineChart
             data={data}
             margin={{ top: 20, right: 16, left: 0, bottom: 24 }}

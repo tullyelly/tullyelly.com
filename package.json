@@ -104,7 +104,8 @@
     "prepare": "husky",
     "check:emdash": "node scripts/check-emdash.mjs",
     "analyze": "ANALYZE=true next build",
-    "docs:check": "node scripts/check-docs.mjs"
+    "docs:check": "node scripts/check-docs.mjs",
+    "test:charts": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers playwright test --config playwright.charts.config.ts"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",

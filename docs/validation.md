@@ -55,6 +55,22 @@ with `npm run test:e2e:install`. Do not run seeding against production.
 Agents must not start the dev server; coordinate any needed local browser harness
 with the user. Report browser tests as unavailable when prerequisites are absent.
 
+### Chart component layout
+
+`npm run test:charts` uses [playwright.charts.config.ts](../playwright.charts.config.ts)
+for database-free Chromium checks of all six Recharts charts. It bundles the real
+client components and site CSS into an isolated page; it does not start an app or
+dev server, load environment files, or seed data. Install the Playwright browser
+using the existing install command above. PLAYWRIGHT_CHROME_PATH can select an
+existing Chromium executable.
+
+These checks reproduce the original percentage-container warning and assert
+actual positive SVG dimensions, resizing, narrow-screen scrolling, relative
+sparkline heights, hidden-to-visible recovery, labels, tooltips, empty states, and component
+remounts during client navigation in the fixture. They do not establish live
+Next.js route or database integration; use the app E2E prerequisites above for
+those checks.
+
 ## Hooks and remote CI
 
 [pre-commit](../.husky/pre-commit) runs lint-staged (secretlint, formatting,

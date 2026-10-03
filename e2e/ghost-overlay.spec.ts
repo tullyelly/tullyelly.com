@@ -19,8 +19,7 @@ test.describe("ghost overlay safeguards", () => {
     await expect(palette).toBeVisible();
     await expect(palette).toHaveAttribute("data-state", "open");
     await page.keyboard.press("Escape");
-    await expect(palette).toHaveAttribute("data-state", "closed");
-    await expect(palette).toBeHidden();
+    await expect(palette).toHaveCount(0);
 
     const pointerEvents = await page.evaluate(() => {
       const roots = Array.from(
@@ -31,7 +30,7 @@ test.describe("ghost overlay safeguards", () => {
       return roots.map((node) => window.getComputedStyle(node).pointerEvents);
     });
 
-    expect(pointerEvents.length).toBeGreaterThan(0);
+    // Some wrappers keep inert closed nodes; the command dialog unmounts.
     for (const value of pointerEvents) {
       expect(value).toBe("none");
     }
@@ -49,6 +48,10 @@ test.describe("ghost overlay safeguards", () => {
 
   test("upper-left clicks and scroll operate normally", async ({ page }) => {
     await page.goto("/");
+    await page.getByTestId("nav-desktop-search").click();
+    await expect(page.getByTestId("cmdk")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("cmdk")).toHaveCount(0);
     const point = await page.evaluate(() => {
       const main = document.querySelector("main");
       if (!main) return null;

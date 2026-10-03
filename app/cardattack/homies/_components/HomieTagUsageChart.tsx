@@ -67,7 +67,7 @@ export default function HomieTagUsageChart({
       aria-label="Top homie tags by Chronicle mentions"
       data-testid="homie-tag-usage-chart"
     >
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <BarChart
           data={rows}
           layout="vertical"
