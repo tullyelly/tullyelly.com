@@ -535,7 +535,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       tcdbTradeSummary.status === "Completed";
 
     if (shouldShowCompletion) {
-      completedLabel = `${tcdbTradeId}: completed`;
+      completedLabel = "Completed";
       completedHref = `/cardattack/tcdb-trades/${tcdbTradeId}`;
     }
   }
@@ -619,15 +619,6 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
   const showTradeCardCounts = Boolean(
     tcdbTradeId && resolvedTradeTotal !== undefined,
   );
-  const tradeCardSummary = [
-    resolvedTradeReceived !== undefined
-      ? `${resolvedTradeReceived} received`
-      : null,
-    resolvedTradeSent !== undefined ? `${resolvedTradeSent} sent` : null,
-    resolvedTradeTotal !== undefined ? `${resolvedTradeTotal} total` : null,
-  ]
-    .filter((part): part is string => Boolean(part))
-    .join("; ");
   const showTournamentFinishFooter = Boolean(tournamentFinishLabel);
   const tournamentFinishHasTrophy = resolvedTournamentFinish === 1;
   const tournamentFinishClassName = tournamentFinishHasTrophy
@@ -907,12 +898,20 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
         style={{ borderColor: resolvedSectionColor }}
       >
         {hasFooterMetadata ? (
-          <div className="min-w-0 space-y-2 text-sm [overflow-wrap:anywhere]">
+          <div
+            data-release-section-metadata
+            className="flex min-w-0 flex-1 flex-col items-start gap-x-6 gap-y-2 text-sm [overflow-wrap:anywhere] sm:flex-row sm:flex-wrap sm:items-center [&>*]:max-w-full [&>*]:min-w-0"
+          >
             {releaseMetadata.map(({ label, value }) => (
               <div key={label}>{`${label}: ${value}`}</div>
             ))}
             {showTournament ? (
-              <div className="text-sm">{`${tournamentIsPrimary ? "Record" : resolvedTournamentName}: ${resolvedTournamentRecord}`}</div>
+              <>
+                {!tournamentIsPrimary ? (
+                  <div>{`Tournament: ${resolvedTournamentName}`}</div>
+                ) : null}
+                <div>{`Record: ${resolvedTournamentRecord}`}</div>
+              </>
             ) : null}
             {showTournamentUnavailable ? (
               <div className="text-sm text-muted-foreground">
@@ -923,90 +922,100 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
               <div>{`Rating: ${resolvedReviewRating}`}</div>
             ) : null}
             {showBricksFooter ? (
-              <div className="space-y-1 text-sm">
+              <>
                 {resolvedBricksReviewScore ? (
                   <div>{`Rating: ${resolvedBricksReviewScore}`}</div>
                 ) : null}
-                {showBricksMetadataRow ? (
+                {resolvedBricksPublicId ? (
                   <div>
-                    {resolvedBricksPublicId ? (
-                      <>
-                        <span>LEGO ID: </span>
-                        {resolvedBricksReferenceUrl ? (
-                          <Link
-                            href={resolvedBricksReferenceUrl}
-                            className="link-blue"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {resolvedBricksPublicId}
-                          </Link>
-                        ) : (
-                          <span>{resolvedBricksPublicId}</span>
-                        )}
-                      </>
-                    ) : null}
-                    {resolvedBricksPieceCount ? (
-                      <>
-                        {resolvedBricksPublicId ? <span>; </span> : null}
-                        <span>{`${resolvedBricksPieceCount} pieces`}</span>
-                      </>
-                    ) : null}
-                    {resolvedBricksTag ? (
-                      <>
-                        {resolvedBricksPublicId || resolvedBricksPieceCount ? (
-                          <span>; </span>
-                        ) : null}
-                        <PersonTag
-                          tag={resolvedBricksTag}
-                          displayName={resolvedBricksTag}
-                        />
-                      </>
-                    ) : null}
+                    <span>LEGO ID: </span>
+                    {resolvedBricksReferenceUrl ? (
+                      <Link
+                        href={resolvedBricksReferenceUrl}
+                        className="link-blue"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {resolvedBricksPublicId}
+                      </Link>
+                    ) : (
+                      <span>{resolvedBricksPublicId}</span>
+                    )}
                   </div>
                 ) : null}
-              </div>
+                {resolvedBricksPieceCount ? (
+                  <div>{`Pieces: ${resolvedBricksPieceCount}`}</div>
+                ) : null}
+                {resolvedBricksTag ? (
+                  <div>
+                    <span>Tag: </span>
+                    <PersonTag
+                      tag={resolvedBricksTag}
+                      displayName={resolvedBricksTag}
+                    />
+                  </div>
+                ) : null}
+              </>
             ) : null}
             {showUspsFooter ? (
-              <div className="text-sm">
-                {showReleaseDetails && resolvedUspsRoute ? (
-                  <Link href={resolvedUspsRoute} className="link-blue">
-                    {resolvedUspsName}
-                  </Link>
-                ) : showReleaseDetails ? (
-                  <span>{resolvedUspsName}</span>
+              <>
+                {showReleaseDetails ? (
+                  <div>
+                    <span>USPS: </span>
+                    {resolvedUspsRoute ? (
+                      <Link href={resolvedUspsRoute} className="link-blue">
+                        {resolvedUspsName}
+                      </Link>
+                    ) : (
+                      <span>{resolvedUspsName}</span>
+                    )}
+                  </div>
                 ) : null}
-                {resolvedUspsRating || resolvedUspsVisitLabel ? (
-                  <span>
-                    {` (${[resolvedUspsRating, resolvedUspsVisitLabel]
-                      .filter((part): part is string => Boolean(part))
-                      .join("; ")})`}
-                  </span>
+                {resolvedUspsRating ? (
+                  <div>{`Rating: ${resolvedUspsRating}`}</div>
                 ) : null}
-              </div>
+                {resolvedUspsVisitCount !== undefined ? (
+                  <div>{`Visits: ${resolvedUspsVisitCount}`}</div>
+                ) : null}
+              </>
             ) : null}
             {showLcsFooter ? (
-              <div className="text-sm">
-                {showReleaseDetails && resolvedLcsRoute ? (
-                  <Link href={resolvedLcsRoute} className="link-blue">
-                    {resolvedLcsDisplayName}
-                  </Link>
-                ) : showReleaseDetails ? (
-                  <span>{resolvedLcsDisplayName}</span>
-                ) : resolvedLcsLocation ? (
-                  <span>{resolvedLcsLocation}</span>
+              <>
+                {showReleaseDetails ? (
+                  <div>
+                    <span>Shop: </span>
+                    {resolvedLcsRoute ? (
+                      <Link href={resolvedLcsRoute} className="link-blue">
+                        {resolvedLcsName}
+                      </Link>
+                    ) : (
+                      <span>{resolvedLcsName}</span>
+                    )}
+                  </div>
                 ) : null}
-                {resolvedLcsRating || resolvedLcsVisitLabel ? (
-                  <span>
-                    {` (${[resolvedLcsRating, resolvedLcsVisitLabel]
-                      .filter((part): part is string => Boolean(part))
-                      .join("; ")})`}
-                  </span>
+                {resolvedLcsLocation ? (
+                  <div>{`Location: ${resolvedLcsLocation}`}</div>
                 ) : null}
-              </div>
+                {resolvedLcsRating ? (
+                  <div>{`Rating: ${resolvedLcsRating}`}</div>
+                ) : null}
+                {resolvedLcsVisitCount !== undefined ? (
+                  <div>{`Visits: ${resolvedLcsVisitCount}`}</div>
+                ) : null}
+              </>
             ) : null}
             {showTradeCardCounts ? (
-              <div className="text-sm">{`Card Traffic: ${tradeCardSummary}`}</div>
+              <>
+                {resolvedTradeTotal !== undefined ? (
+                  <div>{`Total: ${resolvedTradeTotal}`}</div>
+                ) : null}
+                {resolvedTradeSent !== undefined ? (
+                  <div>{`Sent: ${resolvedTradeSent}`}</div>
+                ) : null}
+                {resolvedTradeReceived !== undefined ? (
+                  <div>{`Received: ${resolvedTradeReceived}`}</div>
+                ) : null}
+              </>
             ) : null}
             {showTournamentFinishFooter ? (
               <div className={tournamentFinishClassName}>
@@ -1020,7 +1029,9 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
                     className="h-8 w-8 shrink-0"
                   />
                 ) : null}
-                <span className="leading-none">{tournamentFinishLabel}</span>
+                <span className="leading-none">
+                  Finish: <span>{tournamentFinishLabel}</span>
+                </span>
               </div>
             ) : null}
             {showTradePartner ? (
@@ -1036,9 +1047,12 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
               </div>
             ) : null}
             {completedLabel && completedHref ? (
-              <Link href={completedHref} className="link-blue inline-block">
-                {completedLabel}
-              </Link>
+              <div>
+                <span>Status: </span>
+                <Link href={completedHref} className="link-blue">
+                  {completedLabel}
+                </Link>
+              </div>
             ) : null}
           </div>
         ) : null}

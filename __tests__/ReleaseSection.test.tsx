@@ -507,11 +507,11 @@ describe("ReleaseSection", () => {
       container.querySelector("[data-release-section-header]"),
     ).toHaveTextContent("McLaren MP4/4 & Ayrton Senna");
     expect(container.querySelector("footer")).toHaveTextContent("9.3/10");
-    expect(
-      screen.getByText(
-        (_, node) => node?.textContent === "LEGO ID: 10330; 693 pieces; f1",
-      ),
-    ).toBeInTheDocument();
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "LEGO ID: 10330",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent("Pieces: 693");
+    expect(container.querySelector("footer")).toHaveTextContent("Tag: f1");
     expect(
       container.querySelector('[data-person-tag="f1"]'),
     ).toBeInTheDocument();
@@ -563,11 +563,11 @@ describe("ReleaseSection", () => {
       container.querySelector("[data-release-section-header]"),
     ).toHaveTextContent("Mercedes-AMG F1 W14");
     expect(container.querySelector("footer")).toHaveTextContent("8.7/10");
-    expect(
-      screen.getByText(
-        (_, node) => node?.textContent === "LEGO ID: 42171; 1642 pieces; f1",
-      ),
-    ).toBeInTheDocument();
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "LEGO ID: 42171",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent("Pieces: 1642");
+    expect(container.querySelector("footer")).toHaveTextContent("Tag: f1");
     expect(screen.getByRole("link", { name: "42171" })).toHaveAttribute(
       "href",
       "https://www.lego.com/en-ch/service/building-instructions/42171",
@@ -594,7 +594,7 @@ describe("ReleaseSection", () => {
     expect(getUspsSummaryFromDbMock).toHaveBeenCalledWith("menasha");
     expect(container).toHaveTextContent("Menasha, Wisconsin");
     expect(container.querySelector("footer")).toHaveTextContent(
-      "8.7/10; 4 visits",
+      "Rating: 8.7/10Visits: 4",
     );
 
     const uspsLink = screen.getByText("Menasha, Wisconsin").closest("a");
@@ -657,7 +657,7 @@ describe("ReleaseSection", () => {
 
     expect(container).toHaveTextContent("Appleton, Wisconsin");
     expect(container.querySelector("footer")).toHaveTextContent(
-      "9.1/10; 6 visits",
+      "Rating: 9.1/10Visits: 6",
     );
 
     const uspsLink = screen.getByText("Appleton, Wisconsin").closest("a");
@@ -702,7 +702,7 @@ describe("ReleaseSection", () => {
     );
     expect(container.querySelector("footer")).toHaveTextContent("Appleton, WI");
     expect(container.querySelector("footer")).toHaveTextContent(
-      "6.5/10; 1 visit",
+      "Rating: 6.5/10Visits: 1",
     );
 
     const lcsLink = screen.getByText("Walgreens: College").closest("a");
@@ -773,7 +773,7 @@ describe("ReleaseSection", () => {
     );
     expect(container.querySelector("footer")).toHaveTextContent("Appleton, WI");
     expect(container.querySelector("footer")).toHaveTextContent(
-      "6.5/10; 1 visit",
+      "Rating: 6.5/10Visits: 1",
     );
 
     const tab = container.querySelector(
@@ -999,9 +999,7 @@ describe("ReleaseSection", () => {
     render(ui);
 
     expect(getTcdbTradeSummaryFromDbMock).toHaveBeenCalledWith("359632");
-    expect(
-      screen.getByText("Card Traffic: 7 received; 4 sent; 11 total"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Total: 11")).toBeInTheDocument();
   });
 
   it("renders a completed link to the internal tcdb trade route", async () => {
@@ -1020,9 +1018,7 @@ describe("ReleaseSection", () => {
     });
     render(ui);
 
-    const completionLink = screen
-      .getByText(`${tradeId}: completed`)
-      .closest("a");
+    const completionLink = screen.getByText("Completed").closest("a");
     expect(completionLink).toBeInTheDocument();
     expect(completionLink).toHaveAttribute(
       "href",
@@ -1058,7 +1054,7 @@ describe("ReleaseSection", () => {
     );
 
     const completionLinks = screen
-      .getAllByText(`${tradeId}: completed`)
+      .getAllByText("Completed")
       .map((node) => node.closest("a"))
       .filter((link): link is HTMLAnchorElement => Boolean(link));
 
@@ -1099,9 +1095,7 @@ describe("ReleaseSection", () => {
       </>,
     );
 
-    expect(
-      screen.getAllByText("Card Traffic: 6 received; 4 sent; 10 total"),
-    ).toHaveLength(2);
+    expect(screen.getAllByText("Total: 10")).toHaveLength(2);
     expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(1, tradeId);
     expect(getTcdbTradeSummaryFromDbMock).toHaveBeenNthCalledWith(2, tradeId);
   });
@@ -1554,9 +1548,7 @@ describe("ReleaseSection", () => {
       }),
     );
     expect(container.querySelectorAll("header")).toHaveLength(1);
-    expect(container.querySelector("footer")).toHaveTextContent(
-      "Tournament name: 3-0",
-    );
+    expect(container.querySelector("footer")).toHaveTextContent("Record: 3-0");
     expect(container.querySelector("footer")).toHaveTextContent("1st Place");
     expect(container.querySelector("footer img")).toBeInTheDocument();
   });
@@ -1579,10 +1571,10 @@ describe("ReleaseSection", () => {
       "Trade Partner: Partner",
     );
     expect(container.querySelector("footer")).toHaveTextContent(
-      "0 received; 2 sent; 2 total",
+      "Total: 2Sent: 2Received: 0",
     );
     expect(container.querySelector("footer")).toHaveTextContent(
-      "359632: completed",
+      "Status: Completed",
     );
   });
   it.each([
@@ -1762,7 +1754,7 @@ describe("ReleaseSection", () => {
         "usps" in subject ? "/cardattack/usps/menasha" : "/cardattack/lcs/shop",
       );
       expect(footer).toHaveTextContent(
-        "usps" in subject ? "4 visits" : "1 visit",
+        "usps" in subject ? "Visits: 4" : "Visits: 1",
       );
       expect(footer).not.toHaveTextContent("Label:");
     },
@@ -1785,5 +1777,95 @@ describe("ReleaseSection", () => {
     expect(container.querySelector("footer")).toHaveTextContent(
       "Menasha, Wisconsin",
     );
+  });
+  it("lets scroll metadata wrap horizontally while reserving the persona column", async () => {
+    getScrollMock.mockResolvedValue({
+      id: "55",
+      release_name: "Release name",
+      status: "planned",
+      release_type: "planned",
+      label: "A very long label",
+    });
+    const { container } = render(
+      await ReleaseSection({ ...baseProps, releaseId: "55" }),
+    );
+    expect(
+      container.querySelector("[data-release-section-metadata]"),
+    ).toHaveClass("flex-1", "min-w-0", "sm:flex-row", "sm:flex-wrap");
+    expect(screen.getByText("#mark2").closest("a")!.parentElement).toHaveClass(
+      "shrink-0",
+      "sm:ml-auto",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "Status: planned",
+    );
+    expect(container.querySelector("footer")).toHaveTextContent(
+      "Label: A very long label",
+    );
+  });
+  it("renders trade counts in total/sent/received order and labels the completion link", async () => {
+    getTcdbTradeSummaryFromDbMock.mockResolvedValue({
+      partner: "Partner",
+      tradePartnerId: 42,
+      received: 102,
+      sent: 118,
+      total: 220,
+      sectionCount: 2,
+      status: "Completed",
+    });
+    const { container } = render(
+      await ReleaseSection({ ...baseProps, tcdbTradeId: "877264" }),
+    );
+    const metadata = container.querySelector(
+      "[data-release-section-metadata]",
+    )!;
+    expect(
+      Array.from(metadata.children).map((item) => item.textContent),
+    ).toEqual([
+      "Total: 220",
+      "Sent: 118",
+      "Received: 102",
+      "Trade Partner: Partner",
+      "Status: Completed",
+    ]);
+    expect(metadata).not.toHaveTextContent("877264");
+    expect(metadata).not.toHaveTextContent("Card Traffic");
+    expect(screen.getByText("Completed").closest("a")).toHaveAttribute(
+      "href",
+      "/cardattack/tcdb-trades/877264",
+    );
+  });
+
+  it("gives every LEGO value its own labeled item and shared spacing", async () => {
+    const { container } = render(
+      await ReleaseSection({
+        ...baseProps,
+        bricks: {
+          id: "76345",
+          name: "doctor DOOM bust",
+          reviewScore: 9.2,
+          pieceCount: 379,
+          tag: "marvel",
+        },
+      }),
+    );
+    const metadata = container.querySelector(
+      "[data-release-section-metadata]",
+    )!;
+    expect(
+      Array.from(metadata.children).map((item) => item.textContent),
+    ).toEqual([
+      "Rating: 9.2/10",
+      "LEGO ID: 76345",
+      "Pieces: 379",
+      "Tag: marvel",
+    ]);
+    expect(screen.getByText("76345").closest("a")).toHaveAttribute(
+      "href",
+      "https://www.lego.com/en-ch/service/building-instructions/76345",
+    );
+    expect(
+      container.querySelector('[data-person-tag="marvel"]'),
+    ).toBeInTheDocument();
   });
 });
