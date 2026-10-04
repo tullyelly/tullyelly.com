@@ -50,6 +50,27 @@ const source = readFileSync(
 );
 
 describe("callout MDX bindings", () => {
+  it("shares body and label typography across rich and inline callouts", () => {
+    render(<MdxRenderer code={code} />);
+    const notes = screen.getAllByRole("note");
+    expect(notes).toHaveLength(5);
+    for (const note of notes) {
+      expect(note).toHaveClass(
+        "text-[16px]",
+        "md:text-[18px]",
+        "leading-relaxed",
+      );
+      expect(note.firstElementChild).toHaveClass("text-sm", "leading-none");
+      expect(note.lastElementChild).toHaveAttribute(
+        "data-scroll-callout-content",
+      );
+    }
+    const css = readFileSync(join(__dirname, "../app/globals.css"), "utf8");
+    expect(css).toMatch(
+      /\[data-scroll-callout-content\]\s+:where\(\s*p,\s*ul,\s*ol,\s*li,\s*blockquote,\s*a,\s*span,\s*strong,\s*em,\s*code\s*\)\s*\{\s*font-size: inherit !important;\s*line-height: inherit;/,
+    );
+  });
+
   it("registers Lulu without imports and renders rich MDX content", () => {
     expect(mdxComponents.LuluLearns).toBe(LuluLearns);
     render(<MdxRenderer code={code} />);

@@ -154,6 +154,13 @@ a:focus {
   color: var(--blue-contrast);
 }
 
+/* Rich MDX and inline JSX share the callout body size; headings keep their scale. */
+[data-scroll-callout-content]
+  :where(p, ul, ol, li, blockquote, a, span, strong, em, code) {
+  font-size: inherit !important;
+  line-height: inherit;
+}
+
 [data-scroll-callout] a:focus-visible {
   outline: 2px solid var(--scroll-callout-focus, var(--blue-contrast));
   outline-offset: 2px;

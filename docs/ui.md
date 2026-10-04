@@ -15,6 +15,10 @@ including keyboard behavior; include screenshots in UI PRs.
 Tailwind and [app/globals.css](../app/globals.css) own design tokens; do not add
 inline hex colors or change palettes/personas. Use existing cn utilities.
 Server authorization remains mandatory even when UI hides actions.
+CipherSays, LuluLearns, and ScrollAmendment share ScrollCallout typography:
+16px body text on small screens and 18px from the medium breakpoint, with matching
+14px tab labels. Rich MDX paragraphs, lists, and inline content inherit the body
+size; headings retain their MDX heading scale.
 Follow [hydration](hydration.md) and [validation](validation.md) for deterministic
 rendering and the appropriate Jest, Vitest, and browser checks.
 
