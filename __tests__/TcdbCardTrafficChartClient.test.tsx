@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { TcdbCardTrafficChartClient } from "@/components/chronicles/TcdbCardTrafficChartClient";
 import type { TcdbCardTrafficDay } from "@/lib/tcdb-card-traffic";
 
@@ -21,6 +21,7 @@ jest.mock("recharts", () => ({
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
   Tooltip: () => <div data-testid="tooltip" />,
+  ReferenceDot: () => null,
   ReferenceLine: ({ x }: { x: string }) => (
     <div data-testid="reference-line" data-x={x} />
   ),
@@ -51,7 +52,7 @@ describe("TcdbCardTrafficChartClient", () => {
     expect(
       screen.getByText("No TCDb card traffic in this 10-day window."),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem")).toHaveLength(10);
+    expect(screen.getAllByRole("listitem")).toHaveLength(20);
   });
 
   it("renders a line chart with the provided 10-day traffic rows", () => {
@@ -89,6 +90,24 @@ describe("TcdbCardTrafficChartClient", () => {
       "2026-06-25",
     );
     expect(screen.getAllByTestId("line-series")).toHaveLength(2);
-    expect(screen.getByTestId("legend")).toBeInTheDocument();
+    expect(screen.getByLabelText("Chart legend")).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "2026-06-24" },
+    });
+    expect(
+      screen.getByText("Sent: 9 cards across 2 trades", {
+        selector: "[aria-live] p",
+      }),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "2026-06-20" },
+    });
+    expect(
+      screen.getByText("Received: 0 cards across 0 trades", {
+        selector: "[aria-live] p",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole("option")).toHaveLength(10);
   });
 });

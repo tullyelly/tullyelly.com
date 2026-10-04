@@ -31,7 +31,12 @@ and then main content if navigation removed the opener. Closed command content
 must be unmounted rather than hidden around a focused descendant.
 
 Recharts charts with reserved pixel or calculated heights pass that same numeric
-height to ResponsiveContainer while keeping responsive width. The card-count
+height to ResponsiveContainer while keeping responsive width. The TCDb traffic
+chart uses a CSS-reserved responsive height (250px below md, 320px above) and
+passes the numeric height to its container using a hydration-safe media-query
+effect that updates only at the md breakpoint. Its existing Recharts resize callback
+updates only label-capacity buckets; all daily data points remain plotted. Exact
+values use an in-flow day selector and readout, with expandable daily data. The card-count
 sparklines use Recharts' responsive LineChart measurement with 100% width and
 height inside their h-24 wrappers; their height follows the root font size.
 Do not guess positive initial dimensions or add a second resize observer around

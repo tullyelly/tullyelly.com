@@ -1,6 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
 
+test.use({ hasTouch: true, contextOptions: { reducedMotion: "reduce" } });
+
 let script: string;
 let css: string;
 
@@ -102,7 +104,9 @@ async function expectSizedCharts(page: Page, rem = 16, compact = false) {
       ? 6 * rem
       : id === "homie-tag-usage-chart" && compact
         ? 320
-        : reservedHeight;
+        : id === "tcdb-card-traffic-chart" && page.viewportSize()!.width < 768
+          ? 250
+          : reservedHeight;
     await expect
       .poll(() =>
         chart
@@ -146,7 +150,7 @@ test("sizes all six charts on load, remount, narrow layout and resize", async ({
     await page.setViewportSize({ width, height: 900 });
     await expectSizedCharts(page);
     if (width === 280) {
-      for (const id of ["tcdb-card-traffic-chart", "squad-commentary-chart"]) {
+      for (const id of ["squad-commentary-chart"]) {
         const container = page.getByTestId(id);
         const scrollable =
           id === "squad-commentary-chart" ? container.locator("..") : container;
@@ -252,7 +256,6 @@ test("retains chart labels and interactive tooltip content", async ({
   ).toBeVisible();
 
   const tooltips = [
-    ["tcdb-card-traffic-chart", /cards? across .*trades?/],
     ["persona-activity-chart", /Posts: .* posts/],
     ["homie-card-count-sparkline", /cards; rank/],
     ["clan-card-count-sparkline", /cards; rank/],
@@ -276,3 +279,98 @@ test("retains chart labels and interactive tooltip content", async ({
     fullPage: true,
   });
 });
+
+for (const width of [320, 375, 390, 430, 768, 1280]) {
+  test(`traffic fits and remains accessible at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const { errors } = await mount(page, "?traffic=1");
+    const chart = page.getByTestId("tcdb-card-traffic-chart");
+    await expect
+      .poll(() =>
+        chart.locator(".recharts-xAxis .recharts-cartesian-axis-tick").count(),
+      )
+      .toBeGreaterThanOrEqual(3);
+    if (width < 768)
+      expect(
+        await chart
+          .locator(".recharts-xAxis .recharts-cartesian-axis-tick")
+          .count(),
+      ).toBeLessThanOrEqual(5);
+    const checkBounds = async () => {
+      await expect
+        .poll(() =>
+          chart.evaluate((node) => node.scrollWidth <= node.clientWidth),
+        )
+        .toBe(true);
+      const labels = await chart
+        .locator(".recharts-xAxis .recharts-cartesian-axis-tick text")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const r = node.getBoundingClientRect();
+            return { left: r.left, right: r.right };
+          }),
+        );
+      for (let i = 1; i < labels.length; i++)
+        expect(labels[i].left).toBeGreaterThan(labels[i - 1].right);
+      for (const label of labels) {
+        expect(label.left).toBeGreaterThanOrEqual(0);
+        expect(label.right).toBeLessThanOrEqual(width);
+      }
+      const bounds = await chart.boundingBox();
+      const axisBounds = await chart
+        .locator(".recharts-yAxis text")
+        .evaluateAll((nodes) =>
+          nodes.map((n) => n.getBoundingClientRect().left),
+        );
+      for (const left of axisBounds)
+        expect(left).toBeGreaterThanOrEqual(bounds!.x);
+    };
+    await checkBounds();
+    const select = chart.getByRole("combobox");
+    await select.selectOption("2027-01-01");
+    await expect(chart.locator("[aria-live]")).toContainText("January 1, 2027");
+    await expect(chart.locator("[aria-live]")).toContainText(
+      "Sent: 123456 cards across 2 trades",
+    );
+    await expect(chart.locator("[aria-live]")).toContainText(
+      "Received: 98765 cards across 3 trades",
+    );
+    await select.selectOption("2026-12-27");
+    const surface = chart.locator(".recharts-wrapper > svg.recharts-surface");
+    const plot = await surface.boundingBox();
+    // Select via the wide day column, away from either tiny series marker.
+    const sentPoint = chart
+      .locator(".recharts-line-dots")
+      .first()
+      .locator("circle")
+      .nth(5);
+    const point = await sentPoint.boundingBox();
+    await page.touchscreen.tap(
+      point!.x + point!.width / 2,
+      plot!.y + plot!.height / 2,
+    );
+    await expect(select).toHaveValue("2027-01-01");
+    await select.focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(select).toHaveValue("2027-01-02");
+    await expect(chart.locator("[aria-live]")).toContainText(
+      "0 cards across 0 trades",
+    );
+    await chart.locator("summary").click();
+    await expect(chart.getByRole("listitem")).toHaveCount(10);
+    await chart
+      .locator("..")
+      .screenshot({ path: test.info().outputPath(`traffic-${width}.png`) });
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "32px";
+    });
+    await checkBounds();
+    await page.setViewportSize({ width: 375, height: 900 });
+    await expect(
+      chart.locator(".recharts-xAxis .recharts-cartesian-axis-tick"),
+    ).toHaveCount(3);
+    expect(errors).toEqual([]);
+  });
+}

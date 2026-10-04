@@ -1,13 +1,14 @@
 "use client";
 
+import { useEffect, useId, useState } from "react";
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ReferenceLine,
-  ResponsiveContainer,
+  ReferenceDot,
   Tooltip,
+  ResponsiveContainer,
   XAxis,
   YAxis,
 } from "recharts";
@@ -20,13 +21,6 @@ type Props = {
 type ChartDatum = TcdbCardTrafficDay & {
   axisLabel: string;
   fullDateLabel: string;
-};
-
-type TooltipPayload = {
-  dataKey?: string;
-  name?: string;
-  payload?: ChartDatum;
-  value?: number;
 };
 
 const MONTH_LABELS_SHORT = [
@@ -99,35 +93,39 @@ function pluralize(value: number, singular: string): string {
   return `${value} ${singular}${value === 1 ? "" : "s"}`;
 }
 
-function TrafficTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: TooltipPayload[];
-}) {
-  if (!active || !payload?.[0]?.payload) return null;
-
-  const row = payload[0].payload;
-
+function DayValues({ row }: { row: TcdbCardTrafficDay }) {
   return (
-    <div className="rounded-lg border border-[var(--cream)] bg-white px-3 py-2 shadow-sm">
-      <p className="text-sm font-semibold text-foreground">
-        {row.fullDateLabel}
-        {row.isChronicleDate ? " (chronicle)" : ""}
+    <>
+      <p>
+        Sent: {pluralize(row.sent, "card")} across{" "}
+        {pluralize(row.sentTradeCount, "trade")}
       </p>
-      {payload.map((entry) => {
-        const isSent = entry.dataKey === "sent";
-        const count = isSent ? row.sentTradeCount : row.receivedTradeCount;
+      <p>
+        Received: {pluralize(row.received, "card")} across{" "}
+        {pluralize(row.receivedTradeCount, "trade")}
+      </p>
+    </>
+  );
+}
 
-        return (
-          <p key={entry.dataKey} className="text-xs text-muted-foreground">
-            {entry.name}: {pluralize(entry.value ?? 0, "card")} across{" "}
-            {pluralize(count, "trade")}
-          </p>
-        );
-      })}
-    </div>
+function DailyData({ rows }: Props) {
+  return (
+    <details className="mt-3 text-sm">
+      <summary className="cursor-pointer py-2">
+        Daily card and trade counts
+      </summary>
+      <ol className="space-y-3" aria-label="Daily traffic data">
+        {rows.map((row) => (
+          <li key={row.date}>
+            <time className="font-semibold" dateTime={row.date}>
+              {formatFullDate(row.date)}
+              {row.isChronicleDate ? " (chronicle date)" : ""}
+            </time>
+            <DayValues row={row} />
+          </li>
+        ))}
+      </ol>
+    </details>
   );
 }
 
@@ -158,45 +156,110 @@ function EmptyTrafficState({ rows }: Props) {
 }
 
 export function TcdbCardTrafficChartClient({ rows }: Props) {
+  const selectId = useId();
+  const [height, setHeight] = useState(250);
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setHeight(media.matches ? 320 : 250);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  // Recharts owns measurement; only changes in label capacity update React state.
+  const [capacity, setCapacity] = useState(3);
+  const [selectedDate, setSelectedDate] = useState(
+    rows.find((row) => row.isChronicleDate)?.date ?? rows[0]?.date,
+  );
   const hasTraffic = rows.some((row) => row.sent > 0 || row.received > 0);
-
-  if (!hasTraffic) {
-    return <EmptyTrafficState rows={rows} />;
-  }
-
   const data = rows.map(toChartDatum);
   const chronicleDate = data.find((row) => row.isChronicleDate)?.date;
+  const selected = data.find((row) => row.date === selectedDate) ?? data[0];
+  const tickCount = Math.min(data.length, capacity);
+  const ticks = Array.from(
+    { length: tickCount },
+    (_, index) =>
+      data[Math.round((index * (data.length - 1)) / Math.max(1, tickCount - 1))]
+        .date,
+  );
+  const yWidth = Math.max(
+    32,
+    String(Math.max(...rows.flatMap((row) => [row.sent, row.received])))
+      .length *
+      8 +
+      16,
+  );
+
+  if (!hasTraffic)
+    return (
+      <>
+        <EmptyTrafficState rows={rows} />
+        <DailyData rows={rows} />
+      </>
+    );
 
   return (
-    <div
-      className="w-full overflow-x-auto"
-      role="img"
-      aria-label="TCDb sent and received card traffic line chart showing 10 calendar days"
-      data-testid="tcdb-card-traffic-chart"
-    >
-      <div className="h-[320px] min-w-[360px]">
-        <ResponsiveContainer width="100%" height={320}>
+    <div className="w-full min-w-0" data-testid="tcdb-card-traffic-chart">
+      <div className="h-[250px] w-full min-w-0 md:h-[320px]">
+        <ResponsiveContainer
+          width="100%"
+          height={height}
+          minWidth={0}
+          onResize={(width) =>
+            setCapacity(
+              Math.max(
+                3,
+                Math.min(10, Math.floor((width - yWidth - 40) / 72) + 1),
+              ),
+            )
+          }
+        >
           <LineChart
             data={data}
-            margin={{ top: 20, right: 16, left: 0, bottom: 24 }}
+            margin={{ top: 12, right: 28, left: 4, bottom: 4 }}
+            accessibilityLayer
+            onTouchStart={(_, event) => {
+              const touch = event.touches[0];
+              if (!touch) return;
+              const bounds = event.currentTarget.getBoundingClientRect();
+              const plotWidth = bounds.width - yWidth - 4 - 28;
+              if (plotWidth <= 0) return;
+              const fraction =
+                (touch.clientX - bounds.left - yWidth - 4) / plotWidth;
+              const index = Math.max(
+                0,
+                Math.min(
+                  data.length - 1,
+                  Math.round(fraction * (data.length - 1)),
+                ),
+              );
+              setSelectedDate(data[index].date);
+            }}
+            onClick={(state) => {
+              const index = Number(state.activeTooltipIndex);
+              if (state.activeTooltipIndex != null && data[index])
+                setSelectedDate(data[index].date);
+            }}
           >
+            <Tooltip content={() => null} />
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="date"
+              ticks={ticks}
               interval={0}
               tickFormatter={formatAxisDate}
               tickLine={false}
               axisLine={false}
               tick={{ fontSize: 12 }}
+              height={30}
             />
             <YAxis
+              width={yWidth}
+              domain={[0, "auto"]}
               allowDecimals={false}
               tickLine={false}
               axisLine={false}
               tick={{ fontSize: 12 }}
             />
-            <Tooltip content={<TrafficTooltip />} />
-            <Legend verticalAlign="top" />
             {chronicleDate ? (
               <ReferenceLine
                 x={chronicleDate}
@@ -210,21 +273,86 @@ export function TcdbCardTrafficChartClient({ rows }: Props) {
               name="Sent"
               stroke="var(--bucks-green)"
               strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2 }}
-              activeDot={{ r: 6 }}
+              dot={{ r: 2, strokeWidth: 1 }}
+              activeDot={{ r: 5 }}
+              isAnimationActive={false}
             />
             <Line
               type="monotone"
               dataKey="received"
               name="Received"
               stroke="var(--blue)"
+              strokeDasharray="6 3"
               strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2 }}
-              activeDot={{ r: 6 }}
+              dot={{ r: 2, strokeWidth: 1 }}
+              activeDot={{ r: 5 }}
+              isAnimationActive={false}
             />
+            {selected ? (
+              <>
+                <ReferenceDot
+                  x={selected.date}
+                  y={selected.sent}
+                  r={5}
+                  fill="white"
+                  stroke="var(--bucks-green)"
+                  strokeWidth={2}
+                />
+                <ReferenceDot
+                  x={selected.date}
+                  y={selected.received}
+                  r={5}
+                  fill="white"
+                  stroke="var(--blue)"
+                  strokeWidth={2}
+                />
+              </>
+            ) : null}
           </LineChart>
         </ResponsiveContainer>
       </div>
+      <div
+        className="flex flex-wrap gap-x-4 gap-y-1 text-xs"
+        aria-label="Chart legend"
+      >
+        <span>Cards</span>
+        <span className="flex items-center gap-1">
+          <span className="w-5 border-t-[3px] border-[var(--bucks-green)]" />
+          Sent
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-5 border-t-[3px] border-dashed border-[var(--blue)]" />
+          Received
+        </span>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Dashed vertical line: chronicle date.
+      </p>
+      <label className="mt-3 block text-sm font-medium" htmlFor={selectId}>
+        Select a day for exact values
+      </label>
+      <select
+        id={selectId}
+        className="mt-1 min-h-11 w-full min-w-0 rounded border border-border bg-white p-2 text-sm"
+        value={selected?.date}
+        onChange={(event) => setSelectedDate(event.target.value)}
+      >
+        {data.map((row) => (
+          <option key={row.date} value={row.date}>
+            {row.fullDateLabel}
+          </option>
+        ))}
+      </select>
+      {selected ? (
+        <div className="mt-2 text-sm" aria-live="polite" aria-atomic="true">
+          <p className="font-semibold">
+            {selected.fullDateLabel}
+            {selected.isChronicleDate ? " (chronicle date)" : ""}
+          </p>
+          <DayValues row={selected} />
+        </div>
+      ) : null}
+      <DailyData rows={rows} />
     </div>
   );
 }

@@ -46,13 +46,25 @@ const tags = traffic.slice(0, 8).map((_, i) => ({
 function Charts({ empty, compact }: { empty: boolean; compact: boolean }) {
   return (
     <>
-      <TcdbCardTrafficChartClient
-        rows={
-          empty
-            ? traffic.map((row) => ({ ...row, sent: 0, received: 0 }))
-            : traffic
-        }
-      />
+      <div className="min-w-0 rounded-2xl border-2 border-[var(--cream)] bg-white p-4 md:p-6">
+        <h2>TCDb Card Traffic</h2>
+        <TcdbCardTrafficChartClient
+          rows={
+            empty
+              ? traffic.map((row) => ({ ...row, sent: 0, received: 0 }))
+              : new URLSearchParams(location.search).has("traffic")
+                ? traffic.map((row, i) => ({
+                    ...row,
+                    date: i < 5 ? `2026-12-${27 + i}` : `2027-01-0${i - 4}`,
+                    sent: i === 5 ? 123456 : 0,
+                    received: i === 5 ? 98765 : 0,
+                    sentTradeCount: i === 5 ? 2 : 0,
+                    receivedTradeCount: i === 5 ? 3 : 0,
+                  }))
+                : traffic
+          }
+        />
+      </div>
       <PersonaActivityChartClient
         rows={empty ? [] : activity}
         label="Persona activity"
