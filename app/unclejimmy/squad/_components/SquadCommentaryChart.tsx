@@ -63,7 +63,7 @@ export default function SquadCommentaryChart({ rows }: Props) {
         style={{ minWidth }}
         data-testid="squad-commentary-chart"
       >
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={360}>
           <BarChart
             data={rows}
             margin={{ top: 12, right: 12, left: 0, bottom: 80 }}

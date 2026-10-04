@@ -1,3 +1,9 @@
+# Archived WU-375 authorization spike
+
+Status: historical design; superseded by the
+[current authz contract](../authz/AUTHZ-CONTRACT.md) and
+[workflow](../authz/WORKFLOW.md). Original proposal follows unchanged.
+
 # CAPABILITIES ; WU-375 (Spike)
 
 **Scope:** We gate features, not public pages. The homie directory is public; snapshot creation and homie updates are gated.

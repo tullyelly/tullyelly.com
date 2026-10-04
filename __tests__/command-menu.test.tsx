@@ -7,11 +7,13 @@ import CommandMenu, {
 import type { NavItem } from "@/types/nav";
 import { RECENT_STORAGE_KEY } from "@/lib/menu.recents";
 
+let mockPathname = "/current";
+
 const mockRouterPush = jest.fn();
 const mockUseRouter = jest.fn(() => ({ push: mockRouterPush }));
 
 jest.mock("next/navigation", () => ({
-  usePathname: () => "/current",
+  usePathname: () => mockPathname,
   useRouter: () => mockUseRouter(),
 }));
 
@@ -77,6 +79,7 @@ const items: NavItem[] = [
 
 describe("CommandMenu", () => {
   beforeEach(() => {
+    mockPathname = "/current";
     window.localStorage.clear();
     mockUseRouter.mockClear();
     mockRouterPush.mockReset();
@@ -193,5 +196,94 @@ describe("CommandMenu", () => {
     fireEvent.keyDown(input, { key: "Escape" });
 
     await waitFor(() => expect(trigger).toHaveFocus());
+  });
+  it("leaves an initially closed dialog unmounted without taking focus", async () => {
+    render(
+      <CommandMenuProvider items={items}>
+        <OpenMenuButton />
+        <CommandMenu />
+      </CommandMenuProvider>,
+    );
+    const trigger = screen.getByRole("button", { name: "Open search" });
+    trigger.focus();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(trigger).toHaveFocus();
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    expect(screen.queryByTestId("cmdk")).toBeNull();
+  });
+
+  it.each(["Escape", "shortcut", "selection", "outside", "route"])(
+    "unmounts and restores focus after %s closes the dialog",
+    async (reason) => {
+      const view = () => (
+        <CommandMenuProvider items={items}>
+          <OpenMenuButton />
+          <CommandMenu />
+          <main>Destination</main>
+        </CommandMenuProvider>
+      );
+      const { rerender } = render(view());
+      const trigger = screen.getByRole("button", { name: "Open search" });
+      trigger.focus();
+      fireEvent.keyDown(trigger, { key: "k", ctrlKey: true });
+      const input = await screen.findByPlaceholderText(
+        "Find a page or search tullyelly…",
+      );
+      await waitFor(() => expect(input).toHaveFocus());
+      expect(screen.getByRole("dialog")).not.toHaveAttribute(
+        "aria-modal",
+        "true",
+      );
+      if (reason === "Escape") fireEvent.keyDown(input, { key: "Escape" });
+      if (reason === "shortcut")
+        fireEvent.keyDown(input, { key: "k", ctrlKey: true });
+      if (reason === "selection")
+        fireEvent.click(screen.getByText("Spotlight"));
+      if (reason === "outside") fireEvent.pointerDown(document.body);
+      if (reason === "route") {
+        mockPathname = "/destination";
+        rerender(view());
+      }
+      await waitFor(() => expect(screen.queryByTestId("cmdk")).toBeNull());
+      await waitFor(() => expect(trigger).toHaveFocus());
+    },
+  );
+
+  it("returns focus to main when a route removes the original trigger", async () => {
+    const view = (showTrigger: boolean) => (
+      <CommandMenuProvider items={items}>
+        {showTrigger && <OpenMenuButton />}
+        <CommandMenu />
+        <main>Destination</main>
+      </CommandMenuProvider>
+    );
+    const { rerender } = render(view(true));
+    const trigger = screen.getByRole("button", { name: "Open search" });
+    trigger.focus();
+    fireEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveFocus());
+    mockPathname = "/destination";
+    rerender(view(false));
+    await waitFor(() => expect(screen.getByRole("main")).toHaveFocus());
+    expect(screen.queryByTestId("cmdk")).toBeNull();
+  });
+
+  it("keeps focus on an outside control that dismisses the non-modal dialog", async () => {
+    render(
+      <CommandMenuProvider items={items}>
+        <OpenMenuButton />
+        <button>Outside action</button>
+        <CommandMenu />
+      </CommandMenuProvider>,
+    );
+    const trigger = screen.getByRole("button", { name: "Open search" });
+    trigger.focus();
+    fireEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveFocus());
+    const outside = screen.getByRole("button", { name: "Outside action" });
+    fireEvent.pointerDown(outside);
+    outside.focus();
+    await waitFor(() => expect(screen.queryByTestId("cmdk")).toBeNull());
+    await waitFor(() => expect(outside).toHaveFocus());
   });
 });

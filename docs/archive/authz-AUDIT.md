@@ -1,3 +1,9 @@
+# Archived WU-375 authorization spike
+
+Status: historical design; superseded by the
+[current authz contract](../authz/AUTHZ-CONTRACT.md) and
+[workflow](../authz/WORKFLOW.md). Original proposal follows unchanged.
+
 AUDIT ; WU-375 (Spike)
 Events (v1)
 

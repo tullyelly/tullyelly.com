@@ -18,7 +18,7 @@ export async function TcdbCardTrafficChart({ chronicleDate }: Props) {
     <Card
       as="section"
       accent="cream-city-cream"
-      className="space-y-4 p-4 md:p-6"
+      className="min-w-0 w-full space-y-4 p-4 md:p-6"
       aria-labelledby="tcdb-card-traffic-title"
     >
       <div className="space-y-1">
@@ -26,8 +26,8 @@ export async function TcdbCardTrafficChart({ chronicleDate }: Props) {
           TCDb Card Traffic
         </h2>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Sent cards use the sent date; received cards use the received or
-          archived completion date recorded for each trade.
+          Sent cards are counted on the sent date. Received cards are counted on
+          the received or archived completion date.
         </p>
       </div>
 

@@ -29,6 +29,9 @@ type CommandDialogProps = {
   onOpenChange: (next: boolean) => void;
   children: React.ReactNode;
   className?: string;
+  onCloseAutoFocus?: React.ComponentPropsWithoutRef<
+    typeof DialogPrimitive.Content
+  >["onCloseAutoFocus"];
 };
 
 export function CommandDialog({
@@ -36,6 +39,7 @@ export function CommandDialog({
   onOpenChange,
   children,
   className,
+  onCloseAutoFocus,
 }: CommandDialogProps) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const topPx = useTopAnchor();
@@ -83,63 +87,15 @@ export function CommandDialog({
     window.addEventListener("keydown", stopKeys, true);
 
     return () => {
-      window.removeEventListener("wheel", stopWheel, {
-        capture: true,
-      } as any);
-      window.removeEventListener("touchmove", stopTouch, {
-        capture: true,
-      } as any);
+      window.removeEventListener("wheel", stopWheel, true);
+      window.removeEventListener("touchmove", stopTouch, true);
       window.removeEventListener("keydown", stopKeys, true);
-    };
-  }, [open]);
-
-  React.useEffect(() => {
-    if (!open) return;
-    const container = contentRef.current;
-    if (!container) return;
-
-    const selector =
-      'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Tab" || !contentRef.current) return;
-      const focusable = Array.from(
-        contentRef.current.querySelectorAll<HTMLElement>(selector),
-      ).filter(
-        (node) =>
-          !node.hasAttribute("disabled") &&
-          node.getAttribute("aria-hidden") !== "true",
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement as HTMLElement | null;
-
-      if (event.shiftKey) {
-        if (!active || active === first) {
-          last.focus();
-          event.preventDefault();
-        }
-      } else if (!active || active === last) {
-        first.focus();
-        event.preventDefault();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown, true);
-    queueMicrotask(() => {
-      const first = container.querySelector<HTMLElement>(selector);
-      first?.focus();
-    });
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown, true);
     };
   }, [open]);
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} modal={false}>
-      <DialogPrimitive.Portal forceMount>
+      <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           data-overlay-layer
           className="fixed inset-x-0 bottom-0 z-[98] bg-black/35 backdrop-blur-[1px] transition-opacity duration-120 data-[state=open]:opacity-100 data-[state=closed]:opacity-0"
@@ -148,13 +104,20 @@ export function CommandDialog({
             top: Math.max(topPx - 8, 0),
           }}
         />
-        <DialogPrimitive.Content forceMount asChild>
+        <DialogPrimitive.Content
+          asChild
+          onCloseAutoFocus={onCloseAutoFocus}
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            contentRef.current
+              ?.querySelector<HTMLInputElement>("[cmdk-input]")
+              ?.focus();
+          }}
+        >
           <div
             ref={contentRef}
             role="dialog"
-            aria-modal="true"
             data-overlay-root
-            aria-hidden={open ? undefined : "true"}
             className={cn(
               "fixed z-[99] p-0",
               "rounded-2xl border border-[color:var(--border-subtle)]",

@@ -46,6 +46,7 @@ export function CommandMenuProvider({
   children: React.ReactNode;
 }) {
   const [open, setOpenState] = React.useState(false);
+  const openRef = React.useRef(false);
   const lastTriggerRef = React.useRef<HTMLElement | null>(null);
 
   const captureActiveElement = React.useCallback(() => {
@@ -63,27 +64,61 @@ export function CommandMenuProvider({
 
   const setOpen = React.useCallback(
     (value: boolean) => {
-      if (value) {
+      if (value && !openRef.current) {
         captureActiveElement();
       }
+      openRef.current = value;
       setOpenState(value);
     },
     [captureActiveElement],
   );
 
   const toggle = React.useCallback(() => {
-    setOpenState((value) => {
-      if (!value) captureActiveElement();
-      return !value;
-    });
-  }, [captureActiveElement]);
+    setOpen(!openRef.current);
+  }, [setOpen]);
 
   const restoreFocus = React.useCallback(() => {
-    const target = lastTriggerRef.current ?? document.body;
+    // A rapid reopen must not let the previous scope's delayed cleanup take focus.
+    if (openRef.current) return;
+    const previous = lastTriggerRef.current;
     lastTriggerRef.current = null;
-    target?.focus?.();
+    const active = document.activeElement;
+    // Non-modal outside interactions should keep their newly focused target.
+    if (
+      active instanceof HTMLElement &&
+      active !== document.body &&
+      active.isConnected &&
+      !active.closest("[data-overlay-root]")
+    )
+      return;
+
+    const candidates = [
+      previous,
+      document.querySelector<HTMLElement>('[data-testid="nav-desktop-search"]'),
+      document.querySelector<HTMLElement>("main"),
+    ];
+    for (const target of candidates) {
+      if (
+        !target?.isConnected ||
+        target.closest('[hidden], [inert], [aria-hidden="true"]') ||
+        target.matches(":disabled")
+      )
+        continue;
+      const hadTabIndex = target.hasAttribute("tabindex");
+      if (target.tagName === "MAIN" && !hadTabIndex) target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+      if (target.tagName === "MAIN" && !hadTabIndex) {
+        target.addEventListener(
+          "blur",
+          () => target.removeAttribute("tabindex"),
+          { once: true },
+        );
+      }
+      if (document.activeElement === target) return;
+    }
   }, []);
   const pathname = usePathname();
+  const previousPathname = React.useRef(pathname);
   const resolvedItems = React.useMemo(() => {
     if (items.length) return items;
     if (TEST_MODE) return TEST_MENU_ITEMS;
@@ -91,7 +126,10 @@ export function CommandMenuProvider({
   }, [items]);
 
   React.useEffect(() => {
-    setOpen(false);
+    if (previousPathname.current !== pathname) {
+      previousPathname.current = pathname;
+      setOpen(false);
+    }
   }, [pathname, setOpen]);
 
   React.useEffect(() => {
@@ -348,19 +386,6 @@ export default function CommandMenu() {
     return () => window.removeEventListener("keydown", handleNumberHotkey);
   }, [handleSelect, hotkeyLookup, open]);
 
-  React.useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      event.stopPropagation();
-      setOpen(false);
-      queueMicrotask(restoreFocus);
-    };
-    document.addEventListener("keydown", onKeyDown, true);
-    return () => document.removeEventListener("keydown", onKeyDown, true);
-  }, [open, restoreFocus, setOpen]);
-
   const renderItem = React.useCallback(
     (link: FlatLink) => {
       const contextLabels = link.pathLabels
@@ -464,12 +489,17 @@ export default function CommandMenu() {
   }, [featured, personaGroups, recentLinks, renderItem, searchQuery]);
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog
+      open={open}
+      onOpenChange={setOpen}
+      onCloseAutoFocus={(event) => {
+        event.preventDefault();
+        restoreFocus();
+      }}
+    >
       <Command
         data-testid="cmdk"
         data-state={open ? "open" : "closed"}
-        aria-hidden={open ? undefined : "true"}
-        hidden={!open}
         className="bg-[var(--surface)] text-[var(--text)]"
       >
         <CommandInput

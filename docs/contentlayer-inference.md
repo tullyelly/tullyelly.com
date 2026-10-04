@@ -14,6 +14,9 @@ live in `lib/alterEgo.ts`.
   inferred `ReleaseSection` alter ego, otherwise `tullyelly`.
 - `personTagUsages`: every `PersonTag` usage with its tag and display label.
 - `clanTagUsages`: every `ClanSnapshot` usage with its tag as the display label.
+- `musicUsages`: literal YouTube video/playlist usage with surrounding ReleaseSection
+  context; inference does not call live YouTube APIs. See `lib/alterEgo.ts` and
+  `contentlayer.config.ts` for exact fields and parsing rules.
 
 Supported inferred tag sources:
 

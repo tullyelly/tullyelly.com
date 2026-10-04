@@ -1,3 +1,9 @@
+# Archived static-page v2 proposal
+
+Status: historical proposal, not an implemented contract. Current procedures:
+[authoring](../authoring.md) and [validation](../validation.md). Targets and proposed
+CI automation below are not evidence of current enforcement.
+
 1. **Lessons Learned from First Two Pages**
    - **What worked**
      - Base layout, design tokens, and image pipeline were reusable across pages

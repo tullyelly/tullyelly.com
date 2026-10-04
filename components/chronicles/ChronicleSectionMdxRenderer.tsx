@@ -16,6 +16,8 @@ import TcdbSnapshot, {
 import FolderImageCarousel from "@/components/media/FolderImageCarousel.server";
 import { resolveChronicleCarouselFolder } from "@/lib/images/resolve-chronicle-image-path";
 import { MdxRenderer } from "@/components/mdx-renderer";
+import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
+import { parseDateish } from "@/lib/datetime";
 import { normalizeTagSlug } from "@/lib/tags";
 import type { TagMetadata } from "@/lib/tags-server";
 
@@ -63,6 +65,33 @@ export function ChronicleSectionMdxRenderer({
     );
   }
 
+  function BoundScrollAmendment(props: ComponentProps<typeof ScrollAmendment>) {
+    // Contentlayer serializes frontmatter calendar dates as ISO timestamps.
+    // Anchor their date portion at noon UTC, preserving the authored day in Chicago.
+    const calendarDate = postDate
+      .trim()
+      .match(/^(\d{4}-\d{2}-\d{2})(?:T|$)/)?.[1];
+    const parsed = calendarDate ? parseDateish(calendarDate) : null;
+    const parts = parsed
+      ? new Intl.DateTimeFormat("en-US", {
+          timeZone: "America/Chicago",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).formatToParts(parsed)
+      : [];
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((value) => value.type === type)?.value;
+    const inheritedDate =
+      parsed &&
+      calendarDate === `${part("year")}-${part("month")}-${part("day")}`
+        ? calendarDate
+        : undefined;
+    return (
+      <ScrollAmendment {...props} date={props.date?.trim() || inheritedDate} />
+    );
+  }
+
   function BoundSetCollector({ set }: BoundSetCollectorProps) {
     return <SetCollector set={set} snapshotDate={postDate} />;
   }
@@ -96,6 +125,7 @@ export function ChronicleSectionMdxRenderer({
           : {}),
         ...(components ?? {}),
         ...(chronicleSlug ? { img: BoundChronicleImage } : {}),
+        ScrollAmendment: BoundScrollAmendment,
         ClanSnapshot: BoundClanSnapshot,
         SetCollector: BoundSetCollector,
         TcdbSnapshot: BoundTcdbSnapshot,

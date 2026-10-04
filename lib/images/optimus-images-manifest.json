@@ -343,6 +343,8 @@
     "/images/optimus/brew-crew/brewers/brewers-5.webp",
     "/images/optimus/brew-crew/keanu.webp",
     "/images/optimus/brew-crew/peter.webp",
+    "/images/optimus/brewer-szn/1075988/1075988-0.webp",
+    "/images/optimus/brewer-szn/1075988/1075988-1.webp",
     "/images/optimus/bridges/1021328.webp",
     "/images/optimus/bridges/day/day-0.webp",
     "/images/optimus/bridges/day/day-1.webp",
@@ -3823,6 +3825,16 @@
     },
     {
       "src": "/images/optimus/brew-crew/peter.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/brewer-szn/1075988/1075988-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/brewer-szn/1075988/1075988-1.webp",
       "width": 1920,
       "height": 2550
     },

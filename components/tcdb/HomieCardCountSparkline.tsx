@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import type { HomieTcdbSnapshotRow } from "@/lib/data/tcdb";
 
 type Props = {
@@ -102,26 +95,29 @@ export default function HomieCardCountSparkline({ snapshots }: Props) {
       aria-label="TCDb total card history across homie snapshots"
       data-testid="homie-card-count-sparkline"
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 8, bottom: 6, left: 8 }}>
-          <XAxis dataKey="ranking_at" hide />
-          <YAxis dataKey="card_count" hide domain={["dataMin", "dataMax"]} />
-          <Tooltip content={<CardCountTooltip />} />
-          <Line
-            type="monotone"
-            dataKey="card_count"
-            isAnimationActive={false}
-            stroke="var(--trade-blue)"
-            strokeWidth={2.5}
-            dot={{
-              r: 2.75,
-              strokeWidth: 1.5,
-              fill: "var(--trade-off-white)",
-            }}
-            activeDot={{ r: 4 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <LineChart
+        responsive
+        style={{ width: "100%", height: "100%" }}
+        data={data}
+        margin={{ top: 8, right: 8, bottom: 6, left: 8 }}
+      >
+        <XAxis dataKey="ranking_at" hide />
+        <YAxis dataKey="card_count" hide domain={["dataMin", "dataMax"]} />
+        <Tooltip content={<CardCountTooltip />} />
+        <Line
+          type="monotone"
+          dataKey="card_count"
+          isAnimationActive={false}
+          stroke="var(--trade-blue)"
+          strokeWidth={2.5}
+          dot={{
+            r: 2.75,
+            strokeWidth: 1.5,
+            fill: "var(--trade-off-white)",
+          }}
+          activeDot={{ r: 4 }}
+        />
+      </LineChart>
     </div>
   );
 }

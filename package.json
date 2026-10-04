@@ -37,7 +37,7 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,mdx,json,yml,yaml,css}\"",
     "format:check": "node scripts/check-formatting.mjs",
     "fix:next-swc": "npm uninstall next && npm install next@15.5.9 --include=optional",
-    "lint": "eslint . --cache --cache-location .cache/eslint/.eslintcache",
+    "lint": "eslint . --cache --cache-location .cache/eslint/.eslintcache && npm run docs:check",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint:metadata": "node scripts/ensure-metadata.js",
     "james": "npm run lint && npm run typecheck && npm test",
@@ -103,7 +103,9 @@
     "verify:agent": "node scripts/verify-agent.mjs",
     "prepare": "husky",
     "check:emdash": "node scripts/check-emdash.mjs",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "docs:check": "node scripts/check-docs.mjs",
+    "test:charts": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers playwright test --config playwright.charts.config.ts"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
