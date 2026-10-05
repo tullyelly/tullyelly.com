@@ -3,6 +3,12 @@
     "/images/optimus/100/add-delete.webp",
     "/images/optimus/100/commits.webp",
     "/images/optimus/100/languages.webp",
+    "/images/optimus/2020-21-championship-binders/2020-21.webp",
+    "/images/optimus/2020-21-championship-binders/fern.webp",
+    "/images/optimus/2020-21-championship-binders/revolution.webp",
+    "/images/optimus/2020-21-championship-binders/select/select-0.webp",
+    "/images/optimus/2020-21-championship-binders/select/select-1.webp",
+    "/images/optimus/2020-21-championship-binders/select/select-2.webp",
     "/images/optimus/22-23-prizm.webp",
     "/images/optimus/3am/964402/1-964402.webp",
     "/images/optimus/3am/964402/2-964402.webp",
@@ -2127,6 +2133,36 @@
       "src": "/images/optimus/100/languages.webp",
       "width": 484,
       "height": 207
+    },
+    {
+      "src": "/images/optimus/2020-21-championship-binders/2020-21.webp",
+      "width": 1920,
+      "height": 1446
+    },
+    {
+      "src": "/images/optimus/2020-21-championship-binders/fern.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/2020-21-championship-binders/revolution.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/2020-21-championship-binders/select/select-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/2020-21-championship-binders/select/select-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/2020-21-championship-binders/select/select-2.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/22-23-prizm.webp",
