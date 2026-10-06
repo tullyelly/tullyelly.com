@@ -1,3 +1,4 @@
+import TagLink from "@/components/tags/TagLink";
 import type { Route } from "next";
 import Link from "next/link";
 import { allPosts } from "contentlayer/generated";
@@ -116,12 +117,12 @@ export default async function Page() {
           <ul className="flex flex-wrap gap-2">
             {artistTags.map(([slug, label]) => (
               <li key={slug}>
-                <Link
-                  href={`/shaolin/tags/${encodeURIComponent(slug)}`}
+                <TagLink
+                  tag={slug}
                   className="inline-flex rounded-full border border-border bg-white px-3 py-1.5 text-sm link-blue"
                 >
                   {label}
-                </Link>
+                </TagLink>
               </li>
             ))}
           </ul>

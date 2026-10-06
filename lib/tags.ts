@@ -2,20 +2,6 @@ const TAG_DISPLAY_OVERRIDES: Record<string, string> = {
   doom: "DOOM",
 };
 
-const TAG_HREF_OVERRIDES: Record<string, string> = {
-  bonnibel: "/unclejimmy/squad/bonnibel",
-  cardattack: "/cardattack",
-  eeeeeeeemma: "/unclejimmy/squad/eeeeeeeemma",
-  "jeff-meff": "/unclejimmy/squad/jeff-meff",
-  lulu: "/unclejimmy/squad/lulu",
-  mark2: "/mark2",
-  nikkigirl: "/unclejimmy/squad/nikkigirl",
-  shaolin: "/shaolin",
-  theabbott: "/theabbott",
-  tullyelly: "/tullyelly",
-  unclejimmy: "/unclejimmy",
-};
-
 export function normalizeTagSlug(tag: string): string {
   return tag.trim().toLowerCase().replace(/\s+/g, "-");
 }
@@ -26,8 +12,7 @@ export function getDefaultTagHref(tag: string): string {
 }
 
 export function getKnownTagHref(tag: string): string {
-  const normalized = normalizeTagSlug(tag);
-  return TAG_HREF_OVERRIDES[normalized] ?? getDefaultTagHref(normalized);
+  return getDefaultTagHref(tag);
 }
 
 export function getKnownTagDisplayName(tag: string): string {
@@ -41,4 +26,21 @@ export function getTagDisplayName(tag: string): string {
 
 export function getHashtagDisplayName(tag: string): string {
   return `#${getTagDisplayName(tag)}`;
+}
+
+/** Serializable routing metadata; an absent row differs from a disabled link. */
+export type TagLinkMetadata = {
+  href: string | null;
+  hrefKind: string;
+  isClickable: boolean;
+};
+
+export function resolveTagHref(
+  tag: string,
+  metadata?: TagLinkMetadata | null,
+): string | null {
+  if (metadata?.isClickable === false || metadata?.hrefKind === "none") {
+    return null;
+  }
+  return metadata?.href?.trim() || getDefaultTagHref(tag);
 }

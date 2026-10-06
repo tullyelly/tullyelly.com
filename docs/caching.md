@@ -21,3 +21,11 @@ refresh, and homie versus clan invalidation. Check actual writes and reads befor
 assuming a table refresh makes a page fresh. Preserve force-dynamic/noStore where
 the route's contract requires it; avoid server self-fetches per
 [hydration](hydration.md).
+
+Public tag metadata is loaded once per request by `getTagMetadataSnapshot` in
+`lib/tags-server.ts`, using React `cache()`. The root layout passes only href,
+href kind, and clickability to `TagMetadataProvider`; tag consumers do not query
+per tag or refetch on mount. Server batches reuse the same snapshot. Production
+builds skip the read entirely. Runtime read failures log a warning and yield an
+empty snapshot, so missing metadata follows the canonical archive fallback.
+This snapshot contains no sessions or authorization capabilities.

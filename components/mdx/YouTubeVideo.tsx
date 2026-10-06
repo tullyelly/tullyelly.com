@@ -1,3 +1,4 @@
+import type { TagLinkMetadata } from "@/lib/tags";
 import PersonTag from "@/components/mdx/PersonTag";
 import { getTagDisplayName, normalizeTagSlug } from "@/lib/tags";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ export type YouTubeVideoProps = {
   tag?: string;
   displayName?: string;
   href?: string;
+  metadata?: TagLinkMetadata;
   song?: string;
   album?: string;
 };
@@ -23,7 +25,7 @@ export default function YouTubeVideo({
   className,
   tag,
   displayName,
-  href,
+  metadata,
   song,
   album,
 }: YouTubeVideoProps) {
@@ -79,7 +81,7 @@ export default function YouTubeVideo({
             <PersonTag
               tag={artistTag}
               displayName={displayName ?? getTagDisplayName(artistTag)}
-              href={href}
+              metadata={metadata}
             />
           ) : null}
           {songTitle ? (

@@ -35,7 +35,7 @@ describe("ChronicleSignature", () => {
     );
     expect(screen.getByRole("link", { name: "#lulu" })).toHaveAttribute(
       "href",
-      "/unclejimmy/squad/lulu",
+      "/shaolin/tags/lulu",
     );
     expect(screen.getByRole("link", { name: "#gang-starr" })).toHaveAttribute(
       "href",

@@ -1,3 +1,4 @@
+import TagLink from "@/components/tags/TagLink";
 import Link from "next/link";
 import Image from "next/image";
 import LegacyPostDate from "@/components/layout/LegacyPostDate";
@@ -80,15 +81,32 @@ export default function UncleJimmyHugBallPage() {
           I don&rsquo;t recall the specific origin of the term &ldquo;hug
           ball,&rdquo; so just imagine an epic tale filled with love, hugs, and
           balls. The heroes of this tale are{" "}
-          <Link href="/shaolin/tags/nikkigirl">nikkigirl</Link>,{" "}
-          <Link href="/shaolin/tags/bonnibel">bonnibel</Link>,{" "}
-          <Link href="/shaolin/tags/lulu">lulu</Link>,{" "}
-          <Link href="/shaolin/tags/eeeeeeeemma">eeeeeeeemma</Link>,{" "}
-          <Link href="/shaolin/tags/jeff-meff">jeff meff</Link>, and me,{" "}
-          <Link href="/unclejimmy">unclejimmy</Link>. Rumors of the fabled hug
-          ball soon spread far and wide, with reports of additional apostles
-          helping this ball of hug sweep the nation. Dozens, perhaps hundreds,
-          have been infected by this virus of love.
+          <TagLink tag="nikkigirl" className="">
+            nikkigirl
+          </TagLink>
+          ,{" "}
+          <TagLink tag="bonnibel" className="">
+            bonnibel
+          </TagLink>
+          ,{" "}
+          <TagLink tag="lulu" className="">
+            lulu
+          </TagLink>
+          ,{" "}
+          <TagLink tag="eeeeeeeemma" className="">
+            eeeeeeeemma
+          </TagLink>
+          ,{" "}
+          <TagLink tag="jeff-meff" className="">
+            jeff meff
+          </TagLink>
+          , and me,{" "}
+          <TagLink tag="unclejimmy" className="">
+            unclejimmy
+          </TagLink>
+          . Rumors of the fabled hug ball soon spread far and wide, with reports
+          of additional apostles helping this ball of hug sweep the nation.
+          Dozens, perhaps hundreds, have been infected by this virus of love.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           If you have been ball-hugged by any of the hug ball founding fathers,
@@ -109,10 +127,12 @@ export default function UncleJimmyHugBallPage() {
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Within the past six months or so, I&rsquo;ve started to make a ball
           out of all the tape that I get from my{" "}
-          <Link href="/shaolin/tags/tcdb">TCDb</Link> trading partners, along
-          with the excess that naturally happens in my collecting process. This
-          ball will now officially become THE hug ball, and we will track its
-          growth here.
+          <TagLink tag="tcdb" className="">
+            TCDb
+          </TagLink>{" "}
+          trading partners, along with the excess that naturally happens in my
+          collecting process. This ball will now officially become THE hug ball,
+          and we will track its growth here.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           As of 2025-11-13, THE hug ball is about the size of a baseball and

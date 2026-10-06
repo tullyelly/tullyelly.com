@@ -58,7 +58,11 @@ describe("TagDirectoryClient", () => {
     expect(
       within(desktopRows()[0]).getByRole("link", { name: "#alpha" }),
     ).toHaveAttribute("href", "/shaolin/tags/alpha");
-    expect(within(desktopRows()[0]).getByText("5")).toBeInTheDocument();
+    expect(
+      within(desktopRows()[0]).getByRole("link", {
+        name: "Chronicle archive (5)",
+      }),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "#doom" })).toHaveLength(2);
     expect(screen.getAllByText("None")).toHaveLength(8);
     expect(

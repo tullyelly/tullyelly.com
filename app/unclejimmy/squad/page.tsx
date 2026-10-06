@@ -1,3 +1,4 @@
+import TagLink from "@/components/tags/TagLink";
 import Link from "next/link";
 import type { Route } from "next";
 
@@ -76,7 +77,11 @@ function SquadContentSection({
             const href = getSquadPageItemHref(item);
             return (
               <li key={item.slug}>
-                {href ? (
+                {item.kind === "person" || item.kind === "team" ? (
+                  <TagLink tag={item.slug} className={linkClassName}>
+                    {item.label}
+                  </TagLink>
+                ) : href ? (
                   <Link href={href as Route} className={linkClassName}>
                     {item.label}
                   </Link>

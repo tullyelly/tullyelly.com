@@ -1,3 +1,4 @@
+import TagLink from "@/components/tags/TagLink";
 import * as React from "react";
 import Image from "next/image";
 import type { MDXComponents } from "mdx/types";
@@ -45,6 +46,7 @@ function extractCodeString(children: React.ReactNode): string | null {
 type CustomMDXComponents = MDXComponents & {
   CodePanel: typeof CodePanel;
   PersonTag: typeof PersonTag;
+  TagLink: typeof TagLink;
   ReleaseSection: typeof ReleaseSection;
   SetCollector: typeof SetCollector;
   LuluLearns: typeof LuluLearns;
@@ -284,6 +286,7 @@ export const mdxComponents: CustomMDXComponents = {
   FruityLoops,
   CodePanel,
   PersonTag,
+  TagLink,
   ReleaseSection,
   SetCollector,
   LuluLearns,

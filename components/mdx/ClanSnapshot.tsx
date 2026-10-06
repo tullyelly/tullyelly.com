@@ -1,4 +1,5 @@
-import type { Route } from "next";
+import TagLink from "@/components/tags/TagLink";
+import type { TagLinkMetadata } from "@/lib/tags";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -9,12 +10,13 @@ import {
 } from "@/lib/data/tcdb-clan-snapshot";
 import { getTcdbClanRankingHref } from "@/lib/tcdb-clan-routes";
 import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
-import { getDefaultTagHref, normalizeTagSlug } from "@/lib/tags";
+import { normalizeTagSlug } from "@/lib/tags";
 
 export type ClanSnapshotProps = {
   tag: string;
   snapshotDate: string;
   href?: string;
+  metadata?: TagLinkMetadata;
   sport?: string;
 };
 
@@ -35,12 +37,6 @@ const NEW_SNAPSHOT_LABEL = "New snapshot";
 const linkClassName = "underline hover:no-underline text-primary";
 const clanTagClassName =
   "font-bold italic !text-[var(--person-tag-color,var(--blue))] !no-underline hover:!bg-[var(--person-tag-hover-bg,var(--blue))] hover:!text-[var(--person-tag-hover-color,var(--white))] hover:!no-underline";
-
-function trimToValue(value: string | null | undefined): string | undefined {
-  if (typeof value !== "string") return undefined;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
-}
 
 function formatOrdinal(value: number): string {
   const remainder100 = value % 100;
@@ -83,22 +79,23 @@ function getTrendLabel(snapshot: ClanSnapshotRecord): string {
 
 function ClanTag({
   displayName,
-  href,
+  metadata,
   tag,
 }: {
   displayName?: string;
-  href: string;
+  metadata?: TagLinkMetadata;
   tag: string;
 }) {
   return (
-    <Link
-      href={href as Route}
+    <TagLink
+      tag={tag}
+      metadata={metadata}
       className={clanTagClassName}
       data-clan-tag={tag}
       prefetch={false}
     >
       {displayName ?? tag}
-    </Link>
+    </TagLink>
   );
 }
 
@@ -129,7 +126,7 @@ function renderSnapshotSummary(
 }
 
 export default async function ClanSnapshot({
-  href,
+  metadata,
   tag,
   snapshotDate,
   sport,
@@ -156,20 +153,18 @@ export default async function ClanSnapshot({
   }
 
   if (snapshots.length === 0) {
-    return (
-      <ClanTag
-        href={trimToValue(href) ?? getDefaultTagHref(normalizedTag)}
-        tag={normalizedTag}
-      />
-    );
+    return <ClanTag metadata={metadata} tag={normalizedTag} />;
   }
 
   const displayName = snapshots[0].displayName.toLowerCase();
-  const clanHref = trimToValue(href) ?? getTcdbClanRankingHref(snapshots[0]);
 
   return (
     <>
-      <ClanTag displayName={displayName} href={clanHref} tag={normalizedTag} />
+      <ClanTag
+        displayName={displayName}
+        metadata={metadata}
+        tag={normalizedTag}
+      />
       {snapshots.map(renderSnapshotSummary)}
     </>
   );

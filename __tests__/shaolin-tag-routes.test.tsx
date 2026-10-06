@@ -119,7 +119,11 @@ describe("Shaolin tag routes", () => {
       .map((link) => link.closest("tr"))
       .find((row): row is HTMLTableRowElement => row !== null);
     expect(doomRow).not.toBeNull();
-    expect(within(doomRow as HTMLElement).getByText("2")).toBeInTheDocument();
+    expect(
+      within(doomRow as HTMLElement).getByRole("link", {
+        name: "Chronicle archive (2)",
+      }),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Related page" })).toHaveLength(
       2,
     );

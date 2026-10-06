@@ -96,24 +96,25 @@ export function ChronicleSectionMdxRenderer({
     return <SetCollector set={set} snapshotDate={postDate} />;
   }
 
-  function BoundClanSnapshot({ href, tag, sport }: BoundClanSnapshotProps) {
-    const metadata = tagMetadataBySlug?.get(normalizeTagSlug(tag));
-    const metadataHref =
-      metadata?.hrefKind === "clan" ? (metadata.href ?? undefined) : undefined;
-    const resolvedHref = href ?? metadataHref;
-
+  function BoundClanSnapshot({ tag, sport }: BoundClanSnapshotProps) {
     return (
       <ClanSnapshot
         tag={tag}
         sport={sport}
         snapshotDate={postDate}
-        {...(resolvedHref ? { href: resolvedHref } : {})}
+        metadata={tagMetadataBySlug?.get(normalizeTagSlug(tag))}
       />
     );
   }
 
   function BoundTcdbSnapshot({ tag }: BoundTcdbSnapshotProps) {
-    return <TcdbSnapshot tag={tag} snapshotDate={postDate} />;
+    return (
+      <TcdbSnapshot
+        tag={tag}
+        snapshotDate={postDate}
+        metadata={tagMetadataBySlug?.get(normalizeTagSlug(tag))}
+      />
+    );
   }
 
   return (

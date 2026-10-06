@@ -1,6 +1,8 @@
 "use client";
 
-import type { Route } from "next";
+import type { TagLinkMetadata } from "@/lib/tags";
+import TagLink from "@/components/tags/TagLink";
+
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
@@ -23,6 +25,7 @@ import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 
 export type TagDirectoryRow = {
   slug: string;
+  metadata?: TagLinkMetadata;
   canonicalDisplayName: string;
   chronicleCount: number;
   alias: {
@@ -150,16 +153,19 @@ export default function TagDirectoryClient({
         {visibleRows.length > 0 ? (
           visibleRows.map((row) => (
             <MobileDataCard key={row.slug}>
-              <Link
-                href={`/shaolin/tags/${encodeURIComponent(row.slug)}` as Route}
+              <TagLink
+                tag={row.slug}
+                metadata={row.metadata}
                 className="link-blue font-semibold"
                 prefetch={false}
               >
                 #{row.slug}
-              </Link>
+              </TagLink>
               <MobileDataGrid className="grid-cols-1">
                 <MobileDataField label="Chronicles">
-                  {row.chronicleCount}
+                  <Link href={`/shaolin/tags/${encodeURIComponent(row.slug)}`}>
+                    Chronicle archive ({row.chronicleCount})
+                  </Link>
                 </MobileDataField>
                 <MobileDataField label="Also found at">
                   <AliasLink row={row} />
@@ -192,17 +198,20 @@ export default function TagDirectoryClient({
             visibleRows.map((row) => (
               <tr key={row.slug}>
                 <TableCell>
-                  <Link
-                    href={
-                      `/shaolin/tags/${encodeURIComponent(row.slug)}` as Route
-                    }
+                  <TagLink
+                    tag={row.slug}
+                    metadata={row.metadata}
                     className="link-blue font-semibold"
                     prefetch={false}
                   >
                     #{row.slug}
+                  </TagLink>
+                </TableCell>
+                <TableCell intent="numeric">
+                  <Link href={`/shaolin/tags/${encodeURIComponent(row.slug)}`}>
+                    Chronicle archive ({row.chronicleCount})
                   </Link>
                 </TableCell>
-                <TableCell intent="numeric">{row.chronicleCount}</TableCell>
                 <TableCell>
                   <AliasLink row={row} />
                 </TableCell>

@@ -183,7 +183,7 @@ describe("ChronicleSectionMdxRenderer", () => {
     },
   );
 
-  it("routes ClanSnapshot through clan tag metadata while preserving explicit href overrides", () => {
+  it("forwards metadata regardless of kind and ignores authored snapshot hrefs", () => {
     const tagMetadataBySlug = new Map([
       [
         "bucks-n-six",
@@ -238,16 +238,26 @@ describe("ChronicleSectionMdxRenderer", () => {
     expect(clanSnapshotMock.mock.calls[0]?.[0]).toEqual({
       tag: "bucks-n-six",
       snapshotDate: "2026-07-06",
-      href: "/cardattack/clans/milwaukee-bucks",
+      metadata: tagMetadataBySlug.get("bucks-n-six"),
     });
     expect(clanSnapshotMock.mock.calls[1]?.[0]).toEqual({
       tag: "tcdb",
       snapshotDate: "2026-07-06",
+      metadata: tagMetadataBySlug.get("tcdb"),
     });
     expect(clanSnapshotMock.mock.calls[2]?.[0]).toEqual({
       tag: "bucks-n-six",
       snapshotDate: "2026-07-06",
-      href: "/custom-clan-route",
+      metadata: tagMetadataBySlug.get("bucks-n-six"),
+    });
+    const BoundTcdbSnapshot = props?.components?.TcdbSnapshot as ComponentType<{
+      tag: string;
+    }>;
+    render(<BoundTcdbSnapshot tag="TCDB" />);
+    expect(tcdbSnapshotMock.mock.calls[0]?.[0]).toMatchObject({
+      tag: "TCDB",
+      snapshotDate: "2026-07-06",
+      metadata: tagMetadataBySlug.get("tcdb"),
     });
   });
 });

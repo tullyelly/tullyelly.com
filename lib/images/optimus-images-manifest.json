@@ -702,6 +702,16 @@
     "/images/optimus/hard-sell/fern.webp",
     "/images/optimus/hard-sell/new-guy.webp",
     "/images/optimus/hard-sell/toni.webp",
+    "/images/optimus/hello-darkness/bowman/bowman-0.webp",
+    "/images/optimus/hello-darkness/bowman/bowman-1.webp",
+    "/images/optimus/hello-darkness/capture/capture-0.webp",
+    "/images/optimus/hello-darkness/capture/capture-1.webp",
+    "/images/optimus/hello-darkness/metrics.webp",
+    "/images/optimus/hello-darkness/minnesota.webp",
+    "/images/optimus/hello-darkness/sun/sun-0.webp",
+    "/images/optimus/hello-darkness/sun/sun-1.webp",
+    "/images/optimus/hello-darkness/topps/topps-0.webp",
+    "/images/optimus/hello-darkness/topps/topps-1.webp",
     "/images/optimus/hello-nasty/1068274.webp",
     "/images/optimus/hello-nasty/angels/angels-0.webp",
     "/images/optimus/hello-nasty/angels/angels-1.webp",
@@ -5626,6 +5636,56 @@
     },
     {
       "src": "/images/optimus/hard-sell/toni.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hello-darkness/bowman/bowman-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hello-darkness/bowman/bowman-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hello-darkness/capture/capture-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hello-darkness/capture/capture-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hello-darkness/metrics.webp",
+      "width": 1920,
+      "height": 808
+    },
+    {
+      "src": "/images/optimus/hello-darkness/minnesota.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hello-darkness/sun/sun-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/hello-darkness/sun/sun-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/hello-darkness/topps/topps-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/hello-darkness/topps/topps-1.webp",
       "width": 1920,
       "height": 2550
     },
