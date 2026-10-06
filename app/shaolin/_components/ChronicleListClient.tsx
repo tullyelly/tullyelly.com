@@ -1,5 +1,7 @@
 "use client";
 
+import TagLink from "@/components/tags/TagLink";
+
 import type { Route } from "next";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -59,16 +61,11 @@ function TagLinks({
   return (
     <div className="flex flex-wrap gap-1.5">
       {visibleTags.map((tag) => (
-        <Link
-          key={tag}
-          href={`/shaolin/tags/${encodeURIComponent(tag)}` as Route}
-          className="inline-flex"
-          prefetch={false}
-        >
+        <TagLink key={tag} tag={tag} className="inline-flex" prefetch={false}>
           <Badge className={getBadgeClass("planned")}>
             #{tagDisplayNames[tag] ?? getHashtagDisplayName(tag).slice(1)}
           </Badge>
-        </Link>
+        </TagLink>
       ))}
       {hiddenTagCount > 0 ? (
         <span

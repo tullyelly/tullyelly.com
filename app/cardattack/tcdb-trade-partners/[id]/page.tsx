@@ -1,3 +1,4 @@
+import TagLink from "@/components/tags/TagLink";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -138,29 +139,49 @@ export default async function Page({ params }: Props) {
               {homies.length ? (
                 <div>
                   <h3 className="font-semibold">Homies</h3>
-                  {homies.map((homie) => (
-                    <Link
-                      key={homie.id}
-                      className="link-blue mr-3 inline-block"
-                      href={`/cardattack/homies/${homie.tagSlug ?? homie.id}`}
-                    >
-                      {homie.name}
-                    </Link>
-                  ))}
+                  {homies.map((homie) =>
+                    homie.tagSlug ? (
+                      <TagLink
+                        key={homie.id}
+                        tag={homie.tagSlug}
+                        className="link-blue mr-3 inline-block"
+                      >
+                        {homie.name}
+                      </TagLink>
+                    ) : (
+                      <Link
+                        key={homie.id}
+                        href={`/cardattack/homies/${homie.id}`}
+                        className="link-blue mr-3 inline-block"
+                      >
+                        {homie.name}
+                      </Link>
+                    ),
+                  )}
                 </div>
               ) : null}
               {clans.length ? (
                 <div>
                   <h3 className="font-semibold">Clans</h3>
-                  {clans.map((clan) => (
-                    <Link
-                      key={clan.id}
-                      className="link-blue mr-3 inline-block"
-                      href={`/cardattack/clans/${clan.slug}`}
-                    >
-                      {clan.name}
-                    </Link>
-                  ))}
+                  {clans.map((clan) =>
+                    clan.tagSlug ? (
+                      <TagLink
+                        key={clan.id}
+                        tag={clan.tagSlug}
+                        className="link-blue mr-3 inline-block"
+                      >
+                        {clan.name}
+                      </TagLink>
+                    ) : (
+                      <Link
+                        key={clan.id}
+                        href={`/cardattack/clans/${clan.slug}`}
+                        className="link-blue mr-3 inline-block"
+                      >
+                        {clan.name}
+                      </Link>
+                    ),
+                  )}
                 </div>
               ) : null}
               {tags.length ? (
@@ -174,13 +195,9 @@ export default async function Page({ params }: Props) {
                       <span className="text-muted-foreground">
                         {tag.tagType}:
                       </span>{" "}
-                      {tag.href ? (
-                        <Link className="link-blue" href={tag.href}>
-                          {tag.displayName}
-                        </Link>
-                      ) : (
-                        tag.displayName
-                      )}
+                      <TagLink tag={tag.slug} className="link-blue">
+                        {tag.displayName}
+                      </TagLink>
                     </span>
                   ))}
                 </div>

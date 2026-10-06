@@ -28,30 +28,30 @@ describe("PersonTag", () => {
     );
   });
 
-  it("routes known alter ego tags to persona landing pages", () => {
+  it("uses the archive fallback for persona tags without metadata", () => {
     render(<PersonTag tag="unclejimmy" />);
 
     expect(screen.getByRole("link", { name: "unclejimmy" })).toHaveAttribute(
       "href",
-      "/unclejimmy",
+      "/shaolin/tags/unclejimmy",
     );
   });
 
-  it("routes known squad member tags to squad pages", () => {
+  it("uses the archive fallback for squad tags without metadata", () => {
     render(<PersonTag tag="lulu" />);
 
     expect(screen.getByRole("link", { name: "lulu" })).toHaveAttribute(
       "href",
-      "/unclejimmy/squad/lulu",
+      "/shaolin/tags/lulu",
     );
   });
 
-  it("uses an explicit href override when provided", () => {
+  it("ignores authored hrefs without stored metadata", () => {
     render(<PersonTag tag="lulu" href="/custom-route" />);
 
     expect(screen.getByRole("link", { name: "lulu" })).toHaveAttribute(
       "href",
-      "/custom-route",
+      "/shaolin/tags/lulu",
     );
   });
 

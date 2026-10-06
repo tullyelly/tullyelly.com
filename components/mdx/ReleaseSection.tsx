@@ -1,3 +1,4 @@
+import TagLink from "@/components/tags/TagLink";
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -625,8 +626,8 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
     ? "inline-flex items-center justify-center gap-3 rounded-full border border-[var(--cream)] bg-black pl-2.5 pr-4 py-2 text-sm font-semibold text-[var(--cream)] shadow-sm"
     : "inline-flex items-center justify-center gap-3 rounded-full border border-black/10 bg-black/5 px-3 py-2 text-sm font-semibold text-muted-foreground";
   const alterEgoTag = (
-    <Link
-      href={`/shaolin/tags/${encodeURIComponent(alterEgo.toLowerCase())}`}
+    <TagLink
+      tag={alterEgo}
       prefetch={false}
       className={[
         "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
@@ -643,7 +644,7 @@ export default async function ReleaseSection(props: ReleaseSectionProps) {
       }}
     >
       <span>#{String(alterEgo)}</span>
-    </Link>
+    </TagLink>
   );
 
   // Release identity takes precedence; supplemental identities stay with their metadata.

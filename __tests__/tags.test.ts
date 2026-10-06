@@ -26,32 +26,23 @@ describe("tag formatting", () => {
   });
 
   it("builds default Shaolin tag archive routes", () => {
-    expect(getDefaultTagHref("Gang Starr")).toBe(
-      "/shaolin/tags/gang-starr",
-    );
+    expect(getDefaultTagHref("Gang Starr")).toBe("/shaolin/tags/gang-starr");
   });
 
-  it("routes known alter ego tags to persona landing pages", () => {
-    expect(getKnownTagHref("unclejimmy")).toBe("/unclejimmy");
-    expect(getKnownTagHref("mark2")).toBe("/mark2");
-    expect(getKnownTagHref("cardattack")).toBe("/cardattack");
-    expect(getKnownTagHref("theabbott")).toBe("/theabbott");
-    expect(getKnownTagHref("tullyelly")).toBe("/tullyelly");
-    expect(getKnownTagHref("shaolin")).toBe("/shaolin");
-  });
-
-  it("routes known squad tags to squad pages", () => {
-    expect(getKnownTagHref("lulu")).toBe("/unclejimmy/squad/lulu");
-    expect(getKnownTagHref("bonnibel")).toBe("/unclejimmy/squad/bonnibel");
-    expect(getKnownTagHref("jeff-meff")).toBe(
-      "/unclejimmy/squad/jeff-meff",
-    );
-    expect(getKnownTagHref("nikkigirl")).toBe(
-      "/unclejimmy/squad/nikkigirl",
-    );
-    expect(getKnownTagHref("eeeeeeeemma")).toBe(
-      "/unclejimmy/squad/eeeeeeeemma",
-    );
+  it.each([
+    "unclejimmy",
+    "mark2",
+    "cardattack",
+    "theabbott",
+    "tullyelly",
+    "shaolin",
+    "lulu",
+    "bonnibel",
+    "jeff-meff",
+    "nikkigirl",
+    "eeeeeeeemma",
+  ])("has no hard-coded routing tier for %s", (tag) => {
+    expect(getKnownTagHref(tag)).toBe(getDefaultTagHref(tag));
   });
 
   it("falls back to known display overrides before the normalized slug", () => {

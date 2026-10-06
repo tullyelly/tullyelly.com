@@ -50,7 +50,6 @@ function getTagAlias(metadata: TagMetadata | undefined, archiveHref: string) {
     !metadata?.isClickable ||
     !metadata.href ||
     metadata.href === archiveHref ||
-    metadata.hrefKind === "tag" ||
     metadata.hrefKind === "none"
   ) {
     return null;
@@ -86,6 +85,13 @@ export default async function Page() {
     const personTagNames = listChroniclePersonTagDisplayNames(slug);
     return {
       slug,
+      metadata: metadata
+        ? {
+            href: metadata.href,
+            hrefKind: metadata.hrefKind,
+            isClickable: metadata.isClickable,
+          }
+        : undefined,
       canonicalDisplayName:
         metadata?.displayName ?? getKnownTagDisplayName(slug),
       chronicleCount: normalizedCounts[slug] ?? 0,

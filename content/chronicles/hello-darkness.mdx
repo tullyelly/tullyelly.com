@@ -1,0 +1,25 @@
+---
+title: "hello darkness"
+date: "2026-10-05"
+summary: "Take 2; Day 257, Within the sound of silence."
+draft: false
+infinityStone: false
+---
+
+<ReleaseSection alterEgo="cardattack" releaseId="187">
+  - <TcdbSnapshot tag="ant-man" />
+  - <TcdbSnapshot tag="lamelo" />
+</ReleaseSection>
+
+<ReleaseSection alterEgo="tullyelly" releaseId="187">
+  <CipherSays>
+    ## Consistent Tag Links
+
+    - Tag links across Chronicles, snapshots, directories, homepage cards, and standalone pages now follow the matching `dojo.tags.href`.
+    - Missing or blank destinations fall back to the normalized Chronicle tag archive; intentionally disabled tags stay non-clickable.
+    - Authored hrefs and persona-context routes no longer override stored destinations. Ranking links and explicit archive navigation keep their intended routes.
+    - Tag metadata loads once per request, with no per-tag queries or build-time database reads. Regression coverage checks snapshot states, desktop and mobile layouts, and routing precedence.
+    - Validation passed: 187 test suites, 903 tests, coverage thresholds, production build, and desktop/mobile Chromium hydration checks. Existing metadata and punctuation violations remain; Vitest is blocked by missing `jsdom`.
+
+  </CipherSays>
+</ReleaseSection>

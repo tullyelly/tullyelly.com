@@ -1,3 +1,4 @@
+import type { TagLinkMetadata } from "@/lib/tags";
 import Link from "next/link";
 
 import PersonTag from "@/components/mdx/PersonTag";
@@ -10,6 +11,7 @@ import { normalizeTagSlug } from "@/lib/tags";
 export type TcdbSnapshotProps = {
   tag: string;
   snapshotDate: string;
+  metadata?: TagLinkMetadata;
 };
 
 const TREND_EMOJI: Record<TcdbSnapshotTrend, string> = {
@@ -79,6 +81,7 @@ function getTrendLabel(snapshot: {
 export default async function TcdbSnapshot({
   tag,
   snapshotDate,
+  metadata,
 }: TcdbSnapshotProps) {
   const normalizedTag = normalizeTagSlug(tag);
 
@@ -98,15 +101,19 @@ export default async function TcdbSnapshot({
   }
 
   if (!snapshot) {
-    return <PersonTag tag={normalizedTag} />;
+    return <PersonTag metadata={metadata} tag={normalizedTag} />;
   }
 
   const displayName = snapshot.displayName.toLowerCase();
 
   return (
     <>
-      <PersonTag displayName={displayName} tag={normalizedTag} />,{" "}
-      <span>[</span>
+      <PersonTag
+        metadata={metadata}
+        displayName={displayName}
+        tag={normalizedTag}
+      />
+      , <span>[</span>
       <Link
         href={`/cardattack/homies/${encodeURIComponent(snapshot.routeSlug)}`}
         prefetch={false}

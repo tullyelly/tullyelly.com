@@ -7,7 +7,7 @@ import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import { createNextOriginalReleaseSection } from "@/lib/release-section-colours";
 import type { TagMetadata } from "@/lib/tags-server";
 import { normalizeTagSlug } from "@/lib/tags";
-import { resolveIdentityHref, type IdentityContext } from "@/lib/identity";
+import { type IdentityContext } from "@/lib/identity";
 
 type ChronicleMdxRendererProps = {
   code: string;
@@ -35,7 +35,6 @@ export function ChronicleMdxRenderer({
   postDate,
   source,
   tagMetadataBySlug,
-  identityContext,
 }: ChronicleMdxRendererProps) {
   const totalSections = countReleaseSections(source);
   const nextReleaseSection = createNextOriginalReleaseSection(
@@ -55,15 +54,8 @@ export function ChronicleMdxRenderer({
   }
 
   function RoutedPersonTag(props: PersonTagProps) {
-    if (props.href) return <PersonTag {...props} />;
-
     const metadata = tagMetadataBySlug?.get(normalizeTagSlug(props.tag));
-    const href = metadata
-      ? identityContext
-        ? resolveIdentityHref(metadata.meta, identityContext, metadata.href)
-        : metadata.href
-      : undefined;
-    return <PersonTag {...props} href={href ?? undefined} />;
+    return <PersonTag {...props} metadata={metadata} />;
   }
 
   function TaggedYouTubeVideo(props: YouTubeVideoProps) {
@@ -74,7 +66,7 @@ export function ChronicleMdxRenderer({
       <YouTubeVideo
         {...props}
         displayName={metadata?.displayName}
-        href={metadata?.href ?? undefined}
+        metadata={metadata}
       />
     );
   }

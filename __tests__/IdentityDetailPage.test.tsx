@@ -1,3 +1,4 @@
+import { TagMetadataProvider } from "@/components/tags/TagLink";
 import { render, screen } from "@testing-library/react";
 
 const mockGetIdentityBySlug = jest.fn();
@@ -93,15 +94,26 @@ describe("IdentityDetailPage", () => {
     ]);
     mockGetIdentityHref.mockReturnValue("/theabbott/clans/wu-tang-clan");
 
+    const ui = await IdentityDetailPage({
+      slug: "method-man-and-redman",
+      context: "theabbott",
+      kind: "group",
+      noun: "Clan",
+      directoryHref: "/theabbott/clans",
+      directoryLabel: "Clans",
+    });
     render(
-      await IdentityDetailPage({
-        slug: "method-man-and-redman",
-        context: "theabbott",
-        kind: "group",
-        noun: "Clan",
-        directoryHref: "/theabbott/clans",
-        directoryLabel: "Clans",
-      }),
+      <TagMetadataProvider
+        metadata={{
+          "wu-tang-clan": {
+            href: "/stored-clan",
+            hrefKind: "custom",
+            isClickable: true,
+          },
+        }}
+      >
+        {ui}
+      </TagMetadataProvider>,
     );
 
     const membershipHeading = screen.getByRole("heading", {
@@ -116,7 +128,7 @@ describe("IdentityDetailPage", () => {
     );
     expect(screen.getByRole("link", { name: "Wu-Tang Clan" })).toHaveAttribute(
       "href",
-      "/theabbott/clans/wu-tang-clan",
+      "/stored-clan",
     );
     expect(
       screen.queryByRole("heading", { name: "Members" }),

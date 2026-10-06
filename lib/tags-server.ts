@@ -1,11 +1,13 @@
 import "server-only";
 
+import { cache } from "react";
+import { isNextBuild } from "@/lib/env";
 import { sql } from "@/lib/db";
 import {
   getDefaultTagHref,
   getKnownTagDisplayName,
-  getKnownTagHref,
   normalizeTagSlug,
+  resolveTagHref,
 } from "@/lib/tags";
 
 const TAG_HREF_KINDS = [
@@ -64,27 +66,6 @@ function normalizeMeta(
   return value;
 }
 
-function getFallbackHrefKind(slug: string): TagHrefKind {
-  const href = getKnownTagHref(slug);
-  if (href === getDefaultTagHref(slug)) return "tag";
-  if (href.startsWith("/unclejimmy/squad/")) return "squad";
-  if (href.startsWith("http://") || href.startsWith("https://")) {
-    return "external";
-  }
-  if (href.startsWith("/")) return "persona";
-  return "custom";
-}
-
-function getDefaultHrefForKind(slug: string, hrefKind: TagHrefKind): string {
-  if (hrefKind === "homie") {
-    return `/cardattack/homies/${encodeURIComponent(slug)}`;
-  }
-  if (hrefKind === "clan") {
-    return `/cardattack/clans/${encodeURIComponent(slug)}`;
-  }
-  return getDefaultTagHref(slug);
-}
-
 function resolveTagMetadata(
   slug: string,
   row: TagMetadataRow | undefined,
@@ -93,8 +74,8 @@ function resolveTagMetadata(
     return {
       slug,
       displayName: getKnownTagDisplayName(slug),
-      href: getKnownTagHref(slug),
-      hrefKind: getFallbackHrefKind(slug),
+      href: getDefaultTagHref(slug),
+      hrefKind: "tag",
       isClickable: true,
       meta: {},
     };
@@ -102,14 +83,11 @@ function resolveTagMetadata(
 
   const hrefKind = normalizeHrefKind(row.href_kind);
   const isClickable = row.is_clickable !== false && hrefKind !== "none";
-  const explicitHref = trimToValue(row.href);
 
   return {
     slug,
     displayName: trimToValue(row.display_name) ?? getKnownTagDisplayName(slug),
-    href: isClickable
-      ? (explicitHref ?? getDefaultHrefForKind(slug, hrefKind))
-      : null,
+    href: resolveTagHref(slug, { href: row.href, hrefKind, isClickable }),
     hrefKind,
     isClickable,
     meta: normalizeMeta(row.meta),
@@ -130,26 +108,14 @@ export async function getTagMetadataBatch(
     return new Map();
   }
 
-  const rows = await sql<TagMetadataRow>`
-    SELECT
-      slug,
-      display_name,
-      href,
-      href_kind,
-      is_clickable,
-      meta
-    FROM dojo.tags
-    WHERE slug = ANY(${slugs}::text[])
-  `;
-
-  const rowsBySlug = new Map<string, TagMetadataRow>();
-  for (const row of rows) {
-    rowsBySlug.set(row.slug, row);
-  }
+  const rowsBySlug = await getTagMetadataSnapshot();
 
   const metadataBySlug = new Map<string, TagMetadata>();
   for (const slug of slugs) {
-    metadataBySlug.set(slug, resolveTagMetadata(slug, rowsBySlug.get(slug)));
+    metadataBySlug.set(
+      slug,
+      rowsBySlug.get(slug) ?? resolveTagMetadata(slug, undefined),
+    );
   }
 
   return metadataBySlug;
@@ -217,3 +183,25 @@ export async function getStoredTagMetadataForHrefKind({
   const row = rows[0];
   return row ? resolveTagMetadata(row.slug, row) : null;
 }
+
+/** One public metadata read per request, shared by the layout and server consumers. */
+export const getTagMetadataSnapshot = cache(
+  async (): Promise<Map<string, TagMetadata>> => {
+    if (isNextBuild()) return new Map();
+    try {
+      const rows = await sql<TagMetadataRow>`
+      SELECT slug, display_name, href, href_kind, is_clickable, meta
+      FROM dojo.tags
+    `;
+      return new Map(
+        rows.map((row) => {
+          const slug = normalizeTagSlug(row.slug);
+          return [slug, resolveTagMetadata(slug, row)];
+        }),
+      );
+    } catch (error) {
+      console.warn("[tags] Failed to resolve tag metadata", error);
+      return new Map();
+    }
+  },
+);

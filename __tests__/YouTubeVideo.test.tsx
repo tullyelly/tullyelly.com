@@ -81,7 +81,12 @@ describe("YouTubeVideo", () => {
         id="nKkgSp39HO8"
         tag="showbiz-and-ag"
         displayName="Showbiz & A.G."
-        href="/theabbott/clans/showbiz-and-ag"
+        href="/authored-override"
+        metadata={{
+          href: "/theabbott/clans/showbiz-and-ag",
+          hrefKind: "tag",
+          isClickable: true,
+        }}
       />,
     );
 

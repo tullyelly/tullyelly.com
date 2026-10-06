@@ -109,7 +109,11 @@ describe("ChronicleMdxRenderer", () => {
           href: "/cardattack/homies/freak",
           hrefKind: "homie" as const,
           isClickable: true,
-          meta: {},
+          meta: {
+            identity: {
+              contexts: { theabbott: { href: "/context-override" } },
+            },
+          },
         },
       ],
     ]);
@@ -121,6 +125,7 @@ describe("ChronicleMdxRenderer", () => {
         postDate="2026-04-10"
         source={'<PersonTag tag="freak" />'}
         tagMetadataBySlug={tagMetadataBySlug}
+        identityContext="theabbott"
       />,
     );
 
@@ -150,9 +155,9 @@ describe("ChronicleMdxRenderer", () => {
     expect(freakLinks[0]).toHaveAttribute("href", "/cardattack/homies/freak");
     expect(screen.getByRole("link", { name: "lulu" })).toHaveAttribute(
       "href",
-      "/unclejimmy/squad/lulu",
+      "/shaolin/tags/lulu",
     );
-    expect(freakLinks[1]).toHaveAttribute("href", "/custom-route");
+    expect(freakLinks[1]).toHaveAttribute("href", "/cardattack/homies/freak");
   });
 
   it("resolves YouTubeVideo artist labels from tag metadata", () => {

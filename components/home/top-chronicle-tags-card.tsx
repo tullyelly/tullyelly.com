@@ -1,3 +1,4 @@
+import TagLink from "@/components/tags/TagLink";
 import Link from "next/link";
 
 import { CardInfoPopover } from "@/components/home/card-info-popover";
@@ -35,9 +36,9 @@ export async function TopChronicleTagsCard() {
         <div className="px-4 pb-4 pt-3">
           <div className="flex flex-wrap gap-2">
             {tags.map((t) => (
-              <Link
+              <TagLink
                 key={t.tag}
-                href={`/shaolin/tags/${encodeURIComponent(t.tag)}`}
+                tag={t.tag}
                 className="inline-flex"
                 prefetch={false}
               >
@@ -47,7 +48,7 @@ export async function TopChronicleTagsCard() {
                     ({t.count})
                   </span>
                 </Badge>
-              </Link>
+              </TagLink>
             ))}
             <Link
               href={viewAllHref}

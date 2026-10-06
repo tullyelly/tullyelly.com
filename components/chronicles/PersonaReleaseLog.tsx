@@ -12,7 +12,6 @@ import { getOriginalReleaseSectionColour } from "@/lib/release-section-colours";
 import { normalizeTagSlug } from "@/lib/tags";
 import type { TagMetadata } from "@/lib/tags-server";
 import { getReleaseSectionHref } from "@/lib/release-section-anchor";
-import { resolveIdentityHref } from "@/lib/identity";
 
 type ReleaseProps = ComponentProps<typeof ReleaseSection>;
 type PersonTagProps = ComponentProps<typeof PersonTag>;
@@ -37,30 +36,8 @@ export async function PersonaReleaseLogEntry({
   }
 
   function RoutedPersonTag(props: PersonTagProps) {
-    if (props.href) return <PersonTag {...props} />;
-    return (
-      <PersonTag
-        {...props}
-        href={(() => {
-          const metadata = tagMetadataBySlug.get(normalizeTagSlug(props.tag));
-          if (!metadata) return undefined;
-          if (
-            entry.alterEgo === "cardattack" ||
-            entry.alterEgo === "theabbott" ||
-            entry.alterEgo === "unclejimmy"
-          ) {
-            return (
-              resolveIdentityHref(
-                metadata.meta,
-                entry.alterEgo,
-                metadata.href,
-              ) ?? undefined
-            );
-          }
-          return metadata.href ?? undefined;
-        })()}
-      />
-    );
+    const metadata = tagMetadataBySlug?.get(normalizeTagSlug(props.tag));
+    return <PersonTag {...props} metadata={metadata} />;
   }
 
   function TaggedYouTubeVideo(props: YouTubeVideoProps) {
@@ -70,7 +47,7 @@ export async function PersonaReleaseLogEntry({
       <YouTubeVideo
         {...props}
         displayName={metadata?.displayName}
-        href={metadata?.href ?? undefined}
+        metadata={metadata}
       />
     );
   }

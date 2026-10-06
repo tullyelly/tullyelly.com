@@ -1,11 +1,8 @@
+import TagLink from "@/components/tags/TagLink";
 import Link from "next/link";
 import { fmtDate } from "@/lib/datetime";
 import { PILL_BLUE, pillInteractionClasses } from "@/components/ui/pillStyles";
-import {
-  getHashtagDisplayName,
-  getKnownTagHref,
-  normalizeTagSlug,
-} from "@/lib/tags";
+import { getHashtagDisplayName, normalizeTagSlug } from "@/lib/tags";
 import type { TagMetadata } from "@/lib/tags-server";
 
 type ChronicleSignatureProps = {
@@ -46,13 +43,12 @@ export function ChronicleSignature({
           <div className="mt-1 flex flex-wrap gap-1.5">
             {normalizedTags.map((tag) => {
               const tagSlug = normalizeTagSlug(tag);
-              const tagHref =
-                tagMetadataBySlug?.get(tagSlug)?.href ?? getKnownTagHref(tag);
 
               return (
-                <Link
+                <TagLink
                   key={tag}
-                  href={tagHref}
+                  tag={tag}
+                  metadata={tagMetadataBySlug?.get(tagSlug)}
                   className={[
                     "inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold leading-none",
                     pillInteractionClasses,
@@ -64,7 +60,7 @@ export function ChronicleSignature({
                   prefetch={false}
                 >
                   {getHashtagDisplayName(tag)}
-                </Link>
+                </TagLink>
               );
             })}
           </div>

@@ -50,10 +50,7 @@ describe("ClanSnapshot", () => {
         name: "florida state seminoles",
       });
       expect(clanLink).toHaveAttribute("data-clan-tag", "noles");
-      expect(clanLink).toHaveAttribute(
-        "href",
-        "/cardattack/clans/florida-state-seminoles",
-      );
+      expect(clanLink).toHaveAttribute("href", "/shaolin/tags/noles");
       expect(clanLink).toHaveClass(
         "font-bold",
         "italic",
@@ -171,7 +168,7 @@ describe("ClanSnapshot", () => {
     expect(screen.queryByText("(178 cards)")).not.toBeInTheDocument();
   });
 
-  it("uses an explicit clan href when provided", async () => {
+  it("ignores an authored clan href without stored metadata", async () => {
     getClanSnapshotsForTagOnDateMock.mockResolvedValue([]);
 
     const ui = await ClanSnapshot({
@@ -183,7 +180,7 @@ describe("ClanSnapshot", () => {
 
     expect(screen.getByRole("link", { name: "bucks-n-six" })).toHaveAttribute(
       "href",
-      "/cardattack/clans/milwaukee-bucks",
+      "/shaolin/tags/bucks-n-six",
     );
   });
 });

@@ -67,3 +67,20 @@ its plum label and hovered links use white text.
   This correction has its own date.
 </ScrollAmendment>
 ```
+
+## Tag destinations
+
+Every tag reference uses the matching `dojo.tags.href`, regardless of `href_kind`.
+Slugs are trimmed, lowercased, and whitespace becomes hyphens. A missing row or
+null, empty, or whitespace-only href falls back to
+`/shaolin/tags/${encodeURIComponent(normalizeTagSlug(tag))}`. Metadata with
+`is_clickable=false` or `href_kind=none` renders a non-clickable label; it never
+falls back. Authored `href` props and persona context cannot override this rule.
+Display labels and Contentlayer inference remain independent of routing.
+
+Use `PersonTag` for inferred tags and `TagLink tag="..."` for ordinary inline tag
+references without adding inferred tags. Markdown links explicitly pointing to
+Chronicle archives remain archive navigation, such as links to archive comments.
+The tag directory links each tag name canonically and separately labels its
+Chronicle archive. Snapshot rank numbers, dedicated ranking actions, canonical
+metadata, and ordinary page navigation retain their purpose-specific URLs.

@@ -1,3 +1,4 @@
+import { TagMetadataProvider } from "@/components/tags/TagLink";
 import type React from "react";
 import { render, screen } from "@testing-library/react";
 
@@ -1869,3 +1870,28 @@ describe("ReleaseSection", () => {
     ).toBeInTheDocument();
   });
 });
+
+it.each([true, false])(
+  "resolves the alter-ego badge using the server snapshot; clickable %s",
+  async (isClickable) => {
+    const ui = await ReleaseSection({ alterEgo: "mark2", children: "Body" });
+    render(
+      <TagMetadataProvider
+        metadata={{
+          mark2: { href: "/stored-persona", hrefKind: "tag", isClickable },
+        }}
+      >
+        {ui}
+      </TagMetadataProvider>,
+    );
+    if (isClickable)
+      expect(screen.getByRole("link", { name: "#mark2" })).toHaveAttribute(
+        "href",
+        "/stored-persona",
+      );
+    else {
+      expect(screen.queryByRole("link", { name: "#mark2" })).toBeNull();
+      expect(screen.getByText("#mark2")).toBeInTheDocument();
+    }
+  },
+);

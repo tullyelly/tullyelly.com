@@ -1,3 +1,5 @@
+import { getTagMetadataSnapshot } from "@/lib/tags-server";
+import { TagMetadataProvider } from "@/components/tags/TagLink";
 // app/layout.tsx
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -42,6 +44,17 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const tagSnapshot = await getTagMetadataSnapshot();
+  const tagLinks = Object.fromEntries(
+    Array.from(tagSnapshot, ([slug, metadata]) => [
+      slug,
+      {
+        href: metadata.href,
+        hrefKind: metadata.hrefKind,
+        isClickable: metadata.isClickable,
+      },
+    ]),
+  );
   const isE2ERun = process.env.E2E === "1";
   const announcement = process.env.NEXT_PUBLIC_ANNOUNCEMENT;
   const isE2EStable = process.env.NEXT_PUBLIC_E2E_STABLE === "true";
@@ -112,7 +125,9 @@ export default async function RootLayout({
                 pathname={pathname}
                 breadcrumbDebugForced={breadcrumbDebugForced}
               >
-                {children}
+                <TagMetadataProvider metadata={tagLinks}>
+                  {children}
+                </TagMetadataProvider>
               </AppShell>
             </Providers>
           </CommandMenuProvider>
