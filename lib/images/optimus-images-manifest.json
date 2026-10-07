@@ -1215,6 +1215,16 @@
     "/images/optimus/not-a-bug/reorg/reorg-2.webp",
     "/images/optimus/not-a-bug/reorg/reorg-3.webp",
     "/images/optimus/not-a-bug/reorg/reorg-6.webp",
+    "/images/optimus/not-oshkosh-co-op/67.webp",
+    "/images/optimus/not-oshkosh-co-op/bright.webp",
+    "/images/optimus/not-oshkosh-co-op/meff/meff-0.webp",
+    "/images/optimus/not-oshkosh-co-op/meff/meff-1.webp",
+    "/images/optimus/not-oshkosh-co-op/meff/meff-2.webp",
+    "/images/optimus/not-oshkosh-co-op/meff/meff-3.webp",
+    "/images/optimus/not-oshkosh-co-op/meff/meff-4.webp",
+    "/images/optimus/not-oshkosh-co-op/mom.webp",
+    "/images/optimus/not-oshkosh-co-op/parents/parents-0.webp",
+    "/images/optimus/not-oshkosh-co-op/parents/parents-1.webp",
     "/images/optimus/npm-run-james/envelope.webp",
     "/images/optimus/npm-run-james/junk-cardboard.webp",
     "/images/optimus/npm-run-james/junk-sleeve.webp",
@@ -8201,6 +8211,56 @@
     },
     {
       "src": "/images/optimus/not-a-bug/reorg/reorg-6.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/bright.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/meff/meff-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/meff/meff-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/meff/meff-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/meff/meff-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/meff/meff-4.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/mom.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/parents/parents-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/not-oshkosh-co-op/parents/parents-1.webp",
       "width": 1920,
       "height": 2550
     },
