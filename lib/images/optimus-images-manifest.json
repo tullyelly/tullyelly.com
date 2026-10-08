@@ -359,6 +359,11 @@
     "/images/optimus/bridges/walk/walk-1.webp",
     "/images/optimus/bridges/walk/walk-2.webp",
     "/images/optimus/bridges/walk/walk-3.webp",
+    "/images/optimus/brother-eye/bois.webp",
+    "/images/optimus/brother-eye/brother.webp",
+    "/images/optimus/brother-eye/plan.webp",
+    "/images/optimus/brother-eye/reply.webp",
+    "/images/optimus/brother-eye/sunshine.webp",
     "/images/optimus/brunch.webp",
     "/images/optimus/bucks-n-six.webp",
     "/images/optimus/bucks-n-six/ascension.webp",
@@ -3933,6 +3938,31 @@
       "src": "/images/optimus/bridges/walk/walk-3.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/brother-eye/bois.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/brother-eye/brother.webp",
+      "width": 726,
+      "height": 876
+    },
+    {
+      "src": "/images/optimus/brother-eye/plan.webp",
+      "width": 1920,
+      "height": 319
+    },
+    {
+      "src": "/images/optimus/brother-eye/reply.webp",
+      "width": 798,
+      "height": 1078
+    },
+    {
+      "src": "/images/optimus/brother-eye/sunshine.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/brunch.webp",
