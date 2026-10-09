@@ -952,6 +952,9 @@
     "/images/optimus/laughably-bad/hammer.webp",
     "/images/optimus/laughably-bad/roadtrip.webp",
     "/images/optimus/lego-f1.webp",
+    "/images/optimus/let-god-sort-em-out/fern/fern-0.webp",
+    "/images/optimus/let-god-sort-em-out/fern/fern-1.webp",
+    "/images/optimus/let-god-sort-em-out/fern/fern-2.webp",
     "/images/optimus/lets-start-here/1020816.webp",
     "/images/optimus/lets-start-here/done.webp",
     "/images/optimus/lets-start-here/fern/fern-0.webp",
@@ -6903,6 +6906,21 @@
       "src": "/images/optimus/lego-f1.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/let-god-sort-em-out/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/let-god-sort-em-out/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/let-god-sort-em-out/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/lets-start-here/1020816.webp",
