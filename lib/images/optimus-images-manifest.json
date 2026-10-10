@@ -963,6 +963,17 @@
     "/images/optimus/lets-start-here/hof.webp",
     "/images/optimus/lets-start-here/sam.webp",
     "/images/optimus/lets-start-here/t-mac.webp",
+    "/images/optimus/liberation/creator.webp",
+    "/images/optimus/liberation/creator/creator-0.webp",
+    "/images/optimus/liberation/creator/creator-1.webp",
+    "/images/optimus/liberation/creator/creator-2.webp",
+    "/images/optimus/liberation/fern.webp",
+    "/images/optimus/liberation/fern/fern-0.webp",
+    "/images/optimus/liberation/fern/fern-1.webp",
+    "/images/optimus/liberation/fern/fern-2.webp",
+    "/images/optimus/liberation/impossible.webp",
+    "/images/optimus/liberation/upper/upper-0.webp",
+    "/images/optimus/liberation/upper/upper-1.webp",
     "/images/optimus/life-is-a-highway/highway.webp",
     "/images/optimus/life-is-a-highway/normal/normal-0.webp",
     "/images/optimus/life-is-a-highway/normal/normal-1.webp",
@@ -6959,6 +6970,61 @@
     },
     {
       "src": "/images/optimus/lets-start-here/t-mac.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/liberation/creator.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/liberation/creator/creator-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/liberation/creator/creator-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/liberation/creator/creator-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/liberation/fern.webp",
+      "width": 480,
+      "height": 853
+    },
+    {
+      "src": "/images/optimus/liberation/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/liberation/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/liberation/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/liberation/impossible.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/liberation/upper/upper-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/liberation/upper/upper-1.webp",
       "width": 1920,
       "height": 2550
     },
