@@ -21,6 +21,14 @@ Applied checksums are immutable from the runner's point of view. If an applied
 SQL file changes later, `status` and `verify` report `checksum_mismatch`, and
 `apply` refuses to continue.
 
+## Approved production releases
+
+Production apply operations use the [protected release workflow](production-releases.md)
+after human approval of exact targets, commit, migrations and recovery evidence.
+The legacy commands below remain non-production tools; do not use apply-all or
+manual SQL to bypass the release gate or run concurrently with the release
+executor. Historical ledger reconciliation is a separate reviewed release.
+
 ## Commands
 
 Use npm only:

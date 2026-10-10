@@ -17,8 +17,13 @@ Orientation: [README](README.md). Workflow: [CONTRIBUTING](CONTRIBUTING.md).
 
 - Use npm. Do not start the dev server; the user handles it locally.
 - Preserve unrelated working-tree changes. Keep changes focused.
-- Never write to production databases or commit secrets or real `.env*` files.
-  Honor URL safety checks and environment guards; do not bypass them.
+- Never commit secrets or real `.env*` files. Production migrations and deployments
+  require a concrete reviewed release and human approval through the protected
+  workflow in [production releases](docs/production-releases.md). Preparation,
+  policy edits, branch pushes, and MCP access are not production authorization.
+  Only the coordinator may initiate an approved release; never approve its gate
+  on the user's behalf. Honor URL safety checks and environment guards; do not
+  bypass them. Never automatically restore/reset production or reverse migrations.
 - Preserve server authorization and dynamic behavior. Do not put sessions or
   request capabilities in a global cache. Menu visibility is not permission.
 - Do not change licensing, branding, palettes, persona names, or public URLs;

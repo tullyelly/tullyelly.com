@@ -1,0 +1,70 @@
+name: Dispatch release as dedicated App
+run-name: App dispatch ${{ inputs.mode }} at ${{ inputs.release_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Explicit operation; smoke cannot migrate or deploy
+        required: true
+        type: choice
+        options: [smoke, draft-pr, production]
+      release_sha:
+        description: Exact 40-character SHA; smoke uses current main, draft-pr published review branch
+        required: true
+        type: string
+      manifest_path:
+        description: Production only; releases/<name>.json
+        required: false
+        type: string
+      manifest_sha256:
+        description: Production only; exact reviewed manifest SHA-256
+        required: false
+        type: string
+      pr_title:
+        description: Draft PR only; use approved title and an existing ticket when applicable
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: release-dispatch-tullyelly
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Main-only secret scope, with no reviewer gate. Approval belongs to the child.
+    environment: release-dispatch
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - name: Install reviewed code without the App private key
+        run: npm ci
+        env:
+          SKIP_DB: "true"
+      - name: Mint a temporary scoped App token, perform one explicit operation, revoke
+        run: npx tsx scripts/release-dispatch.ts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_DISPATCH_MODE: ${{ inputs.mode }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          MANIFEST_SOURCE: ${{ inputs.manifest_path }}
+          RELEASE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          RELEASE_PR_TITLE: ${{ inputs.pr_title }}
+          RELEASE_APP_ID: ${{ vars.RELEASE_APP_ID }}
+          RELEASE_APP_INSTALLATION_ID: ${{ vars.RELEASE_APP_INSTALLATION_ID }}
+          RELEASE_APP_SLUG: ${{ vars.RELEASE_APP_SLUG }}
+          RELEASE_APP_BOT_USER_ID: ${{ vars.RELEASE_APP_BOT_USER_ID }}
+          RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

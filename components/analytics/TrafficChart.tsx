@@ -22,32 +22,48 @@ export function TrafficChart({
         ? Number(row.views)
         : null,
   }));
+  const hasUnplottableCounts = rows.some(
+    (row) =>
+      row.views !== null && BigInt(row.views) > BigInt(Number.MAX_SAFE_INTEGER),
+  );
   return (
-    <div
-      className="h-[300px] w-full"
-      data-testid="archive-traffic-chart"
-      role="img"
-      aria-label="Daily archived public page views; gaps represent unverified days"
-    >
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={data}
-          margin={{ top: 12, right: 12, bottom: 16, left: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="day" tick={{ fontSize: 11 }} minTickGap={40} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-          <Tooltip />
-          <Line
-            dataKey="views"
-            name="Archived views"
-            stroke="var(--blue)"
-            dot={false}
-            connectNulls={false}
-            isAnimationActive={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <>
+      {hasUnplottableCounts && (
+        <p role="status">
+          Some verified counts exceed chart precision and are omitted from the
+          line. See Daily values for their exact counts.
+        </p>
+      )}
+      <div
+        className="h-[300px] w-full"
+        data-testid="archive-traffic-chart"
+        role="img"
+        aria-label={
+          hasUnplottableCounts
+            ? "Daily archived public page views; gaps represent unverified days or counts exceeding chart precision"
+            : "Daily archived public page views; gaps represent unverified days"
+        }
+      >
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart
+            data={data}
+            margin={{ top: 12, right: 12, bottom: 16, left: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 11 }} minTickGap={40} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+            <Tooltip />
+            <Line
+              dataKey="views"
+              name="Archived views"
+              stroke="var(--blue)"
+              dot={false}
+              connectNulls={false}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </>
   );
 }

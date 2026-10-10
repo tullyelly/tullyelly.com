@@ -8,6 +8,7 @@ import {
   AnalyticsApiError,
 } from "@/lib/analytics-archive/client";
 import { collectAnalytics } from "@/lib/analytics-archive/collector";
+import { getPool } from "@/db/pool";
 import { readFileSync } from "node:fs";
 
 const row = (requestPath: string, pageviews = 2) => ({
@@ -23,6 +24,32 @@ const response = (data: unknown) =>
 beforeEach(() => {
   process.env.ANALYTICS_PROJECT_ID = "fixture-project";
   process.env.ANALYTICS_VERCEL_TOKEN = "secret-fixture-token";
+});
+test("pooled Neon connections refuse collection before database or API work", async () => {
+  const original = process.env.DATABASE_URL;
+  process.env.DATABASE_URL =
+    "postgresql://fixture@ep-fixture-pooler.example.test/fixture?sslmode=require";
+  const pages = jest.fn();
+  const total = jest.fn();
+  jest.mocked(getPool).mockClear();
+  try {
+    await expect(
+      collectAnalytics(
+        {
+          lane: "backfill",
+          startDay: "2026-10-09",
+          availableFrom: "2026-10-09",
+        },
+        { pages, total },
+      ),
+    ).rejects.toThrow("direct Neon connection");
+    expect(getPool).not.toHaveBeenCalled();
+    expect(pages).not.toHaveBeenCalled();
+    expect(total).not.toHaveBeenCalled();
+  } finally {
+    if (original === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = original;
+  }
 });
 test("UTC boundaries include leap days and reject invalid dates", () => {
   expect(addDays("2024-03-01", -1)).toBe("2024-02-29");

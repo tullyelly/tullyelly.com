@@ -1,11 +1,105 @@
 # Vercel analytics archive rollout
 
-Phase 1 supplies the archive schema and resumable collector. Phase 2 adds a
-scheduled endpoint and owner operations on the same `cipher/analytics-archive`
-branch. Collection remains off by default; nothing has been merged, deployed,
-activated or applied to a database. The existing Vercel Analytics component is
-unchanged. Phase 3 adds public counters, archive statistics and a conditional
-human release procedure; live verification remains blocked by missing safe targets.
+Phases 1–3 are implemented on `cipher/analytics-archive`. The updated mission
+supersedes the former manual production SQL/deployment procedure. Cipher now
+prepares and executes an exact release through the protected GitHub workflow
+after human approval. No production release is approved or dispatched.
+
+The current preparation, live evidence and blockers are recorded below. The
+[approved release policy](production-releases.md) governs production operations.
+The old human-operated checklist later in this file is retained as historical
+context, not executable production instructions.
+
+## Recovery and current inventory; October 10, 2026
+
+| State                                     | Evidence                                                                                                                                                          |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implemented and fixture-verified          | Daily archive/client, bounded catch-up/import, owner actions, cron, public allowlist/counters/stats; original commit `6fa00dfd`                                   |
+| Implemented and live database-verified    | Original 076/077 applied only to isolated dev/analytics; real transaction, overlap and durable resume tests                                                       |
+| Implemented and live API-verified in part | Existing CLI authentication queries October 9 UTC: sitewide 16 views/9 daily visitors; seven exact paths total 16 views, no Others                                |
+| Implemented but not fully verified        | Protected workflow, executor and staging/promotion automation; account-level gate, authenticated browser transport, scheduler and Sentry delivery remain pending  |
+| Incomplete                                | Per-file historical ledger reconciliation, backup restore rehearsal, credential rotation, account gate setup, distinct release dispatcher, final release manifest |
+| Superseded                                | Human executing routine production SQL/deployment in DataGrip; install instructions as proof of MCP access; earlier unknown local development target              |
+
+Recovery checked the local branch/history and working tree, existing PR search,
+GitHub main/rules, Neon metadata and catalog, Vercel project/deployment metadata
+and environment names. No analytics PR exists. Remote main and currently
+promoted Vercel production both use `b4e709b8e3b4ff702701c1f944c35bd4c6a0572b`,
+deployment `dpl_8QvjywHnuwjjnE4Tvt1DLm6MyATa`; its cron definitions are empty.
+Production and development have no analytics tables or migration ledger. There
+is no evidence of an earlier partial analytics deployment/migration; all
+production checks in this recovery were read-only.
+
+Verified capabilities and targets:
+
+- Neon MCP authenticated; project `rough-bush-94516855`, PG17, aws-us-east-2.
+- Production `br-withered-snow-aea0yck6`, direct host
+  `ep-jolly-flower-ae4bmy06 + DNS suffix below`.
+- Existing development `br-crimson-fog-ae22ws22`, direct host
+  `ep-flat-cherry-aepuz1d0 + DNS suffix below`; this matches .env.local.
+- Newly created isolated `dev/analytics`, `br-raspy-bonus-aec1uxdu`, parent
+  development, direct `ep-calm-recipe-aezrlhqg + DNS suffix below`,
+  database `tullyelly_db`, role `tullyelly_admin`, 0.25 CU, five-minute suspension.
+- Ignored `.env.analytics-test.local` created with mode 0600 using only the test
+  branch credentials; existing environment files and Vercel connections unchanged.
+  The existing preflight verified SQL identity and read-only state before writes.
+- Vercel CLI63.1.2 authenticated as `tullyelly`, project
+  `prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU`, team `team_pB5TcLa7apLtPAiVrRbcjBG3`.
+  MCP project listing works, but scoped inspection returned 403; CLI fallback
+  succeeded. MCP/CLI/Actions credentials are separate; Actions access unverified.
+- GitHub MCP repository access includes admin/push. Local SSH Git authentication
+  fails; no remote branch/PR mutation was performed. Main is protected by a
+  ruleset, but currently requires zero approvals and no required CI checks.
+
+Read-only catalog assessment confirmed historical domain schema and analytics
+migration prerequisites already exist, including admin app/role and
+`authz_bump_revision(uuid)`. Both analytics migrations' effects were genuinely
+absent before the isolated rehearsal. Historical 001–075 remain unrecorded;
+existing objects are evidence of schema effects, not proof of all seed/backfill
+or destructive migration execution. No historical files were replayed and no
+baseline ledger records were fabricated. Production reconciliation requires a
+separate reviewed release, not the analytics executor's apply step.
+
+The isolated rehearsal applied original SQL files 076/077 after exact checksum,
+identity, absence and prerequisite checks. Its ledger intentionally remains
+absent. This validates new schema on the historical database shape; it does not
+validate or reconcile historical production migration history.
+
+Independent specialist review found and resolved chart precision labeling,
+pooled-connection session lock safety, complete release-code binding, preview
+database proof and staged collection disablement concerns. Large verified BIGINT
+counts remain exact in tables; charts now explain values they cannot plot safely.
+The collector refuses Neon pooler URLs before database/API work. The release
+workflow must also verify schema readiness beyond ledger status.
+
+Live API evidence used existing CLI credentials and read-only requests; the
+separately configured `ANALYTICS_VERCEL_TOKEN` collector credential remains
+unconfigured. Small-day aggregate compatibility is proven. A second live verification forced
+limit=1 and completed seven bounded exclusion queries through the Others bucket,
+enumerating all seven unique paths and reconciling 16 views. Very large filter
+limits, retention boundaries and collector token transport remain unverified.
+
+Automatic approval review rejected access to decrypted production environment
+credentials, even a single DATABASE_URL target inspection. Non-decrypted names
+were inspected instead; the user subsequently confirmed production hostname/database/role. The reply accidentally included a password; it was not recorded or used and
+requires secure rotation before release. There are no configured
+analytics environment names yet, and DATABASE_URL is production-only; preview
+isolation is not established. Live setting changes await a concrete approved plan.
+
+Neon reports 24-hour history retention and no scheduled snapshots. No recovery
+snapshot or restore rehearsal was performed; the project snapshot list is empty. Vercel Git deployment creation is
+enabled, production branch main, and its ignore command allows production builds;
+merging can currently bypass the future gate. The proposed separate account
+change is to disconnect Git deployment integration, then use explicit isolated
+previews. The workflow refuses a connected Git link and does not change it.
+
+New release files: `.github/workflows/production-release.yml`,
+`.github/CODEOWNERS`, `scripts/production-release.ts`, `scripts/release/manifest.ts`,
+`scripts/release-db.ts`, `scripts/release-db-core.ts`, release fixture/integration
+tests and `docs/production-releases.md`. No new SQL migration or changed migration
+history is introduced by the release automation. See the release policy for
+exact environment/secrets names, approval action, execution, stop points and
+application rollback versus database recovery.
 
 ## API decisions verified October 10, 2026
 
@@ -460,7 +554,7 @@ Modified files: `.env.example`, `db/pool.ts`, `__tests__/db-pool.spec.ts`,
 `docs/README.md`, `docs/database.md`, `docs/authz/AUTHZ-CONTRACT.md`,
 `docs/caching.md`, `docs/migrations.md` and `docs/validation.md`. Phase 3 adds no migration.
 
-## Beginner release checklist; human operated only
+## Superseded manual checklist; historical context only
 
 **Not yet ready for production rollout.** Do the confirmed non-production smoke
 first. Neon is confirmed as the provider. Production project/branch identity and the
@@ -674,7 +768,7 @@ indefinitely but is not itself a backup. The application owner is responsible fo
 Vercel token renewal, scheduled-run checks and Sentry delivery/alert settings.
 Agree on named people and backup/recovery details before enabling production.
 
-## Neon/DataGrip follow-up
+## Earlier Neon/DataGrip follow-up; superseded operation approach
 
 The provider is Neon; previous domain SQL was manually executed in DataGrip and
 may not be recorded in dojo.schema_migration. No separate safe test branch or live
@@ -688,7 +782,7 @@ db/diagnostics/analytics-schema.sql, db/diagnostics/analytics-ledger.sql,
 **tests**/analytics-test-target.test.ts and docs/analytics-neon-setup.md.
 Existing .env.local/.env.test and Vercel database connections remain unchanged.
 
-## Phase 3 verification and current release blockers
+## Earlier phase 3 evidence and blockers; see recovery above for current state
 
 October 10, 2026, on cipher/analytics-archive:
 
@@ -739,3 +833,86 @@ The feature is ready for code review, **not ready for the manual production
 rollout**. Collection defaults off. Nothing is merged, deployed or activated;
 existing production/local environment files, Vercel DB connections and the
 browser Analytics component are preserved. No preview branching was introduced.
+
+## Integrated recovery verification
+
+- `npm run verify:agent`: passed; 197 suites and 1,014 tests passed, six opt-in
+  database tests skipped in the default run. Coverage: 88.06% statements,
+  80.99% branches, 86.79% functions, 89.74% lines; production build passed.
+- Explicit isolated PostgreSQL run: three analytics integration tests passed,
+  with `--testTimeout=60000` for network round trips. An initial default five-
+  second timeout was resolved by the explicit integration timeout, not hidden.
+- Three additional real PostgreSQL executor tests passed using a temporary
+  fixture ledger/schema: atomic completion and reruns, overlap locking, and
+  failure rollback/recovery. This is not a production ledger baseline.
+- Exact migrated schema readiness passed against 32 columns and 24 constraints,
+  ownership, enabled owner feature and grant on the isolated branch.
+- Database fixture safety: 18 tests passed; release policy/target fixtures: eight
+  passed. Independent reviewer reported no remaining actionable code findings.
+- `npm run test:charts`: 12 database-free Chromium checks passed; no dev server.
+- `npm run docs:check`, changed-file Prettier and `git diff --check`: passed.
+- Live API requests used CLI credentials; actual collector token, scheduled cron,
+  Google owner browser flow, Sentry delivery, protected workflow execution and
+  deployment/promotion have not been tested live.
+
+The historical review plan is `db/diagnostics/reconciliation-plan.json`. It lists
+all 73 actual pre-analytics migration files, exact checksums, observed schema
+object names and data/destructive effects needing review. It is not executable
+baseline SQL. New schema snapshot `scripts/release-db-schema.json` is derived
+from the original SQL applied on the confirmed isolated branch. Release tests
+are `__tests__/release-db.test.ts`,
+`__tests__/release-db-postgres.integration.test.ts` and
+`__tests__/release/production-release.test.ts`. UI fix tests are
+`__tests__/analytics-traffic-chart.test.tsx`.
+
+No final production manifest, dispatch, activation, historical import, merge or
+deployment has been performed. The account-level release gate and dispatch
+identity are not yet configured or verified. The smallest immediate security
+action is password rotation; the next preparation dependency is a distinct
+authorized release bot/App or another eligible reviewer. A GitHub MCP connection
+acting as tullyelly cannot author/dispatch and also approve its own release.
+
+## Dedicated release App preparation
+
+The user selected a dedicated GitHub App with installation authentication;
+`tullyelly` remains the human approver and Prevent self-review stays enabled.
+The numbered [App setup checklist](release-app-setup.md) specifies registration,
+repository-only installation, narrowly scoped tokens, secure private key locations,
+and the harmless approval test. Account configuration and live attribution remain
+pending; no App token, dispatch, PR, approval or deployment was executed.
+
+Added `.github/workflows/release-dispatch.yml`,
+`.github/workflows/release-gate-smoke.yml`, `scripts/release/app.ts`,
+`scripts/release/publish.ts`, `scripts/release-dispatch.ts`,
+`scripts/release-gate-smoke.ts`, `scripts/release-app-publish.ts`,
+`__tests__/release/github-app.test.ts`, and
+`__tests__/release/app-publish.test.ts`. Production workflow and owner review
+patterns now require App dispatch provenance. The dispatcher private key lives
+in the separate `release-dispatch` environment, available before production
+approval; production database/deployment credentials remain behind
+`production-release`. App PR authorship and pushing avoid the separate
+PR author/last-pusher self-review restrictions. No persistent Git authentication,
+WSL, VS Code, npm or Vercel connections were changed.
+
+### Final App integration validation
+
+On the resumed checkout, `npm run verify:agent` passed content preparation,
+lint, typechecking, Prisma generation, smoke tests and full thresholded
+coverage: 199 suites and 1,038 tests passed; six opt-in database tests skipped.
+Coverage remained 88.06% statements, 80.99% branches, 86.79% functions and
+89.74% lines. The restricted Next build stalled and was interrupted without
+a build error. The remaining build step passed separately with
+`SKIP_DB=true npm run build:next` outside the restricted sandbox. Thus the
+required stages passed, but the final combined invocation did not finish as
+one uninterrupted run. Logs are ignored under `.cache/`.
+
+Documentation checks passed for 42 files; changed-file Prettier and diff
+whitespace checks passed. Independent review findings on Git authentication
+header reset, URL rewrites, owner review patterns and the smoke mode name
+were resolved. The final additional public bot identity guard is covered by
+the passing fixture suite; the reviewer session ended before another final
+review of that guard. Live App setup/dispatch/approval remains pending.
+
+Neon direct hostname construction: concatenate the endpoint ID above, a dot,
+and `c-2.us-east-2.aws.neon.tech`. These are non-secret endpoint identifiers;
+credentials and full connection URLs are excluded.

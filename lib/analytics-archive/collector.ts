@@ -38,6 +38,20 @@ export async function collectAnalytics(
 ): Promise<CollectResult> {
   if (isNextBuild())
     throw new Error("Analytics collection is disabled during builds.");
+  if (process.env.DATABASE_URL) {
+    let host: string;
+    try {
+      host = new URL(process.env.DATABASE_URL).hostname;
+    } catch {
+      throw new Error(
+        "Invalid analytics database connection; details omitted.",
+      );
+    }
+    if (host.includes("-pooler."))
+      throw new Error(
+        "Analytics collection requires a direct Neon connection for session locking; use the unpooled DATABASE_URL.",
+      );
+  }
   assertDay(options.startDay);
   assertDay(options.availableFrom);
   const today = utcDay(options.now ?? new Date());

@@ -18,6 +18,9 @@
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                 |
 | Acknowledgments                                               | [Flowers naming](naming.md)                                                         |
 
+[Production release policy](production-releases.md) owns the protected approval
+gate, exact release binding and recovery procedure.
+
 ## Historical decisions and proposals
 
 [Static-page v2](archive/static-page-template-v2.md) preserves targets and an
@@ -39,3 +42,5 @@ BookmarkBreadcrumb.mdx, palette-demo.html, youtube-music-ts-api-notes.md, and
 share/ are examples, visual references, integration notes, and share copy;
 verify implementations before using them as a contract. The page-local
 [Scrolls README](../app/mark2/shaolin-scrolls/_components/README.md) describes that UI.
+
+- [Dedicated release App setup](release-app-setup.md) covers account setup and the harmless approval gate test.

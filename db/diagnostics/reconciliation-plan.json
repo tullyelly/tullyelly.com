@@ -1,0 +1,2080 @@
+{
+  "version": 1,
+  "observedDate": "2026-10-10",
+  "target": {
+    "projectId": "rough-bush-94516855",
+    "branchId": "br-raspy-bonus-aec1uxdu",
+    "branchName": "dev/analytics",
+    "database": "tullyelly_db"
+  },
+  "scope": "Read-only schema-name catalog evidence on an isolated clone; no individual historical migration is asserted applied.",
+  "ledgerPresent": false,
+  "warning": "This is a review plan, not an executable baseline. Existence of object names alone is insufficient proof. Missing names may be superseded by later migrations.",
+  "migrations": [
+    {
+      "filename": "001_init_shaolin_scrolls.sql",
+      "sha256": "28d24e3f5958a4f28e68d21bf508e40786f17720eea6bd1b5bfe71efaf0c0dd7",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "release_type",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "release_status",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "shaolin_scrolls",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_shaolin_status",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_shaolin_year_month",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_shaolin_semver",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_shaolin_release_type",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "audit_stamp_generic",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_release_type",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_release_status",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_shaolin_scrolls",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_shaolin_scrolls",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "002_fn_next_release_functions.sql",
+      "sha256": "900789ddedece19f78f377297d41d3712743df3654672a8f82cb16756544ba3e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "fn_next_patch",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "fn_next_minor",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "003_semver_columns.sql",
+      "sha256": "3547f6c30a83855b735f6907d70937bad3be3baf059d19712d338b679be8e746",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "index",
+          "name": "idx_releases_semver_desc",
+          "existsOnIsolatedBranch": false
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "004_add_release_date_to_shaolin_scrolls.sql",
+      "sha256": "4df9f6f6e48e3792ba5e3130eda472f5d743a81f94132adfa900f3dea3cff405",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "005_create_homie.sql",
+      "sha256": "d8eec3ed94054dfce16d921e719c387e98de4f90418c7cc82018260efb4ab6e1",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "homie",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_homie",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "006_create_year.sql",
+      "sha256": "42809ad80e437b4199c3ed4e0fce92334b8ee37665e9330f99c4d86c45ad6839",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "year",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_year",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "007_seed_year.sql",
+      "sha256": "e4e063abaf65ec91f0666a9386d452c6a5321f3ab32c8dc480903824f2c9eb6f",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "008_create_homie_tcdb_snapshot.sql",
+      "sha256": "9206167c0a11199550f339d11a840f2bce82fa8b66db8dcbb215cb847952f9bd",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "homie_tcdb_snapshot",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_homie_tcdb_snapshot",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "009_create_homie_tcdb_snapshot_unique_idx.sql",
+      "sha256": "0c35cff8f321f2f577de1bcbd59a838509dc940af499eb7dc11f141a51e8c750",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "index",
+          "name": "homie_tcdb_snapshot_unique_ranking_at",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "010_create_homie_ranking_rt.sql",
+      "sha256": "07fbf8822436c76897e78785793c42a5a31da55490b867580d99ccf211be3800",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "homie_tcdb_ranking_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_homie_tcdb_ranking_rt_rank",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_homie_tcdb_ranking_rt",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "011_drop_homie_ranking_rt.sql",
+      "sha256": "c3430f988d3269275869273473bfc58d185a5c24fdad9e2dae24f09edbbe219f",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "012_enforce_scrolls_released_iff_has_date.sql",
+      "sha256": "1b261e9d42a2a76c3a5f653c6a32a998e8e24b5f6586d4dd5ad6a6d424d51339",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "013_authz_foundation.sql",
+      "sha256": "6971ac1d89d76b319017f77028f5d2a53a67fe127bdfd04edcea536a1882a33e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "authz_app",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_authz_app",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "authz_feature",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_authz_feature_key",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_authz_feature",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "authz_role",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_authz_role",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "authz_role_feature",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_authz_role_feature_role",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_authz_role_feature_feature",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_authz_role_feature",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "authz_user_app_role",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_authz_user_app_role_user",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_authz_user_app_role_app",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_authz_user_app_role_role",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_authz_user_app_role",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "014_authz_membership_surface.sql",
+      "sha256": "4a1e841ccb9e1a63a6c729740c6541be15e0238d46a0275ece4d4dafb3c2bbba",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_authz_memberships",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "authz_policy_rev",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "authz_get_revision",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "authz_bump_revision",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "authz_assert_can",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "authz_grant_role",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "authz_revoke_role",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "015_authz_admin_membership_feature.sql",
+      "sha256": "077abfec8af40d46ddbd62c8d6f084238df995435bf17daeeebaab62ca301179",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "016_menu.sql",
+      "sha256": "e9369551bc00ac68fe5e9a349557316e32228ac1f061f3df8a72a0e1fe23a29c",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "menu_node",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_menu_parent",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_menu_persona_ord",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_menu_feature",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_menu_published",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_menu_published",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "017_authz_effective_features.sql",
+      "sha256": "312c4354a1e424ff6e9d0ab9831711e8363737b60bff2ff283b4ed00ff8b3d79",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_authz_effective_features",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "018_update_mark2_menu_paths.sql",
+      "sha256": "ed873d3cd87621c139f338203975ec8e8be36542b4508d993cf7580f740841e6",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "019_update_cardattack_tcdb_rankings_path.sql",
+      "sha256": "31fbb42a86b83b6b6f7a2584b10b11f3af75e278efd3d77fbcf5138905dd179e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "020_update_theabbott_hhe_path.sql",
+      "sha256": "9f13560ec2bfc68a67017ff80915e2abb92dccb822335d48a3a2f1b7e285321b",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "021_update_theabbott_roadwork_path.sql",
+      "sha256": "06d006eb07b80d76dcd98a5ba69fea717f7e23db1807eb70989ade2acd42259e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "022_user_profile_view.sql",
+      "sha256": "735d292423643ce39d930863137197a72a23ffc7bffa1d760202233acce46c9e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_user_profile",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "023_create_blog_comment.sql",
+      "sha256": "20f94e71e484c1f36675dfdcc8a9cac57f3223363a49f7066da540f027acfd3f",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "blog_comment",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_blog_comment_post_created_at",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_blog_comment_user_created_at",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "024_create_v_blog_comment.sql",
+      "sha256": "a7c542c6c96d0909b512b501fb5d01443231374d76f367ad96c5d2934b2905d2",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_blog_comment",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "028_create_tags_table.sql",
+      "sha256": "19d954169ddc3bd87f86c748889d47f50abbbca257e48fa7cc369ef005b1d0f1",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "set_updated_at_timestamp",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "tags",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tags_slug",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_tags_set_updated_at",
+          "existsOnIsolatedBranch": false
+        },
+        {
+          "kind": "index",
+          "name": "idx_users_secret_identity_tag",
+          "existsOnIsolatedBranch": false
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "029_add_audit_fields_to_users_and_tags.sql",
+      "sha256": "cde0159a8cf177da018f752914fa6a5e1a3175ed07f1d014bc469d10fc180044",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "audit_stamp_tags",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_tags",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_auth_users",
+          "existsOnIsolatedBranch": false
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "030_refactor_v_blog_comment.sql",
+      "sha256": "cf06df31e5102cded2b6cb15aa955c1796d8940778eea02fc0ca6167b454813e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_blog_comment",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "031_update_v_user_profile_secret_identity.sql",
+      "sha256": "541414de5db5951f0a91532f7ab522329f4fbe3d0427dd3bb0bdcbb6291e01ee",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_user_profile",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "032_secret_identity_comment_summary.sql",
+      "sha256": "1d7bcbbddf0b4d48c3972eac42aea99b2a9bd75726a3d96ae1de23c8189042c8",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_secret_identity_comment_summary",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "033_create_identity_cartoon.sql",
+      "sha256": "e5281d9e61ee37b480fb170f06c700765d787e2c767a5000bc7a06b2656cf4d6",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "identity_cartoon",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_identity_cartoon_tag_id",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_identity_cartoon_created_at",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_identity_cartoon",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "034_create_volleyball_tournament_tables.sql",
+      "sha256": "0f1f89b916e02f64ca9794bd1e25a516cb32e719452d4449749935cc62ef088f",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "volleyball_tournament",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "volleyball_tournament_day",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_volleyball_tournament_day_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_volleyball_tournament_day_tournament_id_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_volleyball_tournament",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_volleyball_tournament_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "035_add_finish_to_volleyball_tournament.sql",
+      "sha256": "c0445f0db81c0b547578f3992bf031d2b62829d50630387fcda9615a31053f81",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "036_create_tcdb_trade_tables.sql",
+      "sha256": "b8814064135f3f5d49de872d2a62b97888e0853144d631bbbefe1c86c92cacf2",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "tcdb_trade",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "tcdb_trade_day",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_day_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_day_trade_id_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_tcdb_trade",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_tcdb_trade_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "037_update_tcdb_trade_fk_and_counts.sql",
+      "sha256": "a78d99f96777e66aedea8ffe609cf754b314705b4d931b234dbab2a3a27b62fe",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_day_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_day_trade_id_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_tcdb_trade",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_tcdb_trade_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "038_add_cardattack_tcdb_trades_menu_entry.sql",
+      "sha256": "546bf574fea05d37f47446f19a0fe3e38a86abe4f5bef1bc5a6788445a39ac02",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "039_create_review_tables.sql",
+      "sha256": "ce71d60e71526a6efa8abf6fb0915f5c5b624ddd0b82512676133a92eb8bd123",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "review_type",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "review_subject",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "review_reference",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_review_type_sort_order",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_review_subject_review_type_id",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_review_reference_subject_post_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_review_reference_post_slug_ordinal",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_review_type",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_review_subject",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_review_reference",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "040_create_homie_tcdb_snapshot_rt.sql",
+      "sha256": "d0d7d584a5284a0a20610d4aba62d7176f62e70f82f88d1518d90e1eb87c2547",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "homie_tcdb_snapshot_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_homie_tcdb_snapshot_rt_rank",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_homie_tcdb_snapshot_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_homie_tcdb_ranking_rt",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "041_create_bricks_tables.sql",
+      "sha256": "f09e6129a0aaf8eef2dd2105bf16817f92ccad417aabb53505de9273a9309a06",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "bricks_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "bricks_day",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_bricks_day_build_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_bricks_day_header_build_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_bricks_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_bricks_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "042_create_set_collector_tables.sql",
+      "sha256": "a7430361b31d5a411c1b39597d6d4605b49f2111dd698d84412845431df1b9bb",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "set_collector_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "set_collector_snapshot",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "validate_set_collector_progress",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_set_collector_header_release_year_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_set_collector_snapshot_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_set_collector_snapshot_header_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_set_collector_snapshot_trade_id",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_validate_set_collector_header_counts",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_validate_set_collector_snapshot_counts",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_set_collector_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_set_collector_snapshot",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "043_add_cardattack_set_collector_menu_entry.sql",
+      "sha256": "6d53f851abe836818d322ff178021bd605c1bdeae4327d8d84d4dd33ce3ac332",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "044_create_usps_tables.sql",
+      "sha256": "2c23a366cd7811b2dfe50761e1fadd5f15b75365993086f1aaae6203bf931ded",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "usps_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "usps_day",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_usps_day_visit_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_usps_day_header_visit_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_usps_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_usps_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "045_create_lcs_tables.sql",
+      "sha256": "ee23102ea9fed52794038f8e3ffde1671fc26d88cd9ab6ed74268b2fc49c1ec2",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "lcs_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "lcs_day",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_lcs_day_visit_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_lcs_day_header_visit_date_desc",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_lcs_header",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_lcs_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "046_add_set_collector_slug.sql",
+      "sha256": "66f244963602f5525f5d537d6e1cd16347aa233f9de66dca1b956628b814d165",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "047_extend_tcdb_trade_day_archived_side.sql",
+      "sha256": "583dea20baeceb8adc18b7ed53b845944b7afd0286b17ddfe5a7e51195722cfb",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "048_create_tcdb_trade_hall_of_fame_views.sql",
+      "sha256": "f759b80d8e8deb3a9e5808884d8366f8f46efc1105b18d469798d496830231cd",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_hall_of_fame_induction",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_hall_of_famer",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "049_create_clan_tcdb_rankings.sql",
+      "sha256": "c192fba70d2ef262752457332ad97eedd4c014bf9d19ea04a4617eb4bec13a70",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "clan",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_clan_name",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_clan",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "clan_tcdb_snapshot",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "clan_tcdb_snapshot_unique_sport_ranking_at",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_clan_tcdb_snapshot",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "clan_tcdb_snapshot_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_clan_tcdb_snapshot_rt_rank",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_clan_tcdb_snapshot_rt_slug_sport",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "clan_tcdb_ranking_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_clan_tcdb_ranking_rt_slug_sport",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_clan_tcdb_ranking_rt_rank",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_clan_tcdb_snapshot_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_clan_tcdb_ranking_rt",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "050_add_clan_tag_slug.sql",
+      "sha256": "6b634cf48c82d09260326defa4c012dbd236a374273cfc76bedd6fea6ffb6948",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "051_refresh_clan_tcdb_rankings_on_snapshot_write.sql",
+      "sha256": "a5a7aae565ff946628feb5f3a477a7897ffd2cb7cc9cd7aa2e3b1bd47b16b3c3",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "refresh_clan_tcdb_rankings_after_snapshot_write",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_refresh_clan_tcdb_rankings_after_snapshot_write",
+          "existsOnIsolatedBranch": false
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "052_refresh_homie_tcdb_rankings_on_snapshot_write.sql",
+      "sha256": "251dd15c68454185e3f650b784af4d9d6d62f3f9d76763dac0cabee1932d5b13",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "refresh_homie_tcdb_rankings_after_snapshot_write",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_refresh_homie_tcdb_rankings_after_snapshot_write",
+          "existsOnIsolatedBranch": false
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "053_create_set_collector_header_snapshot_view.sql",
+      "sha256": "d55c72071ab8765e226dbe8de2300a37246b03c2058b6fed94e651c8d1979b6b",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_set_collector_header_snapshot",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_hall_of_fame_induction",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "054_create_unclejimmy_squad_page_content.sql",
+      "sha256": "d5bc9e4382171b5842ccddfbe7cd1e347faa6a4e04af8d6aea85e0469fc70c90",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "unclejimmy_squad_section",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "unclejimmy_squad_item",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "unclejimmy_squad_section_published_order_idx",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "unclejimmy_squad_item_published_order_idx",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_unclejimmy_squad_page_content",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "055_create_tcdb_trade_card_traffic_views.sql",
+      "sha256": "7281553e1654bb5677e534baa48f2792e521976ea04b22d4f00ed900b05bf5f8",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_card_traffic_trade",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_card_traffic_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "056_add_tag_route_metadata.sql",
+      "sha256": "382ceec2722c577f4b83811b45abe827bc4d91da789dd6a8d47fe0a9ab556767",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "057_create_homie_tcdb_ranking_route_view.sql",
+      "sha256": "a3ea80333acb5ed208c5060aaebd018b45c31ea852675766ac716086550b9851",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_homie_tcdb_ranking_route",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "058_update_cardattack_homies_menu_path.sql",
+      "sha256": "6bc05a23c55b332f05377e19b033e413cb39863773a3ef328f2657efa64c6a67",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "059_allow_homie_tag_href_kind.sql",
+      "sha256": "b1f4ce4e769d22f24bd06caef62cc9afb64ecdeea5ac6fe17e64ec43090cd15e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "060_allow_clan_tag_href_kind.sql",
+      "sha256": "29a3475b71ee65ba2f55ca22805293215759fda48413d9d0053f08000badaa6a",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "061_relax_volleyball_finish_constraint.sql",
+      "sha256": "29b55f805d22784a0be3c5b8d0e901b5fe55456966ee0285fae0d4359cf8a605",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "062_add_scrolls_release_create_feature.sql",
+      "sha256": "cf14f25ad3dd6cba5226c4627e7e26e67a82ef09073cedd81daefb9da7b78bb1",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "063_incremental_tcdb_ranking_refresh.sql",
+      "sha256": "470b870516be239f0f4c67d75ebef6c90ad3de326186bc54ffb03d97ab8c5714",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "refresh_homie_tcdb_snapshot_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_homie_tcdb_ranking_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_clan_tcdb_snapshot_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_clan_tcdb_ranking_rt",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_homie_tcdb_rankings_after_snapshot_write",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "refresh_clan_tcdb_rankings_after_snapshot_write",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_refresh_homie_tcdb_rankings_after_snapshot_row_write",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_refresh_homie_tcdb_rankings_after_snapshot_truncate",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_refresh_clan_tcdb_rankings_after_snapshot_row_write",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_refresh_clan_tcdb_rankings_after_snapshot_truncate",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "064_add_cardattack_hof_menu_entry.sql",
+      "sha256": "6f0c03a59085ee9e3c9e7b45be7cdd68d270b89d3e18f4f61196826da8ad5883",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "065_add_homie_update_authorization.sql",
+      "sha256": "d0b62fe21adcc2406a673b94f1a2e15c3a852ca9dc46af6012ec3f50b5e5737e",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "066_create_audit_log.sql",
+      "sha256": "909f926d6c707bf67bf1294725be646b89dbdd40049e6cb1979e96c9e0c428c3",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "audit_log",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_audit_log_ts",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_audit_log_actor_user_id",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "ix_audit_log_feature_key",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "067_split_tcdb_card_traffic_series.sql",
+      "sha256": "6113c90bdea95aa61e174295b24fdf9baeb90b0085af9118e31f216cbefaa282",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_card_traffic_trade",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_card_traffic_day",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "068_create_shaolin_release_activity_views.sql",
+      "sha256": "8ff084549e60877f128357611f49afae7c4ba2e1f3b93560f5ce7aa83994a664",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_shaolin_site_activity",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_shaolin_release_window",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_shaolin_release_activity",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "069_allow_tcdb_trade_sent_and_received_same_day.sql",
+      "sha256": "494dbb5a3de920dc6ff5badcf5c389ba2a309f20deed6120da7dff3eef8687a6",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "069_create_tcdb_trade_partners.sql",
+      "sha256": "02fb2e6670d00e3ca41452c666093c126e546389c359a12fb6ddaf036617b829",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "tcdb_trade_partner",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "tcdb_trade_partner_username_normalized_key",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "tcdb_trade_partner_homie",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_partner_homie_homie",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "tcdb_trade_partner_clan",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_partner_clan_clan",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "tcdb_trade_partner_tag",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_partner_tag_tag",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_tcdb_trade_partner",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "idx_tcdb_trade_trade_partner",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_shaolin_site_activity",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_hall_of_fame_induction",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_hall_of_famer",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_partner_summary",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "relation",
+          "name": "v_tcdb_trade_partner_content_tags",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "070_create_tag_relations.sql",
+      "sha256": "9d8837cef2b4494769c7b0ba1ee3696a9f286a88eab2b255bafe80211298ea57",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "tag_relation",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "tag_relation_source_lookup_idx",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "index",
+          "name": "tag_relation_target_lookup_idx",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_audit_tag_relation",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "071_add_identity_experience_routes.sql",
+      "sha256": "13ae35716c8a7d45b91f9d8fda589befb84561c2e5c6eb3009fc8e67ab0e4b78",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "072_create_clan_tcdb_snapshot_view.sql",
+      "sha256": "08163b794e33d1c0872f1b41cb324ec6bfe12986ba7381d76b6f08ba2d50e441",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_clan_tcdb_snapshot",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "073_sync_homie_and_tag_identity_metadata.sql",
+      "sha256": "98447b0671a9758f1be1f5a5621b7ded93791937af50790fbf40d088a79d9ad1",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "infer_theabbott_tag_identity",
+          "existsOnIsolatedBranch": false
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_infer_theabbott_tag_identity",
+          "existsOnIsolatedBranch": false
+        },
+        {
+          "kind": "function",
+          "name": "sync_homie_tag_identity",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "function",
+          "name": "sync_homie_tag_identity_from_row",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_sync_homie_tag_identity",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "074_infer_identity_metadata_from_canonical_routes.sql",
+      "sha256": "4ebb38e0e5809acd2ba0cefe4cd3e5a5251254c1d4a46a034bde62ae7f162623",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "function",
+          "name": "infer_tag_identity_from_canonical_route",
+          "existsOnIsolatedBranch": true
+        },
+        {
+          "kind": "trigger",
+          "name": "trg_infer_tag_identity_from_canonical_route",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": true,
+      "containsRemovalOrReplacement": true,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Review seed/backfill/authorization/menu rows by stable key; object presence does not prove these writes occurred.",
+        "Review superseding migrations and original intent; do not replay removal/replacement blindly.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    },
+    {
+      "filename": "075_create_tag_relationships_view.sql",
+      "sha256": "b7437f8b5eae8e15f3835b07f333b7bba58e168790e63b0cc71b7c449983b1df",
+      "classification": "ambiguous_historical_not_ledger_verified",
+      "schemaObjectEvidence": [
+        {
+          "kind": "relation",
+          "name": "v_tag_relationships",
+          "existsOnIsolatedBranch": true
+        }
+      ],
+      "containsDataWrites": false,
+      "containsRemovalOrReplacement": false,
+      "requiredReview": [
+        "Compare exact current columns, constraints, functions, triggers and view definitions against the final effects after later migrations.",
+        "Record a specific proven equivalent effect or prepare a corrective forward migration before a separate reviewed ledger reconciliation release."
+      ]
+    }
+  ]
+}

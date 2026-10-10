@@ -1,3 +1,10 @@
+> Updated mission: routine production migrations and deployments use the
+> [human-approved workflow](production-releases.md). The manual production
+> procedure below is historical reference; do not execute it to bypass the gate.
+> DataGrip remains useful for read-only catalog inspection and reviewing SQL.
+> Isolated dev/analytics now exists; current targets and verification are in
+> [the analytics record](analytics-rollout.md).
+
 # Analytics: manual Neon branch and DataGrip setup
 
 This is the prerequisite for the [analytics rollout](analytics-rollout.md).

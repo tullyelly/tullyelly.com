@@ -1,0 +1,462 @@
+{
+  "columns": [
+    {
+      "table_name": "analytics_day",
+      "owner": "tullyelly_admin",
+      "column_name": "collected_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_day",
+      "owner": "tullyelly_admin",
+      "column_name": "day",
+      "type": "date",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_day",
+      "owner": "tullyelly_admin",
+      "column_name": "pageviews",
+      "type": "bigint",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_day",
+      "owner": "tullyelly_admin",
+      "column_name": "project_id",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_day",
+      "owner": "tullyelly_admin",
+      "column_name": "run_id",
+      "type": "bigint",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_day",
+      "owner": "tullyelly_admin",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_day",
+      "owner": "tullyelly_admin",
+      "column_name": "visitors",
+      "type": "bigint",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_page_day",
+      "owner": "tullyelly_admin",
+      "column_name": "day",
+      "type": "date",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_page_day",
+      "owner": "tullyelly_admin",
+      "column_name": "pageviews",
+      "type": "bigint",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_page_day",
+      "owner": "tullyelly_admin",
+      "column_name": "project_id",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_page_day",
+      "owner": "tullyelly_admin",
+      "column_name": "request_path",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_page_day",
+      "owner": "tullyelly_admin",
+      "column_name": "visitors",
+      "type": "bigint",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_progress",
+      "owner": "tullyelly_admin",
+      "column_name": "available_from",
+      "type": "date",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_progress",
+      "owner": "tullyelly_admin",
+      "column_name": "end_day",
+      "type": "date",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_progress",
+      "owner": "tullyelly_admin",
+      "column_name": "lane",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_progress",
+      "owner": "tullyelly_admin",
+      "column_name": "next_day",
+      "type": "date",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_progress",
+      "owner": "tullyelly_admin",
+      "column_name": "project_id",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_progress",
+      "owner": "tullyelly_admin",
+      "column_name": "start_day",
+      "type": "date",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "error_code",
+      "type": "text",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "finished_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "id",
+      "type": "bigint",
+      "not_null": true,
+      "default_expr": "",
+      "identity": "a"
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "lane",
+      "type": "text",
+      "not_null": false,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "processed_days",
+      "type": "integer",
+      "not_null": true,
+      "default_expr": "0",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "project_id",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "request_count",
+      "type": "integer",
+      "not_null": true,
+      "default_expr": "0",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "started_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default_expr": "CURRENT_TIMESTAMP",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_run",
+      "owner": "tullyelly_admin",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_stage",
+      "owner": "tullyelly_admin",
+      "column_name": "day",
+      "type": "date",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_stage",
+      "owner": "tullyelly_admin",
+      "column_name": "pageviews",
+      "type": "bigint",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_stage",
+      "owner": "tullyelly_admin",
+      "column_name": "project_id",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_stage",
+      "owner": "tullyelly_admin",
+      "column_name": "request_path",
+      "type": "text",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    },
+    {
+      "table_name": "analytics_stage",
+      "owner": "tullyelly_admin",
+      "column_name": "visitors",
+      "type": "bigint",
+      "not_null": true,
+      "default_expr": "",
+      "identity": ""
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "analytics_day",
+      "name": "analytics_day_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((((status = ANY (ARRAY['complete'::text, 'zero'::text])) AND (pageviews IS NOT NULL) AND (visitors IS NOT NULL)) OR ((status <> ALL (ARRAY['complete'::text, 'zero'::text])) AND (pageviews IS NULL) AND (visitors IS NULL))))"
+    },
+    {
+      "table_name": "analytics_day",
+      "name": "analytics_day_check1",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((status <> 'zero'::text) OR ((pageviews = 0) AND (visitors = 0))))"
+    },
+    {
+      "table_name": "analytics_day",
+      "name": "analytics_day_pageviews_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((pageviews >= 0))"
+    },
+    {
+      "table_name": "analytics_day",
+      "name": "analytics_day_pkey",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (project_id, day)"
+    },
+    {
+      "table_name": "analytics_day",
+      "name": "analytics_day_run_id_fkey",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (run_id) REFERENCES dojo.analytics_run(id)"
+    },
+    {
+      "table_name": "analytics_day",
+      "name": "analytics_day_status_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((status = ANY (ARRAY['incomplete'::text, 'complete'::text, 'zero'::text, 'unavailable'::text, 'api_failure'::text])))"
+    },
+    {
+      "table_name": "analytics_day",
+      "name": "analytics_day_visitors_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((visitors >= 0))"
+    },
+    {
+      "table_name": "analytics_page_day",
+      "name": "analytics_page_day_pageviews_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((pageviews >= 0))"
+    },
+    {
+      "table_name": "analytics_page_day",
+      "name": "analytics_page_day_pkey",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (project_id, day, request_path)"
+    },
+    {
+      "table_name": "analytics_page_day",
+      "name": "analytics_page_day_project_id_day_fkey",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (project_id, day) REFERENCES dojo.analytics_day(project_id, day)"
+    },
+    {
+      "table_name": "analytics_page_day",
+      "name": "analytics_page_day_request_path_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((request_path ~~ '/%'::text))"
+    },
+    {
+      "table_name": "analytics_page_day",
+      "name": "analytics_page_day_visitors_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((visitors >= 0))"
+    },
+    {
+      "table_name": "analytics_progress",
+      "name": "analytics_import_range",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((((start_day IS NULL) AND (end_day IS NULL) AND (available_from IS NULL)) OR ((lane = 'backfill'::text) AND (start_day IS NOT NULL) AND (end_day IS NOT NULL) AND (available_from IS NOT NULL) AND (start_day <= end_day) AND (start_day >= available_from))))"
+    },
+    {
+      "table_name": "analytics_progress",
+      "name": "analytics_progress_lane_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((lane = ANY (ARRAY['daily'::text, 'backfill'::text])))"
+    },
+    {
+      "table_name": "analytics_progress",
+      "name": "analytics_progress_pkey",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (project_id, lane)"
+    },
+    {
+      "table_name": "analytics_run",
+      "name": "analytics_run_lane_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((lane = ANY (ARRAY['daily'::text, 'backfill'::text])))"
+    },
+    {
+      "table_name": "analytics_run",
+      "name": "analytics_run_pkey",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "analytics_run",
+      "name": "analytics_run_processed_days_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((processed_days >= 0))"
+    },
+    {
+      "table_name": "analytics_run",
+      "name": "analytics_run_request_count_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((request_count >= 0))"
+    },
+    {
+      "table_name": "analytics_run",
+      "name": "analytics_run_status_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((status = ANY (ARRAY['running'::text, 'complete'::text, 'bounded'::text, 'failed'::text, 'interrupted'::text])))"
+    },
+    {
+      "table_name": "analytics_stage",
+      "name": "analytics_stage_pageviews_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((pageviews >= 0))"
+    },
+    {
+      "table_name": "analytics_stage",
+      "name": "analytics_stage_pkey",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (project_id, day, request_path)"
+    },
+    {
+      "table_name": "analytics_stage",
+      "name": "analytics_stage_request_path_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((request_path ~~ '/%'::text))"
+    },
+    {
+      "table_name": "analytics_stage",
+      "name": "analytics_stage_visitors_check",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((visitors >= 0))"
+    }
+  ]
+}
