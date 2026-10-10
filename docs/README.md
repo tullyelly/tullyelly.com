@@ -12,6 +12,8 @@
 | Database and audit events                                     | [Database](database.md), [migrations](migrations.md)                                |
 | Authorization and navigation                                  | [Contract](authz/AUTHZ-CONTRACT.md), [workflow](authz/WORKFLOW.md), [menu](menu.md) |
 | Cache freshness                                               | [Caching](caching.md), [TCDB refresh](tcdb-refresh-strategy.md)                     |
+| Analytics test setup                                          | [Manual Neon branch and DataGrip reconciliation](analytics-neon-setup.md)           |
+| Analytics archive                                             | [Rollout and collection contract](analytics-rollout.md)                             |
 | Tag graph                                                     | [Tag relationships](tag-relationships-view.md)                                      |
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                 |
 | Acknowledgments                                               | [Flowers naming](naming.md)                                                         |

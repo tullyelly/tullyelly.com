@@ -67,6 +67,7 @@ describe("getPool", () => {
       );
       expect(PoolMock).toHaveBeenCalledWith({
         connectionString: "postgres://user:pass@localhost:5432/test_db",
+        connectionTimeoutMillis: 5000,
         ssl: { rejectUnauthorized: false },
       });
       expect(pool).toBe(fakePool);

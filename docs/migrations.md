@@ -65,3 +65,9 @@ choosing whether to apply pending files or backfill ledger rows manually.
 
 The runner does not wrap SQL files in an extra transaction because several
 existing migrations already contain their own `BEGIN` and `COMMIT` blocks.
+
+For the analytics archive on a manually migrated Neon database, use the
+[Neon/DataGrip setup and reconciliation guide](analytics-neon-setup.md). Its
+initial catalog inspection uses explicit read-only transactions and does not
+initialize the ledger. An unrecorded migration is not proof of missing schema;
+review each file before any baseline or replay.

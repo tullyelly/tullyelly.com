@@ -13,9 +13,9 @@ export default function Footer() {
         color: "var(--brand-chrome-fg)",
       }}
     >
-      <div className="mx-auto flex h-12 max-w-[var(--content-max)] items-center justify-center px-6">
+      <div className="mx-auto flex min-h-12 flex-wrap gap-1 max-w-[var(--content-max)] items-center justify-center px-6">
         © {year} <BrandedLink href="/">tullyelly</BrandedLink>. All rights
-        reserved.
+        reserved. <BrandedLink href="/stats">Traffic statistics</BrandedLink>
       </div>
     </footer>
   );

@@ -102,6 +102,7 @@ export function getPool(): Queryable {
   const connectionString = normalizeDatabaseUrl(rawConnectionString);
   pool = new Pool({
     connectionString,
+    connectionTimeoutMillis: 5000,
     ssl: { rejectUnauthorized: false },
   });
   return pool;
