@@ -105,7 +105,8 @@
     "check:emdash": "node scripts/check-emdash.mjs",
     "analyze": "ANALYZE=true next build",
     "docs:check": "node scripts/check-docs.mjs",
-    "test:charts": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers playwright test --config playwright.charts.config.ts"
+    "test:charts": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers playwright test --config playwright.charts.config.ts",
+    "test:tooling": "node --test scripts/*.test-node.mjs"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
