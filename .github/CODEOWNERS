@@ -20,3 +20,6 @@
 /scripts/release-app-publish.ts @tullyelly
 
 /scripts/release-app-draft.ts @tullyelly
+
+/scripts/credential-maintenance.ts @tullyelly
+/maintenance/ @tullyelly

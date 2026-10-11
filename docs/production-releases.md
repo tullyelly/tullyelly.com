@@ -28,6 +28,17 @@ observations must be refreshed before asserting current schema state. The
 analytics executor refuses missing ledgers, ambiguous history, checksum drift
 and failed entries rather than inserting invented baselines or replaying SQL.
 
+## Credential-only maintenance
+
+[Protected credential maintenance](credential-maintenance.md) owns the separate
+password replacement and recovery path. It uses reviewed executor and deployed
+application SHAs, the existing App dispatcher and human production gate, and no
+SQL migrations or migration-ledger writes. Maintenance credentials are distinct
+from a read-only Neon release key. Its consumer inventory, isolated rehearsal,
+credential scope and backup prerequisites are not yet proven by fixture tests.
+Use that procedure before analytics rollout; never run migrations 076/077 merely
+to rotate an exposed password. The implementation does not authorize execution.
+
 ## One-time account setup
 
 The account owner completes authentication and protection setup securely in

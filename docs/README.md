@@ -20,6 +20,8 @@
 
 [Production release policy](production-releases.md) owns the protected approval
 gate, exact release binding and recovery procedure.
+[Credential maintenance](credential-maintenance.md) owns the separate protected
+password replacement path; it does not execute analytics migrations.
 
 ## Historical decisions and proposals
 
@@ -45,4 +47,4 @@ verify implementations before using them as a contract. The page-local
 
 - [Dedicated release App setup](release-app-setup.md) covers account setup and the harmless approval gate test.
 
-- [Vercel Git disconnect and release bootstrap proposal](vercel-bootstrap-change.md) is the current unexecuted account-settings plan.
+- [Vercel Git disconnect and release bootstrap proposal](vercel-bootstrap-change.md) records the completed bootstrap execution reference; the release policy owns current readiness.

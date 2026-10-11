@@ -461,6 +461,61 @@ describe("dedicated release App", () => {
       ),
     ).toThrow();
   });
+  it("maintenance retains authoritative App identity, parent provenance and production gate checks", async () => {
+    const maintenanceEnv = {
+      ...env,
+      RELEASE_CHILD_WORKFLOW: ".github/workflows/credential-maintenance.yml",
+    };
+    const child = {
+      event: "workflow_dispatch",
+      head_branch: "main",
+      head_sha: sha,
+      actor: bot,
+      triggering_actor: bot,
+      path: maintenanceEnv.RELEASE_CHILD_WORKFLOW,
+    };
+    const fixture = (overrides: Record<string, unknown> = {}) =>
+      childApi({
+        [`/repos/${RELEASE_REPOSITORY}/actions/runs/200`]: child,
+        ...overrides,
+      });
+    await expect(
+      verifyChildDispatch(maintenanceEnv, fixture()),
+    ).resolves.toBeUndefined();
+    for (const changed of [
+      { actor: { ...bot, id: 999 } },
+      { triggering_actor: { ...bot, type: "User", login: "tullyelly" } },
+      { head_sha: "f".repeat(40) },
+    ])
+      await expect(
+        verifyChildDispatch(
+          maintenanceEnv,
+          fixture({
+            [`/repos/${RELEASE_REPOSITORY}/actions/runs/200`]: {
+              ...child,
+              ...changed,
+            },
+          }),
+        ),
+      ).rejects.toThrow("child.run-identity");
+    await expect(
+      verifyChildDispatch(
+        maintenanceEnv,
+        fixture({
+          [`/repos/${RELEASE_REPOSITORY}/environments/production-release`]: {
+            ...gate,
+            can_admins_bypass: true,
+          },
+        }),
+      ),
+    ).rejects.toThrow("child.human-gate");
+    await expect(
+      verifyChildDispatch(
+        maintenanceEnv,
+        fixture({ [`/repos/${RELEASE_REPOSITORY}/rules/branches/main`]: [] }),
+      ),
+    ).rejects.toThrow("child.protected-main");
+  });
   it("checks successful dispatcher provenance and child installation identity", async () => {
     await expect(
       verifyChildDispatch(env, childApi(), async () => undefined),

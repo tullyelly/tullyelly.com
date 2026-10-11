@@ -4,6 +4,7 @@ import { runStages } from "./run-stages.mjs";
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 
 await runStages([
+  ["Validating GitHub Actions workflows", npm, ["run", "workflows:check"]],
   ["Preparing generated content", npm, ["run", "prepare:content"]],
   ["Linting", npm, ["run", "lint"]],
   ["Typechecking", npm, ["run", "typecheck:prepared"]],

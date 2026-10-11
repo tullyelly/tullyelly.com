@@ -14,6 +14,7 @@ import {
   type Api,
   type AppConfiguration,
 } from "./release/app";
+import { loadMaintenanceManifest } from "./release/maintenance";
 import { loadReleaseManifest } from "./release/manifest";
 
 export const dispatchInputSchema = z.discriminatedUnion("mode", [
@@ -29,6 +30,15 @@ export const dispatchInputSchema = z.discriminatedUnion("mode", [
       sha: z.string().regex(/^[a-f0-9]{40}$/),
       manifestPath: z.string().regex(/^releases\/[a-z0-9-]+\.json$/),
       manifestSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .strict(),
+  z
+    .object({
+      mode: z.literal("maintenance"),
+      sha: z.string().regex(/^[a-f0-9]{40}$/),
+      manifestPath: z.string().regex(/^maintenance\/[a-z0-9-]+\.json$/),
+      manifestSha256: z.string().regex(/^[a-f0-9]{64}$/),
+      action: z.enum(["rotate", "recover"]),
     })
     .strict(),
   z
@@ -59,17 +69,22 @@ export function dispatchPayload(
     workflow:
       input.mode === "smoke"
         ? "release-gate-smoke.yml"
-        : "production-release.yml",
+        : input.mode === "maintenance"
+          ? "credential-maintenance.yml"
+          : "production-release.yml",
     body: {
       ref: "main",
       inputs: {
         release_sha: input.sha,
         dispatch_run_id: id,
         dispatch_installation_id: configuration.installationId,
-        ...(input.mode === "production"
+        ...(input.mode === "production" || input.mode === "maintenance"
           ? {
               manifest_path: input.manifestPath,
               manifest_sha256: input.manifestSha256,
+              ...(input.mode === "maintenance"
+                ? { maintenance_action: input.action }
+                : {}),
             }
           : {}),
       },
@@ -173,12 +188,15 @@ async function main() {
     throw new Error("The App dispatcher runs only from reviewed main");
   const mode = process.env.RELEASE_DISPATCH_MODE;
   const input = dispatchInputSchema.parse(
-    mode === "production"
+    mode === "production" || mode === "maintenance"
       ? {
           mode,
           sha: process.env.RELEASE_SHA,
           manifestPath: process.env.MANIFEST_SOURCE,
           manifestSha256: process.env.RELEASE_MANIFEST_SHA256,
+          ...(mode === "maintenance"
+            ? { action: process.env.MAINTENANCE_ACTION }
+            : {}),
         }
       : mode === "draft-pr"
         ? {
@@ -213,6 +231,31 @@ async function main() {
     throw new Error(
       "Harmless gate smoke must use the current protected main commit",
     );
+  if (input.mode === "maintenance") {
+    const manifest = loadMaintenanceManifest(
+      input.manifestPath,
+      input.manifestSha256,
+      input.sha,
+    );
+    if (Boolean(manifest.recovery) !== (input.action === "recover"))
+      throw new Error("Maintenance recovery mismatch");
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      input.sha,
+      workflowSha,
+    ]);
+    const changed = execFileSync(
+      "git",
+      ["diff", "--name-only", input.sha, workflowSha],
+      { encoding: "utf8" },
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+    if (changed.some((path) => !/^maintenance\/[a-z0-9-]+\.json$/.test(path)))
+      throw new Error("Maintenance executor differs from reviewed source");
+  }
   if (input.mode === "production") {
     loadReleaseManifest(input.manifestPath, input.manifestSha256, input.sha);
     execFileSync("git", [
@@ -253,7 +296,7 @@ async function main() {
         "POST",
         payload.body,
       );
-      return `${input.mode === "smoke" ? "Harmless release gate smoke" : "Production release preparation"} dispatched by ${configuration.slug}[bot] for ${input.sha}. Human approval remains required. Inspect GitHub > Actions > ${input.mode === "smoke" ? "Release approval gate smoke" : "Approved production release"} > Review deployments > production-release. No gate was approved automatically.`;
+      return `${input.mode === "smoke" ? "Harmless release gate smoke" : input.mode === "maintenance" ? "Credential maintenance preparation" : "Production release preparation"} dispatched by ${configuration.slug}[bot] for ${input.sha}. Human approval remains required. Inspect GitHub > Actions > ${input.mode === "smoke" ? "Release approval gate smoke" : input.mode === "maintenance" ? "Protected credential maintenance" : "Approved production release"} > Review deployments > production-release. No gate was approved automatically.`;
     },
   );
   console.log(message);
