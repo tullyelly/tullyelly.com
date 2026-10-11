@@ -122,12 +122,25 @@ export type InstallationPermissions = {
   pull_requests?: "write";
   workflows?: "write";
 };
+export type TokenCleanupResult = {
+  outcome: "revoked" | "failed";
+  elapsedMs: number;
+  apiCategory?: GitHubApiError["classification"];
+  httpStatus?: number;
+};
+export class TokenCleanupError extends Error {
+  constructor() {
+    super("Installation token revocation failed; credentials omitted");
+    this.name = "TokenCleanupError";
+  }
+}
 export async function withScopedInstallationToken<T>(
   configuration: AppConfiguration,
   privateKey: string,
   permissions: InstallationPermissions,
   operation: (token: string) => Promise<T>,
   api: Api = githubApi,
+  observeCleanup?: (result: TokenCleanupResult) => void,
 ): Promise<T> {
   const profile = JSON.stringify(
     Object.fromEntries(Object.entries(permissions).sort()),
@@ -183,6 +196,7 @@ export async function withScopedInstallationToken<T>(
   );
   // Capture the token before validating remaining response fields so every usable token is revoked on failure.
   const token = z.object({ token: z.string().min(1) }).parse(raw).token;
+  let operationFailed = false;
   try {
     const minted = z
       .object({
@@ -234,8 +248,25 @@ export async function withScopedInstallationToken<T>(
     )
       throw new Error("Installation token repository scope mismatch");
     return await operation(token);
+  } catch (error) {
+    operationFailed = true;
+    throw error;
   } finally {
-    await api("/installation/token", token, "DELETE");
+    const started = Date.now();
+    try {
+      await api("/installation/token", token, "DELETE");
+      observeCleanup?.({ outcome: "revoked", elapsedMs: Date.now() - started });
+    } catch (error) {
+      observeCleanup?.({
+        outcome: "failed",
+        elapsedMs: Date.now() - started,
+        ...(error instanceof GitHubApiError
+          ? { apiCategory: error.classification, httpStatus: error.status }
+          : {}),
+      });
+      // Cleanup must not replace the original failure. Success still fails closed if revocation fails.
+      if (!operationFailed) throw new TokenCleanupError();
+    }
   }
 }
 export async function withInstallationToken<T>(

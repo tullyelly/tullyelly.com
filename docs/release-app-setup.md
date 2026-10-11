@@ -2,9 +2,13 @@
 
 This setup lets Cipher publish review branches, author draft PRs and start a
 release as a GitHub App installation. `tullyelly` remains the human reviewer and
-deployment approver. No production deployment, approval or live configuration
-change has been performed. The App integration is prepared; real identity and
-approval behavior remain unverified until the account setup and harmless test.
+deployment approver. Setup and the harmless approval test are complete: parent
+[38175631646](https://github.com/tullyelly/tullyelly.com/actions/runs/38175631646)
+and child [38175750484](https://github.com/tullyelly/tullyelly.com/actions/runs/38175750484)
+succeeded, with `tullyelly` approving the child gate. Vercel Git was disconnected
+through a separately approved settings operation. No actual production release
+or database migration has been authorized by that test. The checklist below is
+retained for maintenance and recovery, not an instruction to duplicate setup.
 
 ## Numbered account checklist
 

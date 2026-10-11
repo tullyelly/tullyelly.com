@@ -2,6 +2,7 @@
 import { generateKeyPairSync, verify } from "node:crypto";
 import { readFileSync } from "node:fs";
 import {
+  TokenCleanupError,
   GitHubApiError,
   githubApi,
   appConfiguration,
@@ -299,6 +300,63 @@ describe("dedicated release App", () => {
       "/installation/token",
       "ephemeral-fixture-token",
       "DELETE",
+    );
+  });
+  it("separates successful publication from token-revocation failure and preserves original failures", async () => {
+    const observer = jest.fn();
+    const underlying = authenticationApi();
+    const api: Api = async (path, ...args) => {
+      if (path === "/installation/token")
+        throw new GitHubApiError("transient", 503);
+      return underlying(path, ...args);
+    };
+    let published = false;
+    await expect(
+      withScopedInstallationToken(
+        config,
+        pem,
+        { contents: "write", workflows: "write" },
+        async () => {
+          published = true;
+          return "confirmed";
+        },
+        api,
+        observer,
+      ),
+    ).rejects.toBeInstanceOf(TokenCleanupError);
+    expect(published).toBe(true);
+    expect(observer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outcome: "failed",
+        apiCategory: "transient",
+        httpStatus: 503,
+      }),
+    );
+    const original = new Error("original operation failure");
+    await expect(
+      withScopedInstallationToken(
+        config,
+        pem,
+        { actions: "write" },
+        async () => {
+          throw original;
+        },
+        api,
+        observer,
+      ),
+    ).rejects.toBe(original);
+    expect(observer).toHaveBeenCalledTimes(2);
+    const success = jest.fn();
+    await withScopedInstallationToken(
+      config,
+      pem,
+      { actions: "write" },
+      async () => undefined,
+      authenticationApi(),
+      success,
+    );
+    expect(success).toHaveBeenCalledWith(
+      expect.objectContaining({ outcome: "revoked" }),
     );
   });
   it("rejects wrong App, installation owner and repository scope", async () => {
