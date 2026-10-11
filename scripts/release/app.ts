@@ -110,7 +110,9 @@ export const githubApi: Api = async (path, token, method = "GET", body) => {
     );
   return response.status === 204 ? undefined : response.json();
 };
-export function modePermissions(mode: "smoke" | "production" | "draft-pr") {
+export function modePermissions(
+  mode: "smoke" | "production" | "draft-pr" | "maintenance",
+) {
   return mode === "draft-pr"
     ? { contents: "read", pull_requests: "write" }
     : { actions: "write" };
@@ -272,7 +274,7 @@ export async function withScopedInstallationToken<T>(
 export async function withInstallationToken<T>(
   configuration: AppConfiguration,
   privateKey: string,
-  mode: "smoke" | "production" | "draft-pr",
+  mode: "smoke" | "production" | "draft-pr" | "maintenance",
   operation: (token: string) => Promise<T>,
   api: Api = githubApi,
 ): Promise<T> {
@@ -420,6 +422,7 @@ export async function verifyChildDispatch(
       .enum([
         ".github/workflows/production-release.yml",
         ".github/workflows/release-gate-smoke.yml",
+        ".github/workflows/credential-maintenance.yml",
       ])
       .parse(env.RELEASE_CHILD_WORKFLOW);
     const read = async (code: string, path: string) => {

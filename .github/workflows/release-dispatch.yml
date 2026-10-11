@@ -8,23 +8,29 @@ on:
         description: Explicit operation; smoke cannot migrate or deploy
         required: true
         type: choice
-        options: [smoke, draft-pr, production]
+        options: [smoke, draft-pr, production, maintenance]
       release_sha:
         description: Exact 40-character SHA; smoke uses current main, draft-pr published review branch
         required: true
         type: string
       manifest_path:
-        description: Production only; releases/<name>.json
+        description: Production releases/<name>.json or maintenance/<name>.json
         required: false
         type: string
       manifest_sha256:
-        description: Production only; exact reviewed manifest SHA-256
+        description: Production or maintenance; exact reviewed manifest SHA-256
         required: false
         type: string
       pr_title:
         description: Draft PR only; use approved title and an existing ticket when applicable
         required: false
         type: string
+      maintenance_action:
+        description: Maintenance only; explicit rotation or recovery without another password reset
+        required: false
+        type: choice
+        options: [rotate, recover]
+        default: rotate
 
 permissions:
   contents: read
@@ -62,6 +68,7 @@ jobs:
           RELEASE_SHA: ${{ inputs.release_sha }}
           MANIFEST_SOURCE: ${{ inputs.manifest_path }}
           RELEASE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          MAINTENANCE_ACTION: ${{ inputs.maintenance_action }}
           RELEASE_PR_TITLE: ${{ inputs.pr_title }}
           RELEASE_APP_ID: ${{ vars.RELEASE_APP_ID }}
           RELEASE_APP_INSTALLATION_ID: ${{ vars.RELEASE_APP_INSTALLATION_ID }}
