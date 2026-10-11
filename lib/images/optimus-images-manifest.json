@@ -18,7 +18,6 @@
     "/images/optimus/3am/puzzle.webp",
     "/images/optimus/4th-chamber/gza.webp",
     "/images/optimus/4th-dimension/telegram.webp",
-    "/images/optimus/67-will.webp",
     "/images/optimus/8x10-detour/997119/997119-0.webp",
     "/images/optimus/8x10-detour/997119/997119-1.webp",
     "/images/optimus/8x10-detour/bucks-n-six.webp",
@@ -650,6 +649,7 @@
     "/images/optimus/frisco-mo-bounce-fest/sting/sting-2.webp",
     "/images/optimus/fruity-loops/67-kid.webp",
     "/images/optimus/fruity-loops/67-shaq.webp",
+    "/images/optimus/fruity-loops/67-will.webp",
     "/images/optimus/fruity-loops/wu-tang.webp",
     "/images/optimus/fsu-football/bball.webp",
     "/images/optimus/fsu-football/classic.webp",
@@ -2274,11 +2274,6 @@
       "src": "/images/optimus/4th-dimension/telegram.webp",
       "width": 745,
       "height": 853
-    },
-    {
-      "src": "/images/optimus/67-will.webp",
-      "width": 480,
-      "height": 480
     },
     {
       "src": "/images/optimus/8x10-detour/997119/997119-0.webp",
@@ -5434,6 +5429,11 @@
       "src": "/images/optimus/fruity-loops/67-shaq.webp",
       "width": 480,
       "height": 853
+    },
+    {
+      "src": "/images/optimus/fruity-loops/67-will.webp",
+      "width": 480,
+      "height": 480
     },
     {
       "src": "/images/optimus/fruity-loops/wu-tang.webp",
