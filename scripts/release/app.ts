@@ -51,21 +51,44 @@ export type Api = (
   method?: "GET" | "POST" | "PATCH" | "DELETE",
   body?: unknown,
 ) => Promise<unknown>;
+export class GitHubApiError extends Error {
+  constructor(
+    readonly classification:
+      | "unauthenticated"
+      | "forbidden"
+      | "not-found-or-not-visible"
+      | "transient"
+      | "unexpected-status"
+      | "transport",
+    readonly status?: number,
+  ) {
+    super(
+      `GitHub API ${classification}${status === undefined ? "" : ` (HTTP ${status})`}; response omitted`,
+    );
+    this.name = "GitHubApiError";
+  }
+}
+
 export const githubApi: Api = async (path, token, method = "GET", body) => {
   if (!path.startsWith("/") || path.startsWith("//"))
     throw new Error("Invalid GitHub API path");
-  const response = await fetch(`https://api.github.com${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(15000),
-    redirect: "error",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`https://api.github.com${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+      redirect: "error",
+    });
+  } catch {
+    throw new GitHubApiError("transport");
+  }
   const expectedStatus =
     method === "GET" || method === "PATCH"
       ? 200
@@ -73,8 +96,17 @@ export const githubApi: Api = async (path, token, method = "GET", body) => {
         ? 204
         : 201;
   if (response.status !== expectedStatus)
-    throw new Error(
-      `GitHub release authentication or operation failed (${response.status}); response omitted`,
+    throw new GitHubApiError(
+      response.status === 401
+        ? "unauthenticated"
+        : response.status === 403
+          ? "forbidden"
+          : response.status === 404
+            ? "not-found-or-not-visible"
+            : response.status === 429 || response.status >= 500
+              ? "transient"
+              : "unexpected-status",
+      response.status,
     );
   return response.status === 204 ? undefined : response.json();
 };
@@ -302,8 +334,13 @@ export async function verifyProtectedMain(
   validateReviewedMainRules(rules);
 }
 export class ReleaseVerificationError extends Error {
-  constructor(readonly invariant: string) {
-    super(`Release verification failed: ${invariant}`);
+  constructor(
+    readonly invariant: string,
+    readonly apiFailure?: GitHubApiError,
+  ) {
+    super(
+      `Release verification failed: ${invariant}${apiFailure ? `; ${apiFailure.message}` : ""}`,
+    );
     this.name = "ReleaseVerificationError";
   }
 }
@@ -357,13 +394,19 @@ export async function verifyChildDispatch(
     const read = async (code: string, path: string) => {
       try {
         return await api(path, token);
-      } catch {
-        throw new ReleaseVerificationError(code);
+      } catch (error) {
+        throw new ReleaseVerificationError(
+          code,
+          error instanceof GitHubApiError ? error : undefined,
+        );
       }
     };
-    const [run, app, environment, policies] = await Promise.all([
+    const [run, bot, environment, policies] = await Promise.all([
       read("child.run-api", `${base}/actions/runs/${runId}`),
-      read("child.app-api", `/apps/${configuration.slug}`),
+      read(
+        "child.bot-api",
+        `/users/${encodeURIComponent(`${configuration.slug}[bot]`)}`,
+      ),
       read("child.gate-api", `${base}/environments/production-release`),
       read(
         "child.gate-policy-api",
@@ -375,13 +418,17 @@ export async function verifyChildDispatch(
     invariant = "child.workflow-path";
     if (z.object({ path: z.string() }).parse(run).path !== expectedPath)
       throw new Error("Child workflow path mismatch");
-    invariant = "child.app-registration";
-    const publicApp = z.object({ id: z.number(), slug: z.string() }).parse(app);
+    // GitHub's public bot record binds slug to bot ID. App registration and
+    // repository-only installation are JWT-verified by the exact-SHA parent;
+    // its successful completion below is required before either child proceeds.
+    invariant = "child.bot-registration";
+    const publicBot = actorSchema.parse(bot);
     if (
-      String(publicApp.id) !== configuration.appId ||
-      publicApp.slug !== configuration.slug
+      String(publicBot.id) !== configuration.botUserId ||
+      publicBot.login !== `${configuration.slug}[bot]` ||
+      publicBot.type !== "Bot"
     )
-      throw new Error("Public GitHub App registration mismatch");
+      throw new Error("Public GitHub bot registration mismatch");
     invariant = "child.human-gate";
     validateEnvironmentGate(environment, policies);
     invariant = "child.protected-main";
@@ -418,7 +465,10 @@ export async function verifyChildDispatch(
     );
   } catch (error) {
     if (error instanceof ReleaseVerificationError) throw error;
-    throw new ReleaseVerificationError(invariant);
+    throw new ReleaseVerificationError(
+      invariant,
+      error instanceof GitHubApiError ? error : undefined,
+    );
   }
 }
 

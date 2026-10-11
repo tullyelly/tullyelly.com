@@ -27,6 +27,11 @@ main().catch((error: unknown) => {
       ? error.invariant
       : "smoke.context-or-human-approval";
   console.error(`Harmless approval gate test failed invariant: ${invariant}.`);
+  if (error instanceof ReleaseVerificationError && error.apiFailure) {
+    console.error(
+      `GitHub API classification: ${error.apiFailure.classification}; HTTP status: ${error.apiFailure.status ?? "unavailable"}.`,
+    );
+  }
   console.error(
     "Harmless approval gate test stopped; check App identity, protected main, dispatcher provenance and human approval. No production operations were attempted.",
   );

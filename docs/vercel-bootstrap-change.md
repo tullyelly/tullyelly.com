@@ -240,3 +240,49 @@ build. Documentation, formatting and diff checks passed. The ignored local
 `.cache/smoke-diagnostics-verify.log` records the baseline. Recommendation: GO
 for review/publication of diagnostic improvements only; NO-GO for claiming the
 original guard failure resolved or proceeding to a production release.
+
+## Child App registration lookup correction
+
+Diagnostic child `38172563904` failed at `child.app-api`; parent `38172406894`
+succeeded. The child sent its automatically generated `GITHUB_TOKEN` as a Bearer
+token to `GET /apps/cipher-jimmy`. That token belongs to GitHub Actions, not the
+dedicated release App. GitHub documents no extra fine-grained permission for
+this endpoint, but unauthenticated access covers public resources only:
+[Get an App](https://docs.github.com/en/rest/apps/apps#get-an-app) and
+[GITHUB_TOKEN identity](https://docs.github.com/en/actions/concepts/security/github_token).
+Increasing repository permissions does not establish dedicated-App identity.
+
+Read-only probes observed HTTP 404 (`not-found-or-not-visible`) without a token,
+HTTP 200 with the dedicated installation token, and HTTP 401 with an App JWT at
+this slug endpoint. The authoritative JWT endpoint is `GET /app`, which the
+existing dispatcher uses correctly. The original Actions job token has expired;
+its discarded HTTP status cannot be reconstructed without another authorized
+execution. Visibility/authentication is the supported explanation; the original
+status remains unknown rather than being reported as a captured 404.
+
+The child now reads GitHub's authoritative public bot record via
+`GET /users/cipher-jimmy%5Bbot%5D` and checks its ID, login and Bot type against
+both workflow actors. A public read-only probe returned HTTP 200. App ID, slug,
+installation ownership, permissions and repository-only scope remain verified by
+the parent with its signed JWT and downscoped installation token. The child must
+still verify that this exact protected-main dispatcher source completed
+successfully at the same SHA and has the correct parent run ID/path/event/ref;
+it cannot proceed on bot metadata alone. Neither child job needs App private
+keys or new permissions. The production approval and rerun checks are unchanged.
+
+Typed API failures now report HTTP status and a fixed classification
+(`unauthenticated`, `forbidden`, `not-found-or-not-visible`, `transient`,
+`unexpected-status`, or `transport`) without reading/logging error bodies,
+headers, tokens or transport exception messages. No automatic fallback or retry
+was added. Fixtures cover insufficient access, unexpected bot identity, failed
+parent provenance/completion, HTTP/API errors, redaction and success. Live
+Actions validation remains pending a separately approved publication and test.
+
+Correction validation passed: 27 focused tests and the full
+`CI=true SKIP_DB=true npm run verify:agent` baseline, with 200 suites and 1,054
+passing tests. Six opt-in database tests were skipped. Lint, type checking,
+coverage, Next build, documentation, formatting and diff checks passed. Local
+baseline evidence is `.cache/smoke-identity-fix-verify.log`. No actual workflow
+execution was initiated. Current main's newer diagnostic merge still needs local
+integration before the publisher ancestry guard can pass; integration and
+publication are not authorized by this correction task.
