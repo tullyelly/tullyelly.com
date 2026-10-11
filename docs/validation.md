@@ -5,12 +5,20 @@
 `npm run verify:agent` is the canonical pre-review/pre-commit baseline.
 [scripts/verify-agent.mjs](../scripts/verify-agent.mjs) runs sequentially:
 
-1. prepare:content: build info, incremental image manifest, Contentlayer build.
-2. lint: ESLint using eslint.config.mjs.
-3. typecheck:prepared: TypeScript without regenerating content.
-4. gen:prisma: Prisma client generation.
-5. test:ci:prepared: related Jest smoke, then full Jest coverage in band.
-6. build:next: Next production build.
+1. test:tooling: verification environment isolation and failure propagation.
+2. prepare:content: build info, incremental image manifest, Contentlayer build.
+3. lint: ESLint using eslint.config.mjs.
+4. typecheck:prepared: TypeScript without regenerating content.
+5. gen:prisma: Prisma client generation.
+6. test:ci:prepared: related Jest smoke, then full Jest coverage in band.
+7. build:next: Next production build with SKIP_DB=true scoped to that child.
+
+Jest sets SKIP_DB=false in [jest.env.cjs](../jest.env.cjs) before importing test
+modules. Database unit tests use mocks; an inherited build flag must not bypass
+the behavior they exercise. Tests of the escape hatch explicitly set SKIP_DB=true
+and restore their environment. This applies to focused tests, coverage, hooks,
+and CI through the shared Jest config. It does not enable a real database service.
+Production build database guards remain in force.
 
 Jest thresholds are 85% lines/statements/functions and 80% branches, defined in
 [jest.config.cjs](../jest.config.cjs). A successful baseline covers lint,
@@ -80,12 +88,31 @@ SKIP_COVERAGE_GUARD=1 bypasses the whole hook, only when needed, and does not
 waive required validation. [Coverage guard](coverage-guard.md) tracks gate policy.
 
 [ci.yml](../.github/workflows/ci.yml) runs on pushes to main and PRs targeting
-main, using Node 20, verify:agent with SKIP_DB=true, then a production-server
+main, using Node 24 from .nvmrc, verify:agent, then a production-server
 security header smoke. There is no CI_ENABLED gate. Vitest, formatting, metadata,
 Playwright, images, and SEO are not CI baseline steps.
 [coverage.yml](../.github/workflows/coverage.yml) independently runs test:coverage
 on the same events and uploads lcov on success. Branch protection is remote
 configuration; workflow files alone do not prove these checks block merging.
+
+Both workflows pin ubuntu-24.04 so an ubuntu-latest migration cannot silently
+change the operating system. Checkout/setup actions use the Node 24 action runtime;
+this runtime is distinct from the application Node version selected by .nvmrc.
+Keep local development and the Vercel project runtime aligned with .nvmrc when
+rolling out runtime upgrades; changing CI does not update Vercel project settings.
+
+[Dependabot](../.github/dependabot.yml) proposes weekly Actions updates and monthly
+npm updates. Related Next, React, and Prisma packages are grouped so they can be
+reviewed and validated together. Updates are not automatically merged. Review the
+Node LTS and Ubuntu runner baseline quarterly; change major platform versions in
+dedicated PRs with the full baseline and relevant browser/database checks.
+
+Use focused tests while editing, then one full verification run before review.
+Keep mocked unit tests, real database integration tests, and browser tests as
+separate layers with explicit prerequisites. Avoid adding time-based retries or
+lowering coverage thresholds to hide environment failures. The separate coverage
+workflow retains its existing status check; consolidating duplicate CI coverage
+requires checking branch-protection requirements first.
 
 For CI failures inspect complete logs and the failing SHA, compare current
 history, and reproduce before changing code. A local pass does not clear a remote

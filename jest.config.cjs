@@ -4,6 +4,7 @@ const createJestConfig = nextJest({ dir: "./" });
 
 const customJestConfig = {
   testEnvironment: "jsdom",
+  setupFiles: ["<rootDir>/jest.env.cjs"],
   setupFilesAfterEnv: [
     "<rootDir>/jest.setup.ts",
     "<rootDir>/jest.setup.console-error.ts",
