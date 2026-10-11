@@ -2,6 +2,8 @@
 import { generateKeyPairSync, verify } from "node:crypto";
 import { readFileSync } from "node:fs";
 import {
+  GitHubApiError,
+  githubApi,
   appConfiguration,
   createAppJwt,
   modePermissions,
@@ -143,7 +145,8 @@ function childApi(overrides: Record<string, unknown> = {}) {
         triggering_actor: bot,
         path: env.RELEASE_CHILD_WORKFLOW,
       };
-    if (path === `/apps/${config.slug}`) return { id: 123, slug: config.slug };
+    if (path === `/users/${encodeURIComponent(`${config.slug}[bot]`)}`)
+      return bot;
     if (path === `${base}/environments/production-release`) return gate;
     if (
       path ===
@@ -466,6 +469,34 @@ describe("dedicated release App", () => {
       verifyChildDispatch(env, childApi(), async () => undefined),
     ).resolves.toBeUndefined();
   });
+  it("uses authoritative bot metadata and successful JWT-verified parent rather than private App lookup", async () => {
+    const api = childApi();
+    await verifyChildDispatch(env, api);
+    expect(api).not.toHaveBeenCalledWith(
+      `/apps/${config.slug}`,
+      expect.anything(),
+    );
+    expect(api).toHaveBeenCalledWith(
+      `/users/${encodeURIComponent(`${config.slug}[bot]`)}`,
+      expect.anything(),
+    );
+    const path = `/users/${encodeURIComponent(`${config.slug}[bot]`)}`;
+    for (const invalid of [
+      { ...bot, id: 999 },
+      { ...bot, login: "other[bot]" },
+      { ...bot, type: "User" },
+    ])
+      await expect(
+        verifyChildDispatch(env, childApi({ [path]: invalid })),
+      ).rejects.toThrow("child.bot-registration");
+    const denied: Api = async (request, ...args) => {
+      if (request === path) throw new GitHubApiError("forbidden", 403);
+      return childApi()(request, ...args);
+    };
+    await expect(verifyChildDispatch(env, denied)).rejects.toThrow(
+      "child.bot-api; GitHub API forbidden (HTTP 403)",
+    );
+  });
   it("bounds interrupted dispatcher waiting and does not proceed after failure", async () => {
     const path = `/repos/${RELEASE_REPOSITORY}/actions/runs/100`;
     const parent = {
@@ -672,5 +703,43 @@ describe("App-authored draft review", () => {
         api([], "b".repeat(40)),
       ),
     ).rejects.toThrow("Published");
+  });
+});
+
+describe("redacted GitHub transport diagnostics", () => {
+  const originalFetch = global.fetch;
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+  test.each([
+    [401, "unauthenticated"],
+    [403, "forbidden"],
+    [404, "not-found-or-not-visible"],
+    [429, "transient"],
+    [503, "transient"],
+  ])(
+    "classifies HTTP %s without reading the body",
+    async (status, classification) => {
+      const json = jest.fn();
+      global.fetch = jest.fn().mockResolvedValue({ status, json });
+      await expect(
+        githubApi("/apps/fixture", "secret-fixture-token"),
+      ).rejects.toMatchObject({ status, classification });
+      expect(json).not.toHaveBeenCalled();
+    },
+  );
+  test("omits sensitive transport errors and allows validated successful responses", async () => {
+    global.fetch = jest
+      .fn()
+      .mockRejectedValue(new Error("secret-fixture-token; sensitive-body"));
+    await expect(
+      githubApi("/apps/fixture", "secret-fixture-token"),
+    ).rejects.toThrow("GitHub API transport; response omitted");
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({ status: 200, json: async () => ({ id: 123 }) });
+    await expect(
+      githubApi("/apps/fixture", "secret-fixture-token"),
+    ).resolves.toEqual({ id: 123 });
   });
 });
