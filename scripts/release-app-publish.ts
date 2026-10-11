@@ -11,7 +11,7 @@ import {
 } from "./release/app";
 import {
   assertReviewPublication,
-  assertInstallationPushUrl,
+  verifyInstallationPushUrl,
   installationGitEnvironment,
   readSecureAppKey,
 } from "./release/publish";
@@ -72,19 +72,7 @@ async function main() {
         ...installationGitEnvironment(token, process.env),
         NODE_ENV: process.env.NODE_ENV,
       };
-      const resolved = execFileSync(
-        "git",
-        [
-          "-c",
-          `remote.cipher-app-check.url=${pushUrl}`,
-          "remote",
-          "get-url",
-          "--push",
-          "cipher-app-check",
-        ],
-        { env: pushEnv, encoding: "utf8", stdio: "pipe" },
-      ).trim();
-      assertInstallationPushUrl(resolved, pushUrl);
+      verifyInstallationPushUrl(pushUrl, pushEnv);
       execFileSync(
         "git",
         [

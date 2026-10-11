@@ -182,3 +182,29 @@ flags are unchanged. The focused CI-environment run passed 25 tests.
 The local integration incorporates the four fetched main commits without
 conflicts or content edits by Cipher. The commit includes the incoming Chronicle
 and image changes as part of main integration, not new authored content.
+
+## Publisher URL guard correction
+
+Stage 4 stopped before creating a remote branch or PR: Git did not recognize
+`cipher-app-check` when its URL was supplied only through command-line config.
+The publisher now creates that check remote in an isolated temporary bare Git
+directory, copies the effective URL rewrite rules, and resolves its push URL
+there. Both `insteadOf` and `pushInsteadOf` remain fail-closed. A `finally` block
+removes the directory on success, rewrite rejection, or Git failure. No persistent
+repository remote, SSH setting or credential helper is changed. This guard uses
+local Git commands only; it performs no network request or push.
+
+Regression tests use real temporary Git repositories and verify successful URL
+resolution, both rewrite rejection paths, unchanged persistent configuration,
+and cleanup after success and failure. App identity, permissions, exact SHA,
+main ancestry, token revocation and post-push SHA verification remain unchanged.
+Publication requires renewed approval for the corrected commit. No publication,
+PR creation, release dispatch or production operation accompanies this fix.
+
+Local correction validation passed with `CI=true SKIP_DB=true npm run verify:agent`:
+lint, TypeScript, Prisma generation, Jest smoke, full coverage and Next build.
+The full run passed 200 suites and 1,046 tests; six opt-in database tests remained
+skipped. Documentation and changed-file formatting checks passed. The corrected
+URL guard also passed against the actual checkout using a non-secret fixture,
+without a key read, network request or push. Evidence is in the ignored local
+`.cache/publisher-fix-verify.log`. This proves local readiness, not live publication.

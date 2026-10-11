@@ -1,14 +1,18 @@
 /** @jest-environment node */
 import {
   chmodSync,
+  readFileSync,
+  readdirSync,
   mkdtempSync,
   rmSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  verifyInstallationPushUrl,
   assertReviewPublication,
   assertInstallationPushUrl,
   installationGitEnvironment,
@@ -69,4 +73,84 @@ test("Git URL rewrites cannot fall back to a human SSH identity", () => {
       url,
     ),
   ).toThrow("rewrites");
+});
+
+describe("isolated publisher remote", () => {
+  const url = "https://github.com/tullyelly/tullyelly.com.git";
+  let root: string;
+  let repository: string;
+  let temporaryParent: string;
+  let env: NodeJS.ProcessEnv;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), "publisher-regression-"));
+    repository = join(root, "repository");
+    temporaryParent = root;
+    env = {
+      ...process.env,
+      GIT_CONFIG_GLOBAL: "/dev/null",
+      GIT_CONFIG_NOSYSTEM: "1",
+    };
+    execFileSync("git", ["init", "--bare", "--template=", repository], {
+      env,
+      stdio: "pipe",
+    });
+    execFileSync(
+      "git",
+      [
+        "--git-dir",
+        repository,
+        "remote",
+        "add",
+        "origin",
+        "git@github.com:example/existing.git",
+      ],
+      { env },
+    );
+  });
+  afterEach(() => rmSync(root, { recursive: true, force: true }));
+  test("resolves the formerly missing remote without changing persistent configuration", () => {
+    const before = readFileSync(join(repository, "config"), "utf8");
+    verifyInstallationPushUrl(url, env, repository, temporaryParent);
+    expect(readFileSync(join(repository, "config"), "utf8")).toBe(before);
+    expect(readdirSync(root)).toEqual(["repository"]);
+    expect(
+      execFileSync("git", ["--git-dir", repository, "remote"], {
+        env,
+        encoding: "utf8",
+      }).trim(),
+    ).toBe("origin");
+  });
+  test.each(["insteadOf", "pushInsteadOf"])(
+    "rejects %s rewrites and cleans up before any publication",
+    (kind) => {
+      execFileSync(
+        "git",
+        [
+          "--git-dir",
+          repository,
+          "config",
+          `url.git@github.com:.${kind}`,
+          "https://github.com/",
+        ],
+        { env },
+      );
+      const before = readFileSync(join(repository, "config"), "utf8");
+      expect(() =>
+        verifyInstallationPushUrl(url, env, repository, temporaryParent),
+      ).toThrow("rewrites");
+      expect(readFileSync(join(repository, "config"), "utf8")).toBe(before);
+      expect(readdirSync(root)).toEqual(["repository"]);
+    },
+  );
+  test("cleans up when Git fails before URL verification", () => {
+    expect(() =>
+      verifyInstallationPushUrl(
+        url,
+        { ...env, PATH: "/nonexistent-fixture-path" },
+        repository,
+        temporaryParent,
+      ),
+    ).toThrow();
+    expect(readdirSync(root)).toEqual(["repository"]);
+  });
 });
