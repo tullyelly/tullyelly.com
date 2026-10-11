@@ -1,6 +1,10 @@
 /** GitHub metadata and approval proof only. No database, Vercel or deployment operations. */
 import { appendFileSync } from "node:fs";
-import { verifyChildDispatch, verifyHumanApproval } from "./release/app";
+import {
+  verifyChildDispatch,
+  verifyHumanApproval,
+  ReleaseVerificationError,
+} from "./release/app";
 async function main() {
   await verifyChildDispatch(process.env);
   if (process.env.RELEASE_SHA !== process.env.GITHUB_SHA)
@@ -17,7 +21,12 @@ async function main() {
   if (process.env.GITHUB_STEP_SUMMARY)
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${message}\n`);
 }
-main().catch(() => {
+main().catch((error: unknown) => {
+  const invariant =
+    error instanceof ReleaseVerificationError
+      ? error.invariant
+      : "smoke.context-or-human-approval";
+  console.error(`Harmless approval gate test failed invariant: ${invariant}.`);
   console.error(
     "Harmless approval gate test stopped; check App identity, protected main, dispatcher provenance and human approval. No production operations were attempted.",
   );

@@ -423,6 +423,49 @@ describe("dedicated release App", () => {
     });
     await expect(verifyChildDispatch(env, wrongParent)).rejects.toThrow();
   });
+  it("reports failed invariants instead of the observed generic smoke error", async () => {
+    await expect(
+      verifyChildDispatch({ ...env, GITHUB_ACTOR: "tullyelly" }, childApi()),
+    ).rejects.toThrow("child.actor-context");
+    await expect(
+      verifyChildDispatch({ ...env, GH_TOKEN: undefined }, childApi()),
+    ).rejects.toThrow("child.required-context");
+    const failingApi: Api = async (path, ...args) => {
+      if (path.endsWith("/environments/production-release"))
+        throw new Error("secret-token and sensitive API payload");
+      return childApi()(path, ...args);
+    };
+    await expect(verifyChildDispatch(env, failingApi)).rejects.toThrow(
+      "Release verification failed: child.gate-api",
+    );
+    try {
+      await verifyChildDispatch(env, failingApi);
+    } catch (error) {
+      expect(String(error)).not.toMatch(/secret-token|sensitive API payload/);
+    }
+    await expect(
+      verifyChildDispatch(
+        env,
+        childApi({
+          [`/repos/${RELEASE_REPOSITORY}/environments/production-release`]: {},
+        }),
+      ),
+    ).rejects.toThrow("child.human-gate");
+    await expect(
+      verifyChildDispatch(
+        env,
+        childApi({
+          [`/repos/${RELEASE_REPOSITORY}/branches/main`]: {
+            protected: true,
+            commit: { sha: "b".repeat(40) },
+          },
+        }),
+      ),
+    ).rejects.toThrow("child.protected-main");
+    await expect(
+      verifyChildDispatch(env, childApi(), async () => undefined),
+    ).resolves.toBeUndefined();
+  });
   it("bounds interrupted dispatcher waiting and does not proceed after failure", async () => {
     const path = `/repos/${RELEASE_REPOSITORY}/actions/runs/100`;
     const parent = {
@@ -437,7 +480,7 @@ describe("dedicated release App", () => {
     const api = childApi({ [path]: parent }),
       wait = jest.fn(async () => undefined);
     await expect(verifyChildDispatch(env, api, wait)).rejects.toThrow(
-      "bounded",
+      "child.parent-completion-timeout",
     );
     expect(wait).toHaveBeenCalledTimes(11);
     await expect(
@@ -448,7 +491,7 @@ describe("dedicated release App", () => {
         }),
         wait,
       ),
-    ).rejects.toThrow("successfully");
+    ).rejects.toThrow("child.parent-success");
   });
   it("accepts only one actual human owner approval, never App or ambiguous approvals", async () => {
     const review = {
