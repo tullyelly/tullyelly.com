@@ -91,3 +91,11 @@ For CI failures inspect complete logs and the failing SHA, compare current
 history, and reproduce before changing code. A local pass does not clear a remote
 failure until the pushed SHA has passed. A stopped/stalled build is incomplete,
 not a successful build. Record failures without weakening checks to obtain green.
+
+## Fixture environment isolation
+
+CI and release validation retain `SKIP_DB=true`. Unit suites that exercise
+mocked pool, policy or listener behavior must explicitly isolate that fixture
+environment and restore inherited values after each test. Keep dedicated
+regressions proving `SKIP_DB` blocks real construction/query/listener paths.
+Do not disable the global safety flag or runtime guards to make fixtures pass.

@@ -44,3 +44,5 @@ verify implementations before using them as a contract. The page-local
 [Scrolls README](../app/mark2/shaolin-scrolls/_components/README.md) describes that UI.
 
 - [Dedicated release App setup](release-app-setup.md) covers account setup and the harmless approval gate test.
+
+- [Vercel Git disconnect and release bootstrap proposal](vercel-bootstrap-change.md) is the current unexecuted account-settings plan.

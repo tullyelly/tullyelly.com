@@ -1,3 +1,6 @@
+# Preserve existing all-files ownership when this .github file takes precedence.
+* @tullyelly
+
 # Production release code and manifests require owner review on protected main.
 /.github/workflows/ @tullyelly
 /.github/CODEOWNERS @tullyelly
@@ -15,3 +18,5 @@
 /scripts/release-dispatch.ts @tullyelly
 /scripts/release-gate-smoke.ts @tullyelly
 /scripts/release-app-publish.ts @tullyelly
+
+/scripts/release-app-draft.ts @tullyelly

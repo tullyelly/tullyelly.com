@@ -649,6 +649,7 @@
     "/images/optimus/frisco-mo-bounce-fest/sting/sting-2.webp",
     "/images/optimus/fruity-loops/67-kid.webp",
     "/images/optimus/fruity-loops/67-shaq.webp",
+    "/images/optimus/fruity-loops/67-will.webp",
     "/images/optimus/fruity-loops/wu-tang.webp",
     "/images/optimus/fsu-football/bball.webp",
     "/images/optimus/fsu-football/classic.webp",
@@ -1035,6 +1036,32 @@
     "/images/optimus/lululemon/joker.webp",
     "/images/optimus/lululemon/lulu.webp",
     "/images/optimus/lululemon/lululemon.webp",
+    "/images/optimus/madtown/cp3/cp3-0.webp",
+    "/images/optimus/madtown/cp3/cp3-1.webp",
+    "/images/optimus/madtown/first-67.webp",
+    "/images/optimus/madtown/first/first-0.webp",
+    "/images/optimus/madtown/first/first-1.webp",
+    "/images/optimus/madtown/first/first-3.webp",
+    "/images/optimus/madtown/first/first-4.webp",
+    "/images/optimus/madtown/lion/lion-0.webp",
+    "/images/optimus/madtown/lion/lion-1.webp",
+    "/images/optimus/madtown/lion/lion-2.webp",
+    "/images/optimus/madtown/madtown.webp",
+    "/images/optimus/madtown/partner.webp",
+    "/images/optimus/madtown/second-67.webp",
+    "/images/optimus/madtown/second/second-0.webp",
+    "/images/optimus/madtown/second/second-1.webp",
+    "/images/optimus/madtown/second/second-2.webp",
+    "/images/optimus/madtown/second/second-3.webp",
+    "/images/optimus/madtown/second/second-4.webp",
+    "/images/optimus/madtown/second/second-5.webp",
+    "/images/optimus/madtown/second/second-6.webp",
+    "/images/optimus/madtown/second/second-7.webp",
+    "/images/optimus/madtown/third-67.webp",
+    "/images/optimus/madtown/third/third-0.webp",
+    "/images/optimus/madtown/third/third-1.webp",
+    "/images/optimus/madtown/third/third-2.webp",
+    "/images/optimus/madtown/third/third-3.webp",
     "/images/optimus/madvillainy/859536/859536-0.webp",
     "/images/optimus/madvillainy/859536/859536-1.webp",
     "/images/optimus/madvillainy/fern.webp",
@@ -5404,6 +5431,11 @@
       "height": 853
     },
     {
+      "src": "/images/optimus/fruity-loops/67-will.webp",
+      "width": 480,
+      "height": 480
+    },
+    {
       "src": "/images/optimus/fruity-loops/wu-tang.webp",
       "width": 480,
       "height": 358
@@ -7330,6 +7362,136 @@
     },
     {
       "src": "/images/optimus/lululemon/lululemon.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/cp3/cp3-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/cp3/cp3-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/first-67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/first/first-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/first/first-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/first/first-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/first/first-4.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/lion/lion-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/madtown/lion/lion-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/madtown/lion/lion-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/madtown/madtown.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/madtown/partner.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/madtown/second-67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-4.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-5.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-6.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/second/second-7.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/third-67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/third/third-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/third/third-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/third/third-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/madtown/third/third-3.webp",
       "width": 1920,
       "height": 2550
     },

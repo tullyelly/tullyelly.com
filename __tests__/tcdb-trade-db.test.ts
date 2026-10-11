@@ -22,7 +22,15 @@ import {
 } from "@/lib/tcdb-trade-db";
 
 describe("tcdb trade db helper", () => {
+  const originalSkipDb = process.env.SKIP_DB;
+
+  afterEach(() => {
+    if (originalSkipDb === undefined) delete process.env.SKIP_DB;
+    else process.env.SKIP_DB = originalSkipDb;
+  });
   beforeEach(() => {
+    // These tests use mocked DB/policy dependencies, never a real connection.
+    delete process.env.SKIP_DB;
     mockSql.mockReset();
   });
 

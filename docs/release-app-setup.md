@@ -152,8 +152,9 @@ approval behavior remain unverified until the account setup and harmless test.
 ## What is verified and what remains pending
 
 Installation authentication and its identity are checked in code and fixtures;
-no App exists yet, so live attribution, exact permissions, pending approval and
-human approval have not been demonstrated. Installing/configuring an App is not
+the App now exists and local installation authentication/scope were verified
+on 2026-10-11. Workflow actor attribution, pending approval and human approval
+have not yet been demonstrated. Installing/configuring an App is not
 proof that it works. Use the harmless test before trusting the production gate.
 
 Cipher does not use a user access token acting as tullyelly and does not expose
@@ -165,3 +166,7 @@ installation to disable dispatch. This does not delete archived analytics.
 Official sources: [App registration](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app),
 [installation authentication](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation),
 and [protected branch review rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
+
+The completed account audit and exact initial PR/bootstrap sequence are in
+[the separate Vercel/bootstrap proposal](vercel-bootstrap-change.md). Follow
+that current record instead of repeating account registration.

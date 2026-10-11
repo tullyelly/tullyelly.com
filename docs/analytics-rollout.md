@@ -916,3 +916,81 @@ review of that guard. Live App setup/dispatch/approval remains pending.
 Neon direct hostname construction: concatenate the endpoint ID above, a dot,
 and `c-2.us-east-2.aws.neon.tech`. These are non-secret endpoint identifiers;
 credentials and full connection URLs are excluded.
+
+## 2026-10-11 account audit and recreated test target
+
+The [separate Vercel/bootstrap proposal](vercel-bootstrap-change.md) records
+verified App authentication, environment policies, main protections, current
+production identity and the exact approval boundaries. No commit, push, PR,
+merge, dispatch, deployment or production setting/database change occurred.
+An ephemeral repository-only App token was minted and revoked for metadata reads.
+Strict required status checks are off and must be enabled; the feature branch
+is behind main. Prepared local CODEOWNERS keeps main's all-files ownership, and
+`scripts/release-app-draft.ts` supplies the initial local App-authored draft path
+before its workflow exists on main. These edits remain uncommitted for review.
+
+The user deleted old `dev/analytics`; its prior integration evidence describes
+a deleted target and does not prove the replacement has migrated schema.
+Recreated branch: `br-hidden-hall-ae955q9l`, name `dev/analytics`, parent
+`br-crimson-fog-ae22ws22` (development, freshly reset from production). Compute
+`ep-purple-bonus-aecz6st7`, 0.25 CU and 300-second suspension. Direct hostname
+is that endpoint ID plus the documented DNS suffix. Branch readiness and
+read-only SQL identity passed (`tullyelly_db`); ledger and analytics tables
+are absent. No SQL migrations or test writes were applied. Existing ignored
+`.env.analytics-test.local` remains unchanged and refers to the deleted target;
+do not run integration tests until its target/credentials are deliberately
+updated and the preflight is rerun. No Vercel database connections changed.
+Neon CLI performed its normal OAuth refresh during discovery; no manual CLI
+authentication/configuration replacement was made.
+
+Audit validation: the final normal-environment `npm run verify:agent` passed
+all stages in 105.2 seconds, including the 36.6-second production build.
+200 suites and 1,039 tests passed; six opt-in database tests were skipped.
+Coverage: 88.06% statements, 80.99% branches, 86.79% functions, 89.74% lines.
+The first invocation with a global `SKIP_DB=true` override failed 12 fixture
+tests because that override changed their mocked database behavior; the
+normal invocation passed without changing those tests or production guards.
+The new draft entrypoint's offline check passed outside the restricted sandbox
+(the sandbox denied Git subprocess execution); check mode read no key and
+made no network request. Documentation, changed-file formatting, secret scan
+and diff whitespace checks passed. No replacement-branch integration tests
+were run: its local configuration remains stale and no schema was applied.
+
+## Authorized local bootstrap integration
+
+The user authorized local fetch/integration/commits, then separately authorized
+CI fixture isolation fixes after the safety-flag mismatch was reproduced.
+Remote main `3fce11932f189d940d72d0a9e3c91a8fd9943faf` integrated into
+`cipher/analytics-archive` without conflicts. Tooling commit
+`304b1e12e0577fc39c37ea7118fbda63ab09bedb` and prepared changes remain intact.
+Five mocked fixture suites restore their inherited `SKIP_DB` after each test;
+three added regressions verify the guard still blocks pool, policy SQL and
+listener work. The focused run passed 25 tests with `CI=true SKIP_DB=true`.
+No runtime guard, global test setup or workflow safety flag changed.
+
+Review confirmed that release workflows have explicit dispatch-only triggers;
+the smoke has no production secret references or migration/deploy commands.
+Production credentials remain behind the separate human environment gate;
+App publisher and draft helper only act when their explicit mutation modes
+are invoked. No such mode was invoked during local preparation.
+The effective ruleset/environment verification passed before this preparation;
+strict checks are now enabled. Vercel remains connected and production unchanged.
+The next account action still requires explicit approval of the separate
+Git disconnect; App push/PR creation, remote merge and smoke dispatch remain
+separate approvals. No final production release manifest exists.
+
+Final local bootstrap validation passed with `CI=true SKIP_DB=true`: all
+`npm run verify:agent` stages, including lint, TypeScript, Prisma generation,
+smoke, full thresholded coverage and production build. 200 suites and 1,042
+tests passed; six opt-in live database tests skipped. Coverage: 88.63% statements,
+81.90% branches, 86.79% functions, 90.06% lines. Documentation and changed-file
+formatting checks passed; the incoming main content/manifest also passed
+formatting without modification. No live integration test was run against
+the recreated Neon branch because its local configuration remains stale.
+
+Recommendation: GO for the local bootstrap commit and subsequent review;
+NO-GO for production rollout. No push, PR, remote merge, Vercel disconnect,
+workflow dispatch, database migration or deployment was performed. The final
+commit containing this record has both the tooling history and fetched main
+as ancestors; its exact SHA is recorded in the final handoff and ignored
+`.cache/bootstrap-readiness.json` after commit. No ticket ID was invented.

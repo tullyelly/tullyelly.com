@@ -152,3 +152,7 @@ Dedicated App setup and the harmless approval test: [release App setup](release-
 Neon direct hostname construction: concatenate the endpoint ID above, a dot,
 and `c-2.us-east-2.aws.neon.tech`. These are non-secret endpoint identifiers;
 credentials and full connection URLs are excluded.
+
+The [2026-10-11 Vercel Git disconnect/bootstrap proposal](vercel-bootstrap-change.md)
+records current targets, verified App authentication, remaining account blockers
+and the separate approval sequence. It is prepared and has not been executed.

@@ -13,13 +13,28 @@ describe("ensureAuthzInvalidationListener", () => {
   beforeEach(() => {
     jest.resetModules();
     process.env = { ...originalEnv };
+    // Exercise mocked DB behavior independently of the CI skip flag.
+    delete process.env.SKIP_DB;
     getPoolMock.mockReset();
     const { revalidateTag } = require("next/cache");
     revalidateTag.mockReset();
   });
 
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
   afterAll(() => {
     process.env = originalEnv;
+  });
+
+  test("SKIP_DB prevents listener connection outside test runtime", () => {
+    Object.assign(process.env, { NODE_ENV: "development", SKIP_DB: "true" });
+    const {
+      ensureAuthzInvalidationListener,
+    } = require("@/lib/authz/invalidation");
+    ensureAuthzInvalidationListener();
+    expect(getPoolMock).not.toHaveBeenCalled();
   });
 
   test("skips subscribing while running tests", () => {
