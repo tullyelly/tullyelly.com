@@ -301,90 +301,127 @@ export async function verifyProtectedMain(
     );
   validateReviewedMainRules(rules);
 }
+export class ReleaseVerificationError extends Error {
+  constructor(readonly invariant: string) {
+    super(`Release verification failed: ${invariant}`);
+    this.name = "ReleaseVerificationError";
+  }
+}
+
 export async function verifyChildDispatch(
   env: Readonly<Record<string, string | undefined>>,
   api: Api = githubApi,
   wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
 ) {
-  const configuration = appConfiguration(env);
-  if (
-    env.GITHUB_ACTOR !== `${configuration.slug}[bot]` ||
-    env.GITHUB_TRIGGERING_ACTOR !== `${configuration.slug}[bot]`
-  )
-    throw new Error(
-      "Release child actor context must be the dedicated App, including reruns",
-    );
-  if (
-    env.GITHUB_REF !== "refs/heads/main" ||
-    env.GITHUB_EVENT_NAME !== "workflow_dispatch"
-  )
-    throw new Error(
-      "App release children run only on main via workflow dispatch",
-    );
-  const token = z.string().min(1).parse(env.GH_TOKEN),
-    sha = z
-      .string()
-      .regex(/^[a-f0-9]{40}$/)
-      .parse(env.GITHUB_SHA),
-    runId = decimal.parse(env.GITHUB_RUN_ID),
-    parentId = decimal.parse(env.RELEASE_DISPATCH_RUN_ID);
-  if (
-    env.RELEASE_DISPATCH_INSTALLATION_ID !== configuration.installationId ||
-    runId === parentId
-  )
-    throw new Error("Dispatcher installation or parent identity mismatch");
-  const base = `/repos/${RELEASE_REPOSITORY}`;
-  const expectedPath = z
-    .enum([
-      ".github/workflows/production-release.yml",
-      ".github/workflows/release-gate-smoke.yml",
-    ])
-    .parse(env.RELEASE_CHILD_WORKFLOW);
-  const [run, app, environment, policies] = await Promise.all([
-    api(`${base}/actions/runs/${runId}`, token),
-    api(`/apps/${configuration.slug}`, token),
-    api(`${base}/environments/production-release`, token),
-    api(
-      `${base}/environments/production-release/deployment-branch-policies`,
-      token,
-    ),
-  ]);
-  verifyAppRun(run, configuration, sha);
-  if (z.object({ path: z.string() }).parse(run).path !== expectedPath)
-    throw new Error("Child workflow path mismatch");
-  const publicApp = z.object({ id: z.number(), slug: z.string() }).parse(app);
-  if (
-    String(publicApp.id) !== configuration.appId ||
-    publicApp.slug !== configuration.slug
-  )
-    throw new Error("Public GitHub App registration mismatch");
-  validateEnvironmentGate(environment, policies);
-  await verifyProtectedMain(token, sha, api);
-  for (let attempt = 0; attempt < 12; attempt++) {
-    const parent = z
-      .object({
-        id: z.number(),
-        event: z.literal("workflow_dispatch"),
-        head_branch: z.literal("main"),
-        head_sha: z.string(),
-        path: z.literal(".github/workflows/release-dispatch.yml"),
-        status: z.string(),
-        conclusion: z.string().nullable(),
-      })
-      .parse(await api(`${base}/actions/runs/${parentId}`, token));
-    if (String(parent.id) !== parentId || parent.head_sha !== sha)
-      throw new Error("Dispatcher workflow provenance mismatch");
-    if (parent.status === "completed") {
-      if (parent.conclusion !== "success")
-        throw new Error("Dispatcher did not complete successfully");
-      return;
+  let invariant = "child.configuration";
+  try {
+    const configuration = appConfiguration(env);
+    invariant = "child.actor-context";
+    if (
+      env.GITHUB_ACTOR !== `${configuration.slug}[bot]` ||
+      env.GITHUB_TRIGGERING_ACTOR !== `${configuration.slug}[bot]`
+    )
+      throw new Error(
+        "Release child actor context must be the dedicated App, including reruns",
+      );
+    invariant = "child.branch-event-context";
+    if (
+      env.GITHUB_REF !== "refs/heads/main" ||
+      env.GITHUB_EVENT_NAME !== "workflow_dispatch"
+    )
+      throw new Error(
+        "App release children run only on main via workflow dispatch",
+      );
+    invariant = "child.required-context";
+    const token = z.string().min(1).parse(env.GH_TOKEN),
+      sha = z
+        .string()
+        .regex(/^[a-f0-9]{40}$/)
+        .parse(env.GITHUB_SHA),
+      runId = decimal.parse(env.GITHUB_RUN_ID),
+      parentId = decimal.parse(env.RELEASE_DISPATCH_RUN_ID);
+    invariant = "child.installation-parent-context";
+    if (
+      env.RELEASE_DISPATCH_INSTALLATION_ID !== configuration.installationId ||
+      runId === parentId
+    )
+      throw new Error("Dispatcher installation or parent identity mismatch");
+    const base = `/repos/${RELEASE_REPOSITORY}`;
+    invariant = "child.workflow-context";
+    const expectedPath = z
+      .enum([
+        ".github/workflows/production-release.yml",
+        ".github/workflows/release-gate-smoke.yml",
+      ])
+      .parse(env.RELEASE_CHILD_WORKFLOW);
+    const read = async (code: string, path: string) => {
+      try {
+        return await api(path, token);
+      } catch {
+        throw new ReleaseVerificationError(code);
+      }
+    };
+    const [run, app, environment, policies] = await Promise.all([
+      read("child.run-api", `${base}/actions/runs/${runId}`),
+      read("child.app-api", `/apps/${configuration.slug}`),
+      read("child.gate-api", `${base}/environments/production-release`),
+      read(
+        "child.gate-policy-api",
+        `${base}/environments/production-release/deployment-branch-policies`,
+      ),
+    ]);
+    invariant = "child.run-identity";
+    verifyAppRun(run, configuration, sha);
+    invariant = "child.workflow-path";
+    if (z.object({ path: z.string() }).parse(run).path !== expectedPath)
+      throw new Error("Child workflow path mismatch");
+    invariant = "child.app-registration";
+    const publicApp = z.object({ id: z.number(), slug: z.string() }).parse(app);
+    if (
+      String(publicApp.id) !== configuration.appId ||
+      publicApp.slug !== configuration.slug
+    )
+      throw new Error("Public GitHub App registration mismatch");
+    invariant = "child.human-gate";
+    validateEnvironmentGate(environment, policies);
+    invariant = "child.protected-main";
+    await verifyProtectedMain(token, sha, api);
+    for (let attempt = 0; attempt < 12; attempt++) {
+      invariant = "child.parent-response";
+      const parent = z
+        .object({
+          id: z.number(),
+          event: z.literal("workflow_dispatch"),
+          head_branch: z.literal("main"),
+          head_sha: z.string(),
+          path: z.literal(".github/workflows/release-dispatch.yml"),
+          status: z.string(),
+          conclusion: z.string().nullable(),
+        })
+        .parse(
+          await read("child.parent-api", `${base}/actions/runs/${parentId}`),
+        );
+      invariant = "child.parent-provenance";
+      if (String(parent.id) !== parentId || parent.head_sha !== sha)
+        throw new Error("Dispatcher workflow provenance mismatch");
+      if (parent.status === "completed") {
+        invariant = "child.parent-success";
+        if (parent.conclusion !== "success")
+          throw new Error("Dispatcher did not complete successfully");
+        return;
+      }
+      if (attempt < 11) await wait(5000);
     }
-    if (attempt < 11) await wait(5000);
+    invariant = "child.parent-completion-timeout";
+    throw new Error(
+      "Dispatcher completion could not be verified within the bounded wait",
+    );
+  } catch (error) {
+    if (error instanceof ReleaseVerificationError) throw error;
+    throw new ReleaseVerificationError(invariant);
   }
-  throw new Error(
-    "Dispatcher completion could not be verified within the bounded wait",
-  );
 }
+
 export async function verifyHumanApproval(
   env: Readonly<Record<string, string | undefined>>,
   api: Api = githubApi,

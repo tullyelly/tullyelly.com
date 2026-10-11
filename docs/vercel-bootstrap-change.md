@@ -208,3 +208,35 @@ skipped. Documentation and changed-file formatting checks passed. The corrected
 URL guard also passed against the actual checkout using a non-secret fixture,
 without a key read, network request or push. Evidence is in the ignored local
 `.cache/publisher-fix-verify.log`. This proves local readiness, not live publication.
+
+## First approval smoke investigation
+
+Main merged as `82138b6cee9647230023ece43e39d4661a525ba4`. Dispatcher
+`38169791545` succeeded; child `38169941631` failed during preparation and skipped
+the approval job. Both child actor fields matched `cipher-jimmy[bot]`, ID
+`341080820`. No production operation or approval occurred.
+
+The original catch discarded the failed assertion. Read-only replay of the saved
+run metadata passed with an Actions-write App token and separately with a token
+limited to Actions-read/Contents-read, matching workflow permissions. These are
+App installation tokens, not the original expired Actions job token; they do not
+prove the original process context or API behavior. The exact original assertion
+and whether a transient/configuration issue caused it remain unconfirmed. Do not
+claim the underlying smoke failure is fixed or change settings based on a guess.
+
+The local diagnostic correction identifies the child verification invariant
+(configuration, context, API read, identity, workflow, gate, protected main or
+parent provenance/completion) without printing exception messages, tokens,
+received values or API payloads. Validation decisions and bounded parent waiting
+are unchanged. Fixtures cover API-error redaction, context/schema/branch failures
+and successful verification. A separately approved publication and fresh smoke
+would be needed to collect the missing original-context evidence. No automatic
+retry, gate relaxation or configuration change is authorized by this investigation.
+
+Local diagnostic validation passed: 20 focused release tests, then
+`CI=true SKIP_DB=true npm run verify:agent` with 200 suites and 1,047 passing
+tests, six skipped opt-in database tests, lint, TypeScript, coverage and Next
+build. Documentation, formatting and diff checks passed. The ignored local
+`.cache/smoke-diagnostics-verify.log` records the baseline. Recommendation: GO
+for review/publication of diagnostic improvements only; NO-GO for claiming the
+original guard failure resolved or proceeding to a production release.
