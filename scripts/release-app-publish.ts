@@ -8,6 +8,8 @@ import {
   RELEASE_REPOSITORY,
   RELEASE_REVIEW_BRANCH,
   withScopedInstallationToken,
+  TokenCleanupError,
+  type TokenCleanupResult,
 } from "./release/app";
 import {
   assertReviewPublication,
@@ -16,8 +18,16 @@ import {
   readSecureAppKey,
 } from "./release/publish";
 
+import {
+  publishExactCommit,
+  publicationExitCode,
+  safeFailure,
+  PUBLICATION_TIMEOUT_MS,
+  type PublicationReport,
+} from "./release/publication";
+
 async function main() {
-  config({ path: ".env.release-dispatch.local" });
+  config({ path: ".env.release-dispatch.local", quiet: true });
   const [mode, flag, commit] = process.argv.slice(2);
   if (
     !["check", "publish"].includes(mode) ||
@@ -54,58 +64,115 @@ async function main() {
   const privateKey = readSecureAppKey(
     z.string().min(1).parse(process.env.RELEASE_APP_PRIVATE_KEY_PATH),
   );
-  await withScopedInstallationToken(
-    configuration,
-    privateKey,
-    { contents: "write", workflows: "write" },
-    async (token) => {
-      const branch = z
-        .object({
-          commit: z.object({ sha: z.string().regex(/^[a-f0-9]{40}$/) }),
-        })
-        .parse(
-          await githubApi(`/repos/${RELEASE_REPOSITORY}/branches/main`, token),
-        );
-      git(["merge-base", "--is-ancestor", branch.commit.sha, commit]);
-      const pushUrl = `https://github.com/${RELEASE_REPOSITORY}.git`;
-      const pushEnv: NodeJS.ProcessEnv = {
-        ...installationGitEnvironment(token, process.env),
-        NODE_ENV: process.env.NODE_ENV,
-      };
-      verifyInstallationPushUrl(pushUrl, pushEnv);
-      execFileSync(
-        "git",
-        [
-          "push",
-          `https://github.com/${RELEASE_REPOSITORY}.git`,
-          `${commit}:refs/heads/${RELEASE_REVIEW_BRANCH}`,
-        ],
-        {
-          env: pushEnv,
-          encoding: "utf8",
-          stdio: "pipe",
-          timeout: 60000,
-        },
-      );
-      const published = z
-        .object({ object: z.object({ sha: z.string() }) })
-        .parse(
-          await githubApi(
-            `/repos/${RELEASE_REPOSITORY}/git/ref/heads/${RELEASE_REVIEW_BRANCH}`,
-            token,
-          ),
-        );
-      if (published.object.sha !== commit)
-        throw new Error(
-          "Published review branch commit differs; stop for review.",
-        );
-    },
-  );
-  console.log(
-    `Published review branch ${RELEASE_REVIEW_BRANCH} at ${commit} with repository-scoped App installation authentication.`,
-  );
+  const started = Date.now();
+  let report: PublicationReport | undefined;
+  const lifecycle: {
+    cleanup: TokenCleanupResult["outcome"] | "not-attempted";
+  } = { cleanup: "not-attempted" };
+  const diagnostic = (event: object) =>
+    console.log(JSON.stringify({ event: "app-publication", ...event }));
+  try {
+    await withScopedInstallationToken(
+      configuration,
+      privateKey,
+      { contents: "write", workflows: "write" },
+      async (token) => {
+        diagnostic({
+          stage: "authentication",
+          outcome: "passed",
+          elapsedMs: Date.now() - started,
+        });
+        const pushUrl = `https://github.com/${RELEASE_REPOSITORY}.git`;
+        const pushEnv: NodeJS.ProcessEnv = {
+          ...installationGitEnvironment(token, process.env),
+          NODE_ENV: process.env.NODE_ENV,
+        };
+        report = await publishExactCommit(commit, {
+          diagnostic,
+          preflight: async () => {
+            const branch = z
+              .object({
+                commit: z.object({ sha: z.string().regex(/^[a-f0-9]{40}$/) }),
+              })
+              .parse(
+                await githubApi(
+                  `/repos/${RELEASE_REPOSITORY}/branches/main`,
+                  token,
+                ),
+              );
+            git(["merge-base", "--is-ancestor", branch.commit.sha, commit]);
+            verifyInstallationPushUrl(pushUrl, pushEnv);
+          },
+          push: async () => {
+            execFileSync(
+              "git",
+              [
+                "push",
+                pushUrl,
+                `${commit}:refs/heads/${RELEASE_REVIEW_BRANCH}`,
+              ],
+              {
+                env: pushEnv,
+                encoding: "utf8",
+                stdio: "pipe",
+                timeout: PUBLICATION_TIMEOUT_MS,
+                maxBuffer: 8 * 1024 * 1024,
+              },
+            );
+          },
+          readRemote: async () =>
+            z
+              .object({
+                object: z.object({ sha: z.string().regex(/^[a-f0-9]{40}$/) }),
+              })
+              .parse(
+                await githubApi(
+                  `/repos/${RELEASE_REPOSITORY}/git/ref/heads/${RELEASE_REVIEW_BRANCH}`,
+                  token,
+                ),
+              ).object.sha,
+        });
+      },
+      githubApi,
+      (result) => {
+        lifecycle.cleanup = result.outcome;
+        diagnostic({ stage: "token-revocation", ...result });
+      },
+    );
+  } catch (error) {
+    if (!(error instanceof TokenCleanupError))
+      diagnostic({
+        stage: "authentication",
+        outcome: "failed",
+        elapsedMs: Date.now() - started,
+        failure: safeFailure(error),
+      });
+  }
+  diagnostic({
+    stage: "result",
+    elapsedMs: Date.now() - started,
+    publication: report?.publication ?? "not-published",
+    push: report?.push ?? "not-attempted",
+    verification: report?.verification ?? "not-attempted",
+    cleanup: lifecycle.cleanup,
+    remoteSha: report?.remoteSha,
+    nextAction:
+      report?.publication === "confirmed" && lifecycle.cleanup === "revoked"
+        ? "review-only; no retry needed"
+        : "stop; inspect remote state and cleanup; never blindly retry",
+  });
+  process.exitCode = publicationExitCode(report, lifecycle.cleanup);
 }
-main().catch(() => {
+
+main().catch((error: unknown) => {
+  console.error(
+    JSON.stringify({
+      event: "app-publication",
+      stage: "local-configuration",
+      outcome: "failed",
+      failure: safeFailure(error),
+    }),
+  );
   console.error(
     "App review publication stopped; inspect configuration, branch ancestry and permissions. Keys, tokens and Git/API responses are omitted. No production operation or approval was attempted.",
   );

@@ -1,10 +1,13 @@
 # Reviewed Vercel Git disconnect and release bootstrap proposal
 
-Status: prepared on 2026-10-11; not approved or executed. This document is a
-separate production-settings change proposal, not a migration/deployment approval.
-No commits, pushes, PRs, merges or workflow dispatches were performed during this audit.
+Status: Git disconnect and release-control bootstrap completed on 2026-10-11.
+Parent [38175631646](https://github.com/tullyelly/tullyelly.com/actions/runs/38175631646)
+and child [38175750484](https://github.com/tullyelly/tullyelly.com/actions/runs/38175750484)
+succeeded with human `tullyelly` approval. The following proposal and execution
+sequence are historical evidence, not authorization to repeat settings changes,
+pushes or dispatches. Production rollout remains separately reviewed and gated.
 
-## Exact proposed account change
+## Original reviewed account change
 
 | Property                      | Verified value                                                             |
 | ----------------------------- | -------------------------------------------------------------------------- |
@@ -286,3 +289,55 @@ baseline evidence is `.cache/smoke-identity-fix-verify.log`. No actual workflow
 execution was initiated. Current main's newer diagnostic merge still needs local
 integration before the publisher ancestry guard can pass; integration and
 publication are not authorized by this correction task.
+
+## Operational publisher outcome handling
+
+Historical publication attempts returned a generic failure even though GitHub
+recorded the exact SHA and App actor. The actual triggering error was discarded
+and remains unproven. Ref verification and token revocation passed during a
+later read-only audit. A 60-second push timeout included pre-push validation;
+that budget was a plausible contributor, not a proven historical root cause.
+The confirmed implementation defects were conflated outcomes and a `finally`
+revocation error that could overwrite the original operation failure.
+
+The publisher now emits JSON events for authentication, preflight, push, remote
+verification, token revocation and the final result. Events contain stage,
+elapsed milliseconds, allowlisted process exit/signal/code and typed HTTP
+category/status only. Exception messages, command output, headers, tokens,
+private keys and API bodies are omitted. Local configuration failures are
+reported separately. Check mode remains offline and never reads the private key.
+
+There is exactly one push attempt. Even after a timeout, signal, nonzero exit or
+other local failure, the publisher queries the exact branch ref before deciding:
+
+| Remote verification                      | Publication result                              | Next action                                                          |
+| ---------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------- |
+| Approved SHA matches; token revoked      | Confirmed; exit 0, even if Git reported failure | Review the diagnostic event; do not push again                       |
+| Wrong remote SHA                         | Not published; exit 1                           | Stop and inspect remote history; never force or retry automatically  |
+| Verification API fails or malformed data | Unknown; exit 1                                 | Read remote state separately before any authorized retry             |
+| SHA matches but revocation fails         | Confirmed publication, failed cleanup; exit 1   | Resolve credential cleanup; do not republish or create duplicate PRs |
+| Preflight fails                          | No write attempted; exit 1                      | Resolve the failed guard before requesting publication               |
+
+Cleanup is always attempted after a usable token is minted. An operation error
+remains the original failure if revocation also fails. Cleanup-only failures
+still fail closed; scope, identity, SHA, ancestry and protected release checks
+are unchanged. The draft helper retains its existing duplicate/author/SHA guards;
+this publisher change does not create PRs or authorize a retry of PR mutations.
+
+The push budget is now ten minutes, covering existing lint/type/smoke/coverage
+hooks plus transport without disabling hooks. This is bounded well below the
+one-hour installation-token lifetime. Captured Git output has an eight-MiB cap
+and is never logged; overflow is classified rather than silently retried. The
+repository's SSH remotes, credential helpers and Git configuration are preserved.
+Fixtures cover exact success, timeout, remote success followed by local error,
+wrong SHA, verification API errors and revocation failure. Live publication is
+not exercised during this local preparation.
+
+Local validation for the operational publisher change passed: 46 focused tests,
+then `CI=true SKIP_DB=true npm run verify:agent` with 201 suites and 1,064 tests,
+full thresholded coverage, lint, TypeScript and Next build. Six opt-in database
+tests remained skipped. Formatting, documentation and diff checks passed. Current
+main integrated without conflicts; no existing files changed through that merge.
+Evidence is in the ignored `.cache/publication-outcomes-verify.log`. No remote
+publication was attempted; the original historical triggering error remains
+unproven. A future authorized publication can use the new safe stage diagnostics.

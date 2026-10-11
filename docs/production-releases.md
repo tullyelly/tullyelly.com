@@ -8,20 +8,25 @@ a release; specialists cannot perform production operations.
 
 ## Current readiness
 
-The workflow is prepared, but production is not ready for dispatch. Neither
-production nor development has `dojo.schema_migration`. Historical SQL was
-executed manually; absent ledger records are not evidence that schema is absent.
-Historical reconciliation must be a separate reviewed release. The analytics
-executor refuses missing ledgers, ambiguous history, checksum drift and failed
-entries rather than inserting invented baselines or replaying old SQL.
+The App-authenticated release-control bootstrap is complete. Parent run
+[38175631646](https://github.com/tullyelly/tullyelly.com/actions/runs/38175631646)
+and human-approved child
+[38175750484](https://github.com/tullyelly/tullyelly.com/actions/runs/38175750484)
+succeeded at `b76d534c0dffa2e539670948f6beb331d8d1a9f5`. The approval was recorded
+under `tullyelly`; no production operation occurred.
 
-Vercel's current Git integration deploys `main` automatically. Before merging
-release code, present and obtain approval for disconnecting that integration on
-project `prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU`, team
-`team_pB5TcLa7apLtPAiVrRbcjBG3` (`greek-freaks-projects`). Disconnecting also removes
-automatic preview builds; previews must then be explicitly prepared with isolated
-databases. No live setting has been changed. Merely adding a workflow cannot
-prevent Vercel's current automatic production deployments.
+Vercel Git integration is disconnected. Pushes and merges do not automatically
+deploy production or previews. No replacement preview workflow is configured;
+previews require explicitly approved deployment with verified isolated databases.
+The existing production deployment remains `dpl_Ce7A2PmQodC9nsjuNpyD3YbH9hWd`,
+at `3fce11932f189d940d72d0a9e3c91a8fd9943faf`, as verified during closeout.
+
+Actual production rollout is not ready. Historical SQL was executed manually;
+production ledger reconciliation, current non-production integration, credential
+rotation and restore rehearsal remain release prerequisites. Prior catalog
+observations must be refreshed before asserting current schema state. The
+analytics executor refuses missing ledgers, ambiguous history, checksum drift
+and failed entries rather than inserting invented baselines or replaying SQL.
 
 ## One-time account setup
 
@@ -47,8 +52,9 @@ GitHub/Vercel. These are prerequisites, not authorization to release analytics.
 4. Strengthen `main-fundamentals`: require reviewed pull requests, at least one
    human approval, stale approval dismissal, review of the last push and required
    CI checks. Protect workflow, executor, manifest parser and dependency changes
-   with code ownership/review. The current ruleset has zero required approvals;
-   a `protected: true` branch flag alone is insufficient evidence of review.
+   with code ownership/review. The verified ruleset requires one approval, strict CI, code-owner and last-push
+   review, with no bypass actors. Recheck before each release; a
+   `protected: true` branch flag alone is insufficient evidence of review.
 5. Approve the separately presented Vercel Git-disconnection change before any
    merge that could publish this feature. Keep deployment hooks disabled and
    audit other credentials/automation that can bypass the gate. The release
@@ -85,8 +91,8 @@ Neon target discovered read-only:
 | Production branch                    | br-withered-snow-aea0yck6; production                 |
 | Direct production host               | ep-jolly-flower-ae4bmy06 + DNS suffix below           |
 | Expected database                    | tullyelly_db / tullyelly_admin; confirmed by the user |
-| Current Vercel production deployment | dpl_8QvjywHnuwjjnE4Tvt1DLm6MyATa                      |
-| Current deployed commit              | b4e709b8e3b4ff702701c1f944c35bd4c6a0572b              |
+| Current Vercel production deployment | dpl_Ce7A2PmQodC9nsjuNpyD3YbH9hWd                      |
+| Current deployed commit              | 3fce11932f189d940d72d0a9e3c91a8fd9943faf              |
 
 Vercel's production database host, database and role were confirmed by the user.
 The password accidentally pasted in chat must be rotated securely before release;
@@ -155,4 +161,5 @@ credentials and full connection URLs are excluded.
 
 The [2026-10-11 Vercel Git disconnect/bootstrap proposal](vercel-bootstrap-change.md)
 records current targets, verified App authentication, remaining account blockers
-and the separate approval sequence. It is prepared and has not been executed.
+and the separate approval sequence. Git disconnect and the harmless bootstrap
+have completed; actual production release remains separately authorized.
