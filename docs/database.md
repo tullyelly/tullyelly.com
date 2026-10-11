@@ -15,7 +15,11 @@ a real pool; the E2E pool only implements limited Scrolls/release-type reads and
 returns empty rows for other queries. It is not an authz or domain DB substitute.
 [Escape hatches](escape-hatches.md) explains production guards. Preserve URL
 normalization and safety in db/assert-database-url.ts and migration safety checks.
-Runtime fallback behavior must not hide unauthorized writes or build-time queries.
+The shared pool limits connection acquisition to five seconds so requests do not
+wait indefinitely during a database outage. Analytics collectors additionally use
+short session statement/lock timeouts on dedicated connections and destroy those
+connections on release. Runtime fallback behavior must not hide unauthorized
+writes or build-time queries.
 
 [Migrations](migrations.md) owns the ledger procedure. Confirm the intended
 non-production target before running scripts; even status/verify initialize the

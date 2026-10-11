@@ -29,3 +29,10 @@ per tag or refetch on mount. Server batches reuse the same snapshot. Production
 builds skip the read entirely. Runtime read failures log a warning and yield an
 empty snapshot, so missing metadata follows the canonical archive fallback.
 This snapshot contains no sessions or authorization capabilities.
+
+Public traffic summaries use a five-minute Next data cache keyed by analytics
+project and the exact current public-path allowlist. The public routes remain
+dynamic; no sessions or capabilities enter this cache. Collector commits become
+visible on the next cache refresh, rather than immediate tag invalidation. Build
+reads are skipped. See [analytics rollout](analytics-rollout.md) for coverage and
+public visibility rules.

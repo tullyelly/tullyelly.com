@@ -1,0 +1,22 @@
+# Preserve existing all-files ownership when this .github file takes precedence.
+* @tullyelly
+
+# Production release code and manifests require owner review on protected main.
+/.github/workflows/ @tullyelly
+/.github/CODEOWNERS @tullyelly
+/scripts/production-release.ts @tullyelly
+/scripts/release/ @tullyelly
+/scripts/release-db*.ts @tullyelly
+/scripts/release-db*.json @tullyelly
+/db/migrations/ @tullyelly
+/db/schema-migrations.ts @tullyelly
+/db/assert-database-url.ts @tullyelly
+/package.json @tullyelly
+/package-lock.json @tullyelly
+/releases/ @tullyelly
+
+/scripts/release-dispatch.ts @tullyelly
+/scripts/release-gate-smoke.ts @tullyelly
+/scripts/release-app-publish.ts @tullyelly
+
+/scripts/release-app-draft.ts @tullyelly

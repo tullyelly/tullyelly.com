@@ -1,0 +1,6 @@
+[mcp_servers.Neon]
+type = "http"
+url = "https://mcp.neon.tech/mcp?readonly=true"
+
+[mcp_servers.vercel]
+url = "https://mcp.vercel.com"

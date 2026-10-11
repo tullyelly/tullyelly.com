@@ -7,8 +7,26 @@ jest.mock("@/lib/db", () => ({
 import { sql } from "@/lib/db";
 
 describe("policy helpers", () => {
+  const originalSkipDb = process.env.SKIP_DB;
+
+  afterEach(() => {
+    if (originalSkipDb === undefined) delete process.env.SKIP_DB;
+    else process.env.SKIP_DB = originalSkipDb;
+  });
   beforeEach(() => {
+    // These tests use mocked DB/policy dependencies, never a real connection.
+    delete process.env.SKIP_DB;
     (sql as jest.Mock).mockReset();
+  });
+
+  it("SKIP_DB preserves empty policy fallbacks without invoking SQL", async () => {
+    process.env.SKIP_DB = "true";
+    expect(await getAuthzRevision("user-123")).toBe(0);
+    expect(await getEffectiveFeatures("user-123")).toEqual({
+      features: [],
+      revision: 0,
+    });
+    expect(sql).not.toHaveBeenCalled();
   });
 
   it("returns revision for user", async () => {

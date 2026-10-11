@@ -49,3 +49,17 @@ feature update. See [workflow](WORKFLOW.md).
 roles, and retention ideas; they are not the current schema or capability catalogue.
 Feature keys use lowercase app.area.verb; seeded keys/grants are established by
 migrations and deployed DB state, not a hardcoded documentation role matrix.
+
+## Owner analytics operations
+
+`/mark2/admin/analytics` and every associated server action require the existing
+NextAuth session owner role **and** strict `admin.analytics.manage` enforcement.
+Authentication or owner role alone is insufficient. Migration 077 seeds that
+admin-scoped capability, preserves existing deny/disabled settings, grants the
+existing admin role without assigning memberships, and bumps/notifies affected
+users. Non-owner admins remain denied by the additional identity boundary.
+Cron uses CRON_SECRET instead of an interactive session and checks it before any
+collection work. Actions additionally require an explicit same-origin header;
+all collection entry points honor the default-off server switch. See the
+[analytics rollout](../analytics-rollout.md) for budgets, configuration and the
+non-production setup handoff.

@@ -4,10 +4,27 @@ describe("getPool", () => {
   beforeEach(() => {
     jest.resetModules();
     process.env = { ...originalEnv };
+    // Exercise mocked DB behavior independently of the CI skip flag.
+    delete process.env.SKIP_DB;
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
   });
 
   afterAll(() => {
     process.env = originalEnv;
+  });
+
+  test("SKIP_DB rejects before constructing even a mocked pool", () => {
+    process.env.SKIP_DB = "true";
+    const PoolMock = jest.fn();
+    jest.doMock("pg", () => ({ Pool: PoolMock }));
+    const { getPool } = require("@/db/pool");
+    expect(() => getPool()).toThrow(
+      "Database access disabled when SKIP_DB=true.",
+    );
+    expect(PoolMock).not.toHaveBeenCalled();
   });
 
   test("uses in-memory pool when E2E_MODE enabled", async () => {
@@ -67,6 +84,7 @@ describe("getPool", () => {
       );
       expect(PoolMock).toHaveBeenCalledWith({
         connectionString: "postgres://user:pass@localhost:5432/test_db",
+        connectionTimeoutMillis: 5000,
         ssl: { rejectUnauthorized: false },
       });
       expect(pool).toBe(fakePool);

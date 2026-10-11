@@ -21,6 +21,14 @@ Applied checksums are immutable from the runner's point of view. If an applied
 SQL file changes later, `status` and `verify` report `checksum_mismatch`, and
 `apply` refuses to continue.
 
+## Approved production releases
+
+Production apply operations use the [protected release workflow](production-releases.md)
+after human approval of exact targets, commit, migrations and recovery evidence.
+The legacy commands below remain non-production tools; do not use apply-all or
+manual SQL to bypass the release gate or run concurrently with the release
+executor. Historical ledger reconciliation is a separate reviewed release.
+
 ## Commands
 
 Use npm only:
@@ -65,3 +73,9 @@ choosing whether to apply pending files or backfill ledger rows manually.
 
 The runner does not wrap SQL files in an extra transaction because several
 existing migrations already contain their own `BEGIN` and `COMMIT` blocks.
+
+For the analytics archive on a manually migrated Neon database, use the
+[Neon/DataGrip setup and reconciliation guide](analytics-neon-setup.md). Its
+initial catalog inspection uses explicit read-only transactions and does not
+initialize the ledger. An unrecorded migration is not proof of missing schema;
+review each file before any baseline or replay.

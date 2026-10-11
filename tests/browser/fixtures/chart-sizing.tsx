@@ -1,4 +1,5 @@
 import * as React from "react";
+import { TrafficChart } from "@/components/analytics/TrafficChart";
 import { createRoot } from "react-dom/client";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { TcdbCardTrafficChartClient } from "@/components/chronicles/TcdbCardTrafficChartClient";
@@ -65,6 +66,16 @@ function Charts({ empty, compact }: { empty: boolean; compact: boolean }) {
           }
         />
       </div>
+      <TrafficChart
+        rows={
+          empty
+            ? []
+            : traffic.map((row, i) => ({
+                day: row.date,
+                views: i === 4 ? null : String(i * 10),
+              }))
+        }
+      />
       <PersonaActivityChartClient
         rows={empty ? [] : activity}
         label="Persona activity"

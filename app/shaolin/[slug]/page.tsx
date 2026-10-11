@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageViewCounter } from "@/components/analytics/PageViewCounter";
 import { allPosts } from "contentlayer/generated";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
@@ -89,6 +90,7 @@ async function PostContent({ slug }: { slug: string }) {
                   : undefined
               }
             />
+            <PageViewCounter path={post.url} />
             <ChronicleSignature
               title={post.title}
               date={post.date}

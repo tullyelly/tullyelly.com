@@ -16,7 +16,15 @@ jest.mock("@/app/_auth/policy", () => ({
 import { authOptions } from "@/auth";
 
 describe("NextAuth callbacks", () => {
+  const originalSkipDb = process.env.SKIP_DB;
+
+  afterEach(() => {
+    if (originalSkipDb === undefined) delete process.env.SKIP_DB;
+    else process.env.SKIP_DB = originalSkipDb;
+  });
   beforeEach(() => {
+    // These tests use mocked DB/policy dependencies, never a real connection.
+    delete process.env.SKIP_DB;
     getEffectiveFeaturesMock.mockReset();
     getAuthzRevisionMock.mockReset();
   });

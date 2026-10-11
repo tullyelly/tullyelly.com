@@ -1,0 +1,201 @@
+name: Approved production release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact reviewed 40-character commit on protected main
+        required: true
+        type: string
+      manifest_path:
+        description: Reviewed manifest on main, releases/<name>.json
+        required: true
+        type: string
+      dispatch_run_id:
+        description: Bound release-dispatch parent run ID
+        required: true
+        type: string
+      dispatch_installation_id:
+        description: Verified dedicated App installation ID
+        required: true
+        type: string
+      manifest_sha256:
+        description: Exact SHA-256 of the reviewed manifest file
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: production-release-tullyelly
+  cancel-in-progress: false
+
+env:
+  RELEASE_CHILD_WORKFLOW: .github/workflows/production-release.yml
+  RELEASE_SHA: ${{ inputs.release_sha }}
+  RELEASE_DISPATCH_RUN_ID: ${{ inputs.dispatch_run_id }}
+  RELEASE_DISPATCH_INSTALLATION_ID: ${{ inputs.dispatch_installation_id }}
+  RELEASE_APP_ID: ${{ vars.RELEASE_APP_ID }}
+  RELEASE_APP_INSTALLATION_ID: ${{ vars.RELEASE_APP_INSTALLATION_ID }}
+  RELEASE_APP_SLUG: ${{ vars.RELEASE_APP_SLUG }}
+  RELEASE_APP_BOT_USER_ID: ${{ vars.RELEASE_APP_BOT_USER_ID }}
+  RELEASE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+  RELEASE_MANIFEST_PATH: .cache/approved-release.json
+  VERCEL_CLI_VERSION: "63.1.2"
+  CI: "true"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      build_sha256: ${{ steps.bundle.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - name: Bind manifest and exact code
+        env:
+          MANIFEST_SOURCE: ${{ inputs.manifest_path }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$RELEASE_MANIFEST_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          [[ "$MANIFEST_SOURCE" =~ ^releases/[a-z0-9-]+\.json$ ]]
+          mkdir -p .cache
+          git show "$GITHUB_SHA:$MANIFEST_SOURCE" > "$RELEASE_MANIFEST_PATH"
+          git checkout --detach "$RELEASE_SHA"
+      - name: Install without production credentials
+        run: |
+          npm ci
+          npm install --global "vercel@$VERCEL_CLI_VERSION"
+      - name: Verify human approval gate and reviewed settings
+        run: npx tsx scripts/production-release.ts prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Required repository validation
+        run: npm run verify:agent
+        env:
+          SKIP_DB: "true"
+          ANALYTICS_SYNC_ENABLED: "false"
+      - name: Build prebuilt deployment without production credentials
+        # No vercel pull, --yes, --id, production database URL, or production token.
+        # Reviewed project settings + empty local env avoid automatic linking/pulls.
+        run: vercel build --prod --non-interactive
+        env:
+          SKIP_DB: "true"
+          ANALYTICS_SYNC_ENABLED: "false"
+          NEXTAUTH_SECRET: "release-build-placeholder"
+          NEXTAUTH_URL: "https://tullyelly.com"
+          GOOGLE_CLIENT_ID: "release-build-placeholder"
+          GOOGLE_CLIENT_SECRET: "release-build-placeholder"
+      - name: Bind built output checksum
+        id: bundle
+        run: |
+          tar -cf "$RUNNER_TEMP/approved-prebuilt.tar" .vercel/output
+          build_sha256="$(sha256sum "$RUNNER_TEMP/approved-prebuilt.tar" | cut -d ' ' -f 1)"
+          printf 'sha256=%s\n' "$build_sha256" >> "$GITHUB_OUTPUT"
+          printf 'Prebuilt artifact SHA-256: `%s`.\n' "$build_sha256" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish exact build for approved job
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: approved-prebuilt-${{ github.run_id }}
+          path: ${{ runner.temp }}/approved-prebuilt.tar
+          overwrite: true
+          retention-days: 1
+          if-no-files-found: error
+      - name: Publish non-secret reviewed manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: approved-manifest-${{ github.run_id }}
+          path: ${{ env.RELEASE_MANIFEST_PATH }}
+          overwrite: true
+          retention-days: 1
+          if-no-files-found: error
+      - name: Approval summary
+        run: |
+          printf 'Approve only release `%s` with manifest SHA-256 `%s`.\n' "$RELEASE_SHA" "$RELEASE_MANIFEST_SHA256" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Production deployment remains disabled until the production-release environment gate is approved. Collection remains disabled.\n' >> "$GITHUB_STEP_SUMMARY"
+
+  production:
+    needs: prepare
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production-release
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.release_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - name: Install reviewed code before exposing credentials
+        run: |
+          npm ci
+          npm install --global "vercel@$VERCEL_CLI_VERSION"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: approved-manifest-${{ github.run_id }}
+          path: .cache
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: approved-prebuilt-${{ github.run_id }}
+          path: ${{ runner.temp }}
+      - name: Verify approved prebuilt bytes and restore file permissions
+        env:
+          BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
+        run: |
+          set -euo pipefail
+          [[ "$BUILD_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          printf '%s  %s\n' "$BUILD_SHA256" "$RUNNER_TEMP/approved-prebuilt.tar" | sha256sum --check
+          tar -xf "$RUNNER_TEMP/approved-prebuilt.tar"
+      - name: Recreate reviewed non-secret project link
+        run: npx tsx scripts/production-release.ts prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Post-approval target, protection and deployment drift checks
+        run: npx tsx scripts/production-release.ts check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
+          NEON_API_KEY: ${{ secrets.NEON_RELEASE_API_KEY }}
+          RELEASE_DATABASE_URL: ${{ secrets.RELEASE_DATABASE_URL }}
+          RELEASE_PRODUCTION_APPROVED: "true"
+      - name: Check, migrate and verify exact ledger plan
+        run: |
+          set -euo pipefail
+          npx tsx scripts/release-db.ts check --manifest "$RELEASE_MANIFEST_PATH" --commit "$RELEASE_SHA"
+          npx tsx scripts/release-db.ts apply --manifest "$RELEASE_MANIFEST_PATH" --commit "$RELEASE_SHA"
+          npx tsx scripts/release-db.ts verify --manifest "$RELEASE_MANIFEST_PATH" --commit "$RELEASE_SHA"
+        env:
+          RELEASE_DATABASE_URL: ${{ secrets.RELEASE_DATABASE_URL }}
+          RELEASE_PRODUCTION_APPROVED: "true"
+          NODE_ENV: production
+          VERCEL_ENV: production
+      - name: Stage disabled production, verify, promote and verify again
+        run: npx tsx scripts/production-release.ts deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
+          NEON_API_KEY: ${{ secrets.NEON_RELEASE_API_KEY }}
+          RELEASE_DATABASE_URL: ${{ secrets.RELEASE_DATABASE_URL }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          RELEASE_PRODUCTION_APPROVED: "true"
+      - name: Record successful disabled release
+        run: |
+          printf 'Released and verified `%s`; collection remains disabled. Do not restore/reset the database automatically on application failure.\n' "$RELEASE_SHA" >> "$GITHUB_STEP_SUMMARY"

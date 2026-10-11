@@ -1,0 +1,80 @@
+name: Release approval gate smoke
+run-name: Harmless App approval gate at ${{ inputs.release_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Current protected main SHA; this test cannot migrate or deploy
+        required: true
+        type: string
+      dispatch_run_id:
+        description: Bound release-dispatch parent run ID
+        required: true
+        type: string
+      dispatch_installation_id:
+        description: Verified dedicated App installation ID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  RELEASE_CHILD_WORKFLOW: .github/workflows/release-gate-smoke.yml
+  RELEASE_SHA: ${{ inputs.release_sha }}
+  RELEASE_DISPATCH_RUN_ID: ${{ inputs.dispatch_run_id }}
+  RELEASE_DISPATCH_INSTALLATION_ID: ${{ inputs.dispatch_installation_id }}
+  RELEASE_APP_ID: ${{ vars.RELEASE_APP_ID }}
+  RELEASE_APP_INSTALLATION_ID: ${{ vars.RELEASE_APP_INSTALLATION_ID }}
+  RELEASE_APP_SLUG: ${{ vars.RELEASE_APP_SLUG }}
+  RELEASE_APP_BOT_USER_ID: ${{ vars.RELEASE_APP_BOT_USER_ID }}
+
+concurrency:
+  group: release-gate-smoke-tullyelly
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - run: npm ci
+        env:
+          SKIP_DB: "true"
+      - name: Verify App actor, dispatcher provenance and human gate configuration
+        run: npx tsx scripts/release-gate-smoke.ts prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  approved:
+    needs: prepare
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # No production secret expressions anywhere in this harmless workflow.
+    environment: production-release
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - run: npm ci
+        env:
+          SKIP_DB: "true"
+      - name: Verify distinct human approval; perform no production operation
+        run: npx tsx scripts/release-gate-smoke.ts approved
+        env:
+          GH_TOKEN: ${{ github.token }}

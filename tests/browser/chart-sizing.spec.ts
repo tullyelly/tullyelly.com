@@ -60,6 +60,7 @@ async function mount(page: Page, query = "") {
 }
 
 const charts = [
+  ["archive-traffic-chart", 300],
   ["tcdb-card-traffic-chart", 320],
   ["persona-activity-chart", 300],
   ["homie-card-count-sparkline", 96],
@@ -139,7 +140,7 @@ test("detects the original warning with real Recharts", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("sizes all six charts on load, remount, narrow layout and resize", async ({
+test("sizes all seven charts on load, remount, narrow layout and resize", async ({
   page,
 }) => {
   const { warnings, errors } = await mount(page);
@@ -374,3 +375,23 @@ for (const width of [320, 375, 390, 430, 768, 1280]) {
     expect(errors).toEqual([]);
   });
 }
+
+test("archive chart preserves unknown-day gaps and verified zero values", async ({
+  page,
+}) => {
+  const { warnings, errors } = await mount(page);
+  const chart = page.getByTestId("archive-traffic-chart");
+  await expect(chart).toHaveAttribute(
+    "aria-label",
+    /gaps represent unverified days/,
+  );
+  const curve = chart.locator(".recharts-line .recharts-curve");
+  await expect(curve).toHaveAttribute("d", /M.*M/);
+  await page.setViewportSize({ width: 320, height: 900 });
+  await expect(chart.locator("svg.recharts-surface")).toBeVisible();
+  await chart.screenshot({
+    path: test.info().outputPath("archive-traffic-320.png"),
+  });
+  expect(warnings).toEqual([]);
+  expect(errors).toEqual([]);
+});

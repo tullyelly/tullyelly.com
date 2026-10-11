@@ -12,9 +12,14 @@
 | Database and audit events                                     | [Database](database.md), [migrations](migrations.md)                                |
 | Authorization and navigation                                  | [Contract](authz/AUTHZ-CONTRACT.md), [workflow](authz/WORKFLOW.md), [menu](menu.md) |
 | Cache freshness                                               | [Caching](caching.md), [TCDB refresh](tcdb-refresh-strategy.md)                     |
+| Analytics test setup                                          | [Manual Neon branch and DataGrip reconciliation](analytics-neon-setup.md)           |
+| Analytics archive                                             | [Rollout and collection contract](analytics-rollout.md)                             |
 | Tag graph                                                     | [Tag relationships](tag-relationships-view.md)                                      |
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                 |
 | Acknowledgments                                               | [Flowers naming](naming.md)                                                         |
+
+[Production release policy](production-releases.md) owns the protected approval
+gate, exact release binding and recovery procedure.
 
 ## Historical decisions and proposals
 
@@ -37,3 +42,7 @@ BookmarkBreadcrumb.mdx, palette-demo.html, youtube-music-ts-api-notes.md, and
 share/ are examples, visual references, integration notes, and share copy;
 verify implementations before using them as a contract. The page-local
 [Scrolls README](../app/mark2/shaolin-scrolls/_components/README.md) describes that UI.
+
+- [Dedicated release App setup](release-app-setup.md) covers account setup and the harmless approval gate test.
+
+- [Vercel Git disconnect and release bootstrap proposal](vercel-bootstrap-change.md) is the current unexecuted account-settings plan.
