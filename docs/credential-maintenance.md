@@ -248,6 +248,22 @@ password reset is included.
     database backup/restore responsibilities. Keep the journal as recovery evidence;
     another future rotation requires its own reviewed archival/supersession plan.
 
+## Workflow expression correction
+
+PR #612 exposed a GitHub workflow-validation failure before any maintenance job
+started: `runner.temp` was used in job-level `env`, where GitHub does not provide
+the runner context. The two steps consuming `APPLICATION_DIRECTORY` now each
+bind it at step level to the same runner temporary directory. Temporary artifact
+paths, extraction checks, credential-free setup, runner cleanup, App/SHA guards
+and the `production-release` approval/credential boundary are unchanged.
+
+The [validation baseline](validation.md#github-actions-workflow-validation) now
+runs pinned actionlint before application checks. It validates all workflow
+expressions, including runner context availability, and regression fixtures must
+reject the exact previous failure. Generic YAML parsing and static string checks
+alone did not catch this issue. Passing actionlint establishes local workflow
+syntax validity; remote CI and isolated provider rehearsal are still required.
+
 ## Verification and remaining blockers
 
 Added workflow, entry point, state machine/provider adapters, safe artifact extractor
@@ -271,9 +287,9 @@ Live maintenance is **NO-GO** until these prerequisites and a concrete approved 
 are complete. No analytics schema preparation is a prerequisite for this path.
 
 Local verification on this implementation: `CI=true SKIP_DB=true npm run verify:agent`
-passed lint, types, Prisma generation, full thresholded Jest coverage (204 suites,
-1,132 tests passed; two suites and six tests skipped) and the production build.
-An initial sandbox run could not initialize existing temporary Git fixtures; the
+passed actionlint on all six workflows, lint, types, Prisma generation, full
+thresholded Jest coverage (205 suites, 1,138 tests passed; two suites and six tests skipped) and the production build.
+Initial sandbox runs blocked local validator/Git subprocess fixtures; the
 complete suite passed with authorized local execution permissions. Changed-file
 Prettier checks and `npm run docs:check` passed. `npm run check:emdash` reports
 existing punctuation in `HomieDirectory.tsx` and `FirstOffTheLineSection.tsx`;

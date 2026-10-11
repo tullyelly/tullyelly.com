@@ -5,18 +5,46 @@
 `npm run verify:agent` is the canonical pre-review/pre-commit baseline.
 [scripts/verify-agent.mjs](../scripts/verify-agent.mjs) runs sequentially:
 
-1. prepare:content: build info, incremental image manifest, Contentlayer build.
-2. lint: ESLint using eslint.config.mjs.
-3. typecheck:prepared: TypeScript without regenerating content.
-4. gen:prisma: Prisma client generation.
-5. test:ci:prepared: related Jest smoke, then full Jest coverage in band.
-6. build:next: Next production build.
+1. workflows:check: actionlint validates GitHub Actions workflows and expression contexts.
+2. prepare:content: build info, incremental image manifest, Contentlayer build.
+3. lint: ESLint using eslint.config.mjs.
+4. typecheck:prepared: TypeScript without regenerating content.
+5. gen:prisma: Prisma client generation.
+6. test:ci:prepared: related Jest smoke, then full Jest coverage in band.
+7. build:next: Next production build.
 
 Jest thresholds are 85% lines/statements/functions and 80% branches, defined in
 [jest.config.cjs](../jest.config.cjs). A successful baseline covers lint,
 typecheck, Jest, coverage, and build; do not rerun them individually afterward.
 `npm test` runs Jest, not Vitest or Playwright, and already passes the Jest config.
 For focused diagnosis use `npm test -- --runInBand <test-path>`.
+
+## GitHub Actions workflow validation
+
+`npm run workflows:check` runs pinned **actionlint 1.7.12** against every YAML file
+in `.github/workflows`; pass file paths after `--` to check selected workflows.
+It validates GitHub Actions expression context availability, types and action
+contracts, rather than merely parsing YAML. Unsupported contexts fail the command
+and the canonical baseline before any application build. Existing CI invokes
+`verify:agent`, so no additional workflow or permissions are needed.
+
+The script obtains the official release archive on first use, verifies a committed
+SHA-256 digest, and caches it and the matching executable under ignored
+`.cache/actionlint`. Cached archive and executable integrity are checked on each
+invocation. Nothing is installed globally; npm, WSL, SSH and credential settings
+are preserved. Linux/WSL and macOS x64/arm64 are supported; native Windows users
+use WSL. First use needs public GitHub release access and `tar`, with no login or
+production credential. Download/integrity/tool failures stop validation; they do
+not silently skip it. Delete only this tool's cache to recover from corruption.
+
+GitHub-aware checks are always enabled. Optional host-installed ShellCheck and
+Pyflakes are excluded from this command to keep results consistent across WSL
+and CI; existing ESLint, TypeScript and application tests remain mandatory.
+[actionlint documentation](https://github.com/rhysd/actionlint/blob/v1.7.12/docs/checks.md)
+and [GitHub context availability](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability)
+describe the validator and supported locations. Regression fixtures invoke the
+real pinned validator and recreate the maintenance job-level `runner.temp` failure.
+The validator does not execute a workflow or prove live provider configuration.
 
 ## Separate checks
 
