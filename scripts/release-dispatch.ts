@@ -15,6 +15,7 @@ import {
   type AppConfiguration,
 } from "./release/app";
 import { loadMaintenanceManifest } from "./release/maintenance";
+import { loadCodeManifest } from "./release/code-manifest";
 import { loadReleaseManifest } from "./release/manifest";
 
 export const dispatchInputSchema = z.discriminatedUnion("mode", [
@@ -27,6 +28,14 @@ export const dispatchInputSchema = z.discriminatedUnion("mode", [
   z
     .object({
       mode: z.literal("production"),
+      sha: z.string().regex(/^[a-f0-9]{40}$/),
+      manifestPath: z.string().regex(/^releases\/[a-z0-9-]+\.json$/),
+      manifestSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .strict(),
+  z
+    .object({
+      mode: z.literal("analytics"),
       sha: z.string().regex(/^[a-f0-9]{40}$/),
       manifestPath: z.string().regex(/^releases\/[a-z0-9-]+\.json$/),
       manifestSha256: z.string().regex(/^[a-f0-9]{64}$/),
@@ -71,14 +80,18 @@ export function dispatchPayload(
         ? "release-gate-smoke.yml"
         : input.mode === "maintenance"
           ? "credential-maintenance.yml"
-          : "production-release.yml",
+          : input.mode === "analytics"
+            ? "analytics-release.yml"
+            : "production-release.yml",
     body: {
       ref: "main",
       inputs: {
         release_sha: input.sha,
         dispatch_run_id: id,
         dispatch_installation_id: configuration.installationId,
-        ...(input.mode === "production" || input.mode === "maintenance"
+        ...(input.mode === "production" ||
+        input.mode === "maintenance" ||
+        input.mode === "analytics"
           ? {
               manifest_path: input.manifestPath,
               manifest_sha256: input.manifestSha256,
@@ -188,7 +201,7 @@ async function main() {
     throw new Error("The App dispatcher runs only from reviewed main");
   const mode = process.env.RELEASE_DISPATCH_MODE;
   const input = dispatchInputSchema.parse(
-    mode === "production" || mode === "maintenance"
+    mode === "production" || mode === "maintenance" || mode === "analytics"
       ? {
           mode,
           sha: process.env.RELEASE_SHA,
@@ -256,8 +269,11 @@ async function main() {
     if (changed.some((path) => !/^maintenance\/[a-z0-9-]+\.json$/.test(path)))
       throw new Error("Maintenance executor differs from reviewed source");
   }
-  if (input.mode === "production") {
-    loadReleaseManifest(input.manifestPath, input.manifestSha256, input.sha);
+  if (input.mode === "production" || input.mode === "analytics") {
+    if (input.mode === "production")
+      loadCodeManifest(input.manifestPath, input.manifestSha256, input.sha);
+    else
+      loadReleaseManifest(input.manifestPath, input.manifestSha256, input.sha);
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
@@ -296,7 +312,7 @@ async function main() {
         "POST",
         payload.body,
       );
-      return `${input.mode === "smoke" ? "Harmless release gate smoke" : input.mode === "maintenance" ? "Credential maintenance preparation" : "Production release preparation"} dispatched by ${configuration.slug}[bot] for ${input.sha}. Human approval remains required. Inspect GitHub > Actions > ${input.mode === "smoke" ? "Release approval gate smoke" : input.mode === "maintenance" ? "Protected credential maintenance" : "Approved production release"} > Review deployments > production-release. No gate was approved automatically.`;
+      return `${input.mode === "smoke" ? "Harmless release gate smoke" : input.mode === "maintenance" ? "Credential maintenance preparation" : "Production release preparation"} dispatched by ${configuration.slug}[bot] for ${input.sha}. Human approval remains required. Inspect GitHub > Actions > ${input.mode === "smoke" ? "Release approval gate smoke" : input.mode === "maintenance" ? "Protected credential maintenance" : input.mode === "analytics" ? "Approved analytics release (explicit only)" : "Approved code-only production release"} > Review deployments > production-release. No gate was approved automatically.`;
     },
   );
   console.log(message);

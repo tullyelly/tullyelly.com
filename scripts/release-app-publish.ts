@@ -23,6 +23,7 @@ import {
   publicationExitCode,
   safeFailure,
   PUBLICATION_TIMEOUT_MS,
+  PublicationProcessError,
   type PublicationReport,
 } from "./release/publication";
 
@@ -104,21 +105,25 @@ async function main() {
             verifyInstallationPushUrl(pushUrl, pushEnv);
           },
           push: async () => {
-            execFileSync(
-              "git",
-              [
-                "push",
-                pushUrl,
-                `${commit}:refs/heads/${RELEASE_REVIEW_BRANCH}`,
-              ],
-              {
-                env: pushEnv,
-                encoding: "utf8",
-                stdio: "pipe",
-                timeout: PUBLICATION_TIMEOUT_MS,
-                maxBuffer: 8 * 1024 * 1024,
-              },
-            );
+            try {
+              execFileSync(
+                "git",
+                [
+                  "push",
+                  pushUrl,
+                  `${commit}:refs/heads/${RELEASE_REVIEW_BRANCH}`,
+                ],
+                {
+                  env: pushEnv,
+                  encoding: "utf8",
+                  stdio: "pipe",
+                  timeout: PUBLICATION_TIMEOUT_MS,
+                  maxBuffer: 8 * 1024 * 1024,
+                },
+              );
+            } catch (error) {
+              throw new PublicationProcessError(error);
+            }
           },
           readRemote: async () =>
             z

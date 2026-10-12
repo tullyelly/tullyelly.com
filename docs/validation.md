@@ -3,6 +3,7 @@
 ## Required baseline
 
 `npm run verify:agent` is the canonical pre-review/pre-commit baseline.
+`npm run verify` is an alias for the same complete baseline.
 [scripts/verify-agent.mjs](../scripts/verify-agent.mjs) runs sequentially:
 
 1. workflows:check: actionlint validates GitHub Actions workflows and expression contexts.

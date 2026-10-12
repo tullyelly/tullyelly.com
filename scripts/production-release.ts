@@ -1,20 +1,18 @@
-/** Only the protected workflow may authorize production mutations. Never run locally to bypass its gate. */
+/** Only the App-dispatched protected workflow may execute production mutations. */
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { z } from "zod";
 import { verifyChildDispatch, verifyHumanApproval } from "./release/app";
 import {
   assertVercelProject,
-  loadReleaseManifest,
   validateEnvironmentGate,
   validateReviewedMainRules,
-  verifyRuntimeDatabase,
-  verifyPreviewDatabases,
-  verifyReleaseDeploymentIdentity,
 } from "./release/manifest";
+import { loadCodeManifest } from "./release/code-manifest";
+import { executeCodeRelease, type CodeProviders } from "./release/code-release";
 
 const command = process.argv[2];
-const manifest = loadReleaseManifest(
+const manifest = loadCodeManifest(
   process.env.RELEASE_MANIFEST_PATH ?? "",
   process.env.RELEASE_MANIFEST_SHA256 ?? "",
   process.env.RELEASE_SHA ?? "",
@@ -85,131 +83,87 @@ async function githubGate() {
       "Deployment code or dependencies differ from reviewed workflow commit; only release manifest metadata may differ",
     );
 }
-const vcBase = `https://api.vercel.com`;
-const vcQuery = `teamId=${encodeURIComponent(manifest.vercel.teamId)}`;
+const query = `teamId=${encodeURIComponent(manifest.vercel.teamId)}`;
 async function vercel(path: string) {
   return request(
-    `${vcBase}${path}${path.includes("?") ? "&" : "?"}${vcQuery}`,
+    `https://api.vercel.com${path}${path.includes("?") ? "&" : "?"}${query}`,
     required("VERCEL_TOKEN"),
   );
 }
+const deploymentSchema = z.object({
+  id: z.string(),
+  url: z.string(),
+  projectId: z.string(),
+  target: z.string(),
+  readyState: z.string(),
+  meta: z.record(z.string(), z.unknown()).optional(),
+});
 async function deployment(id: string) {
-  return z
-    .object({
-      id: z.string(),
-      url: z.string(),
-      projectId: z.string(),
-      target: z.literal("production"),
-      readyState: z.string(),
-      meta: z.record(z.string(), z.unknown()).optional(),
-    })
-    .passthrough()
-    .parse(await vercel(`/v13/deployments/${encodeURIComponent(id)}`));
+  return deploymentSchema.parse(
+    await vercel(`/v13/deployments/${encodeURIComponent(id)}`),
+  );
 }
-async function releaseDeployment() {
-  const result = z
-    .object({
-      deployments: z.array(
-        z.object({
-          uid: z.string(),
-          meta: z.record(z.string(), z.unknown()).optional(),
-        }),
-      ),
-      pagination: z.object({ next: z.number().nullable() }),
-    })
-    .parse(
+async function deploymentHistory() {
+  const schema = z.object({
+    deployments: z.array(
+      z.object({
+        uid: z.string(),
+        readyState: z.string(),
+        meta: z.record(z.string(), z.unknown()).optional(),
+      }),
+    ),
+    pagination: z.object({ next: z.number().nullable() }),
+  });
+  const all: z.infer<typeof schema>["deployments"] = [];
+  let cursor: number | null = null;
+  const seen = new Set<number>();
+  for (let page = 0; page < 10; page++) {
+    const r = schema.parse(
       await vercel(
-        `/v6/deployments?projectId=${manifest.vercel.projectId}&target=production&limit=100`,
+        `/v6/deployments?projectId=${manifest.vercel.projectId}&target=production&limit=100${cursor === null ? "" : `&until=${cursor}`}`,
       ),
     );
-  const matches = result.deployments.filter(
+    all.push(...r.deployments);
+    if (r.pagination.next === null) return all;
+    if (seen.has(r.pagination.next))
+      throw new Error("code.deployment-pagination-loop");
+    seen.add(r.pagination.next);
+    cursor = r.pagination.next;
+  }
+  throw new Error("code.incomplete-deployment-history");
+}
+async function lookup() {
+  const matches = (await deploymentHistory()).filter(
     (d) =>
       d.meta?.releaseSha === manifest.commit &&
-      d.meta?.releaseManifest === process.env.RELEASE_MANIFEST_SHA256,
+      d.meta?.releaseManifest === required("RELEASE_MANIFEST_SHA256"),
   );
-  if (matches.length > 1)
-    throw new Error("Multiple deployments match this release; stop for review");
-  if (matches.length === 1) {
-    if (
-      matches[0].meta?.releaseBuildSha256 !== required("RELEASE_BUILD_SHA256")
-    )
-      throw new Error(
-        "Existing staged deployment has different approved build bytes; stop for a revised release",
-      );
-    return deployment(matches[0].uid);
-  }
-  if (result.pagination.next !== null)
-    throw new Error(
-      "Deployment history exceeds the reviewed lookup window; resolve rerun identity before creating a deployment",
-    );
+  if (matches.length > 1) throw new Error("code.ambiguous-deployment-identity");
+  if (matches.length) return deployment(matches[0].uid);
   return undefined;
 }
-async function liveTargets() {
+async function guard(allowed: string[]) {
   await githubGate();
   await verifyHumanApproval(process.env);
   const project = await vercel(`/v9/projects/${manifest.vercel.projectId}`);
   const current = assertVercelProject(project, manifest);
-  const matching = await releaseDeployment();
+  const hooks = z.object({ link: z.null() }).passthrough().parse(project);
+  const record = hooks as Record<string, unknown>;
+  if (Array.isArray(record.deployHooks) && record.deployHooks.length)
+    throw new Error("code.deploy-hooks-present");
+  if (!current || !allowed.includes(current))
+    throw new Error("code.production-drift");
+  const alias = z
+    .object({ deploymentId: z.string() })
+    .parse(await vercel(`/v4/aliases/${manifest.vercel.productionHost}`));
+  if (alias.deploymentId !== current) throw new Error("code.domain-drift");
   if (
-    current !== manifest.vercel.productionDeploymentId &&
-    current !== matching?.id
-  )
-    throw new Error("Production deployment drift; prepare a revised release");
-  const domains = z
-    .object({
-      domains: z.array(z.object({ name: z.string(), verified: z.boolean() })),
-      pagination: z.object({ next: z.number().nullable() }).optional(),
-    })
-    .parse(await vercel(`/v9/projects/${manifest.vercel.projectId}/domains`));
-  if (
-    !domains.domains.some(
-      (d) => d.name === manifest.vercel.productionHost && d.verified,
+    (await deploymentHistory()).some((d) =>
+      ["QUEUED", "BUILDING", "INITIALIZING"].includes(d.readyState),
     )
   )
-    throw new Error("Expected verified production domain is not attached");
-  // Disconnecting the Git integration also disables its repository-bound Deploy Hooks.
-  // The required null link is the verified live gate; no undocumented hooks endpoint is used.
-  const endpoints = z
-    .object({
-      endpoints: z.array(
-        z.object({ branch_id: z.string(), host: z.string(), type: z.string() }),
-      ),
-    })
-    .parse(
-      await request(
-        `https://console.neon.tech/api/v2/projects/${encodeURIComponent(manifest.neon.projectId)}/endpoints`,
-        required("NEON_API_KEY"),
-      ),
-    );
-  if (
-    !endpoints.endpoints.some(
-      (e) =>
-        e.branch_id === manifest.neon.branchId &&
-        e.host === manifest.neon.host &&
-        e.type === "read_write",
-    )
-  )
-    throw new Error("Neon project/branch/direct endpoint mismatch");
-  const branch = z
-    .object({ branch: z.object({ id: z.string(), project_id: z.string() }) })
-    .parse(
-      await request(
-        `https://console.neon.tech/api/v2/projects/${encodeURIComponent(manifest.neon.projectId)}/branches/${encodeURIComponent(manifest.neon.branchId)}`,
-        required("NEON_API_KEY"),
-      ),
-    );
-  if (
-    branch.branch.id !== manifest.neon.branchId ||
-    branch.branch.project_id !== manifest.neon.projectId
-  )
-    throw new Error("Neon branch identity mismatch");
-  const url = new URL(required("RELEASE_DATABASE_URL"));
-  if (
-    url.hostname !== manifest.neon.host ||
-    decodeURIComponent(url.pathname.slice(1)) !== manifest.neon.database ||
-    decodeURIComponent(url.username) !== manifest.neon.role
-  )
-    throw new Error("Release database credentials target mismatch");
+    throw new Error("code.concurrent-deployment");
+  // Metadata only. Never request decrypted values, DB URLs, cron secrets or Neon APIs.
   const env = z
     .object({
       envs: z.array(
@@ -217,138 +171,111 @@ async function liveTargets() {
           id: z.string(),
           key: z.string(),
           target: z.array(z.string()).optional(),
-          gitBranch: z.string().nullable().optional(),
         }),
       ),
       pagination: z.object({ next: z.number().nullable() }).optional(),
     })
     .parse(await vercel(`/v10/projects/${manifest.vercel.projectId}/env`));
   if (env.pagination?.next)
-    throw new Error(
-      "Environment coverage is paginated; cannot prove isolation",
-    );
-  // Metadata first, then retrieve only necessary release variables. Never decrypt/list unrelated secrets.
-  const selected = env.envs.filter(
-    (e) =>
-      (e.target?.includes("production") &&
-        ["DATABASE_URL", "ANALYTICS_SYNC_ENABLED", "CRON_SECRET"].includes(
-          e.key,
-        )) ||
-      (e.target?.includes("preview") && e.key === "DATABASE_URL"),
-  );
-  const values = await Promise.all(
-    selected.map(async (e) => ({
-      ...e,
-      value: z
-        .object({ value: z.string() })
-        .parse(
-          await vercel(
-            `/v1/projects/${manifest.vercel.projectId}/env/${encodeURIComponent(e.id)}`,
-          ),
-        ).value,
-    })),
-  );
-  const production = values.filter((e) => e.target?.includes("production"));
-  const db = production.filter((e) => e.key === "DATABASE_URL");
-  if (db.length !== 1)
-    throw new Error("Exactly one production DATABASE_URL is required");
-  verifyRuntimeDatabase(db[0].value, manifest);
-  const switchValues = production.filter(
-    (e) => e.key === "ANALYTICS_SYNC_ENABLED",
-  );
-  if (switchValues.length > 1 || switchValues.some((e) => e.value !== "false"))
-    throw new Error(
-      "Production collection must be explicitly disabled during this release",
-    );
-  const preview = values.filter(
-    (e) => e.target?.includes("preview") && e.key === "DATABASE_URL",
-  );
-  verifyPreviewDatabases(preview, manifest);
-  return {
-    current,
-    matching,
-    cronSecret: production.find((e) => e.key === "CRON_SECRET")?.value,
-  };
+    throw new Error("code.incomplete-environment-metadata");
+  if (
+    env.envs.filter(
+      (e) => e.key === "DATABASE_URL" && e.target?.includes("production"),
+    ).length !== 1
+  )
+    throw new Error("code.runtime-database-configuration");
+  return current;
 }
 function cli(args: string[]) {
-  const result = spawnSync(
+  // Do not pass GitHub, App or build-only variables to the deployment process.
+  const env: NodeJS.ProcessEnv = {
+    NODE_ENV: "production",
+    PATH: process.env.PATH,
+    HOME: process.env.HOME,
+    CI: "true",
+    NO_UPDATE_NOTIFIER: "1",
+    VERCEL_TOKEN: required("VERCEL_TOKEN"),
+    VERCEL_TELEMETRY_DISABLED: "1",
+  };
+  const r = spawnSync(
     "vercel",
     [...args, "--non-interactive", "--scope", manifest.vercel.teamId],
-    { encoding: "utf8", env: process.env },
+    { encoding: "utf8", env, timeout: 900000, maxBuffer: 1024 * 1024 },
   );
-  if (result.status !== 0)
-    throw new Error(
-      "Vercel execution failed; no token or command response logged",
-    );
-  return result.stdout.trim();
+  if (r.status !== 0 || r.error)
+    throw new Error("code.provider-operation-unresolved");
+  return r.stdout.trim();
 }
-async function smoke(url: string, cronSecret: string | undefined) {
-  if (!cronSecret) throw new Error("Production CRON_SECRET is missing");
-  const base = new URL(url);
+async function health(
+  d: z.infer<typeof deploymentSchema>,
+  publicDomain: boolean,
+) {
+  const host = publicDomain ? manifest.vercel.productionHost : d.url;
   if (
-    base.protocol !== "https:" ||
     !(
-      base.hostname.endsWith(".vercel.app") ||
-      base.hostname === manifest.vercel.productionHost
+      host === manifest.vercel.productionHost ||
+      /^[a-z0-9-]+\.vercel\.app$/.test(host)
     )
   )
-    throw new Error("Unexpected deployment URL");
-  const protection = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-  const headers: Record<string, string> = protection
-    ? { "x-vercel-protection-bypass": protection }
-    : {};
-  for (const path of ["/stats", "/shaolin"]) {
-    const response = await fetch(new URL(path, base), {
+    throw new Error("code.health-host");
+  const headers: Record<string, string> = {};
+  if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET)
+    headers["x-vercel-protection-bypass"] =
+      process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  for (const path of manifest.operation === "deploy"
+    ? ["/", "/shaolin", "/stats"]
+    : ["/", "/shaolin"]) {
+    const r = await fetch(`https://${host}${path}`, {
       headers,
-      signal: AbortSignal.timeout(30000),
       redirect: "error",
+      signal: AbortSignal.timeout(30000),
     });
-    if (response.status !== 200)
-      throw new Error(`Read-only smoke failed: ${path} (${response.status})`);
-    const body = await response.text();
-    if (!body.includes("<!DOCTYPE html>") && !body.includes("<!doctype html>"))
-      throw new Error("Smoke response is not an HTML page");
+    if (
+      r.status !== 200 ||
+      !(await r.text()).toLowerCase().includes("<!doctype html>")
+    )
+      throw new Error(`code.health-page:${path}:${r.status}`);
   }
-  const unauthorized = await fetch(new URL("/api/cron/analytics", base), {
+  if (manifest.operation === "rollback") return;
+  // No authenticated cron call or authentication mutation.
+  const cron = await fetch(`https://${host}/api/cron/analytics`, {
     headers,
-    signal: AbortSignal.timeout(15000),
     redirect: "error",
-  });
-  if (unauthorized.status !== 401)
-    throw new Error("Cron accepted an unauthenticated request");
-  const admin = await fetch(new URL("/mark2/admin/analytics", base), {
-    headers,
     signal: AbortSignal.timeout(15000),
+  });
+  if (cron.status !== 401) throw new Error("code.health-cron-authorization");
+  const admin = await fetch(`https://${host}/mark2/admin/analytics`, {
+    headers,
     redirect: "manual",
+    signal: AbortSignal.timeout(15000),
   });
   if (![302, 303, 307, 308, 401, 403, 404].includes(admin.status))
-    throw new Error("Owner administration is visible without authentication");
+    throw new Error("code.health-owner-authorization");
   if ([302, 303, 307, 308].includes(admin.status)) {
-    const login = new URL(admin.headers.get("location") ?? "", base);
+    const u = new URL(admin.headers.get("location") ?? "", `https://${host}`);
     if (
-      login.origin !== base.origin ||
-      !["/login", "/api/auth/signin"].includes(login.pathname)
+      u.origin !== `https://${host}` ||
+      !["/login", "/api/auth/signin"].includes(u.pathname)
     )
-      throw new Error("Owner authorization redirect did not lead to login");
+      throw new Error("code.health-login-redirect");
   }
-  const response = await fetch(new URL("/api/cron/analytics", base), {
-    headers: { ...headers, Authorization: `Bearer ${cronSecret}` },
-    signal: AbortSignal.timeout(15000),
-    redirect: "error",
-  });
-  const result = z
-    .object({ status: z.literal("disabled") })
-    .parse(await response.json());
-  if (
-    response.status !== 200 ||
-    result.status !== "disabled" ||
-    !response.headers.get("cache-control")?.includes("no-store")
-  )
-    throw new Error("Disabled cron smoke failed");
 }
 async function main() {
   if (command === "prepare") {
     await githubGate();
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      manifest.schemaCompatibility.previousApplicationSha,
+      required("GITHUB_SHA"),
+    ]);
+    if (manifest.rollback)
+      execFileSync("git", [
+        "merge-base",
+        "--is-ancestor",
+        manifest.rollback.applicationSha,
+        required("GITHUB_SHA"),
+      ]);
     mkdirSync(".vercel", { recursive: true });
     writeFileSync(
       ".vercel/project.json",
@@ -360,7 +287,48 @@ async function main() {
     );
     writeFileSync(".vercel/.env.production.local", "");
     console.log(
-      `Release ${manifest.commit}; manifest ${process.env.RELEASE_MANIFEST_SHA256}; migrations ${manifest.migrations.map((m) => m.filename).join(", ")}`,
+      `Code-only ${manifest.operation}; SHA ${manifest.commit}; schema evidence ${manifest.schemaCompatibility.evidenceUrl}`,
+    );
+    return;
+  }
+  if (command === "build") {
+    if (manifest.operation !== "deploy")
+      throw new Error("code.rollback-cannot-build");
+    if (
+      [".env", ".env.local", ".env.production", ".env.production.local"].some(
+        existsSync,
+      )
+    )
+      throw new Error("code.build-local-env-present");
+    const r = spawnSync(
+      "vercel",
+      ["build", "--prod", "--standalone", "--non-interactive"],
+      {
+        stdio: "inherit",
+        timeout: 1800000,
+        env: {
+          NODE_ENV: "production",
+          PATH: process.env.PATH,
+          HOME: required("RELEASE_BUILD_HOME"),
+          CI: "true",
+          NO_UPDATE_NOTIFIER: "1",
+          NEXT_TELEMETRY_DISABLED: "1",
+          VERCEL_TELEMETRY_DISABLED: "1",
+          ...manifest.buildEnvironment,
+          SKIP_DB: "true",
+          ANALYTICS_SYNC_ENABLED: "false",
+          NEXTAUTH_SECRET: "CODE_RELEASE_BUILD_ONLY_SECRET",
+          NEXTAUTH_URL: "https://tullyelly.com",
+          GOOGLE_CLIENT_ID: "CODE_RELEASE_BUILD_ONLY_CLIENT",
+          GOOGLE_CLIENT_SECRET: "CODE_RELEASE_BUILD_ONLY_GOOGLE",
+        },
+      },
+    );
+    if (r.status !== 0 || r.error) throw new Error("code.build-failed");
+    execFileSync(
+      "python3",
+      ["scripts/release/code-artifact.py", "verify", ".vercel/output"],
+      { stdio: "inherit" },
     );
     return;
   }
@@ -368,68 +336,82 @@ async function main() {
     process.env.RELEASE_PRODUCTION_APPROVED !== "true" ||
     process.env.GITHUB_ACTIONS !== "true"
   )
-    throw new Error(
-      "Production operations require the approved GitHub environment job",
-    );
-  const state = await liveTargets();
+    throw new Error("code.human-gate-required");
+  await guard([manifest.vercel.productionDeploymentId]);
+  const previous = await deployment(manifest.vercel.productionDeploymentId);
+  if (
+    previous.projectId !== manifest.vercel.projectId ||
+    previous.target !== "production" ||
+    previous.readyState !== "READY" ||
+    (previous.meta?.githubCommitSha ?? previous.meta?.releaseSha) !==
+      manifest.schemaCompatibility.previousApplicationSha
+  )
+    throw new Error("code.previous-application-identity");
   if (command === "check") {
-    console.log("Production targets, protection and drift checks passed");
+    await guard([previous.id]);
     return;
   }
-  if (command !== "deploy") throw new Error("Unsupported release command");
-  let target = state.matching;
-  if (!target) {
-    const output = cli([
-      "deploy",
-      "--prebuilt",
-      "--prod",
-      "--skip-domain",
-      "--yes",
-      "--project",
-      manifest.vercel.projectId,
-      "--meta",
-      `releaseSha=${manifest.commit}`,
-      "--meta",
-      `releaseManifest=${process.env.RELEASE_MANIFEST_SHA256}`,
-      "--meta",
-      "collectionDisabled=true",
-      "--env",
-      "ANALYTICS_SYNC_ENABLED=false",
-    ]);
-    // CLI stdout is a URL; no guessed parsing or automatic linking on errors.
-    const url = new URL(output);
-    if (
-      url.protocol !== "https:" ||
-      !url.hostname.endsWith(".vercel.app") ||
-      url.origin !== output
-    )
-      throw new Error(
-        "Unrecognized Vercel deployment result; stop and inspect deployment identity",
-      );
-    target = await deployment(url.hostname);
-  }
-  verifyReleaseDeploymentIdentity(
-    target,
+  if (command !== "deploy") throw new Error("code.unsupported-operation");
+  const providers: CodeProviders = {
+    guard,
+    deployment,
+    lookup,
+    health,
+    async stage() {
+      const output = cli([
+        "deploy",
+        "--prebuilt",
+        "--prod",
+        "--skip-domain",
+        "--yes",
+        "--project",
+        manifest.vercel.projectId,
+        "--meta",
+        `releaseSha=${manifest.commit}`,
+        "--meta",
+        `githubCommitSha=${manifest.commit}`,
+        "--meta",
+        `releaseManifest=${required("RELEASE_MANIFEST_SHA256")}`,
+        "--meta",
+        `releaseBuildSha256=${required("RELEASE_BUILD_SHA256")}`,
+        "--meta",
+        "collectionDisabled=true",
+        "--env",
+        "ANALYTICS_SYNC_ENABLED=false",
+      ]);
+      const u = new URL(output);
+      if (
+        u.protocol !== "https:" ||
+        !/^[a-z0-9-]+\.vercel\.app$/.test(u.hostname) ||
+        u.origin !== output
+      )
+        throw new Error("code.stage-output-unresolved");
+      return deployment(u.hostname);
+    },
+    async promote(id) {
+      cli(["promote", id, "--yes"]);
+    },
+    async rollback(id) {
+      cli(["rollback", id, "--yes"]);
+    },
+  };
+  const id = await executeCodeRelease(
     manifest,
     required("RELEASE_MANIFEST_SHA256"),
-    required("RELEASE_BUILD_SHA256"),
+    manifest.operation === "deploy" ? required("RELEASE_BUILD_SHA256") : "",
+    providers,
   );
-  await smoke(`https://${target.url}`, state.cronSecret);
-  const rechecked = await liveTargets();
-  if (rechecked.current !== target.id) {
-    cli(["promote", target.id, "--yes"]);
-  }
-  const promoted = await liveTargets();
-  if (promoted.current !== target.id)
-    throw new Error("Promotion did not assign the reviewed deployment");
-  await smoke(`https://${manifest.vercel.productionHost}`, promoted.cronSecret);
   console.log(
-    `Verified production deployment ${target.id}; collection remains disabled`,
+    `Verified code-only ${manifest.operation}: ${id}; analytics remains disabled`,
   );
 }
-main().catch(() => {
+main().catch((error) => {
+  const invariant =
+    error instanceof Error && /^code\.[a-z0-9-]+$/.test(error.message)
+      ? error.message
+      : "code.validation-or-provider-failed";
   console.error(
-    "Release stopped. Review target/approval/drift/schema or deployment evidence; no automatic rollback or database restore was attempted.",
+    `Release stopped at ${invariant}; credentials and provider payloads omitted. Inspect remote state before another operation. No automatic recovery.`,
   );
   process.exitCode = 1;
 });

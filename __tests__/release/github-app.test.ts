@@ -856,3 +856,59 @@ describe("redacted GitHub transport diagnostics", () => {
     ).resolves.toEqual({ id: 123 });
   });
 });
+
+describe("allowlisted API network causes", () => {
+  const originalFetch = global.fetch;
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+  test("retains nested allowlisted codes but not secret messages or causes", async () => {
+    const secret = "unexpected-network-fixture";
+    global.fetch = jest.fn().mockRejectedValue(
+      Object.assign(new Error(secret), {
+        cause: {
+          code: "UND_ERR_SOCKET",
+          message: `Authorization: Bearer ${secret}`,
+          cause: { code: "ECONNRESET", address: secret },
+        },
+      }),
+    );
+    let result: unknown;
+    try {
+      await githubApi("/fixture", "secret-fixture-token");
+    } catch (e) {
+      result = e;
+    }
+    expect(result).toMatchObject({
+      classification: "transport",
+      networkCauseCodes: ["ECONNRESET", "UND_ERR_SOCKET"],
+    });
+    expect(JSON.stringify(result)).not.toMatch(
+      /unexpected-network|Authorization|secret-fixture-token/,
+    );
+    expect(result).not.toHaveProperty("cause");
+  });
+  test("unrecognized and cyclic causes remain bounded and redacted", async () => {
+    const cause: { code: string; cause?: unknown } = {
+      code: "ECONNRESET secret-fixture-token",
+    };
+    cause.cause = cause;
+    global.fetch = jest.fn().mockRejectedValue({ cause });
+    await expect(
+      githubApi("/fixture", "secret-fixture-token"),
+    ).rejects.toMatchObject({
+      classification: "transport",
+      networkCauseCodes: [],
+    });
+  });
+  test("HTTP errors remain HTTP errors without invented network causes", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ status: 403 });
+    await expect(
+      githubApi("/fixture", "secret-fixture-token"),
+    ).rejects.toMatchObject({
+      classification: "forbidden",
+      status: 403,
+      networkCauseCodes: [],
+    });
+  });
+});

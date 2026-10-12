@@ -16,13 +16,33 @@ export type SafeFailure = {
   exitCode?: number;
   signal?: string;
   processCode?: string;
+  networkCauseCodes?: string[];
+  lastPhase?:
+    | "git-push"
+    | "hook-lint"
+    | "hook-typecheck"
+    | "hook-smoke"
+    | "hook-coverage"
+    | "hook-complete";
+  hookExitCode?: number;
+  evidence?: (
+    | "local-hook-failed"
+    | "validation-failed"
+    | "authentication-failed"
+    | "remote-rejected"
+    | "network-transport-failed"
+  )[];
 };
 export function safeFailure(error: unknown): SafeFailure {
+  if (error instanceof PublicationProcessError) return error.failure;
   if (error instanceof GitHubApiError)
     return {
       category: "api",
       apiCategory: error.classification,
       httpStatus: error.status,
+      ...(error.networkCauseCodes.length
+        ? { networkCauseCodes: error.networkCauseCodes }
+        : {}),
     };
   if (typeof error !== "object" || error === null)
     return { category: "validation" };
@@ -61,6 +81,74 @@ export function safeFailure(error: unknown): SafeFailure {
     ...(signal ? { signal } : {}),
     ...(exitCode !== undefined ? { exitCode } : {}),
   };
+}
+/** No output is forwarded. Exact markers produce fixed, evidence-only classifications. */
+export class PublicationProcessError extends Error {
+  readonly failure: SafeFailure;
+  constructor(error: unknown) {
+    super("Git publication subprocess failed; output omitted");
+    this.name = "PublicationProcessError";
+    const failure = safeFailure(error);
+    let lastPhase: NonNullable<SafeFailure["lastPhase"]> = "git-push";
+    const evidence = new Set<NonNullable<SafeFailure["evidence"]>[number]>();
+    let hookExitCode: number | undefined;
+    if (error && typeof error === "object") {
+      const e = error as Record<string, unknown>;
+      const text = (v: unknown) =>
+        (typeof v === "string"
+          ? v
+          : Buffer.isBuffer(v)
+            ? v.toString("utf8")
+            : ""
+        ).replace(/\x1b\[[0-9;]*m/g, "");
+      // execFileSync already caps each captured stream at the unchanged 8 MiB limit.
+      const stdout = text(e.stdout),
+        stderr = text(e.stderr);
+      const phases: Record<string, NonNullable<SafeFailure["lastPhase"]>> = {
+        "🧹 Linting…": "hook-lint",
+        "🔎 Type checking…": "hook-typecheck",
+        "🧪 Smoke tests (related only)…": "hook-smoke",
+        "🛡️ Full coverage suite…": "hook-coverage",
+        "✅ Test suites passed.": "hook-complete",
+      };
+      for (const line of stdout.split(/\r?\n/))
+        if (phases[line.trim()]) lastPhase = phases[line.trim()];
+      const combined = stdout + "\n" + stderr;
+      const hook = /^husky - pre-push script failed \(code (\d{1,3})\)$/m.exec(
+        combined,
+      );
+      if (hook && Number(hook[1]) <= 255) {
+        hookExitCode = Number(hook[1]);
+        evidence.add("local-hook-failed");
+      }
+      if (
+        /^(?:FAIL\s|Test Suites:.*\bfailed\b)|\berror TS\d{4}:|^Jest:.*coverage threshold/m.test(
+          combined,
+        )
+      )
+        evidence.add("validation-failed");
+      if (
+        /^fatal: Authentication failed|^remote: Invalid username or (?:password|token)|^fatal: could not read (?:Username|Password)/m.test(
+          combined,
+        )
+      )
+        evidence.add("authentication-failed");
+      if (/\[remote rejected\]|^remote: error: GH(?:006|013):/m.test(combined))
+        evidence.add("remote-rejected");
+      if (
+        /^fatal: unable to access .*?(?:Could not resolve host|Failed to connect|Connection reset|SSL certificate problem|Operation timed out)|^error: RPC failed; curl \d+/m.test(
+          combined,
+        )
+      )
+        evidence.add("network-transport-failed");
+    }
+    this.failure = {
+      ...failure,
+      lastPhase,
+      ...(hookExitCode === undefined ? {} : { hookExitCode }),
+      ...(evidence.size ? { evidence: [...evidence] } : {}),
+    };
+  }
 }
 export type PublicationDiagnostic = {
   stage: "preflight" | "push" | "remote-verification";
