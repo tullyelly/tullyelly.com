@@ -226,10 +226,14 @@ describe("human protected release", () => {
       targets: { production: { id: "dpl_previous" } },
     };
     expect(assertVercelProject(project, manifest)).toBe("dpl_previous");
+    const { link: _link, ...disconnected } = project;
+    expect(assertVercelProject(disconnected, manifest)).toBe("dpl_previous");
     for (const change of [
       { id: "prj_other" },
       { accountId: "team_other" },
       { link: { type: "github" } },
+      { link: false },
+      { link: "malformed" },
       { nodeVersion: "20.x" },
       { buildCommand: "unreviewed-command" },
     ])

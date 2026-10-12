@@ -170,7 +170,7 @@ export function assertVercelProject(
     .object({
       id: z.string(),
       accountId: z.string(),
-      link: z.unknown().nullable(),
+      link: z.unknown().nullable().optional(),
       targets: z
         .object({ production: z.object({ id: z.string() }) })
         .optional(),
@@ -182,7 +182,7 @@ export function assertVercelProject(
     value.accountId !== manifest.vercel.teamId
   )
     throw new Error("Vercel project/team mismatch");
-  if (value.link !== null)
+  if (value.link !== null && value.link !== undefined)
     throw new Error(
       "Vercel Git integration is still connected; automatic deployments can bypass release approval",
     );

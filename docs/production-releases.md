@@ -29,6 +29,29 @@ observations must be refreshed before asserting current schema state. The
 analytics executor refuses missing ledgers, ambiguous history, checksum drift
 and failed entries rather than inserting invented baselines or replaying SQL.
 
+## Safe code-only check diagnostics
+
+Run `38202358849`, production job `114659659761`, stopped in post-approval
+checks before staging. Its old catch-all message did not retain the failing guard
+or API status, so the precise protected-token failure cannot be recovered from
+that log. A read-only local owner CLI replay confirmed a response-contract defect:
+the disconnected project omits `link`, while the old check demanded explicit
+`null`. Vercel documents [project `link` as optional](https://vercel.com/docs/rest-api/projects/find-a-project-by-id-or-name).
+The check now accepts either absent or null links, rejects connected/malformed
+links, and retains exact project/team, settings, domain and production checks.
+
+Errors emit fixed guard and API-operation labels, HTTP status, allowlisted network
+codes and sanitized validation-field names. Unknown fields are redacted; values,
+URLs, headers, provider bodies and arbitrary exceptions are never serialized.
+Manifest startup failures follow the same rule. An HTTP failure from a GitHub
+approval operation is distinguishable from a Vercel project operation.
+
+The separate local CLI metadata read succeeded and settings matched. That access
+is not `VERCEL_RELEASE_TOKEN`; its permissions remain untested independently.
+No token retrieval, permission expansion, deployment or retry is authorized by
+these diagnostics. A future explicitly authorized gated check must establish the
+protected token's actual operation/status if another failure occurs.
+
 ## Ordinary code-only deployment
 
 The existing dispatcher mode `production` now accepts only a strict version-2
