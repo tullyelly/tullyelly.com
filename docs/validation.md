@@ -128,3 +128,13 @@ mocked pool, policy or listener behavior must explicitly isolate that fixture
 environment and restore inherited values after each test. Keep dedicated
 regressions proving `SKIP_DB` blocks real construction/query/listener paths.
 Do not disable the global safety flag or runtime guards to make fixtures pass.
+
+## Release-manifest secret scanning
+
+The `custom-pg-url` pre-commit scanner permits only the canonical standalone
+`schemaCompatibility.databaseHost` occurrence in a version-2 code-only manifest
+that passes the actual release validator, including evidence freshness and target
+binding. Other Neon hostname occurrences remain flagged. The exception does not
+skip the rest of the file or the recommended secret rules. Decoded JSON strings
+are checked for database URLs, URL credentials and secret query parameters;
+validation subprocess failures deny the hostname exception without logging input.

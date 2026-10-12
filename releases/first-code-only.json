@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "kind": "code-only",
+  "operation": "deploy",
+  "commit": "e5b7dbca8aa48e7cebb17a3571ef80671c03e95f",
+  "vercel": {
+    "teamId": "team_pB5TcLa7apLtPAiVrRbcjBG3",
+    "projectId": "prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU",
+    "productionDeploymentId": "dpl_Ce7A2PmQodC9nsjuNpyD3YbH9hWd",
+    "productionHost": "tullyelly.com",
+    "settings": {
+      "framework": "nextjs",
+      "nodeVersion": "22.x",
+      "buildCommand": null,
+      "installCommand": null,
+      "outputDirectory": null,
+      "rootDirectory": null
+    },
+    "settingsSha256": "49230b4fcf0fe3bde7c4236cf32f6219c726257f7531aef63638f5e140627c92"
+  },
+  "collectionEnabled": false,
+  "buildEnvironment": {
+    "NEXT_PUBLIC_SITE_URL": "https://tullyelly.com"
+  },
+  "schemaCompatibility": {
+    "checkedAt": "2026-10-12T01:57:42.567Z",
+    "checkedBy": "tullyelly",
+    "evidenceUrl": "https://github.com/tullyelly/tullyelly.com/pull/613#issuecomment-6116361874",
+    "previousApplicationSha": "3fce11932f189d940d72d0a9e3c91a8fd9943faf",
+    "databaseHost": "ep-jolly-flower-ae4bmy06.c-2.us-east-2.aws.neon.tech",
+    "database": "tullyelly_db",
+    "method": "unchanged-database-contract",
+    "requiredObjects": [],
+    "missingObjects": [],
+    "compatible": true,
+    "rollbackCompatible": true
+  }
+}
