@@ -269,8 +269,8 @@ async function main() {
     )
       throw new Error("code.build-local-env-present");
     const r = spawnSync(
-      "vercel",
-      ["build", "--prod", "--standalone", "--non-interactive"],
+      "python3",
+      ["scripts/release/code-build-context.py", "."],
       {
         stdio: "inherit",
         timeout: 1800000,
