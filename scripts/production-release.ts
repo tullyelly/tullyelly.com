@@ -11,6 +11,11 @@ import {
 import { loadCodeManifest } from "./release/code-manifest";
 import { executeCodeRelease, type CodeProviders } from "./release/code-release";
 
+import {
+  checkCodeHealth,
+  verifyHealthDomainAliases,
+} from "./release/code-health";
+
 const command = process.argv[2];
 const manifest = loadCodeManifest(
   process.env.RELEASE_MANIFEST_PATH ?? "",
@@ -153,10 +158,15 @@ async function guard(allowed: string[]) {
     throw new Error("code.deploy-hooks-present");
   if (!current || !allowed.includes(current))
     throw new Error("code.production-drift");
-  const alias = z
-    .object({ deploymentId: z.string() })
-    .parse(await vercel(`/v4/aliases/${manifest.vercel.productionHost}`));
-  if (alias.deploymentId !== current) throw new Error("code.domain-drift");
+  verifyHealthDomainAliases(
+    await Promise.all(
+      ["tullyelly.com", "www.tullyelly.com"].map((host) =>
+        vercel(`/v4/aliases/${host}`),
+      ),
+    ),
+    manifest.vercel.projectId,
+    current,
+  );
   if (
     (await deploymentHistory()).some((d) =>
       ["QUEUED", "BUILDING", "INITIALIZING"].includes(d.readyState),
@@ -210,55 +220,13 @@ async function health(
   d: z.infer<typeof deploymentSchema>,
   publicDomain: boolean,
 ) {
-  const host = publicDomain ? manifest.vercel.productionHost : d.url;
-  if (
-    !(
-      host === manifest.vercel.productionHost ||
-      /^[a-z0-9-]+\.vercel\.app$/.test(host)
-    )
-  )
-    throw new Error("code.health-host");
-  const headers: Record<string, string> = {};
-  if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET)
-    headers["x-vercel-protection-bypass"] =
-      process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-  for (const path of manifest.operation === "deploy"
-    ? ["/", "/shaolin", "/stats"]
-    : ["/", "/shaolin"]) {
-    const r = await fetch(`https://${host}${path}`, {
-      headers,
-      redirect: "error",
-      signal: AbortSignal.timeout(30000),
-    });
-    if (
-      r.status !== 200 ||
-      !(await r.text()).toLowerCase().includes("<!doctype html>")
-    )
-      throw new Error(`code.health-page:${path}:${r.status}`);
-  }
-  if (manifest.operation === "rollback") return;
-  // No authenticated cron call or authentication mutation.
-  const cron = await fetch(`https://${host}/api/cron/analytics`, {
-    headers,
-    redirect: "error",
-    signal: AbortSignal.timeout(15000),
+  await checkCodeHealth({
+    deployment: d,
+    projectId: manifest.vercel.projectId,
+    publicDomain,
+    operation: manifest.operation,
+    bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
   });
-  if (cron.status !== 401) throw new Error("code.health-cron-authorization");
-  const admin = await fetch(`https://${host}/mark2/admin/analytics`, {
-    headers,
-    redirect: "manual",
-    signal: AbortSignal.timeout(15000),
-  });
-  if (![302, 303, 307, 308, 401, 403, 404].includes(admin.status))
-    throw new Error("code.health-owner-authorization");
-  if ([302, 303, 307, 308].includes(admin.status)) {
-    const u = new URL(admin.headers.get("location") ?? "", `https://${host}`);
-    if (
-      u.origin !== `https://${host}` ||
-      !["/login", "/api/auth/signin"].includes(u.pathname)
-    )
-      throw new Error("code.health-login-redirect");
-  }
 }
 async function main() {
   if (command === "prepare") {
