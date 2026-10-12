@@ -2,7 +2,7 @@
   "version": 2,
   "kind": "code-only",
   "operation": "deploy",
-  "commit": "e5b7dbca8aa48e7cebb17a3571ef80671c03e95f",
+  "commit": "fc64135469b71cfbfa6519b367a492915dd692d0",
   "vercel": {
     "teamId": "team_pB5TcLa7apLtPAiVrRbcjBG3",
     "projectId": "prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU",
@@ -23,9 +23,9 @@
     "NEXT_PUBLIC_SITE_URL": "https://tullyelly.com"
   },
   "schemaCompatibility": {
-    "checkedAt": "2026-10-12T01:57:42.567Z",
+    "checkedAt": "2026-10-12T02:18:14.937Z",
     "checkedBy": "tullyelly",
-    "evidenceUrl": "https://github.com/tullyelly/tullyelly.com/pull/613#issuecomment-6116361874",
+    "evidenceUrl": "https://github.com/tullyelly/tullyelly.com/pull/615#issuecomment-6116569482",
     "previousApplicationSha": "3fce11932f189d940d72d0a9e3c91a8fd9943faf",
     "databaseHost": "ep-jolly-flower-ae4bmy06.c-2.us-east-2.aws.neon.tech",
     "database": "tullyelly_db",
