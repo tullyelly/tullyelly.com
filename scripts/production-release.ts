@@ -8,7 +8,7 @@ import {
   validateEnvironmentGate,
   validateReviewedMainRules,
 } from "./release/manifest";
-import { loadCodeManifest } from "./release/code-manifest";
+import { loadCodeManifest, type CodeManifest } from "./release/code-manifest";
 import { executeCodeRelease, type CodeProviders } from "./release/code-release";
 
 import {
@@ -16,32 +16,27 @@ import {
   verifyHealthDomainAliases,
 } from "./release/code-health";
 
+import {
+  codeGuard,
+  codeMetadataRequest,
+  classifyCodeFailure,
+  missingConfiguration,
+} from "./release/code-diagnostics";
+
 const command = process.argv[2];
-const manifest = loadCodeManifest(
-  process.env.RELEASE_MANIFEST_PATH ?? "",
-  process.env.RELEASE_MANIFEST_SHA256 ?? "",
-  process.env.RELEASE_SHA ?? "",
-);
+let manifest: CodeManifest;
 function required(name: string) {
   const value = process.env[name];
-  if (!value) throw new Error(`Missing ${name}`);
+  if (!value) throw missingConfiguration(name);
   return value;
 }
-async function request(url: string, token: string) {
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-    signal: AbortSignal.timeout(15000),
-    redirect: "error",
-  });
-  if (!response.ok)
-    throw new Error(
-      `Read-only target verification failed (${response.status}); no response body logged`,
-    );
-  return response.json() as Promise<unknown>;
-}
-const ghBase = `https://api.github.com/repos/${required("GITHUB_REPOSITORY")}`;
+const request = codeMetadataRequest;
+
+let ghBase: string;
 async function githubGate() {
-  await verifyChildDispatch(process.env);
+  await codeGuard("github.child-dispatch", () =>
+    verifyChildDispatch(process.env),
+  );
   if (
     process.env.GITHUB_REF !== "refs/heads/main" ||
     process.env.GITHUB_EVENT_NAME !== "workflow_dispatch"
@@ -57,38 +52,44 @@ async function githubGate() {
     request(`${ghBase}/branches/main`, token),
     request(`${ghBase}/rules/branches/main`, token),
   ]);
-  validateEnvironmentGate(environment, policies);
-  validateReviewedMainRules(rules);
-  const value = z
-    .object({
-      protected: z.literal(true),
-      commit: z.object({ sha: z.string() }),
-    })
-    .parse(branch);
-  if (value.commit.sha !== required("GITHUB_SHA"))
-    throw new Error(
-      "Protected main moved since dispatch; prepare a new reviewed release",
-    );
-  execFileSync("git", [
-    "merge-base",
-    "--is-ancestor",
-    manifest.commit,
-    required("GITHUB_SHA"),
-  ]);
-  const changed = execFileSync(
-    "git",
-    ["diff", "--name-only", manifest.commit, required("GITHUB_SHA")],
-    { encoding: "utf8" },
-  )
-    .trim()
-    .split("\n")
-    .filter(Boolean);
-  if (changed.some((path) => !/^releases\/[a-z0-9-]+\.json$/.test(path)))
-    throw new Error(
-      "Deployment code or dependencies differ from reviewed workflow commit; only release manifest metadata may differ",
-    );
+  await codeGuard("github.environment", () =>
+    validateEnvironmentGate(environment, policies),
+  );
+  await codeGuard("github.main-rules", () => validateReviewedMainRules(rules));
+  const value = await codeGuard("github.main-response", () =>
+    z
+      .object({
+        protected: z.literal(true),
+        commit: z.object({ sha: z.string() }),
+      })
+      .parse(branch),
+  );
+  await codeGuard("github.main-binding", () => {
+    if (value.commit.sha !== required("GITHUB_SHA"))
+      throw new Error(
+        "Protected main moved since dispatch; prepare a new reviewed release",
+      );
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      manifest.commit,
+      required("GITHUB_SHA"),
+    ]);
+    const changed = execFileSync(
+      "git",
+      ["diff", "--name-only", manifest.commit, required("GITHUB_SHA")],
+      { encoding: "utf8" },
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+    if (changed.some((path) => !/^releases\/[a-z0-9-]+\.json$/.test(path)))
+      throw new Error(
+        "Deployment code or dependencies differ from reviewed workflow commit; only release manifest metadata may differ",
+      );
+  });
 }
-const query = `teamId=${encodeURIComponent(manifest.vercel.teamId)}`;
+let query: string;
 async function vercel(path: string) {
   return request(
     `https://api.vercel.com${path}${path.includes("?") ? "&" : "?"}${query}`,
@@ -104,8 +105,10 @@ const deploymentSchema = z.object({
   meta: z.record(z.string(), z.unknown()).optional(),
 });
 async function deployment(id: string) {
-  return deploymentSchema.parse(
-    await vercel(`/v13/deployments/${encodeURIComponent(id)}`),
+  return codeGuard("vercel.deployment", async () =>
+    deploymentSchema.parse(
+      await vercel(`/v13/deployments/${encodeURIComponent(id)}`),
+    ),
   );
 }
 async function deploymentHistory() {
@@ -123,9 +126,11 @@ async function deploymentHistory() {
   let cursor: number | null = null;
   const seen = new Set<number>();
   for (let page = 0; page < 10; page++) {
-    const r = schema.parse(
-      await vercel(
-        `/v6/deployments?projectId=${manifest.vercel.projectId}&target=production&limit=100${cursor === null ? "" : `&until=${cursor}`}`,
+    const r = await codeGuard("vercel.history", async () =>
+      schema.parse(
+        await vercel(
+          `/v6/deployments?projectId=${manifest.vercel.projectId}&target=production&limit=100${cursor === null ? "" : `&until=${cursor}`}`,
+        ),
       ),
     );
     all.push(...r.deployments);
@@ -148,53 +153,63 @@ async function lookup() {
   return undefined;
 }
 async function guard(allowed: string[]) {
-  await githubGate();
-  await verifyHumanApproval(process.env);
-  const project = await vercel(`/v9/projects/${manifest.vercel.projectId}`);
-  const current = assertVercelProject(project, manifest);
-  const hooks = z.object({ link: z.null() }).passthrough().parse(project);
-  const record = hooks as Record<string, unknown>;
-  if (Array.isArray(record.deployHooks) && record.deployHooks.length)
-    throw new Error("code.deploy-hooks-present");
-  if (!current || !allowed.includes(current))
-    throw new Error("code.production-drift");
-  verifyHealthDomainAliases(
-    await Promise.all(
-      ["tullyelly.com", "www.tullyelly.com"].map((host) =>
-        vercel(`/v4/aliases/${host}`),
+  return codeGuard("production.check", async () => {
+    await githubGate();
+    await codeGuard("human.approval", () => verifyHumanApproval(process.env));
+    const project = await vercel(`/v9/projects/${manifest.vercel.projectId}`);
+    const current = await codeGuard("vercel.project", () =>
+      assertVercelProject(project, manifest),
+    );
+    const hooks = await codeGuard("vercel.git-hooks", () =>
+      z.object({ link: z.null().optional() }).passthrough().parse(project),
+    );
+    const record = hooks as Record<string, unknown>;
+    if (Array.isArray(record.deployHooks) && record.deployHooks.length)
+      throw new Error("code.deploy-hooks-present");
+    if (!current || !allowed.includes(current))
+      throw new Error("code.production-drift");
+    await codeGuard("vercel.aliases", async () =>
+      verifyHealthDomainAliases(
+        await Promise.all(
+          ["tullyelly.com", "www.tullyelly.com"].map((host) =>
+            vercel(`/v4/aliases/${host}`),
+          ),
+        ),
+        manifest.vercel.projectId,
+        current,
       ),
-    ),
-    manifest.vercel.projectId,
-    current,
-  );
-  if (
-    (await deploymentHistory()).some((d) =>
-      ["QUEUED", "BUILDING", "INITIALIZING"].includes(d.readyState),
+    );
+    if (
+      (await deploymentHistory()).some((d) =>
+        ["QUEUED", "BUILDING", "INITIALIZING"].includes(d.readyState),
+      )
     )
-  )
-    throw new Error("code.concurrent-deployment");
-  // Metadata only. Never request decrypted values, DB URLs, cron secrets or Neon APIs.
-  const env = z
-    .object({
-      envs: z.array(
-        z.object({
-          id: z.string(),
-          key: z.string(),
-          target: z.array(z.string()).optional(),
-        }),
-      ),
-      pagination: z.object({ next: z.number().nullable() }).optional(),
-    })
-    .parse(await vercel(`/v10/projects/${manifest.vercel.projectId}/env`));
-  if (env.pagination?.next)
-    throw new Error("code.incomplete-environment-metadata");
-  if (
-    env.envs.filter(
-      (e) => e.key === "DATABASE_URL" && e.target?.includes("production"),
-    ).length !== 1
-  )
-    throw new Error("code.runtime-database-configuration");
-  return current;
+      throw new Error("code.concurrent-deployment");
+    // Metadata only. Never request decrypted values, DB URLs, cron secrets or Neon APIs.
+    const env = await codeGuard("vercel.environment", async () =>
+      z
+        .object({
+          envs: z.array(
+            z.object({
+              id: z.string(),
+              key: z.string(),
+              target: z.array(z.string()).optional(),
+            }),
+          ),
+          pagination: z.object({ next: z.number().nullable() }).optional(),
+        })
+        .parse(await vercel(`/v10/projects/${manifest.vercel.projectId}/env`)),
+    );
+    if (env.pagination?.next)
+      throw new Error("code.incomplete-environment-metadata");
+    if (
+      env.envs.filter(
+        (e) => e.key === "DATABASE_URL" && e.target?.includes("production"),
+      ).length !== 1
+    )
+      throw new Error("code.runtime-database-configuration");
+    return current;
+  });
 }
 function cli(args: string[]) {
   // Do not pass GitHub, App or build-only variables to the deployment process.
@@ -229,6 +244,15 @@ async function health(
   });
 }
 async function main() {
+  manifest = await codeGuard("manifest.validation", () =>
+    loadCodeManifest(
+      process.env.RELEASE_MANIFEST_PATH ?? "",
+      process.env.RELEASE_MANIFEST_SHA256 ?? "",
+      process.env.RELEASE_SHA ?? "",
+    ),
+  );
+  ghBase = `https://api.github.com/repos/${required("GITHUB_REPOSITORY")}`;
+  query = `teamId=${encodeURIComponent(manifest.vercel.teamId)}`;
   if (command === "prepare") {
     await githubGate();
     execFileSync("git", [
@@ -305,7 +329,9 @@ async function main() {
     process.env.GITHUB_ACTIONS !== "true"
   )
     throw new Error("code.human-gate-required");
-  await guard([manifest.vercel.productionDeploymentId]);
+  await codeGuard("production.check", () =>
+    guard([manifest.vercel.productionDeploymentId]),
+  );
   const previous = await deployment(manifest.vercel.productionDeploymentId);
   if (
     previous.projectId !== manifest.vercel.projectId ||
@@ -374,12 +400,17 @@ async function main() {
   );
 }
 main().catch((error) => {
-  const invariant =
-    error instanceof Error && /^code\.[a-z0-9-]+$/.test(error.message)
-      ? error.message
-      : "code.validation-or-provider-failed";
   console.error(
-    `Release stopped at ${invariant}; credentials and provider payloads omitted. Inspect remote state before another operation. No automatic recovery.`,
+    JSON.stringify({
+      event: "code-release-failure",
+      command: ["prepare", "build", "check", "deploy"].includes(command)
+        ? command
+        : "unknown",
+      ...classifyCodeFailure("production.check", error),
+    }),
+  );
+  console.error(
+    "Release stopped; only allowlisted diagnostic fields are emitted. No automatic retry or recovery.",
   );
   process.exitCode = 1;
 });
