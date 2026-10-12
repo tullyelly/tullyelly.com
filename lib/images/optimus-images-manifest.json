@@ -1223,6 +1223,9 @@
     "/images/optimus/nice/giannis4.webp",
     "/images/optimus/nice/giannis5.webp",
     "/images/optimus/night-owl/fern.webp",
+    "/images/optimus/nlcs/bledsoe.webp",
+    "/images/optimus/nlcs/fern.webp",
+    "/images/optimus/nlcs/money.webp",
     "/images/optimus/no-bars/67/67-0.webp",
     "/images/optimus/no-bars/67/67-1.webp",
     "/images/optimus/no-bars/67/67-2.webp",
@@ -8299,6 +8302,21 @@
       "src": "/images/optimus/night-owl/fern.webp",
       "width": 1920,
       "height": 2560
+    },
+    {
+      "src": "/images/optimus/nlcs/bledsoe.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/nlcs/fern.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/nlcs/money.webp",
+      "width": 874,
+      "height": 880
     },
     {
       "src": "/images/optimus/no-bars/67/67-0.webp",

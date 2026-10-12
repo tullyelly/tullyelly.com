@@ -1,0 +1,79 @@
+---
+title: "nlcs"
+date: "2026-10-11"
+summary: "Take 2; Day 263, Let's go Brewers!"
+draft: false
+infinityStone: false
+---
+
+<ReleaseSection alterEgo="george" divider={true}>
+    Rare weekend content from <PersonTag tag="george" />, but check out what the internet told me was teen slang in 1954 or something like that:
+
+    ![money](money.webp)
+
+    I be the <PersonTag displayName="cool jonah" tag="george" /> at <PersonTag displayName="[redacted]" tag="george" /> while making <PersonTag tag="george" />. Or something like that.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="unclejimmy">
+    In between card sorting, <PersonTag displayName="the fernster" tag="fern" /> stopped by to let me know he might have other plans......
+
+    ![fern](fern.webp)
+
+    If he wants to sleep there, I lose control of my life. Whatever you say, sir.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="cardattack" releaseId="187">
+    While we will close with everything I fought with <PersonTag displayName="the robot" tag="cipher" /> about, there was still card stuffs. Always card stuffs:
+
+    ![bledsoe](bledsoe.webp)
+    - <TcdbSnapshot tag="jrue" />
+    - <TcdbSnapshot tag="splash-mountain" />
+    - <TcdbSnapshot tag="pops-junior" />
+    - <TcdbSnapshot tag="let-khris-cook" />
+    - <TcdbSnapshot tag="bledsoe" />
+    - <TcdbSnapshot tag="tyrese" />
+    - <SetCollector set="2018-19-chronicles-bronze" />
+    - <SetCollector set="2021-22-donruss-franchise" />
+    - <SetCollector set="2021-22-donruss-franchise-pink" />
+    - <SetCollector set="2021-22-donruss-green-yellow" />
+    - <SetCollector set="2021-22-donruss-orange" />
+
+    As the great re-org continues, whenever I am required to go through my <PersonTag tag="bledsoe" /> cards, I am reminded just how stacked my collection of him is. Autographs, memorabilia, and numbered cards (especially low ones).
+
+    I now you are just as excited as I am about that.
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="tullyelly" releaseId="187">
+    I spent the vast majority of this weekend trying to bite the bullet and get some major (needed) improvements to my development process and workflow. As I type this, I don't know if I will get this deployed to keep my streak alive. I am pot committed to this either working or not tonight as I can't deploy this without deploying that.
+
+    It would be a bummer if my streak ends before I hit 365 days, but on the other hand 262 would still be the current record streak.
+
+    <CipherSays>
+        ## Production Release Plumbing
+
+        Today's work was getting the waiting analytics archive and site updates through a controlled release process:
+
+        - Added a separate code-only deployment and rollback workflow with human approval, exact commit and artifact checksums, fresh database compatibility evidence, staged health checks, and production drift checks. Database migrations and credential maintenance retain separate approval paths; analytics collection stays disabled for the first code release.
+        - Hardened the dedicated GitHub App's publication and dispatch checks, verified bot identity against GitHub metadata, and made failures report useful diagnostics without exposing credentials or subprocess output.
+        - Fixed a maintenance workflow's runner context and added pinned GitHub Actions validation to the standard verification command so invalid workflow expressions fail before a build.
+        - Taught health checks to verify the site's apex-to-www redirect while preserving the requested path and keeping staging credentials on the staged deployment.
+        - Prepared and refreshed the first code-only release manifest, allowed its strictly validated database metadata through secret scanning, and rehearsed portable Vercel artifacts without production credentials. The latest build fix temporarily excludes only unchanged, tracked environment templates, restores them after failures or cancellation, and keeps artifact diagnostics free of sensitive paths and values.
+
+        Merges no longer trigger automatic Vercel deployments. This work is still awaiting deployment; the analytics archive, owner controls, and public statistics remain pending too. Analytics activation still needs its own database history reconciliation, credential rotation, restore rehearsal, and approved release.
+    </CipherSays>
+
+    <LuluLearns>I gave a bunch of control to the robots, allowing them direct access to my database and server. It was a huge pain in the ass and I'm not sure it's working correctly yet. If it is working, it is a HUGE step forward in my development workflow</LuluLearns>
+
+</ReleaseSection>
+
+<ReleaseSection alterEgo="cardattack">
+    If you are reading this that means I successfully deployed this beast. It also means you know the <PersonTag displayName="brew crew" tag="brew-crew" /> pulled off a Game 1 victory against the <PersonTag displayName="dodgers" tag="dodger-blue" />!
+
+    Shouts to <PersonTag tag="ron" />, <PersonTag tag="joe" />, and <PersonTag displayName="mr. allen" tag="mr-allen" /> who got to see a hell of a victory.
+
+    1-0, good guys.
+
+</ReleaseSection>
