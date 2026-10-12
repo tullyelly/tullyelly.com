@@ -20,6 +20,10 @@ import {
   executeCodeRelease,
   type CodeProviders,
 } from "../../scripts/release/code-release";
+import {
+  CodeDiagnosticError,
+  classifyCodeFailure,
+} from "../../scripts/release/code-diagnostics";
 import { settingsDigest, sha256 } from "../../scripts/release/manifest";
 const settings = {
   framework: "nextjs" as const,
@@ -435,4 +439,86 @@ test("artifact diagnostics allow only recognized invariants, never arbitrary pat
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test.each([false, true])(
+  "stage failure survives remote reconciliation failure=%s without a second write",
+  async (lookupFails) => {
+    const m = manifest(),
+      { p } = fixture(m);
+    p.stage = jest.fn(async () => {
+      throw new CodeDiagnosticError({
+        guard: "vercel.stage",
+        operation: "vercel.stage",
+        category: "process",
+        exitStatus: 2,
+        signal: null,
+        processCategory: "exit",
+      });
+    });
+    p.lookup = jest.fn().mockResolvedValueOnce(undefined);
+    if (lookupFails)
+      (p.lookup as jest.Mock).mockRejectedValueOnce(
+        new CodeDiagnosticError({
+          guard: "api.request",
+          operation: "vercel.history",
+          category: "http",
+          status: 503,
+        }),
+      );
+    else (p.lookup as jest.Mock).mockResolvedValueOnce(undefined);
+    let failure: unknown;
+    try {
+      await run(m, p);
+    } catch (error) {
+      failure = error;
+    }
+    const diagnostic = classifyCodeFailure("production.check", failure);
+    expect(diagnostic).toMatchObject({
+      guard: "vercel.stage",
+      category: "invariant",
+      invariant: lookupFails
+        ? "code.stage-reconciliation-failed"
+        : "code.stage-outcome-unresolved",
+      reconciliation: lookupFails ? "failed" : "not-found",
+      originalFailure: {
+        guard: "vercel.stage",
+        category: "process",
+        exitStatus: 2,
+      },
+    });
+    if (lookupFails)
+      expect(diagnostic.reconciliationFailure).toMatchObject({
+        operation: "vercel.history",
+        status: 503,
+      });
+    expect(p.stage).toHaveBeenCalledTimes(1);
+    expect(p.promote).not.toHaveBeenCalled();
+  },
+);
+test("recovered stage reports original failure alongside the found outcome", async () => {
+  const m = manifest(),
+    { p, d } = fixture(m);
+  p.reportReconciliation = jest.fn();
+  p.stage = jest.fn(async () => {
+    throw new CodeDiagnosticError({
+      guard: "vercel.stage",
+      category: "process",
+      exitStatus: null,
+      spawnErrorCode: "ETIMEDOUT",
+    });
+  });
+  p.lookup = jest
+    .fn()
+    .mockResolvedValueOnce(undefined)
+    .mockResolvedValueOnce(d);
+  expect(await run(m, p)).toBe(d.id);
+  expect(p.reportReconciliation).toHaveBeenCalledWith({
+    outcome: "found",
+    originalFailure: expect.objectContaining({
+      guard: "vercel.stage",
+      spawnErrorCode: "ETIMEDOUT",
+    }),
+  });
+  expect(p.stage).toHaveBeenCalledTimes(1);
 });

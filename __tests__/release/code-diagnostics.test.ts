@@ -187,3 +187,26 @@ test("actual release startup emits no sensitive manifest or environment values",
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("forged process and nested reconciliation diagnostics are bounded and redacted", () => {
+  const diagnostic = {
+    guard: "vercel.stage" as const,
+    category: "process" as const,
+    exitStatus: Number.NaN,
+    signal: sensitive,
+    spawnErrorCode: sensitive,
+    originalFailure: {
+      guard: "vercel.stage" as const,
+      category: "process" as const,
+      signal: sensitive,
+    },
+  };
+  Object.assign(diagnostic.originalFailure, { originalFailure: diagnostic });
+  const safe = classifyCodeFailure(
+    "production.check",
+    new CodeDiagnosticError(diagnostic),
+  );
+  expect(JSON.stringify(safe)).not.toContain(sensitive);
+  expect(safe.exitStatus).toBeUndefined();
+  expect(safe.originalFailure?.originalFailure).toBeUndefined();
+});

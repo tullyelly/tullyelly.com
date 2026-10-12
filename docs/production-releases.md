@@ -52,6 +52,21 @@ No token retrieval, permission expansion, deployment or retry is authorized by
 these diagnostics. A future explicitly authorized gated check must establish the
 protected token's actual operation/status if another failure occurs.
 
+Run `38318822912` passed validation, prebuilt verification and post-approval
+checks, then failed in the combined deploy step. Its default `production.check`
+label and missing CLI process evidence do not identify the failing operation.
+Owner CLI reconciliation found no matching staged deployment and unchanged live
+aliases; this does not independently establish the workflow token's CLI permissions.
+
+CLI failures now identify stage, promote or rollback and retain only exit status,
+allowlisted signal/spawn codes and a fixed process category. Stdout, stderr,
+process messages and environment values are never emitted. Staging reconciliation
+preserves the original sanitized failure and separately reports not-found or a
+failed lookup. A recovered deployment reports the found outcome and original
+failure without issuing a second stage. Lookup, identity and health failures have
+fixed labels. The restricted deployment environment is unchanged. Diagnostics do
+not authorize retries, manual deployment, gate bypass or promotion.
+
 ## Ordinary code-only deployment
 
 The existing dispatcher mode `production` now accepts only a strict version-2

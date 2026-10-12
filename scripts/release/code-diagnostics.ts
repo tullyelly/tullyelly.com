@@ -22,6 +22,13 @@ export const guards = [
   "vercel.environment",
   "vercel.deployment",
   "production.check",
+  "vercel.stage",
+  "vercel.promote",
+  "vercel.rollback",
+  "vercel.lookup",
+  "vercel.identity",
+  "health.staged",
+  "health.public",
 ] as const;
 export type Guard = (typeof guards)[number];
 export const operations = [
@@ -34,6 +41,9 @@ export const operations = [
   "vercel.history",
   "vercel.environment",
   "vercel.deployment",
+  "vercel.stage",
+  "vercel.promote",
+  "vercel.rollback",
   "unknown",
 ] as const;
 export type Operation = (typeof operations)[number];
@@ -131,6 +141,17 @@ const issueCodes = new Set([
   "not_multiple_of",
 ]);
 const invariants = new Set([
+  "code.provider-operation-unresolved",
+  "code.stage-output-unresolved",
+  "code.stage-outcome-unresolved",
+  "code.stage-reconciliation-failed",
+  "code.promote-outcome-unresolved",
+  "code.promote-not-assigned",
+  "code.rollback-outcome-unresolved",
+  "code.rollback-not-assigned",
+  "code.rollback-identity",
+  "code.rollback-binding",
+  "code.domain-drift",
   "code.production-drift",
   "code.deploy-hooks-present",
   "code.concurrent-deployment",
@@ -160,7 +181,15 @@ export type Diagnostic = {
     | "validation"
     | "invariant"
     | "configuration"
+    | "process"
     | "unknown";
+  exitStatus?: number | null;
+  signal?: string | null;
+  spawnErrorCode?: string;
+  processCategory?: "spawn" | "signal" | "exit";
+  originalFailure?: Diagnostic;
+  reconciliation?: "not-found" | "failed";
+  reconciliationFailure?: Diagnostic;
   status?: number;
   networkCauseCodes?: string[];
   invariant?: string;
@@ -209,6 +238,13 @@ function classifyRaw(guard: Guard, error: unknown): Diagnostic {
   return { guard, category: "unknown" };
 }
 export function classifyCodeFailure(guard: Guard, error: unknown): Diagnostic {
+  return sanitizeDiagnostic(guard, error, 0);
+}
+function sanitizeDiagnostic(
+  guard: Guard,
+  error: unknown,
+  depth: number,
+): Diagnostic {
   try {
     const d = classifyRaw(guard, error);
     const safe: Diagnostic = {
@@ -220,11 +256,56 @@ export function classifyCodeFailure(guard: Guard, error: unknown): Diagnostic {
         "validation",
         "invariant",
         "configuration",
+        "process",
         "unknown",
       ].includes(d.category)
         ? d.category
         : "unknown",
     };
+    if (
+      d.exitStatus === null ||
+      (Number.isInteger(d.exitStatus) &&
+        typeof d.exitStatus === "number" &&
+        d.exitStatus >= 0 &&
+        d.exitStatus <= 255)
+    )
+      safe.exitStatus = d.exitStatus;
+    if (
+      d.signal === null ||
+      ["SIGTERM", "SIGKILL", "SIGINT", "SIGABRT", "SIGSEGV", "SIGBUS"].includes(
+        d.signal ?? "",
+      )
+    )
+      safe.signal = d.signal;
+    if (
+      [
+        "ENOENT",
+        "EACCES",
+        "EPERM",
+        "EINVAL",
+        "ETIMEDOUT",
+        "ENOBUFS",
+        "E2BIG",
+      ].includes(d.spawnErrorCode ?? "")
+    )
+      safe.spawnErrorCode = d.spawnErrorCode;
+    if (
+      d.processCategory &&
+      ["spawn", "signal", "exit"].includes(d.processCategory)
+    )
+      safe.processCategory = d.processCategory;
+    if (d.reconciliation === "not-found" || d.reconciliation === "failed")
+      safe.reconciliation = d.reconciliation;
+    if (depth < 1) {
+      for (const key of ["originalFailure", "reconciliationFailure"] as const) {
+        if (d[key])
+          safe[key] = sanitizeDiagnostic(
+            guard,
+            new CodeDiagnosticError(d[key]),
+            depth + 1,
+          );
+      }
+    }
     if (d.operation && operations.includes(d.operation))
       safe.operation = d.operation;
     if (
