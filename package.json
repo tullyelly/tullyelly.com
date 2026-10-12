@@ -101,6 +101,7 @@
     "contentlayer:build": "contentlayer2 build",
     "prepare:content": "node scripts/prepare-content.mjs",
     "verify:agent": "node scripts/verify-agent.mjs",
+    "verify": "npm run verify:agent",
     "prepare": "husky",
     "check:emdash": "node scripts/check-emdash.mjs",
     "analyze": "ANALYZE=true next build",

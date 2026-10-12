@@ -1,0 +1,84 @@
+"""Reject nonportable output and build-only credentials before archiving and after extraction."""
+import hashlib
+import importlib.util
+import json
+import pathlib
+import sys
+
+sys.dont_write_bytecode = True
+
+MARKERS = (
+    b"CODE_RELEASE_BUILD_ONLY_SECRET",
+    b"CODE_RELEASE_BUILD_ONLY_CLIENT",
+    b"CODE_RELEASE_BUILD_ONLY_GOOGLE",
+)
+
+
+def verify(directory: str) -> None:
+    root = pathlib.Path(directory).resolve()
+    config = json.loads((root / "config.json").read_text())
+    if config.get("version") != 3:
+        raise ValueError("code.artifact-config")
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            resolved = path.resolve(strict=True)
+            if not resolved.is_relative_to(root):
+                raise ValueError("code.artifact-external-link")
+        if not path.is_file():
+            continue
+        if path.name.startswith(".env"):
+            raise ValueError("code.artifact-env-file")
+        # Scan streaming chunks with overlap; never print source bytes or values.
+        with path.open("rb") as stream:
+            tail = b""
+            while True:
+                block = stream.read(1024 * 1024)
+                if not block:
+                    break
+                content = tail + block
+                if any(marker in content for marker in MARKERS):
+                    raise ValueError("code.artifact-build-value")
+                tail = content[-128:]
+        if path.name == ".vc-config.json":
+            value = json.loads(path.read_text())
+            if "handler" in value:
+                handler = (path.parent / value["handler"]).resolve()
+                if not handler.is_relative_to(root) or not handler.is_file():
+                    raise ValueError("code.artifact-handler")
+            for key in ("environment", "env"):
+                env = value.get(key, {})
+                if not isinstance(env, dict):
+                    raise ValueError("code.artifact-runtime-env")
+                if any(k in env for k in ("SKIP_DB", "DATABASE_URL", "TEST_DATABASE_URL", "NEXTAUTH_SECRET", "GOOGLE_CLIENT_SECRET")):
+                    raise ValueError("code.artifact-runtime-env")
+                if "ANALYTICS_SYNC_ENABLED" in env and env["ANALYTICS_SYNC_ENABLED"] != "false":
+                    raise ValueError("code.artifact-analytics-enabled")
+
+
+def extract(archive: str, directory: str, expected_digest: str) -> None:
+    if len(expected_digest) != 64 or any(c not in "0123456789abcdef" for c in expected_digest):
+        raise ValueError("code.artifact-digest-format")
+    digest = hashlib.sha256()
+    with open(archive, "rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    if digest.hexdigest() != expected_digest:
+        raise ValueError("code.artifact-digest")
+    spec = importlib.util.spec_from_file_location("safe_archive", pathlib.Path(__file__).with_name("maintenance-archive.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.extract(archive, directory)
+    verify(str(pathlib.Path(directory) / ".vercel/output"))
+
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) == 3 and sys.argv[1] == "verify":
+            verify(sys.argv[2])
+        elif len(sys.argv) == 5 and sys.argv[1] == "extract":
+            extract(sys.argv[2], sys.argv[3], sys.argv[4])
+        else:
+            raise ValueError("code.artifact-arguments")
+    except Exception:
+        print("Code-only artifact validation failed; values omitted", file=sys.stderr)
+        sys.exit(1)

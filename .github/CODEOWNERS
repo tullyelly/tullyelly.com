@@ -23,3 +23,5 @@
 
 /scripts/credential-maintenance.ts @tullyelly
 /maintenance/ @tullyelly
+
+/scripts/analytics-release.ts @tullyelly

@@ -164,7 +164,7 @@ export function validateEnvironmentGate(
 }
 export function assertVercelProject(
   project: unknown,
-  manifest: ReleaseManifest,
+  manifest: Pick<ReleaseManifest, "vercel">,
 ) {
   const value = z
     .object({
@@ -283,7 +283,7 @@ export function verifyPreviewDatabases(
 
 export function verifyReleaseDeploymentIdentity(
   value: unknown,
-  manifest: ReleaseManifest,
+  manifest: Pick<ReleaseManifest, "vercel" | "commit">,
   manifestSha256: string,
   buildSha256: string,
 ) {
