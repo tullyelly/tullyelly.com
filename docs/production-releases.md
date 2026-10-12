@@ -325,3 +325,26 @@ The [2026-10-11 Vercel Git disconnect/bootstrap proposal](vercel-bootstrap-chang
 records current targets, verified App authentication, remaining account blockers
 and the separate approval sequence. Git disconnect and the harmless bootstrap
 have completed; actual production release remains separately authorized.
+
+## App publication failure diagnostics
+
+The publisher keeps its existing Git command, hooks, ten-minute timeout, App scope,
+SHA/ancestry checks and single-write policy. It does not change Jest worker settings.
+After a Git failure it reports numeric exit status, known signals, timing, the last
+recognized pre-push marker (`hook-lint`, `hook-typecheck`, `hook-smoke`,
+`hook-coverage`, `hook-complete`) or `git-push` when no marker was recognized.
+The marker identifies the last observed phase, not necessarily the root cause.
+
+Captured output is converted into fixed evidence labels for explicit Husky failures,
+validation errors, authentication failures, remote rejection and network transport.
+Multiple labels may coexist; unknown messages stay unclassified. Neither raw stdout
+nor stderr is emitted or written to diagnostic files, and the wrapper does not retain
+raw output after classification. Arbitrary messages, URLs, environment values,
+headers, tokens and private keys never become report fields.
+
+GitHub HTTP failures retain their safe status/category. Fetch failures separately
+retain only allowlisted nested DNS/socket/TLS/timeout cause codes, with bounded cycle
+handling; unknown codes and raw causes are discarded. This does not add an API retry
+or assume that verification transport failure caused the earlier Git failure.
+After any ambiguous write, inspect the actual remote SHA before another attempt.
+A new diagnostics commit requires approval of its exact SHA before publication.

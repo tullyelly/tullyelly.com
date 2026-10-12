@@ -51,7 +51,56 @@ export type Api = (
   method?: "GET" | "POST" | "PATCH" | "DELETE",
   body?: unknown,
 ) => Promise<unknown>;
+/** Retain only fixed codes; never retain network messages, addresses or raw causes. */
+export function safeNetworkCauseCodes(error: unknown): string[] {
+  const allowed = new Set([
+    "ECONNRESET",
+    "ECONNREFUSED",
+    "EAI_AGAIN",
+    "ENOTFOUND",
+    "ETIMEDOUT",
+    "EPIPE",
+    "ENETUNREACH",
+    "EHOSTUNREACH",
+    "UND_ERR_SOCKET",
+    "UND_ERR_CONNECT_TIMEOUT",
+    "UND_ERR_HEADERS_TIMEOUT",
+    "UND_ERR_BODY_TIMEOUT",
+    "CERT_HAS_EXPIRED",
+    "DEPTH_ZERO_SELF_SIGNED_CERT",
+    "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+    "ERR_TLS_CERT_ALTNAME_INVALID",
+    "AbortError",
+    "TimeoutError",
+  ]);
+  const seen = new Set<object>(),
+    codes = new Set<string>();
+  const visit = (value: unknown, depth: number) => {
+    if (
+      !value ||
+      typeof value !== "object" ||
+      depth > 4 ||
+      seen.size >= 16 ||
+      seen.has(value)
+    )
+      return;
+    seen.add(value);
+    try {
+      const e = value as Record<string, unknown>;
+      for (const k of ["code", "name"])
+        if (typeof e[k] === "string" && allowed.has(e[k])) codes.add(e[k]);
+      visit(e.cause, depth + 1);
+      if (Array.isArray(e.errors))
+        for (const item of e.errors.slice(0, 8)) visit(item, depth + 1);
+    } catch {
+      /* Unexpected property getters reveal nothing and do not replace the failure. */
+    }
+  };
+  visit(error, 0);
+  return [...codes].sort();
+}
 export class GitHubApiError extends Error {
+  readonly networkCauseCodes: string[];
   constructor(
     readonly classification:
       | "unauthenticated"
@@ -61,11 +110,13 @@ export class GitHubApiError extends Error {
       | "unexpected-status"
       | "transport",
     readonly status?: number,
+    networkError?: unknown,
   ) {
     super(
       `GitHub API ${classification}${status === undefined ? "" : ` (HTTP ${status})`}; response omitted`,
     );
     this.name = "GitHubApiError";
+    this.networkCauseCodes = safeNetworkCauseCodes(networkError);
   }
 }
 
@@ -86,8 +137,8 @@ export const githubApi: Api = async (path, token, method = "GET", body) => {
       signal: AbortSignal.timeout(15000),
       redirect: "error",
     });
-  } catch {
-    throw new GitHubApiError("transport");
+  } catch (error) {
+    throw new GitHubApiError("transport", undefined, error);
   }
   const expectedStatus =
     method === "GET" || method === "PATCH"

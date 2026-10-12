@@ -5,6 +5,7 @@ import {
   publicationExitCode,
   safeFailure,
   PUBLICATION_TIMEOUT_MS,
+  PublicationProcessError,
 } from "@/scripts/release/publication";
 
 const sha = "a".repeat(40);
@@ -163,5 +164,124 @@ test("diagnostics whitelist process fields and omit arbitrary exception contents
   expect(safeFailure({ code: "ENOBUFS" })).toEqual({
     category: "buffer",
     processCode: "ENOBUFS",
+  });
+});
+
+describe("evidence-only Git output diagnostics", () => {
+  // Synthetic userinfo is assembled at runtime; no credential URL is stored in source.
+  const credentialUrl = new URL("https://example.com");
+  credentialUrl.username = "user";
+  credentialUrl.password = "private-value";
+  test.each([
+    ["🧹 Linting…", "hook-lint"],
+    ["🔎 Type checking…", "hook-typecheck"],
+    ["🧪 Smoke tests (related only)…", "hook-smoke"],
+    ["🛡️ Full coverage suite…", "hook-coverage"],
+    ["✅ Test suites passed.", "hook-complete"],
+  ])("recognizes %s without retaining output", (marker, phase) => {
+    const e = new PublicationProcessError({
+      status: 1,
+      stdout: Buffer.from(`🧹 Linting…\n${marker}\n`),
+      stderr: "husky - pre-push script failed (code 1)",
+    });
+    expect(safeFailure(e)).toMatchObject({
+      category: "exit",
+      exitCode: 1,
+      lastPhase: phase,
+      hookExitCode: 1,
+      evidence: ["local-hook-failed"],
+    });
+    expect(e).not.toHaveProperty("stdout");
+    expect(e).not.toHaveProperty("stderr");
+  });
+  test.each([
+    ["FAIL __tests__/fixture.test.ts", "validation-failed"],
+    ["file.ts(1,2): error TS1234: private-value", "validation-failed"],
+    [
+      `fatal: Authentication failed for '${credentialUrl}'`,
+      "authentication-failed",
+    ],
+    [" ! [remote rejected] HEAD -> branch (private-value)", "remote-rejected"],
+    ["remote: error: GH013: private-value", "remote-rejected"],
+    [
+      `fatal: unable to access '${credentialUrl}': Could not resolve host: example.com`,
+      "network-transport-failed",
+    ],
+  ])("classifies supported error signature %#", (stderr, classification) => {
+    const result = safeFailure(
+      new PublicationProcessError({
+        status: 1,
+        stderr,
+        stdout: "private-value",
+      }),
+    );
+    expect(result.evidence).toContain(classification);
+    expect(JSON.stringify(result)).not.toContain("private-value");
+  });
+  test("adversarial payloads never become diagnostics, even beside recognized signatures", () => {
+    const secret = "unexpected-sensitive-fixture";
+    const raw = {
+      status: 1,
+      code: `ECONNRESET ${secret}`,
+      signal: secret,
+      message: secret,
+      stdout: `🧹 Linting…\n🔎 Type checking…\n🛡️ Full coverage suite…\nAuthorization: Bearer ${secret}\nDATABASE_URL=${secret}`,
+      stderr: `fatal: Authentication failed for 'https://user:${secret}@example.com'\n-----BEGIN PRIVATE KEY-----\n${secret}\n-----END PRIVATE KEY-----\nhusky - pre-push script failed (code 1)`,
+    };
+    const e = new PublicationProcessError(raw),
+      out = JSON.stringify({ message: e.message, ...safeFailure(e) });
+    expect(out).not.toMatch(
+      /unexpected-sensitive|Authorization|DATABASE_URL|PRIVATE KEY|https:|user:/,
+    );
+    expect(safeFailure(e)).toMatchObject({
+      lastPhase: "hook-coverage",
+      hookExitCode: 1,
+      evidence: ["local-hook-failed", "authentication-failed"],
+    });
+  });
+  test("unknown output stays unclassified; progress alone does not prove hook failure", () => {
+    expect(
+      safeFailure(
+        new PublicationProcessError({
+          status: 1,
+          stdout: "🧹 Linting…",
+          stderr: "arbitrary secret",
+        }),
+      ),
+    ).toEqual({ category: "exit", exitCode: 1, lastPhase: "hook-lint" });
+    expect(
+      safeFailure(
+        new PublicationProcessError({
+          status: 1,
+          stdout: "secret phase name",
+          stderr: "arbitrary secret",
+        }),
+      ),
+    ).toEqual({ category: "exit", exitCode: 1, lastPhase: "git-push" });
+  });
+  test("publication still inspects the remote exactly once after classified failure", async () => {
+    const d = fixture();
+    d.push.mockRejectedValue(
+      new PublicationProcessError({
+        status: 1,
+        stdout: "🛡️ Full coverage suite…",
+        stderr: "FAIL fixture\nhusky - pre-push script failed (code 1)",
+      }),
+    );
+    d.readRemote.mockResolvedValue(undefined);
+    await publishExactCommit(sha, d);
+    expect(d.push).toHaveBeenCalledTimes(1);
+    expect(d.readRemote).toHaveBeenCalledTimes(1);
+    expect(d.diagnostic).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stage: "push",
+        elapsedMs: 7,
+        failure: expect.objectContaining({
+          lastPhase: "hook-coverage",
+          hookExitCode: 1,
+        }),
+      }),
+    );
+    expect(PUBLICATION_TIMEOUT_MS).toBe(600000);
   });
 });
