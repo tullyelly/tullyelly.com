@@ -129,6 +129,16 @@ compatibility evidence as a runnable release.
    are inspected using authoritative deployment identity or domain assignment;
    no blind write retries, duplicate stages or automatic recovery are performed.
 
+Public health checks accept one HTTPS redirect from `tullyelly.com` to
+`www.tullyelly.com` with the exact path and query preserved. Both aliases must
+belong to the approved project and current expected deployment before and after
+promotion. HTTP downgrades, other hosts/ports, userinfo, fragments, changed
+paths/queries and additional domain redirects fail closed. Owner login redirects
+are inspected on the actual checked origin and never followed. Staged reads stay
+on the exact API-verified deployment URL; they cannot fall back to production.
+Automation bypass credentials are sent only to that staged URL, never to either
+public domain or a redirect destination. All requests omit ambient credentials.
+
 A staged production deployment uses the production database. Keep analytics disabled
 and do not browse mutation flows during staging. Provider-triggered cron remains
 safe because the collection switch is false. Regular traffic may still write data;
