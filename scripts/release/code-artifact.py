@@ -79,6 +79,16 @@ if __name__ == "__main__":
             extract(sys.argv[2], sys.argv[3], sys.argv[4])
         else:
             raise ValueError("code.artifact-arguments")
-    except Exception:
-        print("Code-only artifact validation failed; values omitted", file=sys.stderr)
+    except Exception as error:
+        allowed = {
+            "code.artifact-config", "code.artifact-external-link",
+            "code.artifact-env-file", "code.artifact-build-value",
+            "code.artifact-handler", "code.artifact-runtime-env",
+            "code.artifact-analytics-enabled", "code.artifact-digest-format",
+            "code.artifact-digest", "code.artifact-arguments",
+            "maintenance.archive-directory-not-empty", "maintenance.archive-member",
+            "maintenance.archive-link", "maintenance.archive-arguments",
+        }
+        invariant = str(error) if isinstance(error, ValueError) and str(error) in allowed else "code.artifact-validation-failed"
+        print(f"Code-only artifact validation failed: {invariant}; values omitted", file=sys.stderr)
         sys.exit(1)

@@ -289,7 +289,10 @@ test("code workflow cannot invoke database/credential executors or expose secret
     /console\.neon|env\/\$\{|cronSecret|RELEASE_DATABASE_URL/,
   );
   expect(code).toContain("releaseBuildSha256=");
-  expect(code).toContain('"--standalone"');
+  expect(code).toContain("scripts/release/code-build-context.py");
+  expect(
+    readFileSync("scripts/release/code-build-context.py", "utf8"),
+  ).toContain('"--standalone"');
   const legacy = readFileSync(
     ".github/workflows/analytics-release.yml",
     "utf8",
@@ -396,4 +399,40 @@ test("rollback unresolved outcome does not retry or stage", async () => {
   await expect(run(m, p)).rejects.toThrow("unresolved");
   expect(p.rollback).toHaveBeenCalledTimes(1);
   expect(p.stage).not.toHaveBeenCalled();
+});
+
+test("artifact diagnostics allow only recognized invariants, never arbitrary paths", () => {
+  const dir = mkdtempSync(join(tmpdir(), "artifact-diagnostics-"));
+  try {
+    writeFileSync(join(dir, "config.json"), JSON.stringify({ version: 3 }));
+    writeFileSync(
+      join(dir, ".env.SENSITIVE_PATH_DO_NOT_LOG"),
+      "SENSITIVE_VALUE_DO_NOT_LOG",
+    );
+    let r = spawnSync(
+      "python3",
+      ["scripts/release/code-artifact.py", "verify", dir],
+      { encoding: "utf8" },
+    );
+    expect(r.status).toBe(1);
+    expect(r.stderr.trim()).toBe(
+      "Code-only artifact validation failed: code.artifact-env-file; values omitted",
+    );
+    rmSync(join(dir, ".env.SENSITIVE_PATH_DO_NOT_LOG"));
+    writeFileSync(
+      join(dir, "config.json"),
+      "SENSITIVE_MALFORMED_JSON_DO_NOT_LOG",
+    );
+    r = spawnSync(
+      "python3",
+      ["scripts/release/code-artifact.py", "verify", dir],
+      { encoding: "utf8" },
+    );
+    expect(r.status).toBe(1);
+    expect(r.stderr.trim()).toBe(
+      "Code-only artifact validation failed: code.artifact-validation-failed; values omitted",
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

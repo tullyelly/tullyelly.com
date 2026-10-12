@@ -106,6 +106,14 @@ compatibility evidence as a runnable release.
    an empty production env file and an empty authentication home. No `vercel pull`,
    `--yes` build, deployment token, DB URL or production auth secret is supplied.
 4. The builder runs with an allowlisted environment. `SKIP_DB=true` is build-only.
+   The disposable build checkout temporarily quarantines only the tracked,
+   unmodified `.env.example` and `.env.test.example` templates. The pinned Vercel
+   builder otherwise packages these templates into functions. Unexpected root
+   `.env*` files, modified templates and template symlinks fail before exclusion.
+   Originals are restored after success, failure, SIGINT or SIGTERM; the child
+   process group is stopped before restoration. An I/O restoration failure retains
+   unrecovered originals and fails closed. SIGKILL or runner loss cannot execute
+   cleanup; this procedure runs only in a disposable build checkout.
    Distinct auth canaries are scanned out of all output; `.env*` files, runtime
    credential overrides and external symlinks fail artifact verification. Next
    runtime env references remain references; deploy receives neither placeholders
@@ -181,9 +189,22 @@ remained runtime environment reads. The uncompressed artifact was 1,284,864,000
 bytes; upload compression is handled by GitHub artifact storage. This proves local
 packaging and inspection, not live provider deployment or runtime secret attachment.
 
+The first clean Actions checkout failed at `code.artifact-env-file` because the
+builder packaged the two tracked env templates. The corrected build-context
+rehearsal used Node 22.20.0, CLI 63.1.2, locked dependencies and reviewed public
+settings in an isolated clone of `fc64135469b71cfbfa6519b367a492915dd692d0`
+with only the proposed build correction. The real builder and strict validator
+passed; both originals were restored byte-for-byte. Eight function descriptors
+contained no env files. Checksum-bound extraction also passed with the original
+source path unavailable. The archive was 1,278,504,960 bytes, SHA-256
+`f1c9074e52ee29941a90462f63081d88598f453ad82af885418a7f54734b57d7`.
+This is local build evidence, not deployment authorization or live runtime proof.
+
 Official CLI build documentation and installed 63.1.2 help support `--standalone`;
 the flag alone is not portability evidence. The output/extraction checks and actual
-clean-directory build rehearsal establish local portability. Live Vercel environment
+clean-directory build rehearsal establish local portability. Artifact errors expose
+only allowlisted invariant names; arbitrary exception details and file contents are
+omitted. Live Vercel environment
 attachment, staging, promotion and rollback still require an approved first run.
 See [build](https://vercel.com/docs/cli/build),
 [deploy](https://vercel.com/docs/cli/deploy) and
