@@ -10,6 +10,7 @@ import {
 } from "./release/manifest";
 import { loadCodeManifest, type CodeManifest } from "./release/code-manifest";
 import { executeCodeRelease, type CodeProviders } from "./release/code-release";
+import { codeCli } from "./release/code-cli";
 
 import {
   checkCodeHealth,
@@ -211,26 +212,7 @@ async function guard(allowed: string[]) {
     return current;
   });
 }
-function cli(args: string[]) {
-  // Do not pass GitHub, App or build-only variables to the deployment process.
-  const env: NodeJS.ProcessEnv = {
-    NODE_ENV: "production",
-    PATH: process.env.PATH,
-    HOME: process.env.HOME,
-    CI: "true",
-    NO_UPDATE_NOTIFIER: "1",
-    VERCEL_TOKEN: required("VERCEL_TOKEN"),
-    VERCEL_TELEMETRY_DISABLED: "1",
-  };
-  const r = spawnSync(
-    "vercel",
-    [...args, "--non-interactive", "--scope", manifest.vercel.teamId],
-    { encoding: "utf8", env, timeout: 900000, maxBuffer: 1024 * 1024 },
-  );
-  if (r.status !== 0 || r.error)
-    throw new Error("code.provider-operation-unresolved");
-  return r.stdout.trim();
-}
+
 async function health(
   d: z.infer<typeof deploymentSchema>,
   publicDomain: boolean,
@@ -351,28 +333,38 @@ async function main() {
     deployment,
     lookup,
     health,
+    reportReconciliation(diagnostic) {
+      console.error(
+        JSON.stringify({ event: "code-release-reconciliation", ...diagnostic }),
+      );
+    },
     async stage() {
-      const output = cli([
-        "deploy",
-        "--prebuilt",
-        "--prod",
-        "--skip-domain",
-        "--yes",
-        "--project",
-        manifest.vercel.projectId,
-        "--meta",
-        `releaseSha=${manifest.commit}`,
-        "--meta",
-        `githubCommitSha=${manifest.commit}`,
-        "--meta",
-        `releaseManifest=${required("RELEASE_MANIFEST_SHA256")}`,
-        "--meta",
-        `releaseBuildSha256=${required("RELEASE_BUILD_SHA256")}`,
-        "--meta",
-        "collectionDisabled=true",
-        "--env",
-        "ANALYTICS_SYNC_ENABLED=false",
-      ]);
+      const output = codeCli(
+        "vercel.stage",
+        [
+          "deploy",
+          "--prebuilt",
+          "--prod",
+          "--skip-domain",
+          "--yes",
+          "--project",
+          manifest.vercel.projectId,
+          "--meta",
+          `releaseSha=${manifest.commit}`,
+          "--meta",
+          `githubCommitSha=${manifest.commit}`,
+          "--meta",
+          `releaseManifest=${required("RELEASE_MANIFEST_SHA256")}`,
+          "--meta",
+          `releaseBuildSha256=${required("RELEASE_BUILD_SHA256")}`,
+          "--meta",
+          "collectionDisabled=true",
+          "--env",
+          "ANALYTICS_SYNC_ENABLED=false",
+        ],
+        manifest.vercel.teamId,
+        required("VERCEL_TOKEN"),
+      );
       const u = new URL(output);
       if (
         u.protocol !== "https:" ||
@@ -383,10 +375,20 @@ async function main() {
       return deployment(u.hostname);
     },
     async promote(id) {
-      cli(["promote", id, "--yes"]);
+      codeCli(
+        "vercel.promote",
+        ["promote", id, "--yes"],
+        manifest.vercel.teamId,
+        required("VERCEL_TOKEN"),
+      );
     },
     async rollback(id) {
-      cli(["rollback", id, "--yes"]);
+      codeCli(
+        "vercel.rollback",
+        ["rollback", id, "--yes"],
+        manifest.vercel.teamId,
+        required("VERCEL_TOKEN"),
+      );
     },
   };
   const id = await executeCodeRelease(

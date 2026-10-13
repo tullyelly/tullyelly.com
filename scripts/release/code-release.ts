@@ -1,6 +1,12 @@
 /** Provider orchestration has no database API, migration runner or credential mutator. */
 import type { CodeManifest } from "./code-manifest";
 import { verifyReleaseDeploymentIdentity } from "./manifest";
+import {
+  CodeDiagnosticError,
+  classifyCodeFailure,
+  codeGuard,
+  type Diagnostic,
+} from "./code-diagnostics";
 
 export type CodeDeployment = {
   id: string;
@@ -11,6 +17,10 @@ export type CodeDeployment = {
   meta?: Record<string, unknown>;
 };
 export interface CodeProviders {
+  reportReconciliation?(diagnostic: {
+    outcome: "found";
+    originalFailure: Diagnostic;
+  }): void;
   guard(allowed: string[]): Promise<string>;
   deployment(id: string): Promise<CodeDeployment>;
   lookup(): Promise<CodeDeployment | undefined>;
@@ -38,53 +48,102 @@ export async function executeCodeRelease(
         m.rollback.applicationSha
     )
       throw new Error("code.rollback-identity");
-    await p.health(d, false);
+    await codeGuard("health.staged", () => p.health(d, false));
     await p.guard([m.vercel.productionDeploymentId]);
     // Exactly one mutation. Ambiguous outcomes are verified, never blindly retried.
-    let failed = false;
+    let failure: Diagnostic | undefined;
     try {
-      await p.rollback(d.id);
-    } catch {
-      failed = true;
+      await codeGuard("vercel.rollback", () => p.rollback(d.id));
+    } catch (error) {
+      failure = classifyCodeFailure("vercel.rollback", error);
     }
     const current = await p.guard([m.vercel.productionDeploymentId, d.id]);
     if (current !== d.id)
-      throw new Error(
-        failed
+      throw outcomeError(
+        "vercel.rollback",
+        failure
           ? "code.rollback-outcome-unresolved"
           : "code.rollback-not-assigned",
+        failure,
       );
-    await p.health(d, true);
+    if (failure)
+      p.reportReconciliation?.({ outcome: "found", originalFailure: failure });
+    await codeGuard("health.public", () => p.health(d, true));
     return d.id;
   }
-  let target = await p.lookup();
+  let target = await codeGuard("vercel.lookup", () => p.lookup());
   if (!target) {
     try {
-      target = await p.stage();
-    } catch {
-      // A process timeout/error can follow a successful write.
-      target = await p.lookup();
-      if (!target) throw new Error("code.stage-outcome-unresolved");
+      target = await codeGuard("vercel.stage", () => p.stage());
+    } catch (error) {
+      // A process timeout/error can follow a successful write. Preserve both observations.
+      const originalFailure = classifyCodeFailure("vercel.stage", error);
+      try {
+        target = await codeGuard("vercel.lookup", () => p.lookup());
+      } catch (lookupError) {
+        throw new CodeDiagnosticError({
+          guard: "vercel.stage",
+          category: "invariant",
+          invariant: "code.stage-reconciliation-failed",
+          originalFailure,
+          reconciliation: "failed",
+          reconciliationFailure: classifyCodeFailure(
+            "vercel.lookup",
+            lookupError,
+          ),
+        });
+      }
+      if (!target)
+        throw new CodeDiagnosticError({
+          guard: "vercel.stage",
+          category: "invariant",
+          invariant: "code.stage-outcome-unresolved",
+          originalFailure,
+          reconciliation: "not-found",
+        });
+      p.reportReconciliation?.({ outcome: "found", originalFailure });
     }
   }
-  verifyReleaseDeploymentIdentity(target, m, manifestDigest, buildDigest);
-  await p.health(target, false);
+  await codeGuard("vercel.identity", () =>
+    verifyReleaseDeploymentIdentity(target, m, manifestDigest, buildDigest),
+  );
+  await codeGuard("health.staged", () => p.health(target, false));
   const current = await p.guard([m.vercel.productionDeploymentId, target.id]);
   if (current !== target.id) {
-    let failed = false;
+    let failure: Diagnostic | undefined;
     try {
-      await p.promote(target.id);
-    } catch {
-      failed = true;
+      await codeGuard("vercel.promote", () => p.promote(target.id));
+    } catch (error) {
+      failure = classifyCodeFailure("vercel.promote", error);
     }
     const after = await p.guard([m.vercel.productionDeploymentId, target.id]);
     if (after !== target.id)
-      throw new Error(
-        failed
+      throw outcomeError(
+        "vercel.promote",
+        failure
           ? "code.promote-outcome-unresolved"
           : "code.promote-not-assigned",
+        failure,
       );
+    if (failure)
+      p.reportReconciliation?.({ outcome: "found", originalFailure: failure });
   }
-  await p.health(target, true);
+  await codeGuard("health.public", () => p.health(target, true));
   return target.id;
+}
+
+function outcomeError(
+  guard: "vercel.promote" | "vercel.rollback",
+  invariant: string,
+  originalFailure?: Diagnostic,
+) {
+  const error = new CodeDiagnosticError({
+    guard,
+    category: "invariant",
+    invariant,
+    originalFailure,
+    reconciliation: "not-found",
+  });
+  error.message = invariant;
+  return error;
 }
