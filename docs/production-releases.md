@@ -175,6 +175,16 @@ compatibility evidence as a runnable release.
    are inspected using authoritative deployment identity or domain assignment;
    no blind write retries, duplicate stages or automatic recovery are performed.
 
+Owner-admin denial can be an HTTP redirect or Next.js's streamed login redirect
+inside an HTTP 200 document. The health reader validates the framework's exact
+`__next-page-redirect` refresh marker on the checked origin, with only `/login`
+and `/api/auth/signin` destinations. It never follows the login URL. Ordinary
+200 admin content, private analytics sections/controls, marker examples in comments
+or raw-text elements, malformed/additional refreshes, userinfo, fragments, other
+hosts and HTTP downgrades fail. The actual HTTP status is preserved; recognizing
+a streamed denial does not turn the response into a synthetic HTTP redirect.
+Fixtures use the installed Next renderer that generates the real marker.
+
 Public health checks accept one HTTPS redirect from `tullyelly.com` to
 `www.tullyelly.com` with the exact path and query preserved. Both aliases must
 belong to the approved project and current expected deployment before and after

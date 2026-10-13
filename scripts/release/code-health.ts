@@ -6,6 +6,48 @@ const apex = "https://tullyelly.com";
 const www = "https://www.tullyelly.com";
 const redirects = new Set([301, 302, 303, 307, 308]);
 
+/** Next can emit its login redirect after the HTTP headers have already streamed. */
+function verifyStreamedLoginRedirect(html: string, checkedUrl: URL) {
+  // A redirect cannot excuse exposure of the private analytics page or controls.
+  if (
+    /Last attempted run|Daily catch-up cursor|No selected import range|Test connection|Continue import/.test(
+      html,
+    )
+  )
+    throw new Error("code.health-owner-authorization");
+  // Only actual metadata counts; examples inside comments or raw-text elements do not.
+  const markup = html
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<(script|style|textarea|title)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
+  const tags = [
+    ...markup.matchAll(
+      /<meta id="__next-page-redirect" http-equiv="refresh" content="([01]);url=([^"<>]+)"\s*\/?>/g,
+    ),
+  ];
+  const refreshes =
+    markup.match(/<meta\b[^>]*\bhttp-equiv=["']refresh["'][^>]*>/gi) ?? [];
+  if (
+    !tags.length ||
+    tags.length !== refreshes.length ||
+    /<(script|style|textarea|title)\b/i.test(markup)
+  )
+    throw new Error("code.health-owner-authorization");
+  for (const tag of tags) {
+    const destination = tag[2].replaceAll("&amp;", "&");
+    if (/&(?:#[xX]?[0-9a-fA-F]+|[a-zA-Z]+);/.test(destination))
+      throw new Error("code.health-login-redirect");
+    const login = new URL(destination, checkedUrl);
+    if (
+      login.origin !== checkedUrl.origin ||
+      login.username ||
+      login.password ||
+      login.hash ||
+      !["/login", "/api/auth/signin"].includes(login.pathname)
+    )
+      throw new Error("code.health-login-redirect");
+  }
+}
+
 export function verifyHealthDomainAliases(
   values: unknown[],
   projectId: string,
@@ -34,6 +76,7 @@ export async function readHealthResponse(options: {
   path: string;
   bypassSecret?: string;
   allowLoginRedirect?: boolean;
+  onLoginRedirect?: (protocol: "http" | "streamed") => void;
   timeoutMs: number;
   fetcher?: typeof fetch;
 }) {
@@ -97,6 +140,10 @@ export async function readHealthResponse(options: {
       !["/login", "/api/auth/signin"].includes(login.pathname)
     )
       throw new Error("code.health-login-redirect");
+    options.onLoginRedirect?.("http");
+  } else if (response.status === 200 && options.allowLoginRedirect) {
+    verifyStreamedLoginRedirect(await response.clone().text(), url);
+    options.onLoginRedirect?.("streamed");
   }
   return response;
 }
@@ -116,7 +163,12 @@ export async function checkCodeHealth(options: {
     d.readyState !== "READY"
   )
     throw new Error("code.health-deployment-identity");
-  const read = (path: string, timeoutMs: number, allowLoginRedirect = false) =>
+  const read = (
+    path: string,
+    timeoutMs: number,
+    allowLoginRedirect = false,
+    onLoginRedirect?: (protocol: "http" | "streamed") => void,
+  ) =>
     readHealthResponse({
       stagedHost: d.url,
       publicDomain: options.publicDomain,
@@ -125,6 +177,7 @@ export async function checkCodeHealth(options: {
       fetcher: options.fetcher,
       timeoutMs,
       allowLoginRedirect,
+      onLoginRedirect,
     });
   for (const path of options.operation === "deploy"
     ? ["/", "/shaolin", "/stats"]
@@ -139,7 +192,13 @@ export async function checkCodeHealth(options: {
   if (options.operation === "rollback") return;
   if ((await read("/api/cron/analytics", 15000)).status !== 401)
     throw new Error("code.health-cron-authorization");
-  const admin = await read("/mark2/admin/analytics", 15000, true);
-  if (![302, 303, 307, 308, 401, 403, 404].includes(admin.status))
+  let loginDenied = false;
+  const admin = await read("/mark2/admin/analytics", 15000, true, () => {
+    loginDenied = true;
+  });
+  if (
+    ![302, 303, 307, 308, 401, 403, 404].includes(admin.status) &&
+    !(admin.status === 200 && loginDenied)
+  )
     throw new Error("code.health-owner-authorization");
 }

@@ -8,6 +8,23 @@ const stage = "approved-stage.vercel.app";
 const apex = "https://tullyelly.com";
 const www = "https://www.tullyelly.com";
 const secret = "fixture-bypass-secret";
+// Next aliases this renderer to the edge implementation for server-inserted HTML.
+jest.mock("react-dom/server", () =>
+  jest.requireActual("react-dom/server.edge"),
+);
+import { getRedirectError } from "next/dist/client/components/redirect";
+import { RedirectType } from "next/dist/client/components/redirect-error";
+import { makeGetServerInsertedHTML } from "next/dist/server/app-render/make-get-server-inserted-html";
+
+async function streamedRedirect(location: string) {
+  return makeGetServerInsertedHTML({
+    polyfills: [],
+    renderServerInsertedHTML: () => [],
+    serverCapturedErrors: [getRedirectError(location, RedirectType.replace)],
+    tracingMetadata: undefined,
+    basePath: "",
+  })();
+}
 const deployment = {
   id: "dpl_approved",
   url: stage,
@@ -255,4 +272,95 @@ test("both exact domain aliases must belong to the approved project and deployme
   expect(() =>
     verifyHealthDomainAliases([aliases[0]], "prj_fixture", "dpl_approved"),
   ).toThrow();
+});
+
+test.each([false, true])(
+  "actual Next streamed login redirect is checked on the correct origin, public=%s",
+  async (publicDomain) => {
+    const body = await streamedRedirect(
+      `/login?callbackUrl=%2Fmark2%2Fadmin%2Fanalytics&source=release`,
+    );
+    const fetcher: typeof fetch = jest.fn(async (input) => {
+      const u = new URL(String(input));
+      if (publicDomain && u.origin === apex)
+        return redirect(`${www}${u.pathname}${u.search}`);
+      if (u.pathname === "/api/cron/analytics")
+        return new Response(null, { status: 401 });
+      if (u.pathname === "/mark2/admin/analytics")
+        return new Response(`<!doctype html><html>${body}</html>`);
+      return new Response("<!doctype html><html>fixture</html>");
+    });
+    await expect(
+      checkCodeHealth({
+        deployment,
+        projectId: "prj_fixture",
+        publicDomain,
+        operation: "deploy",
+        fetcher,
+        bypassSecret: secret,
+      }),
+    ).resolves.toBeUndefined();
+    for (const [input, init] of (fetcher as jest.Mock).mock.calls) {
+      expect(new URL(String(input)).pathname).not.toBe("/login");
+      expect(init.headers).toEqual(
+        publicDomain ? {} : { "x-vercel-protection-bypass": secret },
+      );
+    }
+  },
+);
+
+test.each([
+  "https://unexpected.example/login",
+  `${apex}/login`,
+  `http://${stage}/login`,
+  `https://user:password@${stage}/login`,
+  `/login#fragment`,
+  "/unapproved",
+])(
+  "streamed redirect rejects unapproved login destination %# without following it",
+  async (location) => {
+    const body = await streamedRedirect(location);
+    const fetcher = jest.fn(
+      async () => new Response(`<!doctype html><html>${body}</html>`),
+    );
+    await expect(
+      readHealthResponse({
+        stagedHost: stage,
+        publicDomain: false,
+        path: "/mark2/admin/analytics",
+        timeoutMs: 15000,
+        allowLoginRedirect: true,
+        bypassSecret: secret,
+        fetcher,
+      }),
+    ).rejects.toThrow("login-redirect");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  },
+);
+
+test("streamed denial does not excuse private content, hidden markers or a second refresh", async () => {
+  const body = await streamedRedirect("/login");
+  for (const html of [
+    "<!doctype html><h1>Analytics administration</h1>",
+    `<!doctype html><!--${body}-->`,
+    `<!doctype html><script>${body}</script>`,
+    `<!doctype html><textarea>${body}</textarea>`,
+    `<!doctype html><textarea>${body}`,
+    `<!doctype html>${body}<p>Last attempted run</p>`,
+    `<!doctype html>${body}<button>Test connection</button>`,
+    `<!doctype html>${body}<meta http-equiv="refresh" content="0;url=https://unexpected.example/login"/>`,
+  ]) {
+    const fetcher = jest.fn(async () => new Response(html));
+    await expect(
+      readHealthResponse({
+        stagedHost: stage,
+        publicDomain: false,
+        path: "/mark2/admin/analytics",
+        timeoutMs: 15000,
+        allowLoginRedirect: true,
+        fetcher,
+      }),
+    ).rejects.toThrow("authorization");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  }
 });
