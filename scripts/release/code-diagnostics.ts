@@ -1,6 +1,7 @@
 /** Fixed labels only: never serialize exceptions, request URLs or provider values. */
 import { z } from "zod";
 import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
+import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
 import {
   GitHubApiError,
   ReleaseVerificationError,
@@ -98,6 +99,12 @@ export type Diagnostic = {
   signal?: string | null;
   spawnErrorCode?: string;
   processCategory?: "spawn" | "signal" | "exit";
+  provider?: {
+    reason?: string;
+    code?: string;
+    message?: string;
+    httpStatus?: number;
+  };
   originalFailure?: Diagnostic;
   reconciliation?: "not-found" | "failed";
   reconciliationFailure?: Diagnostic;
@@ -208,6 +215,8 @@ function sanitizeDiagnostic(
       safe.processCategory = d.processCategory;
     if (d.reconciliation === "not-found" || d.reconciliation === "failed")
       safe.reconciliation = d.reconciliation;
+    const provider = safeProviderDiagnostic(d.provider);
+    if (provider) safe.provider = provider;
     if (depth < 1) {
       for (const key of ["originalFailure", "reconciliationFailure"] as const) {
         if (d[key])

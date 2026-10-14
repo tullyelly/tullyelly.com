@@ -183,6 +183,63 @@ test("JSON parse diagnostics retain the category while dropping source bytes", (
     ),
   ).toEqual({ guard: "manifest.validation", category: "json" });
 });
+test("provider labels survive reconciliation, report storage and final rendering; forged fields do not", () => {
+  const root = mkdtempSync(join(tmpdir(), "provider-report-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  try {
+    const path = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = path;
+    reportCodeEvent({
+      event: "failure",
+      diagnostic: {
+        guard: "vercel.stage",
+        category: "invariant",
+        reconciliation: "not-found",
+        originalFailure: {
+          guard: "vercel.stage",
+          category: "process",
+          exitStatus: 1,
+          provider: {
+            reason: "permission_denied",
+            code: "forbidden",
+            httpStatus: 403,
+            message: "SENSITIVE_DO_NOT_LOG",
+            body: "SENSITIVE_DO_NOT_LOG",
+          },
+        },
+      },
+    });
+    const stored = readFileSync(path, "utf8");
+    expect(stored).not.toContain("SENSITIVE_DO_NOT_LOG");
+    const rendered = summary([JSON.parse(stored)], {});
+    expect(rendered).toContain("reconciliation=not-found");
+    expect(rendered).toContain("provider.reason=permission_denied");
+    expect(rendered).toContain("provider.code=forbidden");
+    expect(rendered).toContain("provider.httpStatus=403");
+    expect(
+      summary(
+        [
+          {
+            event: "failure",
+            diagnostic: {
+              provider: {
+                reason: "SENSITIVE_DO_NOT_LOG",
+                code: "SENSITIVE_DO_NOT_LOG",
+                message: "SENSITIVE_DO_NOT_LOG",
+                httpStatus: 999,
+              },
+            },
+          },
+        ],
+        {},
+      ),
+    ).not.toContain("SENSITIVE_DO_NOT_LOG");
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 test("one release summary includes verified evidence, stage timings and available deployment identity", () => {
   const text = summary(
     [

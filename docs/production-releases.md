@@ -7,6 +7,12 @@ Preparation and this policy do not authorize a production release. Do not approv
 the environment gate on the user's behalf. Only the coordinating agent initiates
 a release; specialists cannot perform production operations.
 
+The [Appleton East incident recovery plan](chronicle-publication-recovery.md)
+prepares a one-time owner-operated native source deployment. Its exception to the
+ordinary protected artifact workflow is **proposed, not approved**. No command in
+that plan authorizes staging or promotion without the recorded exact-candidate
+exception and human release approval.
+
 ## Current readiness
 
 The App-authenticated release-control bootstrap is complete. Parent run
@@ -66,6 +72,16 @@ failed lookup. A recovered deployment reports the found outcome and original
 failure without issuing a second stage. Lookup, identity and health failures have
 fixed labels. The restricted deployment environment is unchanged. Diagnostics do
 not authorize retries, manual deployment, gate bypass or promotion.
+
+The independent incident diagnostics patch also retains bounded, allowlisted
+provider reason/code labels, numeric HTTP status and fixed message classifications.
+It examines at most 16 KiB per captured stream, discards arbitrary provider text,
+JSON values, hints and suggested commands, and revalidates retained fields before
+report storage and summary rendering. Unknown provider details remain unavailable.
+Original provider labels survive failed/not-found reconciliation. Successful stage
+output must still be exactly one HTTPS deployment origin under vercel.app; error
+streams never supply a deployment URL. These labels cannot recover suppressed
+output from earlier runs or establish their underlying cause.
 
 ## Ordinary code-only deployment
 

@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
+import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
 
 const labels = new Set([
   "Installing source dependencies",
@@ -114,6 +115,12 @@ export function diagnosticSummary(d) {
     categories.has(d.category) ? d.category : "unknown",
   ];
   if (operations.has(d.operation)) parts.push(`operation=${d.operation}`);
+  const provider = safeProviderDiagnostic(d.provider);
+  if (provider)
+    for (const [key, value] of Object.entries(provider))
+      parts.push(`provider.${key}=${value}`);
+  if (["not-found", "failed"].includes(d.reconciliation))
+    parts.push(`reconciliation=${d.reconciliation}`);
   if (invariants.has(d.invariant)) parts.push(`check=${d.invariant}`);
   if (Array.isArray(d.fields))
     parts.push(

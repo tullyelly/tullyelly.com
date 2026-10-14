@@ -1,0 +1,10 @@
+# Native recovery uploads use existing production environment configuration.
+**/.env*
+.contentlayer/
+.build/
+lib/build-info.ts
+coverage/
+test-results/
+playwright-report/
+.pw-browsers/
+tsconfig.tsbuildinfo

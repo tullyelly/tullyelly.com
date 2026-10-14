@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { CodeDiagnosticError, type Guard } from "./code-diagnostics";
+import { providerDiagnostic } from "./provider-diagnostic.mjs";
 
 type CliOperation = Extract<
   Guard,
@@ -23,7 +24,7 @@ const signals = new Set([
   "SIGBUS",
 ]);
 
-/** Capture process structure only; never serialize stdout, stderr or error messages. */
+/** Retain fixed provider labels and process structure, never raw output. */
 export function codeCli(
   operation: CliOperation,
   args: string[],
@@ -67,7 +68,23 @@ export function codeCli(
         : result.signal
           ? "signal"
           : "exit",
+      provider: providerDiagnostic(result.stdout, result.stderr),
     });
   }
   return result.stdout.trim();
+}
+
+export function stagedDeploymentUrl(output: string) {
+  try {
+    const url = new URL(output);
+    if (
+      url.protocol === "https:" &&
+      /^[a-z0-9-]+\.vercel\.app$/.test(url.hostname) &&
+      url.origin === output
+    )
+      return url;
+  } catch {
+    /* Never include untrusted output in an exception. */
+  }
+  throw new Error("code.stage-output-unresolved");
 }

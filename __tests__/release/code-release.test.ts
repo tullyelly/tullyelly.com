@@ -485,6 +485,11 @@ test.each([false, true])(
         exitStatus: 2,
         signal: null,
         processCategory: "exit",
+        provider: {
+          reason: "permission_denied",
+          code: "forbidden",
+          httpStatus: 403,
+        },
       });
     });
     p.lookup = jest.fn().mockResolvedValueOnce(undefined);
@@ -516,6 +521,11 @@ test.each([false, true])(
         guard: "vercel.stage",
         category: "process",
         exitStatus: 2,
+        provider: {
+          reason: "permission_denied",
+          code: "forbidden",
+          httpStatus: 403,
+        },
       },
     });
     if (lookupFails)

@@ -1,6 +1,6 @@
 /** @jest-environment node */
 import type { spawnSync, SpawnSyncReturns } from "node:child_process";
-import { codeCli } from "../../scripts/release/code-cli";
+import { codeCli, stagedDeploymentUrl } from "../../scripts/release/code-cli";
 import { classifyCodeFailure } from "../../scripts/release/code-diagnostics";
 
 const sensitive = "SENSITIVE_TOKEN_URL_HEADER_DO_NOT_LOG";
@@ -79,4 +79,83 @@ test("deployment child receives only the existing credential allowlist", () => {
     "team_fixture",
   ]);
   expect(options).toMatchObject({ timeout: 900000, maxBuffer: 1024 * 1024 });
+});
+
+test.each([
+  [
+    JSON.stringify({
+      status: "error",
+      reason: "scope_not_accessible",
+      message: `Not authorized: Trying to access resource under scope ${sensitive}`,
+      hint: sensitive,
+      next: [{ command: sensitive }],
+    }),
+    "",
+    { reason: "scope_not_accessible", message: "scope-access-denied" },
+  ],
+  [
+    "",
+    JSON.stringify({
+      error: { code: "forbidden", statusCode: 403, message: sensitive },
+    }),
+    { code: "forbidden", httpStatus: 403 },
+  ],
+  [
+    "",
+    `Error: Git author ${sensitive} must have access to team ${sensitive}`,
+    { message: "git-author-access-required" },
+  ],
+  [
+    JSON.stringify({
+      reason: sensitive,
+      error: { code: sensitive, message: sensitive },
+      env: sensitive,
+    }),
+    sensitive,
+    undefined,
+  ],
+  ["x".repeat(17000) + sensitive, "", undefined],
+])(
+  "provider rejection retains bounded fixed labels without raw output",
+  (stdout, stderr, provider) => {
+    let failure: unknown;
+    try {
+      codeCli(
+        "vercel.stage",
+        ["deploy"],
+        "team_fixture",
+        sensitive,
+        runner({ status: 1, stdout, stderr }),
+      );
+    } catch (error) {
+      failure = error;
+    }
+    const diagnostic = classifyCodeFailure("production.check", failure);
+    expect(diagnostic.provider).toEqual(provider);
+    expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+  },
+);
+
+test("only stdout supplies a successful staged URL", () => {
+  const output = codeCli(
+    "vercel.stage",
+    ["deploy"],
+    "team_fixture",
+    sensitive,
+    runner({ stdout: "https://fixture.vercel.app\n", stderr: sensitive }),
+  );
+  expect(stagedDeploymentUrl(output).hostname).toBe("fixture.vercel.app");
+});
+test.each([
+  "https://fixture.vercel.app/path",
+  "https://user:password@fixture.vercel.app",
+  "https://fixture.vercel.app?token=secret",
+  "https://fixture.vercel.app.evil.example",
+  "http://fixture.vercel.app",
+  "https://fixture.vercel.app\nhttps://other.vercel.app",
+  sensitive,
+])("rejects unsafe successful provider URL", (value) => {
+  expect(() => stagedDeploymentUrl(value)).toThrow(
+    "code.stage-output-unresolved",
+  );
 });

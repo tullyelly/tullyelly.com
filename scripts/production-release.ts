@@ -10,7 +10,7 @@ import {
 } from "./release/manifest";
 import { loadCodeManifest, type CodeManifest } from "./release/code-manifest";
 import { executeCodeRelease, type CodeProviders } from "./release/code-release";
-import { codeCli } from "./release/code-cli";
+import { codeCli, stagedDeploymentUrl } from "./release/code-cli";
 import {
   assertCodeRevision,
   artifactBinding,
@@ -451,13 +451,7 @@ async function main() {
         manifest.vercel.teamId,
         required("VERCEL_TOKEN"),
       );
-      const u = new URL(output);
-      if (
-        u.protocol !== "https:" ||
-        !/^[a-z0-9-]+\.vercel\.app$/.test(u.hostname) ||
-        u.origin !== output
-      )
-        throw new Error("code.stage-output-unresolved");
+      const u = stagedDeploymentUrl(output);
       return deployment(u.hostname);
     },
     async promote(id) {
