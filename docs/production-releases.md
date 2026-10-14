@@ -139,7 +139,7 @@ compatibility evidence as a runnable release.
    from preparing or publishing code.
 2. The App starts the child. Existing bot actor/triggering actor, installation,
    dispatcher provenance, protected-main and reviewer checks remain mandatory.
-3. Preparation runs repository validation and `vercel build --prod --standalone
+3. Preparation runs `npm run verify:source` and exactly one `vercel build --prod --standalone
 --non-interactive` using pinned CLI 63.1.2, reviewed local project settings,
    an empty production env file and an empty authentication home. No `vercel pull`,
    `--yes` build, deployment token, DB URL or production auth secret is supplied.
@@ -157,9 +157,12 @@ compatibility evidence as a runnable release.
    runtime env references remain references; deploy receives neither placeholders
    nor SKIP_DB. Public build-time values must be reviewed because they are baked
    into client output. Unsupported build-time secret requirements are NO-GO.
-5. Python validates output and extracts the tar into a fresh directory. Artifact
-   checksum and manifest digest are bound to the run; retention is one day. After
-   approval, the same safe extraction and verification run on the downloaded bytes.
+5. Python validates output and extracts the tar into a fresh directory. A provenance
+   descriptor binds production target, exact application SHA, project/team,
+   reviewed settings and public-environment digests, manifest digest, CLI version,
+   run ID and builder attempt. The archive checksum covers that descriptor and all
+   output bytes. Artifact names are attempt-specific; retention is one day. After
+   approval, the same safe extraction and binding checks run on the downloaded bytes.
 6. You review the exact SHA, schema evidence, manifest/build digests and previous
    deployment, then approve `production-release`. Never approve on your behalf.
 7. The protected step verifies recorded human approval before provider operations,
@@ -174,6 +177,129 @@ compatibility evidence as a runnable release.
 9. Verify public health and record new and previous IDs. Provider write failures
    are inspected using authoritative deployment identity or domain assignment;
    no blind write retries, duplicate stages or automatic recovery are performed.
+
+### Single-artifact production path
+
+Story 1.1's application-wide source validator replaces verify:agent in
+production-release preparation. It still checks workflows, prepares content,
+lints, typechecks, generates Prisma and runs full thresholded Jest coverage.
+The canonical builder alone creates the production deployment output; no separate
+Next build or preview artifact is accepted as production evidence. The builder
+checks the exact Git HEAD and clean tracked/untracked source inputs, local project/team and settings digest, empty production
+env file and absence of stale output before invoking the existing credential-free
+build context. Reviewed settings are not replaced with a faster build command.
+The default Vercel builder can still perform its own installation/preparation.
+The convenient full local verify:agent command remains unchanged.
+
+[Artifact handling](../scripts/release/code-artifact.ts) packages one archive,
+streams its digest, records its uncompressed byte size and verifies clean-directory
+extraction. Repeated packaging refuses to overwrite an existing archive. Strict
+Python extraction still rejects escaping paths/links, environment files, build
+credential canaries and runtime credential overrides. Downloaded output must match
+the full `.release-build.json` binding; a matching archive checksum alone cannot
+make a preview, another revision or changed settings/public build values equivalent.
+The executor rechecks provenance before a new prebuilt stage. Existing provider
+lookups retain exact SHA/manifest/build identity, production readiness, target,
+disabled collection and drift checks before reuse or promotion.
+
+Preparation bundles the reviewed TypeScript release executor with the existing
+lockfile-installed esbuild used by tsx. This tooling file is separate from the
+single deployment artifact and has its own SHA-256. The protected job downloads
+and verifies that checksum before execution; it runs the bundle directly with
+Node and does **not** install application dependencies, tsx or Prisma. It still
+installs pinned Vercel CLI 63.1.2 before any protected token is exposed. Tooling
+is never downloaded from a different run or executed before checksum verification.
+No production credentials are packaged, cached, passed to installation or supplied
+to the build. Provider credentials remain scoped to the existing protected check
+and deploy steps. The executor's restricted CLI child environment is preserved.
+
+Artifact names include run ID and the preparation job's saved builder attempt.
+A deployment-only rerun downloads names/checksum/binding from those saved outputs,
+even when its own GITHUB_RUN_ATTEMPT changes. A full preparation rerun creates a
+new artifact identity; previous bytes are not overwritten or treated as equivalent.
+Any already-created provider deployment must still match the selected build digest;
+an ambiguous or different build stops rather than staging another deployment blindly.
+Rollback performs source validation and uses the verified executor but creates no
+new application artifact. Its separate manifest, approval, exact retained target,
+schema compatibility and public health checks remain mandatory.
+
+### Release summary and failure diagnostics
+
+[run-stages](../scripts/run-stages.mjs) retains its existing console timing and
+optionally appends stage records to RELEASE_REPORT_PATH. The fixed
+[release stage runner](../scripts/release/run-stage.mjs) reuses that timer for
+installation, plan, source validation, build/package, executor verification,
+artifact restoration, post-approval checks and the approved operation. Parent
+source timing includes the individual source stages, which retain console timing.
+Source validation's child processes do not inherit the release report path, so
+unit fixtures cannot add fake release stages or failures. The summary records the
+outer source-validation stage; do not count approval wait as build time.
+
+Preparation publishes credential-free approval evidence before the environment
+gate: revision, manifest/settings digests, artifact digest/size, builder attempt,
+previous deployment and rollback target in its report artifact and build logs.
+The preparation report includes a readable `release-approval.md`; it is published
+as evidence without adding a second GitHub step summary. Hidden-file inclusion is
+limited to explicit reviewed manifest, executor and sanitized report files.
+Review that evidence and the approved manifest before granting approval. Evidence
+URLs and arbitrary manifest/provider strings are excluded from the report.
+After preparation and the protected job finish, one `summary` job runs with
+`always()` and writes the single consolidated release summary. It needs only Node,
+reviewed source and the selected report artifacts; it receives no protected token.
+
+The summary contains revision/target revision, operation, manifest/settings/build
+digests, archive size, builder attempt, available verified deployment identity,
+previous/rollback IDs, job outcomes and recorded stage durations. IDs observed
+before a later health failure remain available; they do not imply successful
+promotion. Missing reports, early failures, cancellation and skipped protected
+jobs show unavailable evidence and explicit outcomes rather than invented timings
+or a successful release. Runner loss or summary-job infrastructure failure can
+prevent complete diagnostics; the authoritative failed workflow steps remain.
+
+| Failure                                              | Retained safe context                                                                               |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Manifest/revision/settings/provenance/checksum       | Fixed guard and invariant; known validation field paths                                             |
+| Metadata HTTP/network/JSON                           | Fixed provider operation, HTTP status or allowlisted network codes; no response body                |
+| Builder or provider CLI process                      | Fixed operation/check, numeric exit status and allowlisted signal/spawn code; no raw process output |
+| Staging/promotion/rollback reconciliation            | Original sanitized failure plus recovered/not-found/failed reconciliation; no second blind mutation |
+| Install/runner failure before structured diagnostics | Last recorded fixed stage and preparation/protected-job result; details explicitly unavailable      |
+
+Failure reports and the Markdown renderer both allowlist fields. Raw exceptions,
+paths, URLs, environment values, headers, stdout/stderr and provider payloads are
+never copied into diagnostics or uploaded reports. Known JSON syntax failures
+are classified as JSON without including source bytes. Report artifacts retain
+for one day and contain no deployment credentials. Analytics, maintenance,
+native Git integration, approval policy and the authoritative Vercel prebuilt
+deployment mechanism are unchanged.
+
+### Story 1.2 live rehearsal; separate approval required
+
+No live rehearsal is authorized by implementation or local tests. Prepare a
+concrete review of the following steps and obtain explicit approval before
+dispatching any workflow or contacting a staged production deployment:
+
+1. Land reviewed code through the ordinary protected process; select the exact
+   application/workflow SHAs, fresh schema evidence, current deployment and
+   reviewed production settings/public build values. Keep Git integration disconnected.
+2. Use the dedicated App dispatcher for the reviewed code-only manifest. Confirm
+   credential-free installation and source validation, one `--prod --standalone`
+   build and one deployment archive for the builder attempt.
+3. Before the human gate, inspect the approval report, full binding, artifact/tooling
+   digests and byte size. Prove clean extraction with the source unavailable;
+   confirm there are no env files, escaped links, auth canaries or runtime overrides.
+4. Prove the deploy job has no application npm ci and verifies its executor checksum
+   before running it. Confirm Vercel CLI installation has no protected credentials.
+5. Review the exact evidence, then have the authorized human approve the existing
+   production-release environment. Never approve the gate on the user's behalf.
+6. Observe authoritative target/approval/drift checks, one prebuilt production
+   stage when none exists, matching remote SHA/manifest/build metadata, staged
+   read-only health checks, exact-ID promotion and public health. Keep collection disabled.
+7. Review the single final summary and redacted logs. Exercise corrupt checksum,
+   wrong target/revision/settings and safe HTTP/CLI failure classification first
+   in isolated fixtures; do not manufacture production failures to test diagnostics.
+8. A production-job-only rerun or rollback requires its own explicit approval.
+   Verify saved builder-attempt evidence and retained-target compatibility; confirm
+   no rebuild, duplicate stage, blind retry, database reset or automatic recovery.
 
 Owner-admin denial can be an HTTP redirect or Next.js's streamed login redirect
 inside an HTTP 200 document. The health reader validates the framework's exact

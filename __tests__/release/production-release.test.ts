@@ -255,10 +255,18 @@ describe("human protected release", () => {
     expect(workflow).toContain("cancel-in-progress: false");
     expect(workflow).not.toMatch(/^  (push|pull_request):/m);
     expect(workflow).not.toMatch(/run:.*vercel pull/);
-    expect(workflow).toContain("sha256sum --check");
+    expect(workflow).toContain("run-stage.mjs executor");
     expect(readFileSync("scripts/production-release.ts", "utf8")).toContain(
       "--skip-domain",
     );
-    expect(workflow).not.toContain("github.run_attempt");
+    expect(workflow).toContain(
+      "build_attempt: ${{ steps.plan.outputs.build_attempt }}",
+    );
+    expect(workflow).toContain(
+      "name: ${{ needs.prepare.outputs.build_artifact }}",
+    );
+    expect(workflow).toContain(
+      "RELEASE_BUILD_ATTEMPT: ${{ needs.prepare.outputs.build_attempt }}",
+    );
   });
 });

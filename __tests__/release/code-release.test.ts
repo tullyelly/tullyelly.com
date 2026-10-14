@@ -105,6 +105,37 @@ function fixture(m = manifest()) {
 }
 const run = (m: CodeManifest, p: CodeProviders) =>
   executeCodeRelease(m, "c".repeat(64), "d".repeat(64), p);
+test("verified deployment identity remains observable when staged health fails", async () => {
+  const m = manifest();
+  const { p, d } = fixture(m);
+  p.reportDeployment = jest.fn();
+  p.health = jest.fn(async () => {
+    throw new Error("code.health-owner-authorization");
+  });
+  await expect(run(m, p)).rejects.toMatchObject({
+    diagnostic: {
+      guard: "health.staged",
+      invariant: "code.health-owner-authorization",
+    },
+  });
+  expect(p.reportDeployment).toHaveBeenCalledWith(d);
+  expect(p.promote).not.toHaveBeenCalled();
+});
+test("a preview or mismatched production artifact is never reported as verified evidence", async () => {
+  const m = manifest();
+  const { p, d } = fixture(m);
+  p.reportDeployment = jest.fn();
+  d.target = "preview";
+  await expect(run(m, p)).rejects.toMatchObject({
+    diagnostic: {
+      guard: "vercel.identity",
+      invariant: "code.deployment-identity",
+    },
+  });
+  expect(p.reportDeployment).not.toHaveBeenCalled();
+  expect(p.health).not.toHaveBeenCalled();
+  expect(p.promote).not.toHaveBeenCalled();
+});
 test("strict code-only manifest rejects activation, SQL plans, missing schema and unrelated targets", () => {
   const m = manifest();
   for (const change of [
@@ -287,7 +318,7 @@ test("code workflow cannot invoke database/credential executors or expose secret
     /release-db|NEON_API_KEY|RELEASE_DATABASE_URL|maintenance\.ts|db:migrate|seed/,
   );
   expect(w).toContain("environment: production-release");
-  expect(w).toContain("sha256sum --check");
+  expect(w).toContain("run-stage.mjs restore");
   const code = readFileSync("scripts/production-release.ts", "utf8");
   expect(code).not.toMatch(
     /console\.neon|env\/\$\{|cronSecret|RELEASE_DATABASE_URL/,

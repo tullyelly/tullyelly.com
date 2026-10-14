@@ -162,9 +162,10 @@ node_modules and credentials are not cached. Preparation still runs once per
 source-validation invocation and reuses the existing image-dimensions cache.
 
 Separate events, SHAs and protected release environments still validate
-independently. Release workflows retain complete verify:agent followed by the
-credential-free Vercel artifact build; combining those builds is outside this
-story. npm ci's postinstall and validation both generate Prisma. The pre-push
+independently. Code-only production releases now run verify:source followed by one
+canonical Vercel production artifact build; see [production releases](production-releases.md#single-artifact-production-path).
+Analytics and credential-maintenance workflows retain separate full validation
+and Vercel builds. npm ci's postinstall and validation both generate Prisma. The pre-push
 hook still runs smoke followed by coverage and prepares via typecheck and coverage;
 its release-publication stage markers remain intact. Next's Contentlayer plugin
 may also perform its own generation during production builds. These remaining

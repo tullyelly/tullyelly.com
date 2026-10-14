@@ -46,6 +46,7 @@ env:
   VERCEL_CLI_VERSION: "63.1.2"
   CI: "true"
   NEXT_TELEMETRY_DISABLED: "1"
+  RELEASE_REPORT_PATH: .cache/release-report.jsonl
 
 jobs:
   prepare:
@@ -53,7 +54,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     outputs:
-      build_sha256: ${{ steps.bundle.outputs.sha256 }}
+      build_sha256: ${{ steps.build.outputs.sha256 }}
+      build_attempt: ${{ steps.plan.outputs.build_attempt }}
+      build_artifact: approved-prebuilt-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
+      manifest_artifact: approved-manifest-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
+      executor_artifact: release-executor-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
+      executor_sha256: ${{ steps.executor.outputs.executor_sha256 }}
+      report_artifact: release-report-prepare-${{ github.run_id }}-${{ github.run_attempt }}
       operation: ${{ steps.plan.outputs.operation }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -64,6 +71,10 @@ jobs:
         with:
           node-version: "22.20.0"
           cache: npm
+      - name: Initialize stage report
+        run: |
+          mkdir -p .cache
+          : > "$RELEASE_REPORT_PATH"
       - name: Bind manifest and exact code
         env:
           MANIFEST_SOURCE: ${{ inputs.manifest_path }}
@@ -76,62 +87,68 @@ jobs:
           git show "$GITHUB_SHA:$MANIFEST_SOURCE" > "$RELEASE_MANIFEST_PATH"
           git checkout --detach "$RELEASE_SHA"
       - name: Install without production credentials
-        run: |
-          npm ci
-          npm install --global "vercel@$VERCEL_CLI_VERSION"
+        run: node scripts/release/run-stage.mjs install
       - name: Verify human approval gate and reviewed settings
         id: plan
-        run: |
-          npx tsx scripts/production-release.ts prepare
-          node -e 'const fs=require("fs"); const m=JSON.parse(fs.readFileSync(process.env.RELEASE_MANIFEST_PATH)); fs.appendFileSync(process.env.GITHUB_OUTPUT, `operation=${m.operation}\n`); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Operation: ${m.operation}. Previous deployment: ${m.vercel.productionDeploymentId}. Target SHA: ${m.rollback?.applicationSha ?? m.commit}. Rollback target: ${m.rollback?.deploymentId ?? "none"}. Schema evidence: ${m.schemaCompatibility.evidenceUrl}.\n`);'
+        run: node scripts/release/run-stage.mjs plan
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Required repository validation
-        run: npm run verify:agent
+        run: node scripts/release/run-stage.mjs source
         env:
           SKIP_DB: "true"
           ANALYTICS_SYNC_ENABLED: "false"
       - name: Build prebuilt deployment without production credentials
+        id: build
         # No vercel pull, --yes, --id, production database URL, or production token.
         # Reviewed project settings + empty local env avoid automatic linking/pulls.
-        run: npx tsx scripts/production-release.ts build
+        run: node scripts/release/run-stage.mjs build
         if: steps.plan.outputs.operation == 'deploy'
         env:
           RELEASE_BUILD_HOME: ${{ runner.temp }}/credential-free-vercel-home
-      - name: Verify portable artifact in a clean extraction directory
-        if: steps.plan.outputs.operation == 'deploy'
-        run: |
-          set -euo pipefail
-          tar -cf "$RUNNER_TEMP/approved-prebuilt.tar" .vercel/output
-          python3 scripts/release/code-artifact.py extract "$RUNNER_TEMP/approved-prebuilt.tar" "$RUNNER_TEMP/portable-check" "$(sha256sum "$RUNNER_TEMP/approved-prebuilt.tar" | cut -d ' ' -f 1)"
-      - name: Bind built output checksum
-        id: bundle
-        if: steps.plan.outputs.operation == 'deploy'
-        run: |
-          build_sha256="$(sha256sum "$RUNNER_TEMP/approved-prebuilt.tar" | cut -d ' ' -f 1)"
-          printf 'sha256=%s\n' "$build_sha256" >> "$GITHUB_OUTPUT"
-          printf 'Prebuilt artifact SHA-256: `%s`.\n' "$build_sha256" >> "$GITHUB_STEP_SUMMARY"
+      - name: Bundle credential-free release executor
+        id: executor
+        run: node scripts/release/run-stage.mjs bundle
+      - name: Publish checksum-bound release executor
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-executor-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
+          path: .cache/release-tools/production-release.cjs
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
       - name: Publish exact build for approved job
         if: steps.plan.outputs.operation == 'deploy'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: approved-prebuilt-${{ github.run_id }}
+          name: approved-prebuilt-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
           path: ${{ runner.temp }}/approved-prebuilt.tar
-          overwrite: true
           retention-days: 1
           if-no-files-found: error
       - name: Publish non-secret reviewed manifest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: approved-manifest-${{ github.run_id }}
+          name: approved-manifest-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
           path: ${{ env.RELEASE_MANIFEST_PATH }}
-          overwrite: true
+          include-hidden-files: true
           retention-days: 1
           if-no-files-found: error
-      - name: Approval summary
-        run: |
-          printf 'Approve only release `%s` with manifest SHA-256 `%s`.\n' "$RELEASE_SHA" "$RELEASE_MANIFEST_SHA256" >> "$GITHUB_STEP_SUMMARY"
-          printf 'Production deployment remains disabled until the production-release environment gate is approved. Collection remains disabled.\n' >> "$GITHUB_STEP_SUMMARY"
+      - name: Render readable approval evidence
+        if: always()
+        env:
+          PREPARATION_RESULT: ${{ job.status }}
+        run: node scripts/release/release-summary.mjs --approval-report .cache/release-report.jsonl
+      - name: Publish approval evidence and preparation diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-report-prepare-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .cache/release-report.jsonl
+            .cache/release-approval.md
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
 
   production:
     needs: prepare
@@ -139,6 +156,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production-release
+    env:
+      RELEASE_BUILD_ATTEMPT: ${{ needs.prepare.outputs.build_attempt }}
+      RELEASE_BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -149,49 +169,85 @@ jobs:
         with:
           node-version: "22.20.0"
           cache: npm
-      - name: Install reviewed code before exposing credentials
+      - name: Initialize stage report
         run: |
-          npm ci
-          npm install --global "vercel@$VERCEL_CLI_VERSION"
+          mkdir -p .cache
+          : > "$RELEASE_REPORT_PATH"
+      - name: Install pinned CLI before exposing credentials
+        run: node scripts/release/run-stage.mjs install-cli
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: approved-manifest-${{ github.run_id }}
+          name: ${{ needs.prepare.outputs.executor_artifact }}
+          path: .cache/release-tools
+      - name: Verify reviewed release executor checksum
+        env:
+          EXECUTOR_SHA256: ${{ needs.prepare.outputs.executor_sha256 }}
+        run: node scripts/release/run-stage.mjs executor
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.prepare.outputs.manifest_artifact }}
           path: .cache
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         if: needs.prepare.outputs.operation == 'deploy'
         with:
-          name: approved-prebuilt-${{ github.run_id }}
+          name: ${{ needs.prepare.outputs.build_artifact }}
           path: ${{ runner.temp }}
       - name: Verify approved prebuilt bytes and restore file permissions
         if: needs.prepare.outputs.operation == 'deploy'
-        env:
-          BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
-        run: |
-          set -euo pipefail
-          [[ "$BUILD_SHA256" =~ ^[a-f0-9]{64}$ ]]
-          printf '%s  %s\n' "$BUILD_SHA256" "$RUNNER_TEMP/approved-prebuilt.tar" | sha256sum --check
-          python3 scripts/release/code-artifact.py extract "$RUNNER_TEMP/approved-prebuilt.tar" "$RUNNER_TEMP/approved-extract" "$BUILD_SHA256"
-          mkdir -p .vercel
-          mv "$RUNNER_TEMP/approved-extract/.vercel/output" .vercel/output
+        run: node scripts/release/run-stage.mjs restore
       - name: Recreate reviewed non-secret project link
-        run: npx tsx scripts/production-release.ts prepare
+        run: node scripts/release/run-stage.mjs prepare
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Post-approval target, protection and deployment drift checks
-        run: npx tsx scripts/production-release.ts check
+        run: node scripts/release/run-stage.mjs check
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
           RELEASE_PRODUCTION_APPROVED: "true"
       - name: Execute reviewed code-only deployment or separately approved rollback
-        run: npx tsx scripts/production-release.ts deploy
+        run: node scripts/release/run-stage.mjs deploy
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           RELEASE_PRODUCTION_APPROVED: "true"
-      - name: Record successful disabled release
-        run: |
-          printf 'Released and verified `%s`; collection remains disabled. Do not restore/reset the database automatically on application failure.\n' "$RELEASE_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish protected-operation diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-report-production-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.RELEASE_REPORT_PATH }}
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
+
+  summary:
+    needs: [prepare, production]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+      - name: Read preparation report when available
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.prepare.outputs.report_artifact || format('release-report-prepare-{0}-{1}', github.run_id, github.run_attempt) }}
+          path: .cache/preparation-report
+      - name: Read protected-operation report when available
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-report-production-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/production-report
+      - name: Write one release summary
+        env:
+          PREPARATION_RESULT: ${{ needs.prepare.result }}
+          PRODUCTION_RESULT: ${{ needs.production.result }}
+        run: node scripts/release/release-summary.mjs .cache/preparation-report/release-report.jsonl .cache/production-report/release-report.jsonl

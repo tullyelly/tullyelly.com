@@ -17,6 +17,7 @@ export type CodeDeployment = {
   meta?: Record<string, unknown>;
 };
 export interface CodeProviders {
+  reportDeployment?(deployment: CodeDeployment): void;
   reportReconciliation?(diagnostic: {
     outcome: "found";
     originalFailure: Diagnostic;
@@ -48,6 +49,7 @@ export async function executeCodeRelease(
         m.rollback.applicationSha
     )
       throw new Error("code.rollback-identity");
+    p.reportDeployment?.(d);
     await codeGuard("health.staged", () => p.health(d, false));
     await p.guard([m.vercel.productionDeploymentId]);
     // Exactly one mutation. Ambiguous outcomes are verified, never blindly retried.
@@ -107,6 +109,7 @@ export async function executeCodeRelease(
   await codeGuard("vercel.identity", () =>
     verifyReleaseDeploymentIdentity(target, m, manifestDigest, buildDigest),
   );
+  p.reportDeployment?.(target);
   await codeGuard("health.staged", () => p.health(target, false));
   const current = await p.guard([m.vercel.productionDeploymentId, target.id]);
   if (current !== target.id) {
