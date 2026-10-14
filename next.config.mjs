@@ -51,6 +51,8 @@ const nextConfig = {
     ];
   },
   experimental: {
+    // CI persists .next/cache; opt in only for builds with that cache lifecycle.
+    turbopackFileSystemCacheForBuild: process.env.NEXT_BUILD_CACHE === "1",
     optimizePackageImports: ["vaul", "cmdk", "lucide-react"],
     mdxRs: {
       remarkPlugins: isTurbopack ? [] : remarkPlugins,

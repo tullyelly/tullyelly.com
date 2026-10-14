@@ -1,5 +1,11 @@
 # Caching and freshness
 
+CI's ESLint and Turbopack build caches are described in
+[validation](validation.md#caches-and-remaining-repeated-work). NEXT_BUILD_CACHE=1
+enables experimental Turbopack filesystem persistence for builds that preserve
+.next/cache. This compiler cache does not change runtime data-cache scope or
+authorization behavior.
+
 Choose cache scope from the data contract. Sessions, capabilities, and the root
 menu/persona request snapshot must remain request-specific. React cache in
 [lib/root-request-data.ts](../lib/root-request-data.ts) deduplicates within one

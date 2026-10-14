@@ -11,7 +11,7 @@
 3. lint: ESLint using eslint.config.mjs.
 4. typecheck:prepared: TypeScript without regenerating content.
 5. gen:prisma: Prisma client generation.
-6. test:ci:prepared: related Jest smoke, then full Jest coverage in band.
+6. test:ci:prepared: full Jest coverage in band, once.
 7. build:next: Next production build.
 
 Jest thresholds are 85% lines/statements/functions and 80% branches, defined in
@@ -20,14 +20,25 @@ typecheck, Jest, coverage, and build; do not rerun them individually afterward.
 `npm test` runs Jest, not Vitest or Playwright, and already passes the Jest config.
 For focused diagnosis use `npm test -- --runInBand <test-path>`.
 
+`npm run verify:source` reuses stages 1 through 6 for application-wide source
+validation without building Next. `npm run build:validated` runs stage 7 with the
+existing stage timer; it requires successful source validation in the same
+checkout and environment. It does not regenerate content or Prisma. The complete
+local command remains `npm run verify:agent` (or `npm run verify`). All three
+entry points share [validation stages](../scripts/validation-stages.mjs) and
+[run-stages](../scripts/run-stages.mjs); no second timing system is introduced.
+The related smoke suite remains available through `npm run test:smoke` and the
+pre-push hook. Running it immediately before the full suite adds no test coverage,
+so it is no longer part of the complete baseline. No content-only bypass exists.
+
 ## GitHub Actions workflow validation
 
 `npm run workflows:check` runs pinned **actionlint 1.7.12** against every YAML file
 in `.github/workflows`; pass file paths after `--` to check selected workflows.
 It validates GitHub Actions expression context availability, types and action
 contracts, rather than merely parsing YAML. Unsupported contexts fail the command
-and the canonical baseline before any application build. Existing CI invokes
-`verify:agent`, so no additional workflow or permissions are needed.
+and the canonical baseline before any application build. CI invokes
+`verify:source`, which includes this check; no additional permissions are needed.
 
 The script obtains the official release archive on first use, verifies a committed
 SHA-256 digest, and caches it and the matching executable under ignored
@@ -109,12 +120,114 @@ SKIP_COVERAGE_GUARD=1 bypasses the whole hook, only when needed, and does not
 waive required validation. [Coverage guard](coverage-guard.md) tracks gate policy.
 
 [ci.yml](../.github/workflows/ci.yml) runs on pushes to main and PRs targeting
-main, using Node 20, verify:agent with SKIP_DB=true, then a production-server
-security header smoke. There is no CI_ENABLED gate. Vitest, formatting, metadata,
-Playwright, images, and SEO are not CI baseline steps.
-[coverage.yml](../.github/workflows/coverage.yml) independently runs test:coverage
-on the same events and uploads lcov on success. Branch protection is remote
-configuration; workflow files alone do not prove these checks block merging.
+main, using Node 22.20.0, matching .nvmrc and all release workflows. Its
+`guardrails` job retains the exact `Lint, test, build` check name. It runs
+verify:source with SKIP_DB=true, uploads `coverage-lcov` (missing lcov fails the
+job), runs build:validated in the same checkout, then checks security headers on
+the production server. There is no CI_ENABLED gate or path-based bypass. Vitest,
+formatting, metadata, Playwright, images, and SEO are not CI baseline steps.
+
+The `coverage` job in CI retains the exact `coverage` status context and requires
+successful guardrails. It uses `always()` and explicitly fails on failure,
+cancellation or skipping of the prerequisite; it cannot pass through a skipped
+test suite. It mirrors the full guardrail result, so a build/header failure also
+fails coverage. The former standalone coverage workflow is removed: it executed
+the same full Jest suite a second time, installed dependencies and regenerated
+content. Reports now belong to the CI run; artifact consumers must select CI
+rather than the old coverage workflow. The artifact name and lcov path are stable.
+
+### Caches and remaining repeated work
+
+[Shared setup](../.github/actions/setup/action.yml) installs the pinned Node and
+locked dependencies, restores npm's download cache and caches `.cache/eslint`.
+ESLint uses the content strategy so fresh-checkout mtimes do not invalidate all
+entries. Its immutable cache key includes OS, architecture, Node, lockfile,
+package/configuration, local ESLint rules, TypeScript configuration and commit.
+Restore prefixes retain all compatibility inputs and omit only the commit; each
+new commit can save updated results. Lint and documentation checks always run.
+
+CI caches only `.next/cache`, with OS, architecture, Node, lockfile, package,
+Next/TypeScript/Contentlayer/CSS configuration, CI setup/environment definition
+and commit in the key. Restore prefixes omit only the commit. Next still builds
+every time and owns source dependency invalidation, following its
+[CI cache guidance](https://nextjs.org/docs/app/guides/ci-build-caching).
+Next 16.1.6 disables Turbopack build persistence by default, so CI explicitly sets
+NEXT_BUILD_CACHE=1 to enable experimental.turbopackFileSystemCacheForBuild in
+next.config.mjs. Other builds retain the default unless they opt in. This is an
+[experimental build cache](https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopackFileSystemCache)
+in the installed version; changing/removing that flag invalidates the CI cache
+configuration key. A cache hit never substitutes for a build or validation result.
+Generated Contentlayer documents, build info, completed builds, coverage results,
+node_modules and credentials are not cached. Preparation still runs once per
+source-validation invocation and reuses the existing image-dimensions cache.
+
+Separate events, SHAs and protected release environments still validate
+independently. Release workflows retain complete verify:agent followed by the
+credential-free Vercel artifact build; combining those builds is outside this
+story. npm ci's postinstall and validation both generate Prisma. The pre-push
+hook still runs smoke followed by coverage and prepares via typecheck and coverage;
+its release-publication stage markers remain intact. Next's Contentlayer plugin
+may also perform its own generation during production builds. These remaining
+costs are not silently bypassed by this change.
+
+### Required checks and safe rollout
+
+Read-only inspection on October 13, 2026 found active ruleset
+[main-fundamentals](https://github.com/tullyelly/tullyelly.com/rules/7502483)
+requiring `Lint, test, build` from GitHub Actions (integration 15368), with strict
+up-to-date checks. The release validator in scripts/release/manifest.ts expects
+that exact name; its contract is unchanged. Classic branch-protection inspection
+returned 403, so an owner must verify those settings separately. No GitHub
+configuration was modified.
+
+Before landing, an owner must inspect all applicable branch protection and
+rulesets. Ordinary status requirements for `Lint, test, build` and `coverage`
+need no rename: both retain their GitHub Actions contexts. If any rule requires
+the **coverage.yml workflow file** rather than a status context, first land the
+replacement CI gate while temporarily retaining the old workflow, require CI and
+observe both checks passing on the same SHA, then remove the old workflow-specific
+requirement and land its deletion. Never remove the existing guardrail requirement
+or weaken strict checks to make the transition pass. Update external consumers of
+coverage workflow run IDs/artifacts. No in-repository consumer pins that workflow.
+The coverage policy recommends requiring the retained `coverage` status as well;
+the observed ruleset currently requires only the combined guardrail.
+
+### Story 1.1 timing evidence
+
+Use the existing `<== ... completed in ...` and `All stages completed in ...`
+log lines. Do not dispatch workflows for benchmarking. The successful main push
+at `adfc1435e251c2edb55383c485d3711fa01230e7` ran both workflows on the same inputs:
+
+| Before evidence                                                                                                       | Recorded duration           |
+| --------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| [CI run 38333384135](https://github.com/tullyelly/tullyelly.com/actions/runs/38333384135), complete validation stages | 197.4 s                     |
+| CI preparation / lint / Jest / Next build                                                                             | 10.6 / 26.4 / 99.8 / 43.2 s |
+| [Coverage run 38333384087](https://github.com/tullyelly/tullyelly.com/actions/runs/38333384087), preparation / Jest   | 7.1 / 32.289 s              |
+| Coverage workflow job, including checkout/install/upload/cleanup                                                      | 225 s                       |
+
+Both logs report 211 passing suites, 1,251 passing tests and six opt-in skipped
+tests. The separate coverage job's recorded work is eliminated by construction;
+this is not a measured reduction in CI critical-path time, since the old jobs ran
+concurrently. The CI Jest invocation was in band and coverage used workers, so
+their durations are not interchangeable. No after-change GitHub run exists until
+these local changes are published through the ordinary review process. Local
+validation durations must be labeled as local, with cache state and runner
+differences; they do not establish a hosted speedup.
+
+After the change, `CI=true SKIP_DB=true NEXT_BUILD_CACHE=1
+NEXT_TELEMETRY_DISABLED=1 npm run verify:agent` passed locally in **143.0 s**:
+preparation 5.7 s, lint 29.3 s, TypeScript 4.8 s, Prisma 2.1 s, Jest 52.2 s and
+Next build 48.6 s. The existing log is `.cache/story-1-1-verify.log`; no separate
+telemetry collector was added. This WSL run used installed Node 22.18.0, existing
+dependencies, local environment files, an existing image cache (2,183 reused,
+four inspected) and ESLint's first run after changing its cache strategy. It
+created `.next/cache/turbopack`; the workflow's exact Node 22.20.0 and hosted cache
+restore/save behavior remain untested until ordinary CI runs. It passed 212 suites
+and 1,263 tests, including 12 Story 1.1 regression cases; two suites and six opt-in
+tests were skipped. Coverage was 88.63% statements, 81.90% branches, 86.79%
+functions and 90.06% lines, above the unchanged thresholds. Workflow validation,
+docs, explicit changed-file Prettier and diff checks passed. The initial sandboxed
+fixture run hit subprocess EPERM; validation passed after local sandbox escalation.
 
 For CI failures inspect complete logs and the failing SHA, compare current
 history, and reproduce before changing code. A local pass does not clear a remote

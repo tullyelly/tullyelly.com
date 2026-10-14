@@ -1,0 +1,24 @@
+---
+title: "appleton east"
+date: "2026-10-13"
+summary: "Take 2; Day 265, Rivalry schmivarly."
+draft: true
+infinityStone: false
+---
+
+<ReleaseSection alterEgo="george">Hold</ReleaseSection>
+
+<ReleaseSection alterEgo="tullyelly">
+    <CipherSays>
+        ## Leaner CI
+
+        - Removed duplicate coverage and smoke runs while keeping coverage thresholds and required checks intact.
+        - Separated source validation from application builds; kept one command for full local verification.
+        - Aligned Node versions and added reusable lint and build caches with the existing stage timing.
+
+        Local validation passed with 1,263 tests and a production build. These changes are still local; GitHub rollout remains pending.
+    </CipherSays>
+
+    <LuluLearns>When I deploy a new chronicle or new chunk of code there was way too much testing going on. Well not so much too much, instead duplicate testing. Where it only really needed to test once, it might test three times in the right circumstances. Testing = now faster</LuluLearns>
+
+</ReleaseSection>

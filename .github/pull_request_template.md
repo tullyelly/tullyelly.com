@@ -14,7 +14,7 @@ WU-XXX
 
 Follow [validation](../docs/validation.md).
 
-- [ ] `npm run verify:agent` passes (lint, typecheck, Jest smoke/coverage, build)
+- [ ] `npm run verify:agent` passes (lint, typecheck, full Jest coverage, build)
 - [ ] Applicable additional checks pass; list results and unavailable prerequisites
 - [ ] Owning docs updated for behavior/procedure changes
 
