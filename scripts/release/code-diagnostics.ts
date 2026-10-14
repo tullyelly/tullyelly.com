@@ -1,5 +1,6 @@
 /** Fixed labels only: never serialize exceptions, request URLs or provider values. */
 import { z } from "zod";
+import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
 import {
   GitHubApiError,
   ReleaseVerificationError,
@@ -14,6 +15,7 @@ export const guards = [
   "github.main-rules",
   "github.main-response",
   "github.main-binding",
+  "github.application-binding",
   "human.approval",
   "vercel.project",
   "vercel.git-hooks",
@@ -29,6 +31,11 @@ export const guards = [
   "vercel.identity",
   "health.staged",
   "health.public",
+  "build.configuration",
+  "build.production",
+  "artifact.validation",
+  "artifact.package",
+  "artifact.executor",
 ] as const;
 export type Guard = (typeof guards)[number];
 export const operations = [
@@ -47,85 +54,7 @@ export const operations = [
   "unknown",
 ] as const;
 export type Operation = (typeof operations)[number];
-const fields = new Set([
-  "version",
-  "kind",
-  "operation",
-  "collectionEnabled",
-  "buildEnvironment",
-  "schemaCompatibility",
-  "checkedAt",
-  "checkedBy",
-  "evidenceUrl",
-  "previousApplicationSha",
-  "databaseHost",
-  "database",
-  "method",
-  "requiredObjects",
-  "missingObjects",
-  "compatible",
-  "rollbackCompatible",
-  "vercel",
-  "teamId",
-  "productionDeploymentId",
-  "productionHost",
-  "settings",
-  "settingsSha256",
-  "rollback",
-  "deploymentId",
-  "applicationSha",
-  "collectionDisabledVerified",
-  "alias",
-  "VERCEL_TOKEN",
-  "GH_TOKEN",
-  "GITHUB_SHA",
-  "GITHUB_REPOSITORY",
-  "RELEASE_BUILD_HOME",
-  "RELEASE_MANIFEST_SHA256",
-  "RELEASE_BUILD_SHA256",
-  "id",
-  "accountId",
-  "link",
-  "targets",
-  "production",
-  "framework",
-  "nodeVersion",
-  "buildCommand",
-  "installCommand",
-  "outputDirectory",
-  "rootDirectory",
-  "envs",
-  "key",
-  "target",
-  "pagination",
-  "next",
-  "deployments",
-  "uid",
-  "readyState",
-  "meta",
-  "projectId",
-  "url",
-  "commit",
-  "sha",
-  "protected",
-  "protection_rules",
-  "can_admins_bypass",
-  "deployment_branch_policy",
-  "custom_branch_policies",
-  "protected_branches",
-  "branch_policies",
-  "name",
-  "type",
-  "reviewers",
-  "prevent_self_review",
-  "environments",
-  "user",
-  "event",
-  "head_branch",
-  "head_sha",
-  "actor",
-  "triggering_actor",
-]);
+const fields = new Set(codeDiagnosticFields);
 const issueCodes = new Set([
   "missing",
   "invalid_type",
@@ -140,30 +69,12 @@ const issueCodes = new Set([
   "custom",
   "not_multiple_of",
 ]);
-const invariants = new Set([
-  "code.provider-operation-unresolved",
-  "code.stage-output-unresolved",
-  "code.stage-outcome-unresolved",
-  "code.stage-reconciliation-failed",
-  "code.promote-outcome-unresolved",
-  "code.promote-not-assigned",
-  "code.rollback-outcome-unresolved",
-  "code.rollback-not-assigned",
-  "code.rollback-identity",
-  "code.rollback-binding",
-  "code.domain-drift",
-  "code.production-drift",
-  "code.deploy-hooks-present",
-  "code.concurrent-deployment",
-  "code.incomplete-environment-metadata",
-  "code.runtime-database-configuration",
-  "code.deployment-pagination-loop",
-  "code.incomplete-deployment-history",
-  "code.previous-application-identity",
-  "code.human-gate-required",
-  "code.ambiguous-deployment-identity",
-]);
+const invariants = new Set(codeInvariants);
 const knownMessages = new Map([
+  [
+    "Staged deployment identity, approved build, disabled collection or readiness mismatch",
+    "code.deployment-identity",
+  ],
   ["Vercel project/team mismatch", "code.project-identity"],
   ["Vercel project settings drift", "code.project-settings-drift"],
   [
@@ -202,6 +113,7 @@ export class CodeDiagnosticError extends Error {
 }
 function classifyRaw(guard: Guard, error: unknown): Diagnostic {
   if (error instanceof CodeDiagnosticError) return error.diagnostic;
+  if (error instanceof SyntaxError) return { guard, category: "json" };
   if (error instanceof z.ZodError)
     return {
       guard,

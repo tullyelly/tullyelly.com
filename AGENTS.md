@@ -39,7 +39,7 @@ Orientation: [README](README.md). Workflow: [CONTRIBUTING](CONTRIBUTING.md).
 ## Validation
 
 Run `npm run verify:agent` before review; it prepares once, lints, typechecks,
-generates Prisma, runs Jest smoke and full thresholded coverage, and builds Next.
+generates Prisma, runs full thresholded Jest coverage once, and builds Next.
 Do not repeat those checks after a successful run. Fix failures caused by changes;
 report existing failures and incomplete checks accurately. Do not skip CI checks.
 Additional required checks and prerequisites are owned by

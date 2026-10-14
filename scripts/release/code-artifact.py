@@ -14,11 +14,18 @@ MARKERS = (
 )
 
 
-def verify(directory: str) -> None:
+def verify(directory: str, expected_binding=None) -> None:
     root = pathlib.Path(directory).resolve()
     config = json.loads((root / "config.json").read_text())
     if config.get("version") != 3:
         raise ValueError("code.artifact-config")
+    if expected_binding is not None:
+        try:
+            binding = json.loads((root / ".release-build.json").read_text())
+        except Exception:
+            raise ValueError("code.artifact-binding") from None
+        if expected_binding.get("target") != "production" or binding != expected_binding:
+            raise ValueError("code.artifact-binding")
     for path in root.rglob("*"):
         if path.is_symlink():
             resolved = path.resolve(strict=True)
@@ -55,7 +62,7 @@ def verify(directory: str) -> None:
                     raise ValueError("code.artifact-analytics-enabled")
 
 
-def extract(archive: str, directory: str, expected_digest: str) -> None:
+def extract(archive: str, directory: str, expected_digest: str, expected_binding=None) -> None:
     if len(expected_digest) != 64 or any(c not in "0123456789abcdef" for c in expected_digest):
         raise ValueError("code.artifact-digest-format")
     digest = hashlib.sha256()
@@ -68,15 +75,19 @@ def extract(archive: str, directory: str, expected_digest: str) -> None:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.extract(archive, directory)
-    verify(str(pathlib.Path(directory) / ".vercel/output"))
+    verify(str(pathlib.Path(directory) / ".vercel/output"), expected_binding)
 
 
 if __name__ == "__main__":
     try:
         if len(sys.argv) == 3 and sys.argv[1] == "verify":
             verify(sys.argv[2])
+        elif len(sys.argv) == 4 and sys.argv[1] == "verify":
+            verify(sys.argv[2], json.loads(sys.argv[3]))
         elif len(sys.argv) == 5 and sys.argv[1] == "extract":
             extract(sys.argv[2], sys.argv[3], sys.argv[4])
+        elif len(sys.argv) == 6 and sys.argv[1] == "extract":
+            extract(sys.argv[2], sys.argv[3], sys.argv[4], json.loads(sys.argv[5]))
         else:
             raise ValueError("code.artifact-arguments")
     except Exception as error:
@@ -85,7 +96,7 @@ if __name__ == "__main__":
             "code.artifact-env-file", "code.artifact-build-value",
             "code.artifact-handler", "code.artifact-runtime-env",
             "code.artifact-analytics-enabled", "code.artifact-digest-format",
-            "code.artifact-digest", "code.artifact-arguments",
+            "code.artifact-digest", "code.artifact-arguments", "code.artifact-binding",
             "maintenance.archive-directory-not-empty", "maintenance.archive-member",
             "maintenance.archive-link", "maintenance.archive-arguments",
         }

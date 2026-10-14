@@ -1,6 +1,6 @@
 /** Only the App-dispatched protected workflow may execute production mutations. */
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { appendFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { z } from "zod";
 import { verifyChildDispatch, verifyHumanApproval } from "./release/app";
 import {
@@ -11,6 +11,16 @@ import {
 import { loadCodeManifest, type CodeManifest } from "./release/code-manifest";
 import { executeCodeRelease, type CodeProviders } from "./release/code-release";
 import { codeCli } from "./release/code-cli";
+import {
+  assertCodeRevision,
+  artifactBinding,
+  artifactCommand,
+  buildFailure,
+  packageCodeArtifact,
+  restoreCodeArtifact,
+  verifyBuildContext,
+} from "./release/code-artifact";
+import { reportCodeEvent, reportCodeFailure } from "./release/code-report";
 
 import {
   checkCodeHealth,
@@ -20,7 +30,6 @@ import {
 import {
   codeGuard,
   codeMetadataRequest,
-  classifyCodeFailure,
   missingConfiguration,
 } from "./release/code-diagnostics";
 
@@ -98,7 +107,7 @@ async function vercel(path: string) {
   );
 }
 const deploymentSchema = z.object({
-  id: z.string(),
+  id: z.string().regex(/^dpl_[A-Za-z0-9]+$/),
   url: z.string(),
   projectId: z.string(),
   target: z.string(),
@@ -233,6 +242,19 @@ async function main() {
       process.env.RELEASE_SHA ?? "",
     ),
   );
+  await codeGuard("github.application-binding", () =>
+    assertCodeRevision(manifest.commit),
+  );
+  reportCodeEvent({
+    event: "context",
+    revision: manifest.commit,
+    operation: manifest.operation,
+    manifestSha256: required("RELEASE_MANIFEST_SHA256"),
+    settingsSha256: manifest.vercel.settingsSha256,
+    previousDeployment: manifest.vercel.productionDeploymentId,
+    targetRevision: manifest.rollback?.applicationSha ?? manifest.commit,
+    rollbackDeployment: manifest.rollback?.deploymentId,
+  });
   ghBase = `https://api.github.com/repos/${required("GITHUB_REPOSITORY")}`;
   query = `teamId=${encodeURIComponent(manifest.vercel.teamId)}`;
   if (command === "prepare") {
@@ -261,8 +283,13 @@ async function main() {
     );
     writeFileSync(".vercel/.env.production.local", "");
     console.log(
-      `Code-only ${manifest.operation}; SHA ${manifest.commit}; schema evidence ${manifest.schemaCompatibility.evidenceUrl}`,
+      `Code-only ${manifest.operation}; application SHA ${manifest.commit}; manifest SHA-256 ${required("RELEASE_MANIFEST_SHA256")}`,
     );
+    if (process.env.GITHUB_OUTPUT)
+      appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `operation=${manifest.operation}\nbuild_attempt=${required("GITHUB_RUN_ATTEMPT")}\n`,
+      );
     return;
   }
   if (command === "build") {
@@ -274,11 +301,14 @@ async function main() {
       )
     )
       throw new Error("code.build-local-env-present");
+    await codeGuard("build.configuration", () => verifyBuildContext(manifest));
     const r = spawnSync(
       "python3",
       ["scripts/release/code-build-context.py", "."],
       {
-        stdio: "inherit",
+        stdio: ["ignore", "inherit", "pipe"],
+        encoding: "utf8",
+        maxBuffer: 4 * 1024 * 1024,
         timeout: 1800000,
         env: {
           NODE_ENV: "production",
@@ -298,11 +328,46 @@ async function main() {
         },
       },
     );
-    if (r.status !== 0 || r.error) throw new Error("code.build-failed");
-    execFileSync(
-      "python3",
-      ["scripts/release/code-artifact.py", "verify", ".vercel/output"],
-      { stdio: "inherit" },
+    if (r.status !== 0 || r.error) throw buildFailure(r);
+    const artifact = await codeGuard("artifact.package", () =>
+      packageCodeArtifact(
+        artifactBinding(
+          manifest,
+          required("RELEASE_MANIFEST_SHA256"),
+          required("GITHUB_RUN_ID"),
+          required("GITHUB_RUN_ATTEMPT"),
+        ),
+        required("RUNNER_TEMP"),
+      ),
+    );
+    reportCodeEvent({
+      event: "artifact",
+      ...artifact,
+      buildAttempt: required("GITHUB_RUN_ATTEMPT"),
+    });
+    if (process.env.GITHUB_OUTPUT)
+      appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `sha256=${artifact.sha256}\nsize_bytes=${artifact.sizeBytes}\n`,
+      );
+    console.log(
+      `Canonical production artifact: SHA-256 ${artifact.sha256}; ${artifact.sizeBytes} bytes; build attempt ${required("GITHUB_RUN_ATTEMPT")}`,
+    );
+    return;
+  }
+  if (command === "restore") {
+    if (manifest.operation !== "deploy")
+      throw new Error("code.rollback-cannot-build");
+    mkdirSync(".vercel", { recursive: true });
+    await restoreCodeArtifact(
+      artifactBinding(
+        manifest,
+        required("RELEASE_MANIFEST_SHA256"),
+        required("GITHUB_RUN_ID"),
+        required("RELEASE_BUILD_ATTEMPT"),
+      ),
+      required("RELEASE_BUILD_SHA256"),
+      required("RUNNER_TEMP"),
     );
     return;
   }
@@ -333,12 +398,33 @@ async function main() {
     deployment,
     lookup,
     health,
+    reportDeployment(d) {
+      reportCodeEvent({ event: "deployment", deploymentId: d.id });
+    },
     reportReconciliation(diagnostic) {
+      reportCodeEvent({
+        event: "reconciliation",
+        diagnostic: diagnostic.originalFailure,
+      });
       console.error(
         JSON.stringify({ event: "code-release-reconciliation", ...diagnostic }),
       );
     },
     async stage() {
+      // A provider lookup may reuse only identical production evidence; staging
+      // always rechecks the bound, safely extracted canonical output.
+      artifactCommand([
+        "verify",
+        ".vercel/output",
+        JSON.stringify(
+          artifactBinding(
+            manifest,
+            required("RELEASE_MANIFEST_SHA256"),
+            required("GITHUB_RUN_ID"),
+            required("RELEASE_BUILD_ATTEMPT"),
+          ),
+        ),
+      ]);
       const output = codeCli(
         "vercel.stage",
         [
@@ -397,18 +483,27 @@ async function main() {
     manifest.operation === "deploy" ? required("RELEASE_BUILD_SHA256") : "",
     providers,
   );
+  reportCodeEvent({ event: "deployment", deploymentId: id });
   console.log(
     `Verified code-only ${manifest.operation}: ${id}; analytics remains disabled`,
   );
 }
 main().catch((error) => {
+  const guard =
+    command === "build"
+      ? "build.production"
+      : command === "restore"
+        ? "artifact.validation"
+        : "production.check";
   console.error(
     JSON.stringify({
       event: "code-release-failure",
-      command: ["prepare", "build", "check", "deploy"].includes(command)
+      command: ["prepare", "build", "restore", "check", "deploy"].includes(
+        command,
+      )
         ? command
         : "unknown",
-      ...classifyCodeFailure("production.check", error),
+      ...reportCodeFailure(guard, error),
     }),
   );
   console.error(

@@ -7,7 +7,7 @@ Google sign-in uses NextAuth with Prisma restricted to the `auth` schema.
 
 ## Getting started
 
-Use Node 20 (CI baseline) and npm:
+Use Node 22.20.0 (.nvmrc and CI/release baseline) and npm:
 
 ```bash
 npm ci

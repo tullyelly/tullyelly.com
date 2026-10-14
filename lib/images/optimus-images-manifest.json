@@ -155,6 +155,16 @@
     "/images/optimus/anxiety/annual/annual-0.webp",
     "/images/optimus/anxiety/annual/annual-1.webp",
     "/images/optimus/anxiety/wolverine.webp",
+    "/images/optimus/appleton-east/1037386/1037386-0.webp",
+    "/images/optimus/appleton-east/1037386/1037386-1.webp",
+    "/images/optimus/appleton-east/dogs.webp",
+    "/images/optimus/appleton-east/george/george-0.webp",
+    "/images/optimus/appleton-east/george/george-1.webp",
+    "/images/optimus/appleton-east/hug-ball.webp",
+    "/images/optimus/appleton-east/jeff/jeff-0.webp",
+    "/images/optimus/appleton-east/jeff/jeff-1.webp",
+    "/images/optimus/appleton-east/jeff/jeff-2.webp",
+    "/images/optimus/appleton-east/sectionals.webp",
     "/images/optimus/appleton-west-rock.webp",
     "/images/optimus/archives/1005971.webp",
     "/images/optimus/archives/1011535.webp",
@@ -2963,6 +2973,56 @@
       "src": "/images/optimus/anxiety/wolverine.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/appleton-east/1037386/1037386-0.webp",
+      "width": 1920,
+      "height": 1446
+    },
+    {
+      "src": "/images/optimus/appleton-east/1037386/1037386-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/appleton-east/dogs.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/appleton-east/george/george-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/appleton-east/george/george-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/appleton-east/hug-ball.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/appleton-east/jeff/jeff-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/appleton-east/jeff/jeff-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/appleton-east/jeff/jeff-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/appleton-east/sectionals.webp",
+      "width": 591,
+      "height": 408
     },
     {
       "src": "/images/optimus/appleton-west-rock.webp",
