@@ -929,6 +929,10 @@
     "/images/optimus/jump-around/lions.webp",
     "/images/optimus/jump-around/marvel.webp",
     "/images/optimus/jump-around/pistons.webp",
+    "/images/optimus/jurass-finish-first/george.webp",
+    "/images/optimus/jurass-finish-first/kids/kids-0.webp",
+    "/images/optimus/jurass-finish-first/kids/kids-1.webp",
+    "/images/optimus/jurass-finish-first/shelf.webp",
     "/images/optimus/kaukauna/1100528.webp",
     "/images/optimus/kaukauna/1101063/1101063-0.webp",
     "/images/optimus/kaukauna/1101063/1101063-1.webp",
@@ -6843,6 +6847,26 @@
       "src": "/images/optimus/jump-around/pistons.webp",
       "width": 743,
       "height": 1020
+    },
+    {
+      "src": "/images/optimus/jurass-finish-first/george.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/jurass-finish-first/kids/kids-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/jurass-finish-first/kids/kids-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/jurass-finish-first/shelf.webp",
+      "width": 1920,
+      "height": 1446
     },
     {
       "src": "/images/optimus/kaukauna/1100528.webp",
