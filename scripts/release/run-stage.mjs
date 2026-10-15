@@ -22,6 +22,18 @@ const stages = {
       ["install", "--global", `vercel@${cliVersion}`],
     ],
   ],
+  preflight: [
+    [
+      "Checking pinned CLI contract",
+      process.execPath,
+      ["scripts/release/check-cli.mjs"],
+    ],
+    [
+      "Checking published Chronicle",
+      npm,
+      ["run", "chronicle:ready", "--", "appleton-east", "--release"],
+    ],
+  ],
   // Fixtures execute child processes; only the outer validation duration belongs
   // in the release report. Existing substage console timing remains available.
   source: [

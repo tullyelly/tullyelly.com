@@ -25,6 +25,14 @@ on:
         description: Draft PR only; use approved title and an existing ticket when applicable
         required: false
         type: string
+      review_branch:
+        description: PR mode only; explicit cipher/ or feature/ working branch
+        required: false
+        type: string
+      pr_body:
+        description: PR mode only; reviewed description, with no credentials
+        required: false
+        type: string
       maintenance_action:
         description: Maintenance only; explicit rotation or recovery without another password reset
         required: false
@@ -70,6 +78,8 @@ jobs:
           RELEASE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
           MAINTENANCE_ACTION: ${{ inputs.maintenance_action }}
           RELEASE_PR_TITLE: ${{ inputs.pr_title }}
+          RELEASE_REVIEW_BRANCH: ${{ inputs.review_branch }}
+          RELEASE_PR_BODY: ${{ inputs.pr_body }}
           RELEASE_APP_ID: ${{ vars.RELEASE_APP_ID }}
           RELEASE_APP_INSTALLATION_ID: ${{ vars.RELEASE_APP_INSTALLATION_ID }}
           RELEASE_APP_SLUG: ${{ vars.RELEASE_APP_SLUG }}

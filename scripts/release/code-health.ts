@@ -73,6 +73,7 @@ export function verifyHealthDomainAliases(
 export async function readHealthResponse(options: {
   stagedHost: string;
   publicDomain: boolean;
+  publicOrigin?: "https://tullyelly.com" | "https://www.tullyelly.com";
   path: string;
   bypassSecret?: string;
   allowLoginRedirect?: boolean;
@@ -82,7 +83,11 @@ export async function readHealthResponse(options: {
 }) {
   if (!/^[a-z0-9-]+\.vercel\.app$/.test(options.stagedHost))
     throw new Error("code.health-host");
-  const base = options.publicDomain ? apex : `https://${options.stagedHost}`;
+  if (options.publicOrigin && ![apex, www].includes(options.publicOrigin))
+    throw new Error("code.health-host");
+  const base = options.publicDomain
+    ? (options.publicOrigin ?? apex)
+    : `https://${options.stagedHost}`;
   const initial = new URL(options.path, base);
   if (
     initial.origin !== base ||

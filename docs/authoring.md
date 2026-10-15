@@ -17,6 +17,15 @@ See [images](images.md) for global versus Chronicle paths.
 Run prepare:content to validate inferred data; validate-frontmatter only scans
 static app page.mdx files and does not validate Chronicles.
 
+Before release validation/builds, run `npm run chronicle:ready -- <intended-slug>`
+in the exact candidate checkout. This cheap source check requires the post to
+exist with explicit `draft: false`, title, summary and date. It parses MDX and
+checks local Markdown/JSX images and literal FolderImageCarousel folders against
+files and manifest dimensions; empty carousels, missing slides, stale folder
+manifests and dynamic image props fail. Remote image URLs require separate review
+and currently fail this focused local-assets check. It neither builds Contentlayer
+nor publishes content. Rendered staging and public verification are still required.
+
 ## Static pages
 
 `npm run new-page -- <slug> "Title"` takes positional arguments, with no prompts

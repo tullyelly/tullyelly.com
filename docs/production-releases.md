@@ -7,6 +7,12 @@ Preparation and this policy do not authorize a production release. Do not approv
 the environment gate on the user's behalf. Only the coordinating agent initiates
 a release; specialists cannot perform production operations.
 
+The [Appleton East incident recovery plan](chronicle-publication-recovery.md)
+records the completed, exact-SHA native source recovery. That one-time owner
+approval applied only to `b6f714ca6d83929096798df9543410bfc771a263`; it does not
+authorize another release, change the normal artifact workflow or replace its
+protected human gate.
+
 ## Current readiness
 
 The App-authenticated release-control bootstrap is complete. Parent run
@@ -19,8 +25,11 @@ under `tullyelly`; no production operation occurred.
 Vercel Git integration is disconnected. Pushes and merges do not automatically
 deploy production or previews. No replacement preview workflow is configured;
 previews require explicitly approved deployment with verified isolated databases.
-The existing production deployment remains `dpl_Ce7A2PmQodC9nsjuNpyD3YbH9hWd`,
-at `3fce11932f189d940d72d0a9e3c91a8fd9943faf`, as verified during closeout.
+The known-good production baseline is `dpl_VnkLN4dbyV6DV8Bz6iJMmbm1LGYP`,
+at `b6f714ca6d83929096798df9543410bfc771a263`. The native recovery was publicly
+verified October 14, 2026 at 7:07 pm America/Chicago. Read-only project and alias
+checks reconfirmed that baseline during normal-path repair; refresh it before
+any authorized operation.
 
 The analytics migration release is not ready. Historical SQL was executed manually;
 production ledger reconciliation, current non-production integration, credential
@@ -66,6 +75,118 @@ failed lookup. A recovered deployment reports the found outcome and original
 failure without issuing a second stage. Lookup, identity and health failures have
 fixed labels. The restricted deployment environment is unchanged. Diagnostics do
 not authorize retries, manual deployment, gate bypass or promotion.
+
+The independent incident diagnostics patch also retains bounded, allowlisted
+provider reason/code labels, numeric HTTP status and fixed message classifications.
+It examines at most 16 KiB per captured stream, discards arbitrary provider text,
+JSON values, hints and suggested commands, and revalidates retained fields before
+report storage and summary rendering. Unknown provider details remain unavailable.
+Original provider labels survive failed/not-found reconciliation. Successful stage
+output accepts the pinned CLI JSON envelope only with `status: "ok"` and a
+`deployment.url` that is exactly one HTTPS deployment origin under vercel.app.
+Bare origins remain supported; error streams, messages, production URLs and
+suggested commands never supply a target. Provider API identity remains mandatory. These labels cannot recover suppressed
+output from earlier runs or establish their underlying cause.
+
+## Normal release acceptance after recovery
+
+This repair is **pending owner review and live acceptance**. No release for this
+story is authorized by the completed emergency exception. Local preparation is
+not a passing GitHub-to-Vercel rehearsal.
+
+### Reconciliation and diagnosis
+
+- The deployed recovery commit and clean starting local HEAD are
+  `b6f714ca6d83929096798df9543410bfc771a263`. Its 16-file change from the failed
+  application already includes publication readiness, safe provider diagnostics,
+  native-upload exclusions and incident documentation. Reuse that commit.
+- Remote main was rechecked at `4bb7d0adb7ea2cfdc09036ab99377072567440f3`.
+  Its parent is failed application `1f4ada0a16958e49042f1826028ffa9d57bd1c7e`;
+  only `releases/main-2026-10-13.json` was added. Main still has `draft: true`
+  and the original suppressing CLI wrapper. Local `origin/main` is stale.
+  Recovery changes are committed locally and deployed, but not on remote main.
+- The original date `2026-10-13`, all authored text and all other draft states
+  are preserved. The only Chronicle difference from the failed source is Appleton
+  East's `draft: false`; this repair changes no Chronicle or image bytes.
+- [Run 38512310587](https://github.com/tullyelly/tullyelly.com/actions/runs/38512310587),
+  job `115685176849`, confirms `vercel.stage`, exit 1 and reconciliation not-found.
+  Its original provider stderr was discarded. **The historical rejection remains
+  unknown.** Do not attribute it to Git author permissions, token scope or arguments
+  without evidence. No production retry is a diagnostic test.
+- Both paths used CLI 63.1.2 and the same project/team, production target and
+  `--skip-domain`. The failed workflow used `--prebuilt --yes`, a checksum-bound
+  credential-free artifact and environment `VERCEL_TOKEN` in an isolated runner.
+  Recovery uploaded reviewed clean source, used existing owner CLI credentials
+  and Vercel's remote builder with existing production build configuration.
+  It does not establish the protected token's write permissions or prebuilt success.
+- Actual pinned-CLI integration reproduces a separate success-contract defect:
+  `--non-interactive` returns JSON, while the wrapper accepted only a bare URL.
+  A synthetic provider 403 also becomes `reason: deploy_failed`; the allowlist
+  now retains that fixed label. These are demonstrated fixes, not proof of the
+  old exit-1 cause. No account, scope or deployment mechanism was substituted.
+
+### Acceptance and owner prerequisites
+
+1. Review the recovery commit plus this uncommitted repair against remote main,
+   preserving the published post. The recovery's parent is tree-equivalent to the
+   failed application, but has different Git ancestry. Ensure the actual recovery
+   commit remains an ancestor of the final protected-main dispatch SHA; copying
+   its tree alone will fail the previous-application ancestry guard. Leave source
+   commits, pushes and merges to the owner. Preserve required checks/protections.
+2. Run the required Node 22.20.0 / npm validation on the final candidate. Preparation
+   now checks the real installed CLI against a loopback-only fake provider and
+   runs `npm run chronicle:ready -- appleton-east --release` before expensive
+   source validation/build. The reviewed probe binds original date/text examples,
+   ten exact image hashes and all three folders; no stale Contentlayer is used.
+   Future intentional edits to this published article require reviewing its probe.
+3. After the application commit is final, prepare a **fresh** version-2 manifest
+   on main. Bind its `commit`, live settings digest, public build environment and
+   exact SHA-256. Use the current baseline above as `productionDeploymentId` and
+   `schemaCompatibility.previousApplicationSha`, only if still current. Review
+   the complete diff of DB consumers, auth and dependencies against that baseline
+   and record fresh owner compatibility evidence within 24 hours. This repair adds
+   no DB/schema/auth/dependency contract change. Never reuse the old manifest.
+4. Record one explicit approval naming the final application SHA, manifest path
+   and digest, dispatch/main SHA, project/team and baseline ID. Its allowed actions
+   are: App dispatch in mode `production`, one canonical prebuilt stage without
+   domains, read-only staged verification, and conditional promotion of that same
+   deployment only after every check passes; then anonymous public verification.
+   The owner separately approves the existing `production-release` environment
+   gate after reviewing the SHA, artifact digest and build attempt. No agent approves
+   that gate. No migrations, live settings/credentials, collection, notifications
+   or emergency source fallback are included.
+5. Execute that approved normal workflow. Artifact verification, READY identity,
+   exact SHA/manifest/build digests, project/team and disabled-collection metadata
+   remain mandatory. Alias guards require both domains to remain on the baseline
+   after stage and again after staged health. Staged and public GETs check the
+   existing app/cron authorization rules, `/api/health`, actual rendered article
+   text/date, list entry, all ten exact raw image bytes, all six rendered image
+   sources (including optimized thumbnails) and three carousel references.
+   Every new normal deployment must also report its exact SHA at `/api/__version`.
+   Public reads carry no cookies, auth or deployment-protection bypass credentials.
+6. No additional stage-only mode is introduced: the proposed approval explicitly
+   covers conditional promotion in the existing executor after those checks.
+   If approval allows staging only, do not dispatch this full-release operation;
+   a separately reviewed hold would be required. Failures stop before promotion,
+   expose only sanitized diagnostics and retain any observed candidate identity.
+   Ambiguous writes are reconciled, never blindly retried or rebuilt for promotion.
+7. Record parent/child run URLs, application/workflow SHAs, manifest/build/executor
+   digests, build attempt, candidate ID, aliases, staged/public results and existing
+   stage timings. Confirm image decoding and all carousel interactions in an
+   anonymous read-only browser; block non-GET/HEAD requests. HTTP probe checks
+   alone do not establish interactive carousel behavior or owner-session behavior.
+   Review owner/non-owner authorization before granting the release approval.
+
+Rollback eligibility must be refreshed, not inferred from an old manifest. The
+retained known-good ID is READY production in the intended project/team, with all
+three SHA metadata labels matching the recovery commit and `collectionDisabled`
+set to `true`. Its original per-deployment analytics override was `false`; encrypted
+runtime values were not retrieved. Verify continued retention, production config,
+protection and fresh schema compatibility before authorizing any rollback. Its
+native `/api/__version` reports `unknown`; rollback revision checks therefore use
+exact provider metadata and aliases, while still requiring the content/assets and
+health checks. This exception does not relax revision checks for new normal builds.
+No rollback drill or automatic reversal is authorized.
 
 ## Ordinary code-only deployment
 
@@ -139,7 +260,7 @@ compatibility evidence as a runnable release.
    from preparing or publishing code.
 2. The App starts the child. Existing bot actor/triggering actor, installation,
    dispatcher provenance, protected-main and reviewer checks remain mandatory.
-3. Preparation runs `npm run verify:source` and exactly one `vercel build --prod --standalone
+3. Preparation runs cheap pinned-CLI/publication preflights, `npm run verify:source` and exactly one `vercel build --prod --standalone
 --non-interactive` using pinned CLI 63.1.2, reviewed local project settings,
    an empty production env file and an empty authentication home. No `vercel pull`,
    `--yes` build, deployment token, DB URL or production auth secret is supplied.
@@ -173,7 +294,9 @@ compatibility evidence as a runnable release.
    owner-admin authorization. There is no authenticated cron request or import.
    Manually validate a representative database-backed page and owner/non-owner reads
    before the first release approval; automated page checks alone do not prove all
-   schema contracts. Recheck drift immediately before promoting the exact ID.
+   schema contracts. The article/revision/assets/listing probes above also run
+   before promotion and against the public domain. Recheck drift immediately
+   before promoting the exact ID.
 9. Verify public health and record new and previous IDs. Provider write failures
    are inspected using authoritative deployment identity or domain assignment;
    no blind write retries, duplicate stages or automatic recovery are performed.

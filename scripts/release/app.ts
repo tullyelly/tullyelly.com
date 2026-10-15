@@ -4,7 +4,6 @@ import { validateEnvironmentGate, validateReviewedMainRules } from "./manifest";
 
 export const RELEASE_REPOSITORY = "tullyelly/tullyelly.com";
 export const RELEASE_REPOSITORY_ID = 1038458067;
-export const RELEASE_REVIEW_BRANCH = "cipher/analytics-archive";
 const decimal = z.string().regex(/^[1-9][0-9]*$/);
 const appSchema = z
   .object({

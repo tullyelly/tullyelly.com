@@ -10,6 +10,39 @@ through a separately approved settings operation. No actual production release
 or database migration has been authorized by that test. The checklist below is
 retained for maintenance and recovery, not an instruction to duplicate setup.
 
+## Publish an ordinary review branch
+
+Use the existing local installation configuration; no new App, key, SSH login or
+persistent Git configuration is needed. Publication requires a separately approved
+exact SHA and explicit `cipher/` or `feature/` working branch. The current branch
+and HEAD must match both inputs. Main, tags, revision expressions and unsafe Git
+refs are rejected. Pushes are non-force, repository-scoped and authenticated as
+the configured App; installation tokens are revoked even when an operation fails.
+
+```bash
+review_branch=cipher/normal-release-repair
+review_sha=$(git rev-parse HEAD)
+review_body=.cache/normal-release/pr-body.md
+npm exec -- tsx scripts/release-app-publish.ts check --branch "$review_branch" --commit "$review_sha"
+npm exec -- tsx scripts/release-app-publish.ts publish --branch "$review_branch" --commit "$review_sha"
+npm exec -- tsx scripts/release-app-draft.ts create --branch "$review_branch" --commit "$review_sha" --title '[WU-1119] Repair normal production release contracts' --body-file "$review_body" --ready
+```
+
+Review the body file and exact SHA before executing authorized writes. The local
+PR helper requires an explicit body file; it does not insert analytics boilerplate.
+`--ready` makes a newly created PR ready for review. Matching existing App-owned
+PRs retain their draft or ready state when their title/body is updated. Other
+branches have independent PRs, and human-owned, mismatched or ambiguous PRs are
+never overwritten. Remote branch SHA, repository IDs and App author are verified.
+The GitHub `draft-pr` dispatcher mode likewise requires `review_branch`; `pr_body`
+is optional and defaults to a neutral review description.
+
+Ordinary branch and PR publication reports `up-to-date`, `behind` or `unavailable`
+main ancestry; being behind main does not itself refuse review publication.
+Required GitHub checks still determine merge readiness. Protected main validation,
+release manifest binding, production ancestry and human approval gates retain their
+strict checks. Publishing a branch or PR never authorizes a merge or deployment.
+
 ## Numbered account checklist
 
 1. **Create the App under your `tullyelly` account.** Open your profile menu >

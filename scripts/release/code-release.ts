@@ -110,8 +110,11 @@ export async function executeCodeRelease(
     verifyReleaseDeploymentIdentity(target, m, manifestDigest, buildDigest),
   );
   p.reportDeployment?.(target);
+  // --skip-domain is a required staging property, verified independently of
+  // CLI success. An unexpected assignment must stop before promotion.
+  await p.guard([m.vercel.productionDeploymentId]);
   await codeGuard("health.staged", () => p.health(target, false));
-  const current = await p.guard([m.vercel.productionDeploymentId, target.id]);
+  const current = await p.guard([m.vercel.productionDeploymentId]);
   if (current !== target.id) {
     let failure: Diagnostic | undefined;
     try {

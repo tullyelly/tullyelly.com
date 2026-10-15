@@ -7,7 +7,6 @@ import {
   githubApi,
   RELEASE_REPOSITORY,
   RELEASE_REPOSITORY_ID,
-  RELEASE_REVIEW_BRANCH,
   validateDispatchEnvironment,
   verifyProtectedMain,
   withInstallationToken,
@@ -17,6 +16,7 @@ import {
 import { loadMaintenanceManifest } from "./release/maintenance";
 import { loadCodeManifest } from "./release/code-manifest";
 import { loadReleaseManifest } from "./release/manifest";
+import { reviewBranchSchema } from "./release/review-branch";
 
 export const dispatchInputSchema = z.discriminatedUnion("mode", [
   z
@@ -53,6 +53,9 @@ export const dispatchInputSchema = z.discriminatedUnion("mode", [
   z
     .object({
       mode: z.literal("draft-pr"),
+      branch: reviewBranchSchema,
+      body: z.string().trim().min(1).max(60000).optional(),
+      draft: z.boolean().optional(),
       sha: z.string().regex(/^[a-f0-9]{40}$/),
       title: z
         .string()
@@ -122,10 +125,11 @@ export async function prepareDraftPr(
   token: string,
   api: Api = githubApi,
 ) {
+  const workingBranch = reviewBranchSchema.parse(input.branch);
   const base = `/repos/${RELEASE_REPOSITORY}`;
   const head = z
     .object({ object: z.object({ sha: z.string() }) })
-    .parse(await api(`${base}/git/ref/heads/${RELEASE_REVIEW_BRANCH}`, token));
+    .parse(await api(`${base}/git/ref/heads/${workingBranch}`, token));
   if (head.object.sha !== input.sha)
     throw new Error(
       "Published review branch does not match the exact prepared commit; no push attempted",
@@ -134,29 +138,35 @@ export async function prepareDraftPr(
     .array(prSchema)
     .parse(
       await api(
-        `${base}/pulls?state=open&head=tullyelly:${RELEASE_REVIEW_BRANCH}&base=main&per_page=100`,
+        `${base}/pulls?state=open&head=tullyelly:${workingBranch}&base=main&per_page=100`,
         token,
       ),
     );
   if (existing.length > 1)
     throw new Error("Multiple review pull requests exist; stop for review");
-  const body = `Prepared analytics archive and protected human-approved production release process.\n\nExact review commit: \`${input.sha}\`.\n\nReview scope, checks, remaining blockers and recovery procedure in \`docs/analytics-rollout.md\` and \`docs/production-releases.md\`. This draft does not approve migrations, deployment or analytics activation. Production remains behind a separate human environment gate.`;
+  const body =
+    input.body ??
+    [
+      "Reviewed working branch: " + workingBranch,
+      "Exact review commit: " + input.sha,
+      "Review publication does not authorize merging or a production release.",
+    ].join("\n\n");
+  const current = existing[0];
+  const expectedDraft = current?.draft ?? input.draft ?? true;
   let result: unknown;
   if (existing.length) {
-    const current = existing[0];
     if (
-      !current.draft ||
       String(current.user.id) !== configuration.botUserId ||
       current.user.login !== `${configuration.slug}[bot]` ||
       current.user.type !== "Bot" ||
       current.head.sha !== input.sha ||
-      current.head.ref !== RELEASE_REVIEW_BRANCH ||
+      current.head.ref !== workingBranch ||
       current.head.repo.id !== RELEASE_REPOSITORY_ID ||
       current.base.ref !== "main" ||
       current.base.repo.id !== RELEASE_REPOSITORY_ID
     )
       throw new Error(
-        "Existing pull request is not the App-owned draft at the exact reviewed commit; refusing to overwrite it",
+        "Existing pull request is not App-owned at the exact reviewed branch and commit; refusing to overwrite it",
       );
     result = await api(`${base}/pulls/${current.number}`, token, "PATCH", {
       title: input.title,
@@ -165,10 +175,10 @@ export async function prepareDraftPr(
   } else {
     result = await api(`${base}/pulls`, token, "POST", {
       title: input.title,
-      head: RELEASE_REVIEW_BRANCH,
+      head: workingBranch,
       base: "main",
       body,
-      draft: true,
+      draft: expectedDraft,
       maintainer_can_modify: false,
     });
   }
@@ -176,9 +186,9 @@ export async function prepareDraftPr(
   if (
     created.html_url !==
       `https://github.com/${RELEASE_REPOSITORY}/pull/${created.number}` ||
-    !created.draft ||
+    created.draft !== expectedDraft ||
     created.user.type !== "Bot" ||
-    created.head.ref !== RELEASE_REVIEW_BRANCH ||
+    created.head.ref !== workingBranch ||
     created.base.ref !== "main" ||
     String(created.user.id) !== configuration.botUserId ||
     created.user.login !== `${configuration.slug}[bot]` ||
@@ -187,7 +197,7 @@ export async function prepareDraftPr(
     created.base.repo.id !== RELEASE_REPOSITORY_ID
   )
     throw new Error(
-      "Pull request identity did not match the App-owned reviewed draft",
+      "Pull request identity did not match the App-owned reviewed branch",
     );
   return created.html_url;
 }
@@ -216,6 +226,8 @@ async function main() {
             mode,
             sha: process.env.RELEASE_SHA,
             title: process.env.RELEASE_PR_TITLE,
+            branch: process.env.RELEASE_REVIEW_BRANCH,
+            body: process.env.RELEASE_PR_BODY || undefined,
           }
         : { mode, sha: process.env.RELEASE_SHA },
   );
@@ -300,7 +312,7 @@ async function main() {
     input.mode,
     async (installationToken) => {
       if (input.mode === "draft-pr")
-        return `App-owned draft: ${await prepareDraftPr(input, configuration, installationToken)}`;
+        return `App-owned review PR: ${await prepareDraftPr(input, configuration, installationToken)}`;
       const payload = dispatchPayload(
         input,
         configuration,
