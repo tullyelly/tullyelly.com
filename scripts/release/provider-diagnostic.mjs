@@ -22,6 +22,7 @@ const codes = new Set([
   "not_linked",
   "invalid_project_id",
   "deployment_failed",
+  "deploy_failed",
   "build_failed",
   "git_author_not_member",
 ]);

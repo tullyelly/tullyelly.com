@@ -13,6 +13,8 @@ import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
 const labels = new Set([
   "Installing source dependencies",
   "Installing release CLI",
+  "Checking pinned CLI contract",
+  "Checking published Chronicle",
   "Bundling release executor",
   "Verifying release executor",
   "Binding release plan",

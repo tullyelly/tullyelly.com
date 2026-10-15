@@ -48,6 +48,27 @@ const read = (
     fetcher,
   });
 
+test("canonical public image reads preserve query and never carry bypass credentials", async () => {
+  const fetcher = jest.fn().mockResolvedValue(new Response("image"));
+  await readHealthResponse({
+    stagedHost: stage,
+    publicDomain: true,
+    publicOrigin: "https://www.tullyelly.com",
+    path: "/_next/image?url=%2Fimages%2Ffixture.webp&w=640&q=75&dpl=dpl_fixture",
+    bypassSecret: secret,
+    timeoutMs: 15000,
+    fetcher,
+  });
+  expect(String(fetcher.mock.calls[0][0])).toBe(
+    `${www}/_next/image?url=%2Fimages%2Ffixture.webp&w=640&q=75&dpl=dpl_fixture`,
+  );
+  expect(fetcher.mock.calls[0][1]).toMatchObject({
+    headers: {},
+    credentials: "omit",
+    redirect: "manual",
+  });
+});
+
 test.each([301, 302, 307, 308])(
   "accepts exact HTTPS apex-to-www %s and preserves path/query without credentials",
   async (status) => {

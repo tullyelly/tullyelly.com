@@ -1,9 +1,28 @@
 # Appleton East publication recovery; owner procedure
 
-Status: prepared, **not authorized or published**. This incident plan pauses the
-broader release/CDN/content roadmap. Do not rerun the old artifact: its Chronicle
-is a draft. No commit, push, PR, merge, deployment, promotion, migration or live
-configuration change was performed while preparing this plan.
+Status: **completed and publicly verified** for recovery commit
+`b6f714ca6d83929096798df9543410bfc771a263`, deployment
+`dpl_VnkLN4dbyV6DV8Bz6iJMmbm1LGYP`, on October 14, 2026 at 7:07 pm
+America/Chicago (`2026-10-15T00:07:28.528050+00:00`). Public post:
+[Appleton East](https://tullyelly.com/shaolin/appleton-east).
+
+The owner approved the exact commit and one-time native-source exception. A clean
+source deployment used CLI 63.1.2, `deploy --prod --skip-domain`, the recorded
+project/team, SHA metadata and `ANALYTICS_SYNC_ENABLED=false` build/runtime inputs.
+The same verified candidate was promoted without rebuilding. Public anonymous
+browser checks passed authored text/date, all ten images, all three interactive
+carousels, listing, health and authorization checks; aliases matched the exact ID.
+No Git push, settings change, database migration or analytics activation occurred.
+CLI GET verification initially failed because `curl` forwards `--non-interactive`
+to native curl. Removing that flag allowed verification of the existing staged
+candidate; no second deployment was created. The commands below are corrected.
+
+The rest of this document preserves the **historical preparation snapshot** and
+reviewed procedure. Its old baseline IDs and unapproved status describe that time,
+not current production or permission for another deployment. The normal release
+repair and its new authorization prerequisites are owned by
+[production releases](production-releases.md#normal-release-acceptance-after-recovery).
+The emergency exception is exhausted and does not authorize that rehearsal.
 
 ## Verified evidence and candidate scope
 
@@ -72,7 +91,7 @@ a new candidate, validation and approval. The full existing CI/tooling diff abov
 must either be explicitly accepted or excluded in a separately reviewed candidate;
 do not reset this checkout to exclude it.
 
-## Required recovery exception; currently unapproved
+## Required recovery exception; historical preparation
 
 [Production policy](production-releases.md) requires the dedicated App dispatcher,
 protected `production-release` human gate, reviewed manifest, credential-free
@@ -250,9 +269,9 @@ secret or put it in command arguments.
 ```bash
 : "${VERCEL_AUTOMATION_BYPASS_SECRET:?Load the existing approved bypass secret locally; do not create one}"
 export VERCEL_AUTOMATION_BYPASS_SECRET
-vercel curl /api/health --deployment "$RECOVERY_DEPLOYMENT" --scope "$RECOVERY_TEAM" --non-interactive -- --fail --silent --show-error > "$RECOVERY_EVIDENCE/staged-health.json"
-vercel curl /shaolin/appleton-east --deployment "$RECOVERY_DEPLOYMENT" --scope "$RECOVERY_TEAM" --non-interactive -- --fail --silent --show-error > "$RECOVERY_EVIDENCE/staged-post.html"
-vercel curl /shaolin --deployment "$RECOVERY_DEPLOYMENT" --scope "$RECOVERY_TEAM" --non-interactive -- --fail --silent --show-error > "$RECOVERY_EVIDENCE/staged-list.html"
+vercel curl /api/health --deployment "$RECOVERY_DEPLOYMENT" --scope "$RECOVERY_TEAM" -- --fail --silent --show-error > "$RECOVERY_EVIDENCE/staged-health.json"
+vercel curl /shaolin/appleton-east --deployment "$RECOVERY_DEPLOYMENT" --scope "$RECOVERY_TEAM" -- --fail --silent --show-error > "$RECOVERY_EVIDENCE/staged-post.html"
+vercel curl /shaolin --deployment "$RECOVERY_DEPLOYMENT" --scope "$RECOVERY_TEAM" -- --fail --silent --show-error > "$RECOVERY_EVIDENCE/staged-list.html"
 ```
 
 In the staged browser, verify `/`, `/stats`, the post title/date and **actual visible

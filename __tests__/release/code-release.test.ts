@@ -191,6 +191,18 @@ test("normal stage, prepromotion guard, promotion and public health", async () =
   expect(p.promote).toHaveBeenCalledTimes(1);
   expect(p.health).toHaveBeenCalledTimes(2);
 });
+test("unexpected public assignment during stage stops without promote or retry", async () => {
+  const m = manifest(),
+    { p, d, setCurrent } = fixture(m);
+  p.stage = jest.fn(async () => {
+    setCurrent(d.id);
+    return d;
+  });
+  await expect(run(m, p)).rejects.toThrow();
+  expect(p.stage).toHaveBeenCalledTimes(1);
+  expect(p.promote).not.toHaveBeenCalled();
+  expect(p.health).not.toHaveBeenCalled();
+});
 test("identity or artifact mismatch never promotes", async () => {
   for (const change of [
     { projectId: "prj_other" },
@@ -323,7 +335,10 @@ test("code workflow cannot invoke database/credential executors or expose secret
   expect(code).not.toMatch(
     /console\.neon|env\/\$\{|cronSecret|RELEASE_DATABASE_URL/,
   );
-  expect(code).toContain("releaseBuildSha256=");
+  expect(code).toContain("prebuiltDeployArguments({");
+  expect(readFileSync("scripts/release/code-cli.ts", "utf8")).toContain(
+    "releaseBuildSha256=",
+  );
   expect(code).toContain("scripts/release/code-build-context.py");
   expect(
     readFileSync("scripts/release/code-build-context.py", "utf8"),

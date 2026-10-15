@@ -256,7 +256,7 @@ describe("human protected release", () => {
     expect(workflow).not.toMatch(/^  (push|pull_request):/m);
     expect(workflow).not.toMatch(/run:.*vercel pull/);
     expect(workflow).toContain("run-stage.mjs executor");
-    expect(readFileSync("scripts/production-release.ts", "utf8")).toContain(
+    expect(readFileSync("scripts/release/code-cli.ts", "utf8")).toContain(
       "--skip-domain",
     );
     expect(workflow).toContain(

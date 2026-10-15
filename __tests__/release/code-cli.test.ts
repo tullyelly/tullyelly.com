@@ -85,6 +85,15 @@ test.each([
   [
     JSON.stringify({
       status: "error",
+      reason: "deploy_failed",
+      message: sensitive,
+    }),
+    "",
+    { reason: "deploy_failed" },
+  ],
+  [
+    JSON.stringify({
+      status: "error",
       reason: "scope_not_accessible",
       message: `Not authorized: Trying to access resource under scope ${sensitive}`,
       hint: sensitive,
@@ -145,6 +154,36 @@ test("only stdout supplies a successful staged URL", () => {
     runner({ stdout: "https://fixture.vercel.app\n", stderr: sensitive }),
   );
   expect(stagedDeploymentUrl(output).hostname).toBe("fixture.vercel.app");
+});
+test("pinned non-interactive JSON selects only the deployment origin", () => {
+  expect(
+    stagedDeploymentUrl(
+      JSON.stringify({
+        status: "ok",
+        deployment: {
+          url: "https://fixture.vercel.app",
+          productionUrl: sensitive,
+        },
+        message: sensitive,
+        next: [{ command: sensitive }],
+      }),
+    ).hostname,
+  ).toBe("fixture.vercel.app");
+});
+test.each([
+  { status: "error", deployment: { url: "https://fixture.vercel.app" } },
+  { status: "ok", url: "https://fixture.vercel.app" },
+  { status: "ok", deployment: { productionUrl: "https://fixture.vercel.app" } },
+  { status: "ok", deployment: { url: "https://fixture.vercel.app/path" } },
+  {
+    status: "ok",
+    deployment: { url: "https://user:password@fixture.vercel.app" },
+  },
+  { status: "ok", deployment: { url: 123 } },
+])("rejects ambiguous, rejected or unsafe structured output %#", (value) => {
+  expect(() => stagedDeploymentUrl(JSON.stringify(value))).toThrow(
+    "code.stage-output-unresolved",
+  );
 });
 test.each([
   "https://fixture.vercel.app/path",

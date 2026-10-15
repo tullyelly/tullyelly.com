@@ -2,6 +2,8 @@ import { readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { resolve, sep } from "node:path";
 import matter from "gray-matter";
 import { createProcessor } from "@mdx-js/mdx";
+import { createHash } from "node:crypto";
+import releaseProbe from "./release/publication-probe.json";
 import {
   resolveChronicleCarouselFolder,
   resolveChronicleImagePath,
@@ -148,9 +150,32 @@ export function checkChroniclePublication(slug: string, root = process.cwd()) {
 
 try {
   const slug = process.argv[2];
-  if (!slug || process.argv.length !== 3)
-    throw new Error("Usage: npm run chronicle:ready -- <slug>");
-  console.log(JSON.stringify(checkChroniclePublication(slug), null, 2));
+  const release = process.argv[3] === "--release";
+  if (!slug || process.argv.length !== (release ? 4 : 3))
+    throw new Error("Usage: npm run chronicle:ready -- <slug> [--release]");
+  const report = checkChroniclePublication(slug);
+  if (release) {
+    const source = matter(
+      readFileSync(resolve("content/chronicles", `${slug}.mdx`), "utf8"),
+    );
+    if (
+      slug !== releaseProbe.slug ||
+      report.date !== releaseProbe.date ||
+      source.data.title !== releaseProbe.title ||
+      JSON.stringify(report.assets) !== JSON.stringify(releaseProbe.assets) ||
+      JSON.stringify(report.folders) !== JSON.stringify(releaseProbe.folders) ||
+      releaseProbe.text.some((text) => !source.content.includes(text))
+    )
+      throw new Error("Released Chronicle no longer matches acceptance probe");
+    for (const [asset, hash] of Object.entries(releaseProbe.assetSha256))
+      if (
+        createHash("sha256")
+          .update(readFileSync(resolve("public", `.${asset}`)))
+          .digest("hex") !== hash
+      )
+        throw new Error("Released Chronicle image changed");
+  }
+  console.log(JSON.stringify(report, null, 2));
 } catch {
   console.error(
     "Chronicle publication readiness failed; check source, draft flag, literal image props, assets and manifest.",

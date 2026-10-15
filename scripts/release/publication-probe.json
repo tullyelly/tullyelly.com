@@ -1,0 +1,39 @@
+{
+  "slug": "appleton-east",
+  "date": "2026-10-13",
+  "assets": [
+    "/images/optimus/appleton-east/1037386/1037386-0.webp",
+    "/images/optimus/appleton-east/1037386/1037386-1.webp",
+    "/images/optimus/appleton-east/dogs.webp",
+    "/images/optimus/appleton-east/george/george-0.webp",
+    "/images/optimus/appleton-east/george/george-1.webp",
+    "/images/optimus/appleton-east/hug-ball.webp",
+    "/images/optimus/appleton-east/jeff/jeff-0.webp",
+    "/images/optimus/appleton-east/jeff/jeff-1.webp",
+    "/images/optimus/appleton-east/jeff/jeff-2.webp",
+    "/images/optimus/appleton-east/sectionals.webp"
+  ],
+  "folders": [
+    "appleton-east/george",
+    "appleton-east/jeff",
+    "appleton-east/1037386"
+  ],
+  "title": "appleton east",
+  "text": [
+    "Small, but significant improvement to my workflow.",
+    "This was a fun deal all around. Glad to be back.",
+    "Leaner CI"
+  ],
+  "assetSha256": {
+    "/images/optimus/appleton-east/1037386/1037386-0.webp": "c843e63f4592c852f6466d14b74d7c4f7e5680f32b3884b5330565bf985ee846",
+    "/images/optimus/appleton-east/1037386/1037386-1.webp": "810b37035e2c9b4d0ea9f0a691d7db9021a394065d2ffa63c66e7c9a157133df",
+    "/images/optimus/appleton-east/dogs.webp": "b5a31a488a3712bc541d938dbcf40901dd67f7313940160a78db4d760ea1ab75",
+    "/images/optimus/appleton-east/george/george-0.webp": "9e43068002aacfac6f47f5c4903587a21e3688aa480c370304d537abc071274c",
+    "/images/optimus/appleton-east/george/george-1.webp": "1ca2a7b5c5b7f241bc58b6b8e7205d620bb66c30090cc31648a31584f484e2bb",
+    "/images/optimus/appleton-east/hug-ball.webp": "1d3473f790e95ddb1044a559967bbd597aaccfeea47f52b13a9a17f0e1b60316",
+    "/images/optimus/appleton-east/jeff/jeff-0.webp": "c4db2e57aa5f46e74b43896a29f22b88c936a88b154afe6c65e64eb5a5cf7f79",
+    "/images/optimus/appleton-east/jeff/jeff-1.webp": "ad053e110d77a1c7a43ce8b58ee3ee1486df1d4c5fb1a96cd17fcbce3c479b7a",
+    "/images/optimus/appleton-east/jeff/jeff-2.webp": "b287ab7b049b43a43fe7d3b46de19e1a42981de938fad7425bd423a2670fc94a",
+    "/images/optimus/appleton-east/sectionals.webp": "7876706b878ece2e9a83fe93fc955ba10116b3961b3b5966cb78866e37eb452a"
+  }
+}

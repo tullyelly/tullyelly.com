@@ -10,7 +10,11 @@ import {
 } from "./release/manifest";
 import { loadCodeManifest, type CodeManifest } from "./release/code-manifest";
 import { executeCodeRelease, type CodeProviders } from "./release/code-release";
-import { codeCli, stagedDeploymentUrl } from "./release/code-cli";
+import {
+  codeCli,
+  prebuiltDeployArguments,
+  stagedDeploymentUrl,
+} from "./release/code-cli";
 import {
   assertCodeRevision,
   artifactBinding,
@@ -24,8 +28,10 @@ import { reportCodeEvent, reportCodeFailure } from "./release/code-report";
 
 import {
   checkCodeHealth,
+  readHealthResponse,
   verifyHealthDomainAliases,
 } from "./release/code-health";
+import { checkPublicationHealth } from "./release/code-publication-health";
 
 import {
   codeGuard,
@@ -233,6 +239,21 @@ async function health(
     operation: manifest.operation,
     bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
   });
+  await checkPublicationHealth(
+    (path) =>
+      readHealthResponse({
+        stagedHost: d.url,
+        publicDomain,
+        path,
+        // Relative image URLs belong to the canonical rendered-page origin.
+        // The apex redirect strips Vercel's dpl image hint; do not relax its
+        // strict path/query redirect check to accommodate that rewrite.
+        publicOrigin: publicDomain ? "https://www.tullyelly.com" : undefined,
+        bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+        timeoutMs: 30000,
+      }),
+    manifest.operation === "deploy" ? manifest.commit : undefined,
+  );
 }
 async function main() {
   manifest = await codeGuard("manifest.validation", () =>
@@ -427,27 +448,12 @@ async function main() {
       ]);
       const output = codeCli(
         "vercel.stage",
-        [
-          "deploy",
-          "--prebuilt",
-          "--prod",
-          "--skip-domain",
-          "--yes",
-          "--project",
-          manifest.vercel.projectId,
-          "--meta",
-          `releaseSha=${manifest.commit}`,
-          "--meta",
-          `githubCommitSha=${manifest.commit}`,
-          "--meta",
-          `releaseManifest=${required("RELEASE_MANIFEST_SHA256")}`,
-          "--meta",
-          `releaseBuildSha256=${required("RELEASE_BUILD_SHA256")}`,
-          "--meta",
-          "collectionDisabled=true",
-          "--env",
-          "ANALYTICS_SYNC_ENABLED=false",
-        ],
+        prebuiltDeployArguments({
+          projectId: manifest.vercel.projectId,
+          commit: manifest.commit,
+          manifestDigest: required("RELEASE_MANIFEST_SHA256"),
+          buildDigest: required("RELEASE_BUILD_SHA256"),
+        }),
         manifest.vercel.teamId,
         required("VERCEL_TOKEN"),
       );
