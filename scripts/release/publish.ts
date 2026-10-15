@@ -8,19 +8,70 @@ import {
 import { execFileSync } from "node:child_process";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { z } from "zod";
+import { reviewBranchSchema } from "./review-branch";
+
+export function reviewPublicationInput(args: string[]) {
+  const [mode, branchFlag, branch, commitFlag, sha] = args;
+  if (
+    args.length !== 5 ||
+    branchFlag !== "--branch" ||
+    commitFlag !== "--commit"
+  )
+    throw new Error(
+      "Usage: <check|publish> --branch <working-branch> --commit <SHA>",
+    );
+  return z
+    .object({
+      mode: z.enum(["check", "publish"]),
+      branch: reviewBranchSchema,
+      sha: z.string().regex(/^[a-f0-9]{40}$/),
+    })
+    .parse({ mode, branch, sha });
+}
+
+/** Ordinary review publication can be behind main; production guards stay strict. */
+export function reviewMainAncestry(
+  main: string,
+  commit: string,
+  cwd = process.cwd(),
+) {
+  for (const sha of [main, commit])
+    z.string()
+      .regex(/^[a-f0-9]{40}$/)
+      .parse(sha);
+  try {
+    execFileSync("git", ["merge-base", "--is-ancestor", main, commit], {
+      cwd,
+      stdio: "pipe",
+    });
+    return "up-to-date" as const;
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "status" in error &&
+      error.status === 1
+    )
+      return "behind" as const;
+    return "unavailable" as const;
+  }
+}
 
 export function assertReviewPublication(
   branch: string,
   head: string,
   approved: string,
+  workingBranch: string,
 ) {
+  reviewBranchSchema.parse(workingBranch);
   if (
-    branch !== "cipher/analytics-archive" ||
+    branch !== workingBranch ||
     !/^[a-f0-9]{40}$/.test(approved) ||
     head !== approved
   )
     throw new Error(
-      "Only the exact prepared analytics review branch commit can be published.",
+      "Only the explicit working branch at the exact approved commit can be published.",
     );
 }
 

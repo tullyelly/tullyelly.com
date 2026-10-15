@@ -697,7 +697,12 @@ describe("dedicated release App", () => {
     ).toThrow();
     expect(() =>
       dispatchPayload(
-        { mode: "draft-pr", sha, title: "Review" },
+        {
+          mode: "draft-pr",
+          branch: "cipher/analytics-archive",
+          sha,
+          title: "Review",
+        },
         config,
         "100",
       ),
@@ -746,7 +751,12 @@ describe("App-authored draft review", () => {
     const mock = api([]);
     await expect(
       prepareDraftPr(
-        { mode: "draft-pr", sha, title: "Prepared review" },
+        {
+          mode: "draft-pr",
+          branch: "cipher/analytics-archive",
+          sha,
+          title: "Prepared review",
+        },
         config,
         "fixture",
         mock,
@@ -775,17 +785,27 @@ describe("App-authored draft review", () => {
     ])
       await expect(
         prepareDraftPr(
-          { mode: "draft-pr", sha, title: "Review" },
+          {
+            mode: "draft-pr",
+            branch: "cipher/analytics-archive",
+            sha,
+            title: "Review",
+          },
           config,
           "fixture",
           api([], sha, response),
         ),
       ).rejects.toThrow("identity");
   });
-  it("updates its own draft but refuses human drafts, ready PRs and changed heads", async () => {
+  it("updates its own draft but refuses human or unrelated PRs and changed heads", async () => {
     const mock = api([pr]);
     await prepareDraftPr(
-      { mode: "draft-pr", sha, title: "Updated review" },
+      {
+        mode: "draft-pr",
+        branch: "cipher/analytics-archive",
+        sha,
+        title: "Updated review",
+      },
       config,
       "fixture",
       mock,
@@ -798,11 +818,16 @@ describe("App-authored draft review", () => {
     );
     for (const existing of [
       { ...pr, user: { id: 5, login: "tullyelly", type: "User" } },
-      { ...pr, draft: false },
+      { ...pr, head: { ...pr.head, ref: "feature/unrelated" } },
     ])
       await expect(
         prepareDraftPr(
-          { mode: "draft-pr", sha, title: "Review" },
+          {
+            mode: "draft-pr",
+            branch: "cipher/analytics-archive",
+            sha,
+            title: "Review",
+          },
           config,
           "fixture",
           api([existing]),
@@ -810,12 +835,142 @@ describe("App-authored draft review", () => {
       ).rejects.toThrow("overwrite");
     await expect(
       prepareDraftPr(
-        { mode: "draft-pr", sha, title: "Review" },
+        {
+          mode: "draft-pr",
+          branch: "cipher/analytics-archive",
+          sha,
+          title: "Review",
+        },
         config,
         "fixture",
         api([], "b".repeat(40)),
       ),
     ).rejects.toThrow("Published");
+  });
+  it.each([true, false])(
+    "preserves the matching App PR draft state %s while updating review content",
+    async (draft) => {
+      const existing = { ...pr, draft };
+      const mock = api([existing], sha, existing);
+      await prepareDraftPr(
+        {
+          mode: "draft-pr",
+          branch: pr.head.ref,
+          sha,
+          title: "Updated review",
+          body: "Reviewed change",
+          draft: !draft,
+        },
+        config,
+        "fixture",
+        mock,
+      );
+      expect(mock).toHaveBeenCalledWith(
+        `/repos/${RELEASE_REPOSITORY}/pulls/42`,
+        "fixture",
+        "PATCH",
+        { title: "Updated review", body: "Reviewed change" },
+      );
+      expect(
+        mock.mock.calls.some(
+          (call) =>
+            call[1] === "fixture" && /graphql|ready_for_review/.test(call[0]),
+        ),
+      ).toBe(false);
+    },
+  );
+  it("creates independent ready PRs for explicit branches and never updates the other branch", async () => {
+    const records = new Map<string, typeof pr>();
+    const mock = jest.fn<ReturnType<Api>, Parameters<Api>>(
+      async (path, _token, method, body) => {
+        if (path.includes("/git/ref/heads/")) return { object: { sha } };
+        if (method === "POST") {
+          const value = body as { head: string; draft: boolean };
+          const number = records.size + 42;
+          const created = {
+            ...pr,
+            number,
+            html_url: `https://github.com/${RELEASE_REPOSITORY}/pull/${number}`,
+            draft: value.draft,
+            head: { ...pr.head, ref: value.head },
+          };
+          records.set(value.head, created);
+          return created;
+        }
+        if (method === "PATCH") {
+          return [...records.values()].find((record) =>
+            path.endsWith(`/${record.number}`),
+          );
+        }
+        const query = new URL(path, "https://api.github.com").searchParams;
+        const branch = query.get("head")?.replace(/^tullyelly:/, "");
+        return branch && records.has(branch) ? [records.get(branch)] : [];
+      },
+    );
+    for (const branch of [
+      "cipher/normal-release-repair",
+      "feature/independent-review",
+    ])
+      await prepareDraftPr(
+        {
+          mode: "draft-pr",
+          branch,
+          sha,
+          title: "Review",
+          body: "Specific reviewed description",
+          draft: false,
+        },
+        config,
+        "fixture",
+        mock,
+      );
+    const other = JSON.stringify(records.get("feature/independent-review"));
+    await prepareDraftPr(
+      {
+        mode: "draft-pr",
+        branch: "cipher/normal-release-repair",
+        sha,
+        title: "Updated",
+        draft: true,
+      },
+      config,
+      "fixture",
+      mock,
+    );
+    expect(records.size).toBe(2);
+    expect(JSON.stringify(records.get("feature/independent-review"))).toBe(
+      other,
+    );
+    expect(
+      mock.mock.calls
+        .filter((call) => call[2] === "PATCH")
+        .map((call) => call[0]),
+    ).toEqual([`/repos/${RELEASE_REPOSITORY}/pulls/42`]);
+    expect(
+      [...records.values()].every((record) => record.draft === false),
+    ).toBe(true);
+    expect(JSON.stringify(mock.mock.calls)).not.toContain(
+      "Prepared analytics archive",
+    );
+  });
+  it("leaves a human PR or a PR for an unrelated branch untouched", async () => {
+    for (const existing of [
+      { ...pr, user: { ...pr.user, type: "User" } },
+      { ...pr, head: { ...pr.head, ref: "feature/other" } },
+    ]) {
+      const mock = api([existing]);
+      await expect(
+        prepareDraftPr(
+          { mode: "draft-pr", branch: pr.head.ref, sha, title: "Review" },
+          config,
+          "fixture",
+          mock,
+        ),
+      ).rejects.toThrow("overwrite");
+      expect(
+        mock.mock.calls.every((call) => !call[2] || call[2] === "GET"),
+      ).toBe(true);
+    }
   });
 });
 

@@ -17,17 +17,110 @@ import {
   assertInstallationPushUrl,
   installationGitEnvironment,
   readSecureAppKey,
+  reviewPublicationInput,
+  reviewMainAncestry,
 } from "@/scripts/release/publish";
 
 test("publication refuses production branches and stale commits", () => {
   const sha = "a".repeat(40);
-  expect(() => assertReviewPublication("main", sha, sha)).toThrow();
   expect(() =>
-    assertReviewPublication("cipher/analytics-archive", sha, "b".repeat(40)),
+    assertReviewPublication("main", sha, sha, "cipher/normal-release-repair"),
   ).toThrow();
   expect(() =>
-    assertReviewPublication("cipher/analytics-archive", sha, sha),
+    assertReviewPublication(
+      "cipher/analytics-archive",
+      sha,
+      "b".repeat(40),
+      "cipher/analytics-archive",
+    ),
+  ).toThrow();
+  expect(() =>
+    assertReviewPublication(
+      "cipher/analytics-archive",
+      sha,
+      sha,
+      "cipher/analytics-archive",
+    ),
   ).not.toThrow();
+});
+
+test.each(["cipher/normal-release-repair", "feature/independent-review"])(
+  "publication binds the explicit working branch %s and exact SHA",
+  (branch) => {
+    const sha = "a".repeat(40);
+    expect(
+      reviewPublicationInput(["publish", "--branch", branch, "--commit", sha]),
+    ).toEqual({ mode: "publish", branch, sha });
+    expect(() =>
+      assertReviewPublication(branch, sha, sha, branch),
+    ).not.toThrow();
+    expect(() =>
+      assertReviewPublication("cipher/unrelated", sha, sha, branch),
+    ).toThrow();
+  },
+);
+test.each([
+  "main",
+  "master",
+  "HEAD",
+  "refs/heads/cipher/review",
+  "-option",
+  "cipher/../main",
+  "cipher/a..b",
+  "cipher/a.lock",
+  "cipher/a/.hidden",
+  "cipher/a/",
+  "cipher//review",
+  "cipher/a@{1}",
+  "cipher/a b",
+  "cipher/a?b",
+  "cipher/a:main",
+  "cipher/a\nmain",
+])("unsafe working ref %j is rejected before publication", (branch) => {
+  expect(() =>
+    reviewPublicationInput([
+      "publish",
+      "--branch",
+      branch,
+      "--commit",
+      "a".repeat(40),
+    ]),
+  ).toThrow();
+});
+test("main ancestry reports behind or unavailable without changing Git history", () => {
+  const root = mkdtempSync(join(tmpdir(), "review-ancestry-"));
+  const git = (...args: string[]) =>
+    execFileSync("git", args, {
+      cwd: root,
+      stdio: "pipe",
+      encoding: "utf8",
+    }).trim();
+  try {
+    git("init", "--template=", "-b", "main");
+    const commit = (message: string) =>
+      git(
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.test",
+        "commit",
+        "--allow-empty",
+        "-m",
+        message,
+      );
+    commit("first");
+    const before = git("rev-parse", "HEAD");
+    commit("second");
+    const main = git("rev-parse", "HEAD");
+    expect(reviewMainAncestry(before, main, root)).toBe("up-to-date");
+    expect(reviewMainAncestry(main, before, root)).toBe("behind");
+    expect(reviewMainAncestry("f".repeat(40), before, root)).toBe(
+      "unavailable",
+    );
+    expect(git("rev-parse", "HEAD")).toBe(main);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 test("Git credentials are ephemeral and existing trace/helper overrides cannot expose them", () => {
   const env = installationGitEnvironment("fixture-token", {

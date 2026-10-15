@@ -6,7 +6,6 @@ import {
   appConfiguration,
   githubApi,
   RELEASE_REPOSITORY,
-  RELEASE_REVIEW_BRANCH,
   withScopedInstallationToken,
   TokenCleanupError,
   type TokenCleanupResult,
@@ -16,6 +15,8 @@ import {
   verifyInstallationPushUrl,
   installationGitEnvironment,
   readSecureAppKey,
+  reviewPublicationInput,
+  reviewMainAncestry,
 } from "./release/publish";
 
 import {
@@ -29,21 +30,18 @@ import {
 
 async function main() {
   config({ path: ".env.release-dispatch.local", quiet: true });
-  const [mode, flag, commit] = process.argv.slice(2);
-  if (
-    !["check", "publish"].includes(mode) ||
-    flag !== "--commit" ||
-    process.argv.slice(2).length !== 3
-  )
-    throw new Error(
-      "Usage: tsx scripts/release-app-publish.ts <check|publish> --commit <SHA>",
-    );
+  const {
+    mode,
+    branch: workingBranch,
+    sha: commit,
+  } = reviewPublicationInput(process.argv.slice(2));
   const git = (args: string[]) =>
     execFileSync("git", args, { encoding: "utf8" }).trim();
   assertReviewPublication(
     git(["branch", "--show-current"]),
     git(["rev-parse", "HEAD"]),
     commit,
+    workingBranch,
   );
   if (
     process.env.GITHUB_REPOSITORY &&
@@ -58,7 +56,7 @@ async function main() {
   });
   if (mode === "check") {
     console.log(
-      `Prepared review commit ${commit}; App ${configuration.slug}; installation ${configuration.installationId}. No key read or network request.`,
+      `Prepared review branch ${workingBranch} at ${commit}; App ${configuration.slug}; installation ${configuration.installationId}. No key read or network request.`,
     );
     return;
   }
@@ -101,18 +99,18 @@ async function main() {
                   token,
                 ),
               );
-            git(["merge-base", "--is-ancestor", branch.commit.sha, commit]);
+            diagnostic({
+              stage: "main-ancestry",
+              mainSha: branch.commit.sha,
+              outcome: reviewMainAncestry(branch.commit.sha, commit),
+            });
             verifyInstallationPushUrl(pushUrl, pushEnv);
           },
           push: async () => {
             try {
               execFileSync(
                 "git",
-                [
-                  "push",
-                  pushUrl,
-                  `${commit}:refs/heads/${RELEASE_REVIEW_BRANCH}`,
-                ],
+                ["push", pushUrl, `${commit}:refs/heads/${workingBranch}`],
                 {
                   env: pushEnv,
                   encoding: "utf8",
@@ -132,7 +130,7 @@ async function main() {
               })
               .parse(
                 await githubApi(
-                  `/repos/${RELEASE_REPOSITORY}/git/ref/heads/${RELEASE_REVIEW_BRANCH}`,
+                  `/repos/${RELEASE_REPOSITORY}/git/ref/heads/${workingBranch}`,
                   token,
                 ),
               ).object.sha,

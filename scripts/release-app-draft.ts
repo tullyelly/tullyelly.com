@@ -1,5 +1,6 @@
-/** Prepare the initial App-owned draft before the dispatcher exists on main. */
+/** Create or update an App-owned review PR; never merge or dispatch a release. */
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { config } from "dotenv";
 import { z } from "zod";
 import { dispatchInputSchema, prepareDraftPr } from "./release-dispatch";
@@ -9,27 +10,60 @@ import {
   RELEASE_REPOSITORY,
   withInstallationToken,
 } from "./release/app";
-import { assertReviewPublication, readSecureAppKey } from "./release/publish";
+import {
+  assertReviewPublication,
+  readSecureAppKey,
+  reviewMainAncestry,
+} from "./release/publish";
 
 export function bootstrapDraftInput(args: string[]) {
-  const [mode, commitFlag, sha, titleFlag, title] = args;
+  const [
+    mode,
+    branchFlag,
+    branch,
+    commitFlag,
+    sha,
+    titleFlag,
+    title,
+    bodyFlag,
+    bodyFile,
+    ready,
+  ] = args;
   if (
     !["check", "create"].includes(mode) ||
+    branchFlag !== "--branch" ||
     commitFlag !== "--commit" ||
     titleFlag !== "--title" ||
-    args.length !== 5
+    bodyFlag !== "--body-file" ||
+    !bodyFile ||
+    !(args.length === 9 || (args.length === 10 && ready === "--ready"))
   )
     throw new Error(
-      "Usage: tsx scripts/release-app-draft.ts <check|create> --commit <SHA> --title <approved title>",
+      "Usage: tsx scripts/release-app-draft.ts <check|create> --branch <working-branch> --commit <SHA> --title <title> --body-file <reviewed-file> [--ready]",
     );
   return {
     mode,
-    input: dispatchInputSchema.parse({ mode: "draft-pr", sha, title }),
+    bodyFile,
+    input: dispatchInputSchema.parse({
+      mode: "draft-pr",
+      branch,
+      sha,
+      title,
+      draft: ready === "--ready" ? false : true,
+    }),
   };
 }
 async function main() {
   config({ path: ".env.release-dispatch.local", quiet: true });
-  const { mode, input } = bootstrapDraftInput(process.argv.slice(2));
+  const {
+    mode,
+    input: supplied,
+    bodyFile,
+  } = bootstrapDraftInput(process.argv.slice(2));
+  const input = dispatchInputSchema.parse({
+    ...supplied,
+    body: readFileSync(bodyFile, "utf8"),
+  });
   if (input.mode !== "draft-pr")
     throw new Error("Bootstrap supports only an App-owned draft PR");
   const git = (args: string[]) =>
@@ -38,6 +72,7 @@ async function main() {
     git(["branch", "--show-current"]),
     git(["rev-parse", "HEAD"]),
     input.sha,
+    input.branch,
   );
   if (
     process.env.GITHUB_REPOSITORY &&
@@ -69,18 +104,24 @@ async function main() {
         .parse(
           await githubApi(`/repos/${RELEASE_REPOSITORY}/branches/main`, token),
         );
-      git(["merge-base", "--is-ancestor", main.commit.sha, input.sha]);
+      console.log(
+        JSON.stringify({
+          event: "review-main-ancestry",
+          mainSha: main.commit.sha,
+          outcome: reviewMainAncestry(main.commit.sha, input.sha),
+        }),
+      );
       return prepareDraftPr(input, configuration, token);
     },
   );
   console.log(
-    `App-owned draft verified: ${url}. No merge, workflow dispatch, approval or deployment performed.`,
+    `App-owned review PR verified: ${url}. No merge, workflow dispatch, approval or deployment performed.`,
   );
 }
 if (process.argv[1]?.endsWith("release-app-draft.ts"))
   main().catch(() => {
     console.error(
-      "Bootstrap draft stopped. Check exact branch SHA, current main ancestry, repository-only installation and App identity. Credentials and API bodies are omitted; do not retry an ambiguous PR creation without inspecting existing drafts.",
+      "Review PR stopped. Check explicit branch, exact SHA, repository-only installation and App identity. Credentials and API bodies are omitted; do not retry ambiguous creation without inspecting existing PRs.",
     );
     process.exitCode = 1;
   });
