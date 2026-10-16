@@ -752,6 +752,9 @@
     "/images/optimus/hortonville/volleyball/hortonville-1.webp",
     "/images/optimus/hortonville/volleyball/hortonville-2.webp",
     "/images/optimus/hortonville/volleyball/hortonville-3.webp",
+    "/images/optimus/hospitals/pain.webp",
+    "/images/optimus/hospitals/rain/rain-0.webp",
+    "/images/optimus/hospitals/rain/rain-1.webp",
     "/images/optimus/hotfix/oh-no.webp",
     "/images/optimus/hug-ball/hug-ball.webp",
     "/images/optimus/hug-ball/jean-grae.webp",
@@ -5960,6 +5963,21 @@
     },
     {
       "src": "/images/optimus/hortonville/volleyball/hortonville-3.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/hospitals/pain.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/hospitals/rain/rain-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/hospitals/rain/rain-1.webp",
       "width": 1920,
       "height": 2560
     },
