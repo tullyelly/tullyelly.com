@@ -128,6 +128,27 @@ no retry or full-workflow rerun is automatic.
 
 ### Verification and diagnostics
 
+After the existing human gate, the protected credential preflight reports only
+whether the release token is present/malformed and whether REST and the actual
+pinned CLI each verify the exact project/team. It never prints token values,
+prefixes, hashes or character samples. REST metadata access and CLI authentication
+are distinct checks; neither establishes permission to create or promote a
+production deployment. Missing, malformed or mismatched credentials stop staging.
+
+The CLI receives the protected token through the reviewed environment path, with
+an empty temporary HOME and isolated configuration directories for each operation.
+An explicit empty global-config directory prevents ambient owner credentials or
+cached team state from participating. No owner login, authentication file, env
+pull or token argument is substituted. Temporary directories are removed after
+the operation, including failures.
+
+If the CLI authentication check fails, two failure-only read probes use that same
+token against `/v2/user` and the exact configured team. Reports retain only the
+fixed operation, success boolean and available HTTP status; they never publish
+response bodies or infer a principal type or write permissions from a successful
+read. The original CLI failure remains the primary diagnostic. These reads do not
+retry authentication, stage a deployment or add another approval gate.
+
 Staged and public probes check `/api/__version`, `/api/health`, owner/non-owner
 route denial and the disabled collection cron contract. Representative existing
 Chronicle coverage includes Appleton East's original date/text, ten raw image
@@ -155,13 +176,26 @@ credentials go only to that staged origin, never public domains or redirect targ
 all requests omit ambient credentials. HTTP probes do not prove interactive carousel
 behavior or signed-in owner behavior; keep those limitations visible in acceptance.
 
-Provider failures retain bounded allowlisted operation, process, HTTP/network,
-reason/code and fixed message labels. Raw stdout/stderr, provider bodies, URLs,
-headers, credentials, environment values, arbitrary exceptions and suggested
-commands are never published. A safe provider label survives failed/not-found
+Provider failures retain fixed operation/process labels, HTTP/network evidence,
+bounded safe reason/code identifiers and a bounded redacted provider error message.
+Structured envelopes, JSON lines and text errors can follow CLI progress output;
+the bounded tail remains available for selecting the actual error. Known credential
+values and transport encodings, authorization/cookie fields, connection strings,
+URLs, private keys and opaque secret-like values are redacted before message
+truncation. Reports re-sanitize provider fields, and summaries escape Markdown/HTML
+in messages. Raw streams, envelopes, hints, suggested commands and arbitrary
+exception objects are never published. A safe provider diagnostic survives failed/not-found
 reconciliation, and the report retains any verified candidate identity. Reconcile
 ambiguous writes using authoritative deployment identity before a retry; do not
 repeat staging or build another candidate during promotion.
+
+Fixed phase events distinguish the opaque CLI invocation/upload operation,
+authoritative deployment creation, remote readiness, staged verification,
+exact-deployment promotion and public verification. Deployment creation is only
+completed when an authoritative candidate exists; remote build success requires
+READY. Unobserved phases say `not reached`, and a started phase without a terminal
+event says `incomplete`. Phase timings use the existing stage clock and may overlap;
+the CLI invocation does not expose a precise file-upload/request boundary.
 
 `node scripts/release/check-cli.mjs` executes the real pinned CLI against a **simulated
 loopback provider**, with nonempty source upload, upload/deployment rejection,
@@ -222,6 +256,17 @@ passed. `vercel.stage` failed with exit 1 and reconciliation not-found. The avai
 sanitized log retains those facts; the artifacts endpoint was empty when refreshed.
 The historical provider rejection remains unknown. Do not claim the separately
 reproduced JSON success-parser mismatch caused that exit-1 rejection.
+
+[Run 39046724042](https://github.com/tullyelly/tullyelly.com/actions/runs/39046724042)
+attempt 1 stopped before the human gate because the read-token environment secret
+was unavailable. After the owner corrected that setup, attempt 2 reached the human
+gate and received `tullyelly` approval, then failed at native staging with exit 1,
+reconciliation not-found and no candidate ID. Production remained on the recorded
+baseline. The old fixed-label parser retained no provider rejection message; raw
+CLI stderr was not saved. Its rejection remains unknown. The protected credential
+preflight and bounded redacted-message/phase instrumentation describe what a future
+separately authorized attempt will observe; they do not establish that historical
+failure's cause or authorize a rerun, deployment or settings/secret change.
 
 Earlier runs `38202358849`, `38318822912` and `38512310587` exposed missing
 diagnostics or stage failures. Merged repairs accept an absent/null disconnected

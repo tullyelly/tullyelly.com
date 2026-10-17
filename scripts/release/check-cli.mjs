@@ -133,11 +133,21 @@ const server = createServer(async (req, res) => {
     )
       reject();
     else if (req.method !== "GET") throw Error("unexpected-method");
-    else if (url.pathname === "/v2/user")
-      res.end(
-        JSON.stringify({ user: { uid: "user_fixture", username: "fixture" } }),
-      );
-    else if (url.pathname === `/teams/${teamId}`)
+    else if (url.pathname === "/v2/user") {
+      if (scenario === "auth-cli-rejection") {
+        res.statusCode = 401;
+        res.end(
+          JSON.stringify({
+            error: { code: "not_authorized", message: sensitive },
+          }),
+        );
+      } else
+        res.end(
+          JSON.stringify({
+            user: { uid: "user_fixture", username: "fixture" },
+          }),
+        );
+    } else if (url.pathname === `/teams/${teamId}`)
       res.end(
         JSON.stringify({
           id: teamId,
@@ -146,9 +156,17 @@ const server = createServer(async (req, res) => {
           membership: { role: "OWNER" },
         }),
       );
-    else if (url.pathname === `/v9/projects/${projectId}`)
-      res.end(JSON.stringify(project));
-    else if (url.pathname === `/v13/deployments/${deployment.id}`)
+    else if (url.pathname === `/v9/projects/${projectId}`) {
+      assert.equal(url.searchParams.get("teamId"), teamId);
+      const mismatch =
+        scenario === "auth-cli-target-mismatch" &&
+        requests.filter((request) => request.path === url.pathname).length > 1;
+      res.end(
+        JSON.stringify(
+          mismatch ? { ...project, accountId: "team_other" } : project,
+        ),
+      );
+    } else if (url.pathname === `/v13/deployments/${deployment.id}`)
       res.end(JSON.stringify(deployment));
     else if (url.pathname === `/v3/now/deployments/${deployment.id}/events`)
       res.end("[]");
@@ -164,16 +182,31 @@ const childCode = `
 const cli = await import(process.argv[1]);
 const diagnostics = await import(process.argv[2]);
 const config = JSON.parse(process.argv[3]);
-const operation = config.promote ? 'vercel.promote' : 'vercel.stage';
+const operation = config.auth ? 'vercel.auth-cli' : config.promote ? 'vercel.promote' : 'vercel.stage';
 try {
+ if(config.auth) {
+   const auth = await import(config.authModule);
+   const result = await auth.checkCodeAuth({
+     token: config.token, projectId: config.binding.projectId, teamId: config.teamId,
+     fetcher: (url, init) => { const original = new URL(url); return fetch(config.api + original.pathname + original.search, init); },
+     runCli: (operation, args, teamId, token) => cli.codeCli(operation, [...args, '--api', config.api], teamId, token),
+   });
+   console.log(JSON.stringify(result));
+ } else {
  const args = config.promote ? ['promote', 'dpl_fixture', '--yes'] : cli.nativeSourceDeployArguments(config.binding);
  const output = cli.codeCli(operation, [...args, ...config.extra, '--api', config.api], config.teamId, config.token);
  console.log(JSON.stringify(config.promote ? { promoted: true } : { url: cli.stagedDeploymentUrl(output).origin, state: JSON.parse(output).deployment.readyState }));
+ }
 } catch (error) {
  console.log(JSON.stringify({ diagnostic: diagnostics.classifyCodeFailure(operation, error) }));
  process.exitCode = 1;
 }`;
-async function check({ extra = [], credential = token, promote = false } = {}) {
+async function check({
+  extra = [],
+  credential = token,
+  promote = false,
+  auth = false,
+} = {}) {
   requests = [];
   requestFailure = undefined;
   const child = spawn(
@@ -192,6 +225,8 @@ async function check({ extra = [], credential = token, promote = false } = {}) {
         token: credential,
         extra,
         promote,
+        auth,
+        authModule: pathToFileURL(resolve("scripts/release/code-auth.ts")).href,
         api: `http://127.0.0.1:${server.address().port}`,
       }),
     ],
@@ -225,6 +260,7 @@ async function check({ extra = [], credential = token, promote = false } = {}) {
     sensitive,
     token,
     "wrong_inherited_token",
+    "fixture_wrong_saved_owner_token",
     "postgres://",
     "localhost",
   ])
@@ -237,6 +273,12 @@ async function check({ extra = [], credential = token, promote = false } = {}) {
 try {
   assert.equal(process.version, "v22.20.0", "Use the required Node version");
   mkdirSync(join(root, "home"), { recursive: true });
+  const savedOwnerConfig = join(root, "home/.local/share/com.vercel.cli");
+  mkdirSync(savedOwnerConfig, { recursive: true });
+  writeFileSync(
+    join(savedOwnerConfig, "auth.json"),
+    JSON.stringify({ token: "fixture_wrong_saved_owner_token" }),
+  );
   const version = spawnSync("vercel", ["--version"], {
     encoding: "utf8",
     timeout: 15000,
@@ -271,12 +313,60 @@ try {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", accept);
   });
+  rmSync(join(root, ".vercel"), { recursive: true });
+  scenario = "auth-cli-success";
+  let authChecked = await check({ auth: true });
+  assert.equal(authChecked.status, 0, JSON.stringify(authChecked.result));
+  assert.deepEqual(authChecked.result, {
+    token: { present: true, malformed: false },
+    rest: { projectMatches: true, teamMatches: true },
+    cli: { projectMatches: true, teamMatches: true },
+  });
+  assert(
+    requests.every((request) => request.method === "GET"),
+    "Auth preflight must perform reads only",
+  );
+  assert.equal(
+    requests.filter((request) => request.path === `/v9/projects/${projectId}`)
+      .length,
+    2,
+    "REST and installed CLI must each read the bound project",
+  );
+  scenario = "auth-cli-rejection";
+  authChecked = await check({ auth: true });
+  assert.equal(authChecked.status, 1);
+  assert.equal(authChecked.result.diagnostic.guard, "vercel.auth-cli");
+  assert(
+    requests.some((request) => request.path === `/v9/projects/${projectId}`),
+    "REST can succeed while CLI authentication fails",
+  );
+  assert(requests.every((request) => request.method === "GET"));
+  scenario = "auth-cli-target-mismatch";
+  authChecked = await check({ auth: true });
+  assert.equal(authChecked.status, 1);
+  assert.equal(
+    authChecked.result.diagnostic.invariant,
+    "code.auth-target-mismatch",
+  );
+  assert(requests.every((request) => request.method === "GET"));
+  scenario = "rejection";
+  mkdirSync(join(root, ".vercel"));
+  writeFileSync(
+    join(root, ".vercel/project.json"),
+    JSON.stringify({ projectId, orgId: teamId }),
+  );
   let checked = await check();
   assert.equal(checked.status, 1);
-  assert.deepEqual(checked.result.diagnostic.provider, {
-    reason: "deploy_failed",
-    message: "git-author-access-required",
-  });
+  assert.equal(checked.result.diagnostic.provider.reason, "deploy_failed");
+  assert.equal(
+    checked.result.diagnostic.provider.classification,
+    "git-author-access-required",
+  );
+  assert(
+    checked.result.diagnostic.provider.message.includes(
+      "Git author [REDACTED]",
+    ),
+  );
   const posted = requests.find(
     (request) => request.path === "/v13/deployments",
   ).body;
@@ -364,7 +454,7 @@ try {
   checked = await check({ credential: "fixture_invalid_token\n" });
   assert.equal(checked.status, 1);
   assert.equal(
-    checked.result.diagnostic.provider?.message,
+    checked.result.diagnostic.provider?.classification,
     "authentication-required",
   );
   assert.equal(requests.length, 0);
@@ -372,7 +462,7 @@ try {
   assert.equal(checked.status, 1);
   assert(requests.every((request) => request.method === "GET"));
   console.log(
-    "Pinned CLI simulated-provider contract passed: nonempty native source upload, upload/deploy rejection, accepted INITIALIZING/QUEUED/BUILDING/READY and ERROR states, JSON success, exact-ID promotion failure and credential redaction. Loopback only; real Vercel acceptance remains pending.",
+    "Pinned CLI simulated-provider contract passed: read-only same-credential REST/CLI auth and target checks, nonempty native source upload, upload/deploy rejection, accepted INITIALIZING/QUEUED/BUILDING/READY and ERROR states, JSON success, exact-ID promotion failure and credential redaction. Loopback only; real Vercel acceptance remains pending.",
   );
 } finally {
   server.closeAllConnections();

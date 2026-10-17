@@ -106,6 +106,234 @@ test("uploaded reports reject arbitrary values before storage, not only when ren
     rmSync(root, { recursive: true, force: true });
   }
 });
+test("auth and phase report records retain only fixed boolean and phase evidence", () => {
+  const root = mkdtempSync(join(tmpdir(), "auth-phase-report-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  try {
+    const path = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = path;
+    const planted = "PRIVATE_TOKEN_COOKIE_CONNECTION_DO_NOT_STORE";
+    reportCodeEvent({
+      event: "auth",
+      tokenPresent: true,
+      tokenMalformed: false,
+      restVerified: true,
+      cliVerified: false,
+      token: planted,
+      tokenHash: planted,
+      headers: planted,
+    });
+    reportCodeEvent({
+      event: "auth",
+      tokenPresent: planted,
+      tokenMalformed: false,
+      restVerified: true,
+      cliVerified: true,
+    });
+    reportCodeEvent({
+      event: "auth-probe",
+      operation: "vercel.user",
+      succeeded: false,
+      status: 403,
+      body: planted,
+    });
+    reportCodeEvent({
+      event: "auth-probe",
+      operation: planted,
+      succeeded: true,
+      status: 200,
+    });
+    reportCodeEvent({
+      event: "phase",
+      phase: "cli-invocation-upload",
+      outcome: "failure",
+      durationMs: 2345,
+      stderr: planted,
+    });
+    reportCodeEvent({
+      event: "phase",
+      phase: planted,
+      outcome: "success",
+      durationMs: 1,
+    });
+    reportCodeEvent({
+      event: "phase",
+      phase: "remote-build",
+      outcome: planted,
+      durationMs: 1,
+    });
+    const stored = readFileSync(path, "utf8");
+    expect(stored).not.toContain(planted);
+    const events = stored
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events).toEqual([
+      {
+        event: "auth",
+        tokenPresent: true,
+        tokenMalformed: false,
+        restVerified: true,
+        cliVerified: false,
+      },
+      {
+        event: "auth-probe",
+        operation: "vercel.user",
+        succeeded: false,
+        status: 403,
+      },
+      {
+        event: "phase",
+        phase: "cli-invocation-upload",
+        outcome: "failure",
+        durationMs: 2345,
+      },
+    ]);
+    const rendered = summary(events, {
+      evidenceSha256: "b".repeat(64),
+      prepare: "success",
+      production: "failure",
+    });
+    expect(rendered).toContain(
+      "present=yes; malformed=no; REST target verified=yes; CLI target verified=no",
+    );
+    expect(rendered).toContain("vercel.user; succeeded=no; HTTP=403");
+    expect(rendered).toContain(
+      "CLI invocation/upload (opaque provider call) | 2.3 s | failure",
+    );
+    expect(rendered).toContain(
+      "Remote build (READY required) | unavailable | not reached",
+    );
+    expect(rendered).toContain(
+      "Exact-deployment promotion | unavailable | not reached",
+    );
+    expect(rendered).not.toContain(planted);
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+test("phase summary marks an interrupted build incomplete and never assumes later phases passed", () => {
+  const rendered = summary(
+    [
+      { event: "phase", phase: "remote-build", outcome: "started" },
+      {
+        event: "phase",
+        phase: "SENSITIVE_PHASE_DO_NOT_LOG",
+        outcome: "success",
+        durationMs: 1,
+      },
+      {
+        event: "auth-probe",
+        operation: "vercel.team",
+        succeeded: false,
+        status: "SENSITIVE_STATUS_DO_NOT_LOG",
+      },
+    ],
+    { evidenceSha256: "b".repeat(64) },
+  );
+  expect(rendered).toContain(
+    "Remote build (READY required) | unavailable | incomplete",
+  );
+  expect(rendered).toContain("Public verification | unavailable | not reached");
+  expect(rendered).toContain("Protected credential: not observed");
+  expect(rendered).not.toContain("SENSITIVE_");
+});
+test("report labels reject coercible objects without serializing their hidden fields", () => {
+  const root = mkdtempSync(join(tmpdir(), "coercible-report-label-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  try {
+    const path = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = path;
+    const planted = "PRIVATE_COERCIBLE_OBJECT_DO_NOT_STORE";
+    const forged = (label: string) => ({
+      toString: () => label,
+      secret: planted,
+    });
+    reportCodeEvent({ event: "context", operation: forged("deploy") });
+    reportCodeEvent({
+      event: "auth-probe",
+      operation: forged("vercel.user"),
+      succeeded: true,
+    });
+    reportCodeEvent({
+      event: "phase",
+      phase: forged("remote-build"),
+      outcome: "success",
+    });
+    reportCodeEvent({
+      event: "phase",
+      phase: "remote-build",
+      outcome: forged("success"),
+    });
+    const stored = readFileSync(path, "utf8");
+    expect(stored).not.toContain(planted);
+    expect(
+      stored
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line)),
+    ).toEqual([{ event: "context" }]);
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+test("readable provider messages survive nested storage while Markdown, HTML and planted credentials stay inert", () => {
+  const root = mkdtempSync(join(tmpdir(), "provider-message-report-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  try {
+    const path = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = path;
+    reportCodeEvent({
+      event: "failure",
+      diagnostic: {
+        guard: "vercel.stage",
+        category: "invariant",
+        reconciliation: "not-found",
+        originalFailure: {
+          guard: "vercel.stage",
+          operation: "vercel.stage",
+          category: "process",
+          exitStatus: 1,
+          provider: {
+            code: "upload_limit_reached",
+            message:
+              "Upload refused: <b>limit</b> [inspect](https://private.invalid/?token=PRIVATE_LINK_CREDENTIAL).\nAuthorization: Bearer PRIVATE_HEADER_CREDENTIAL\nCookie: PRIVATE_COOKIE_CREDENTIAL\nconnection_string=postgres://fixture:PRIVATE_DB_CREDENTIAL@localhost/db",
+            body: "PRIVATE_BODY_CREDENTIAL",
+          },
+        },
+      },
+    });
+    const stored = readFileSync(path, "utf8");
+    for (const secret of [
+      "PRIVATE_LINK_CREDENTIAL",
+      "PRIVATE_HEADER_CREDENTIAL",
+      "PRIVATE_COOKIE_CREDENTIAL",
+      "PRIVATE_DB_CREDENTIAL",
+      "PRIVATE_BODY_CREDENTIAL",
+      "private.invalid",
+      "postgres://",
+    ])
+      expect(stored).not.toContain(secret);
+    const rendered = summary([JSON.parse(stored)], { production: "failure" });
+    expect(rendered).toContain("Original provider failure");
+    expect(rendered).toContain("provider.code=upload_limit_reached");
+    expect(rendered).toContain(
+      "Upload refused: &lt;b&gt;limit&lt;/b&gt; \\[inspect\\]",
+    );
+    expect(rendered).not.toContain("<b>");
+    expect(rendered).not.toContain("[inspect](");
+    expect(rendered).not.toContain("PRIVATE_");
+    expect(rendered).not.toContain("\nAuthorization:");
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("ordinary preparation reuses CI rather than invoking another full validation or local build", () => {
   const stages = readFileSync("scripts/release/run-stage.mjs", "utf8");

@@ -24,6 +24,7 @@ const labels = new Set([
   "Verifying downloaded artifact",
   "Rechecking release plan",
   "Checking approved production target",
+  "Checking protected release credential",
   "Executing approved production operation",
   "Validating GitHub Actions workflows",
   "Preparing generated content",
@@ -47,6 +48,10 @@ const guards = new Set([
   "github.application-binding",
   "human.approval",
   "vercel.project",
+  "vercel.auth-rest",
+  "vercel.auth-cli",
+  "vercel.user",
+  "vercel.team",
   "vercel.git-hooks",
   "vercel.aliases",
   "vercel.history",
@@ -85,6 +90,10 @@ const operations = new Set([
   "github.ci-runs",
   "github.ci-checks",
   "vercel.project",
+  "vercel.auth-rest",
+  "vercel.auth-cli",
+  "vercel.user",
+  "vercel.team",
   "vercel.alias",
   "vercel.history",
   "vercel.environment",
@@ -113,6 +122,23 @@ const identity = (value) =>
     : "unavailable";
 const integer = (value) => Number.isSafeInteger(value) && value >= 0;
 const state = (value) => (states.has(value) ? value : "unavailable");
+const phaseLabels = new Map([
+  ["cli-invocation-upload", "CLI invocation/upload (opaque provider call)"],
+  ["deployment-creation", "Deployment creation (API candidate observed)"],
+  ["remote-build", "Remote build (READY required)"],
+  ["staged-verification", "Staged verification"],
+  ["promotion", "Exact-deployment promotion"],
+  ["public-verification", "Public verification"],
+]);
+const phaseOutcomes = new Set(["started", "success", "failure"]);
+// Provider messages are sanitized data, not Markdown or HTML instructions.
+const markdownText = (value) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/[\\`*_{}\[\]()#+\-.!|~]/g, "\\$&")
+    .replace(/[\r\n]/g, " ");
 
 export function diagnosticSummary(d) {
   if (!d || typeof d !== "object") return "unknown";
@@ -124,7 +150,9 @@ export function diagnosticSummary(d) {
   const provider = safeProviderDiagnostic(d.provider);
   if (provider)
     for (const [key, value] of Object.entries(provider))
-      parts.push(`provider.${key}=${value}`);
+      parts.push(
+        `provider.${key}=${key === "message" ? markdownText(value) : value}`,
+      );
   if (["not-found", "failed"].includes(d.reconciliation))
     parts.push(`reconciliation=${d.reconciliation}`);
   if (invariants.has(d.invariant)) parts.push(`check=${d.invariant}`);
@@ -249,6 +277,69 @@ export function renderReleaseSummary(events, results = {}) {
       lines.push(
         `| ${event.label} | ${(event.durationMs / 1000).toFixed(1)} s | ${state(event.outcome)} |`,
       );
+  }
+  if (
+    context.evidenceSha256 ||
+    results.evidenceSha256 ||
+    events.some(
+      (event) =>
+        event.event === "phase" ||
+        event.event === "auth" ||
+        event.event === "auth-probe",
+    )
+  ) {
+    const auth = events
+      .filter(
+        (event) =>
+          event.event === "auth" &&
+          [
+            "tokenPresent",
+            "tokenMalformed",
+            "restVerified",
+            "cliVerified",
+          ].every((key) => typeof event[key] === "boolean"),
+      )
+      .at(-1);
+    lines.push(
+      "",
+      auth
+        ? `Protected credential: present=${auth.tokenPresent ? "yes" : "no"}; malformed=${auth.tokenMalformed ? "yes" : "no"}; REST target verified=${auth.restVerified ? "yes" : "no"}; CLI target verified=${auth.cliVerified ? "yes" : "no"}.`
+        : "Protected credential: not observed.",
+      "",
+      "| Provider phase | Duration | Result |",
+      "| --- | ---: | --- |",
+    );
+    for (const [phase, label] of phaseLabels) {
+      const event = events
+        .filter(
+          (event) =>
+            event.event === "phase" &&
+            event.phase === phase &&
+            phaseOutcomes.has(event.outcome),
+        )
+        .at(-1);
+      lines.push(
+        `| ${label} | ${event && integer(event.durationMs) ? `${(event.durationMs / 1000).toFixed(1)} s` : "unavailable"} | ${event ? (event.outcome === "started" ? "incomplete" : event.outcome) : "not reached"} |`,
+      );
+    }
+    lines.push(
+      "",
+      "Phase durations can overlap; the CLI does not expose a separate upload/request boundary.",
+    );
+    for (const operation of ["vercel.user", "vercel.team"]) {
+      const probe = events
+        .filter(
+          (event) =>
+            event.event === "auth-probe" &&
+            event.operation === operation &&
+            typeof event.succeeded === "boolean",
+        )
+        .at(-1);
+      if (probe)
+        lines.push(
+          `Failure-only credential read probe: ${operation}; succeeded=${probe.succeeded ? "yes" : "no"}${integer(probe.status) && probe.status >= 100 && probe.status <= 599 ? `; HTTP=${probe.status}` : ""}.`,
+        );
+    }
   }
   const failures = events.filter(
     (e) => e.event === "failure" || e.event === "reconciliation",

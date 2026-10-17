@@ -1,10 +1,13 @@
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { CodeDiagnosticError, type Guard } from "./code-diagnostics";
 import { providerDiagnostic } from "./provider-diagnostic.mjs";
 
 type CliOperation = Extract<
   Guard,
-  "vercel.stage" | "vercel.promote" | "vercel.rollback"
+  "vercel.stage" | "vercel.promote" | "vercel.rollback" | "vercel.auth-cli"
 >;
 const spawnCodes = new Set([
   "ENOENT",
@@ -66,47 +69,75 @@ export function codeCli(
   run: typeof spawnSync = spawnSync,
   options: { cwd?: string } = {},
 ) {
-  const result = run(
-    "vercel",
-    [...args, "--non-interactive", "--scope", teamId],
-    {
-      encoding: "utf8",
-      timeout: 900000,
-      maxBuffer: 1024 * 1024,
-      cwd: options.cwd,
-      env: {
-        NODE_ENV: "production",
-        PATH: process.env.PATH,
-        HOME: process.env.HOME,
-        CI: "true",
-        NO_UPDATE_NOTIFIER: "1",
-        VERCEL_TOKEN: token,
-        VERCEL_TELEMETRY_DISABLED: "1",
+  // Fresh state prevents a saved owner session or cached scope from supplying
+  // authority that the explicitly supplied protected credential does not have.
+  const isolation = mkdtempSync(join(tmpdir(), "release-cli-state-"));
+  const home = join(isolation, "home"),
+    config = join(isolation, "config");
+  mkdirSync(home);
+  mkdirSync(config);
+  try {
+    const result = run(
+      "vercel",
+      [
+        ...args,
+        "--non-interactive",
+        "--scope",
+        teamId,
+        "--global-config",
+        config,
+      ],
+      {
+        encoding: "utf8",
+        timeout: 900000,
+        maxBuffer: 1024 * 1024,
+        cwd: options.cwd,
+        env: {
+          NODE_ENV: "production",
+          PATH: process.env.PATH,
+          HOME: home,
+          XDG_CONFIG_HOME: config,
+          XDG_CACHE_HOME: join(isolation, "cache"),
+          XDG_DATA_HOME: join(isolation, "data"),
+          CI: "true",
+          NO_UPDATE_NOTIFIER: "1",
+          VERCEL_TOKEN: token,
+          VERCEL_TELEMETRY_DISABLED: "1",
+        },
       },
-    },
-  );
-  if (result.status !== 0 || result.error) {
-    const code =
-      result.error && "code" in result.error ? result.error.code : undefined;
-    throw new CodeDiagnosticError({
-      guard: operation,
-      operation,
-      category: "process",
-      invariant: "code.provider-operation-unresolved",
-      exitStatus: result.status,
-      signal:
-        result.signal && signals.has(result.signal) ? result.signal : null,
-      spawnErrorCode:
-        typeof code === "string" && spawnCodes.has(code) ? code : undefined,
-      processCategory: result.error
-        ? "spawn"
-        : result.signal
-          ? "signal"
-          : "exit",
-      provider: providerDiagnostic(result.stdout, result.stderr),
-    });
+    );
+    if (result.status !== 0 || result.error) {
+      const code =
+        result.error && "code" in result.error ? result.error.code : undefined;
+      throw new CodeDiagnosticError({
+        guard: operation,
+        operation,
+        category: "process",
+        invariant: "code.provider-operation-unresolved",
+        exitStatus: result.status,
+        signal:
+          result.signal && signals.has(result.signal) ? result.signal : null,
+        spawnErrorCode:
+          typeof code === "string" && spawnCodes.has(code) ? code : undefined,
+        processCategory: result.error
+          ? "spawn"
+          : result.signal
+            ? "signal"
+            : "exit",
+        provider: providerDiagnostic(result.stdout, result.stderr, {
+          secrets: [
+            token,
+            process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+            process.env.GH_TOKEN,
+            process.env.GITHUB_TOKEN,
+          ].filter((value): value is string => Boolean(value)),
+        }),
+      });
+    }
+    return result.stdout.trim();
+  } finally {
+    rmSync(isolation, { recursive: true, force: true });
   }
-  return result.stdout.trim();
 }
 
 export function stagedDeploymentUrl(output: string) {

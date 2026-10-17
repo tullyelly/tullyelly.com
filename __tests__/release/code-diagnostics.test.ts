@@ -175,6 +175,54 @@ test("successful metadata reads preserve GET, timeout, and no-redirect restricti
   );
 });
 
+test("a denied Vercel read preserves the actual bounded error without credentials", async () => {
+  const response = new Response(
+    JSON.stringify({
+      error: {
+        code: "permission_denied",
+        message: `Project metadata read denied for token=${sensitive}; contact the project administrator.`,
+      },
+      headers: { authorization: sensitive },
+    }),
+    { status: 403 },
+  );
+  try {
+    await codeMetadataRequest(
+      "https://api.vercel.com/v9/projects/prj_fixture?teamId=team_fixture",
+      sensitive,
+      fetcher(response),
+    );
+    throw new Error("unexpected success");
+  } catch (error) {
+    const diagnostic = classifyCodeFailure("vercel.auth-rest", error);
+    expect(diagnostic).toMatchObject({
+      status: 403,
+      operation: "vercel.project",
+      provider: { code: "permission_denied" },
+    });
+    expect(diagnostic.provider?.message).toContain("metadata read denied");
+    expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+    expect(JSON.stringify(diagnostic)).not.toContain("authorization");
+  }
+});
+
+test("an unreadable Vercel error body cannot replace its HTTP status", async () => {
+  const body = new ReadableStream({
+    pull(controller) {
+      controller.error(new Error(sensitive));
+    },
+  });
+  await expect(
+    codeMetadataRequest(
+      "https://api.vercel.com/v9/projects/prj_fixture",
+      sensitive,
+      fetcher(new Response(body, { status: 503 })),
+    ),
+  ).rejects.toMatchObject({
+    diagnostic: { status: 503, operation: "vercel.project", category: "http" },
+  });
+});
+
 test("actual release startup emits no sensitive manifest or environment values", () => {
   const fs = require("node:fs") as typeof import("node:fs");
   const os = require("node:os") as typeof import("node:os");

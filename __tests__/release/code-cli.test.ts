@@ -1,5 +1,7 @@
 /** @jest-environment node */
 import type { spawnSync, SpawnSyncReturns } from "node:child_process";
+import { existsSync, readdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   codeCli,
   nativeSourceDeployArguments,
@@ -73,6 +75,9 @@ test("deployment child receives only the existing credential allowlist", () => {
       "PATH",
       "VERCEL_TELEMETRY_DISABLED",
       "VERCEL_TOKEN",
+      "XDG_CACHE_HOME",
+      "XDG_CONFIG_HOME",
+      "XDG_DATA_HOME",
     ].sort(),
   );
   expect(run.mock.calls[0][1]).toEqual([
@@ -81,8 +86,53 @@ test("deployment child receives only the existing credential allowlist", () => {
     "--non-interactive",
     "--scope",
     "team_fixture",
+    "--global-config",
+    expect.any(String),
   ]);
   expect(options).toMatchObject({ timeout: 900000, maxBuffer: 1024 * 1024 });
+  expect(options?.env?.HOME).not.toBe(process.env.HOME);
+  expect(existsSync(String(options?.env?.HOME))).toBe(false);
+});
+
+test("every CLI operation has fresh empty state and removes it even after provider failure", () => {
+  const directories: string[] = [];
+  const fake = ((...args: Parameters<typeof spawnSync>) => {
+    const config = String(args[2]?.env?.XDG_CONFIG_HOME);
+    const home = String(args[2]?.env?.HOME);
+    expect(readdirSync(config)).toEqual([]);
+    expect(readdirSync(home)).toEqual([]);
+    directories.push(config, home);
+    writeFileSync(
+      join(config, "auth.json"),
+      JSON.stringify({ token: "PLANTED_OWNER_LOGIN" }),
+    );
+    return {
+      pid: 0,
+      status: 1,
+      signal: null,
+      output: [],
+      stdout: "",
+      stderr: "",
+    };
+  }) as unknown as typeof spawnSync;
+  for (const operation of [
+    "vercel.auth-cli",
+    "vercel.stage",
+    "vercel.promote",
+    "vercel.rollback",
+  ] as const) {
+    expect(() =>
+      codeCli(
+        operation,
+        ["api", "/v9/projects/prj_fixture"],
+        "team_fixture",
+        sensitive,
+        fake,
+      ),
+    ).toThrow();
+  }
+  expect(new Set(directories).size).toBe(directories.length);
+  expect(directories.every((directory) => !existsSync(directory))).toBe(true);
 });
 
 test.each([
@@ -104,7 +154,12 @@ test.each([
       next: [{ command: sensitive }],
     }),
     "",
-    { reason: "scope_not_accessible", message: "scope-access-denied" },
+    {
+      reason: "scope_not_accessible",
+      classification: "scope-access-denied",
+      message:
+        "Not authorized: Trying to access resource under scope [REDACTED]",
+    },
   ],
   [
     "",
@@ -116,7 +171,11 @@ test.each([
   [
     "",
     `Error: Git author ${sensitive} must have access to team ${sensitive}`,
-    { message: "git-author-access-required" },
+    {
+      classification: "git-author-access-required",
+      message:
+        "Error: Git author [REDACTED] must have access to team [REDACTED]",
+    },
   ],
   [
     JSON.stringify({
@@ -129,7 +188,7 @@ test.each([
   ],
   ["x".repeat(17000) + sensitive, "", undefined],
 ])(
-  "provider rejection retains bounded fixed labels without raw output",
+  "provider rejection retains bounded redacted error evidence without raw streams",
   (stdout, stderr, provider) => {
     let failure: unknown;
     try {

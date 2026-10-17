@@ -160,6 +160,12 @@ jobs:
         run: node scripts/release/run-stage.mjs prepare
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Verify protected credential through REST and pinned CLI
+        run: node scripts/release/run-stage.mjs auth
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
+          RELEASE_PRODUCTION_APPROVED: "true"
       - name: Post-approval target, protection and baseline drift checks
         run: node scripts/release/run-stage.mjs check
         env:

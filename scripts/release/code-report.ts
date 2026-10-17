@@ -22,9 +22,11 @@ export function reportCodeEvent(event: Record<string, unknown>) {
       event: "context",
       revision: hex(event.revision, 40),
       targetRevision: hex(event.targetRevision, 40),
-      operation: ["deploy", "rollback"].includes(String(event.operation))
-        ? event.operation
-        : undefined,
+      operation:
+        typeof event.operation === "string" &&
+        ["deploy", "rollback"].includes(event.operation)
+          ? event.operation
+          : undefined,
       manifestSha256: hex(event.manifestSha256, 64),
       evidenceSha256: hex(event.evidenceSha256, 64),
       sourceSha256: hex(event.sourceSha256, 64),
@@ -81,7 +83,64 @@ export function reportCodeEvent(event: Record<string, unknown>) {
     };
   else if (event.event === "deployment")
     safe = { event: "deployment", deploymentId: id(event.deploymentId) };
-  else if (event.event === "failure" || event.event === "reconciliation")
+  else if (event.event === "auth") {
+    const keys = [
+      "tokenPresent",
+      "tokenMalformed",
+      "restVerified",
+      "cliVerified",
+    ];
+    if (keys.some((key) => typeof event[key] !== "boolean")) return;
+    safe = {
+      event: "auth",
+      ...Object.fromEntries(keys.map((key) => [key, event[key]])),
+    };
+  } else if (event.event === "auth-probe") {
+    if (
+      typeof event.operation !== "string" ||
+      !["vercel.user", "vercel.team"].includes(event.operation) ||
+      typeof event.succeeded !== "boolean"
+    )
+      return;
+    safe = {
+      event: "auth-probe",
+      operation: event.operation,
+      succeeded: event.succeeded,
+      status:
+        typeof event.status === "number" &&
+        Number.isInteger(event.status) &&
+        event.status >= 100 &&
+        event.status <= 599
+          ? event.status
+          : undefined,
+    };
+  } else if (event.event === "phase") {
+    if (
+      typeof event.phase !== "string" ||
+      typeof event.outcome !== "string" ||
+      ![
+        "cli-invocation-upload",
+        "deployment-creation",
+        "remote-build",
+        "staged-verification",
+        "promotion",
+        "public-verification",
+      ].includes(event.phase) ||
+      !["started", "success", "failure"].includes(event.outcome)
+    )
+      return;
+    safe = {
+      event: "phase",
+      phase: event.phase,
+      outcome: event.outcome,
+      durationMs:
+        typeof event.durationMs === "number" &&
+        Number.isSafeInteger(event.durationMs) &&
+        event.durationMs >= 0
+          ? event.durationMs
+          : undefined,
+    };
+  } else if (event.event === "failure" || event.event === "reconciliation")
     safe = {
       event: event.event,
       diagnostic: classifyCodeFailure(
