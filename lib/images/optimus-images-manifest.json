@@ -692,6 +692,18 @@
     "/images/optimus/giannis-chase/deion.webp",
     "/images/optimus/giannis-chase/giannis-funko.webp",
     "/images/optimus/giannis-chase/sterling.webp",
+    "/images/optimus/giannis-lovefest/aubrey/aubrey-0.webp",
+    "/images/optimus/giannis-lovefest/aubrey/aubrey-1.webp",
+    "/images/optimus/giannis-lovefest/basketball/PXL_20261016_220013536.webp",
+    "/images/optimus/giannis-lovefest/basketball/PXL_20261017_005053497.webp",
+    "/images/optimus/giannis-lovefest/basketball/PXL_20261017_015654520.webp",
+    "/images/optimus/giannis-lovefest/fern/fern-0.webp",
+    "/images/optimus/giannis-lovefest/fern/fern-1.webp",
+    "/images/optimus/giannis-lovefest/jeff.webp",
+    "/images/optimus/giannis-lovefest/mom/mom-0.webp",
+    "/images/optimus/giannis-lovefest/mom/mom-1.webp",
+    "/images/optimus/giannis-lovefest/moon.webp",
+    "/images/optimus/giannis-lovefest/taco-bell.webp",
     "/images/optimus/gloomy/dogs.webp",
     "/images/optimus/gloomy/gloomy.webp",
     "/images/optimus/gloomy/glove.webp",
@@ -5665,6 +5677,66 @@
       "src": "/images/optimus/giannis-chase/sterling.webp",
       "width": 1176,
       "height": 1562
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/aubrey/aubrey-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/aubrey/aubrey-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/basketball/PXL_20261016_220013536.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/basketball/PXL_20261017_005053497.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/basketball/PXL_20261017_015654520.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/jeff.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/mom/mom-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/mom/mom-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/moon.webp",
+      "width": 713,
+      "height": 1079
+    },
+    {
+      "src": "/images/optimus/giannis-lovefest/taco-bell.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/gloomy/dogs.webp",
