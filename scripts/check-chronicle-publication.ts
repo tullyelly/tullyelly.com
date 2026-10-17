@@ -35,6 +35,7 @@ export function checkChroniclePublication(slug: string, root = process.cwd()) {
   );
   const assets = new Set<string>();
   const folders: string[] = [];
+  const examples: string[] = [];
   const publicRoot = realpathSync(resolve(root, "public"));
   function asset(src: string) {
     const url = resolveChronicleImagePath(slug, src);
@@ -66,6 +67,10 @@ export function checkChroniclePublication(slug: string, root = process.cwd()) {
   }
   definitionsIn(tree);
   function visit(node: typeof tree | (typeof tree.children)[number]) {
+    if (node.type === "text") {
+      const value = node.value.replace(/\s+/g, " ").trim();
+      if (value.length >= 24) examples.push(value.slice(0, 160));
+    }
     if (node.type === "image") asset(node.url);
     if (node.type === "imageReference") {
       const src = definitions.get(node.identifier);
@@ -142,43 +147,53 @@ export function checkChroniclePublication(slug: string, root = process.cwd()) {
   visit(tree);
   return {
     slug,
+    title: data.title as string,
     date: data.date as string,
     assets: [...assets].sort(),
     folders,
+    text: [...new Set([...examples.slice(0, 3), ...examples.slice(-1)])],
   };
 }
 
-try {
-  const slug = process.argv[2];
-  const release = process.argv[3] === "--release";
-  if (!slug || process.argv.length !== (release ? 4 : 3))
-    throw new Error("Usage: npm run chronicle:ready -- <slug> [--release]");
-  const report = checkChroniclePublication(slug);
-  if (release) {
-    const source = matter(
-      readFileSync(resolve("content/chronicles", `${slug}.mdx`), "utf8"),
-    );
-    if (
-      slug !== releaseProbe.slug ||
-      report.date !== releaseProbe.date ||
-      source.data.title !== releaseProbe.title ||
-      JSON.stringify(report.assets) !== JSON.stringify(releaseProbe.assets) ||
-      JSON.stringify(report.folders) !== JSON.stringify(releaseProbe.folders) ||
-      releaseProbe.text.some((text) => !source.content.includes(text))
-    )
-      throw new Error("Released Chronicle no longer matches acceptance probe");
-    for (const [asset, hash] of Object.entries(releaseProbe.assetSha256))
+function main() {
+  try {
+    const slug = process.argv[2];
+    const release = process.argv[3] === "--release";
+    if (!slug || process.argv.length !== (release ? 4 : 3))
+      throw new Error("Usage: npm run chronicle:ready -- <slug> [--release]");
+    const report = checkChroniclePublication(slug);
+    if (release) {
+      const source = matter(
+        readFileSync(resolve("content/chronicles", `${slug}.mdx`), "utf8"),
+      );
       if (
-        createHash("sha256")
-          .update(readFileSync(resolve("public", `.${asset}`)))
-          .digest("hex") !== hash
+        slug !== releaseProbe.slug ||
+        report.date !== releaseProbe.date ||
+        source.data.title !== releaseProbe.title ||
+        JSON.stringify(report.assets) !== JSON.stringify(releaseProbe.assets) ||
+        JSON.stringify(report.folders) !==
+          JSON.stringify(releaseProbe.folders) ||
+        releaseProbe.text.some((text) => !source.content.includes(text))
       )
-        throw new Error("Released Chronicle image changed");
+        throw new Error(
+          "Released Chronicle no longer matches acceptance probe",
+        );
+      for (const [asset, hash] of Object.entries(releaseProbe.assetSha256))
+        if (
+          createHash("sha256")
+            .update(readFileSync(resolve("public", `.${asset}`)))
+            .digest("hex") !== hash
+        )
+          throw new Error("Released Chronicle image changed");
+    }
+    console.log(JSON.stringify(report, null, 2));
+  } catch {
+    console.error(
+      "Chronicle publication readiness failed; check source, draft flag, literal image props, assets and manifest.",
+    );
+    process.exitCode = 1;
   }
-  console.log(JSON.stringify(report, null, 2));
-} catch {
-  console.error(
-    "Chronicle publication readiness failed; check source, draft flag, literal image props, assets and manifest.",
-  );
-  process.exitCode = 1;
 }
+
+// Shared source readiness can be imported by evidence generation without running the CLI.
+if (process.argv[1]?.endsWith("check-chronicle-publication.ts")) main();

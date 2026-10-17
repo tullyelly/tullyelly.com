@@ -5,20 +5,20 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Explicit operation; production is code-only, analytics is a separate migration release
+        description: Explicit operation; production generates ordinary native source evidence, analytics is a separate migration release
         required: true
         type: choice
-        options: [smoke, draft-pr, production, maintenance, analytics]
+        options: [smoke, draft-pr, production, rollback, maintenance, analytics]
       release_sha:
         description: Exact 40-character SHA; smoke uses current main, draft-pr published review branch
         required: true
         type: string
       manifest_path:
-        description: Production releases/<name>.json or maintenance/<name>.json
+        description: Sensitive operations only; releases/<name>.json or maintenance/<name>.json
         required: false
         type: string
       manifest_sha256:
-        description: Production or maintenance; exact reviewed manifest SHA-256
+        description: Sensitive operations only; exact reviewed manifest SHA-256
         required: false
         type: string
       pr_title:

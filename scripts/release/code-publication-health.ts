@@ -1,6 +1,7 @@
 /** Fixed read-only acceptance probe for the published incident recovery. */
 import { createHash } from "node:crypto";
 import probe from "./publication-probe.json";
+import type { PublicationPlan } from "./code-publication-plan";
 
 type Read = (path: string) => Promise<Response>;
 
@@ -24,6 +25,92 @@ async function html(read: Read, path: string) {
   const body = await response.text();
   if (body.length > 4 * 1024 * 1024) throw new Error("code.health-publication");
   return body;
+}
+
+/** Candidate-specific checks supplement the retained Appleton East regression. */
+export async function checkChangedPublicationHealth(
+  read: Read,
+  plan: PublicationPlan,
+) {
+  const decode = (value: string) =>
+    value.replace(
+      /&(?:amp|quot|apos|#39|lt|gt|nbsp);/g,
+      (entity) =>
+        ({
+          "&amp;": "&",
+          "&quot;": '"',
+          "&apos;": "'",
+          "&#39;": "'",
+          "&lt;": "<",
+          "&gt;": ">",
+          "&nbsp;": " ",
+        })[entity] ?? entity,
+    );
+  const renderedAssets = new Set<string>();
+  for (const chronicle of plan.chronicles) {
+    if (!/^\/shaolin\/[a-z0-9-]+$/.test(chronicle.path))
+      throw new Error("code.health-publication");
+    const page = markup(await html(read, chronicle.path));
+    const heading = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(page)?.[1] ?? "";
+    const date = new Date(chronicle.date);
+    const expectedDate = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    if (
+      !Number.isFinite(date.getTime()) ||
+      !decode(text(heading)).includes(`${expectedDate}: ${chronicle.title}`) ||
+      chronicle.text.some((example) => !decode(text(page)).includes(example))
+    )
+      throw new Error("code.health-publication");
+    for (const match of page.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gi)) {
+      const url = new URL(decode(match[1]), "https://tullyelly.com");
+      const asset =
+        url.pathname === "/_next/image"
+          ? url.searchParams.get("url")
+          : url.pathname;
+      if (!plan.assets.some((entry) => entry.path === asset)) continue;
+      if (
+        url.origin !== "https://tullyelly.com" ||
+        url.username ||
+        url.password
+      )
+        throw new Error("code.health-publication-asset");
+      renderedAssets.add(url.pathname + url.search);
+    }
+  }
+  for (const asset of plan.assets) {
+    if (
+      !/^\/images\/[A-Za-z0-9_./-]+$/.test(asset.path) ||
+      asset.path.split("/").includes("..") ||
+      !/^[a-f0-9]{64}$/.test(asset.sha256)
+    )
+      throw new Error("code.health-publication-asset");
+    const response = await read(asset.path);
+    if (
+      response.status !== 200 ||
+      !response.headers.get("content-type")?.startsWith("image/")
+    )
+      throw new Error("code.health-publication-asset");
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (
+      !bytes.length ||
+      bytes.length > 64 * 1024 * 1024 ||
+      createHash("sha256").update(bytes).digest("hex") !== asset.sha256
+    )
+      throw new Error("code.health-publication-asset");
+  }
+  for (const path of renderedAssets) {
+    const response = await read(path);
+    if (
+      response.status !== 200 ||
+      !response.headers.get("content-type")?.startsWith("image/") ||
+      !(await response.arrayBuffer()).byteLength
+    )
+      throw new Error("code.health-publication-asset");
+  }
 }
 
 export async function checkPublicationHealth(

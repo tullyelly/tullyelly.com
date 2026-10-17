@@ -1,5 +1,6 @@
 /** Provider orchestration has no database API, migration runner or credential mutator. */
 import type { CodeManifest } from "./code-manifest";
+import type { NativeCodeEvidence } from "./native-evidence";
 import { verifyReleaseDeploymentIdentity } from "./manifest";
 import {
   CodeDiagnosticError,
@@ -15,8 +16,10 @@ export type CodeDeployment = {
   target: string;
   readyState: string;
   meta?: Record<string, unknown>;
+  providerError?: Diagnostic["provider"];
 };
 export interface CodeProviders {
+  waitForPoll?(): Promise<void>;
   reportDeployment?(deployment: CodeDeployment): void;
   reportReconciliation?(diagnostic: {
     outcome: "found";
@@ -31,13 +34,13 @@ export interface CodeProviders {
   health(d: CodeDeployment, publicDomain: boolean): Promise<void>;
 }
 export async function executeCodeRelease(
-  m: CodeManifest,
+  m: CodeManifest | NativeCodeEvidence,
   manifestDigest: string,
   buildDigest: string,
   p: CodeProviders,
 ) {
   await p.guard([m.vercel.productionDeploymentId]);
-  if (m.operation === "rollback") {
+  if (m.kind === "code-only" && m.operation === "rollback") {
     if (!m.rollback) throw new Error("code.rollback-binding");
     const d = await p.deployment(m.rollback.deploymentId);
     if (
@@ -45,8 +48,9 @@ export async function executeCodeRelease(
       d.projectId !== m.vercel.projectId ||
       d.target !== "production" ||
       d.readyState !== "READY" ||
-      (d.meta?.githubCommitSha ?? d.meta?.releaseSha) !==
-        m.rollback.applicationSha
+      (d.meta?.gitCommitSha ??
+        d.meta?.githubCommitSha ??
+        d.meta?.releaseSha) !== m.rollback.applicationSha
     )
       throw new Error("code.rollback-identity");
     p.reportDeployment?.(d);
@@ -106,10 +110,38 @@ export async function executeCodeRelease(
       p.reportReconciliation?.({ outcome: "found", originalFailure });
     }
   }
-  await codeGuard("vercel.identity", () =>
-    verifyReleaseDeploymentIdentity(target, m, manifestDigest, buildDigest),
-  );
-  p.reportDeployment?.(target);
+  if (m.kind === "native-source") {
+    // --no-wait returns accepted/queued deployments. Poll only the identified write;
+    // no second deploy or rebuilt replacement is permitted while it becomes ready.
+    const id = target.id;
+    for (let poll = 0; ; poll++) {
+      await codeGuard("vercel.identity", () =>
+        verifyNativeDeploymentIdentity(target!, m, manifestDigest),
+      );
+      if (poll === 0) p.reportDeployment?.(target);
+      if (target.readyState === "READY") break;
+      if (["ERROR", "CANCELED"].includes(target.readyState))
+        throw new CodeDiagnosticError({
+          guard: "vercel.deployment",
+          category: "invariant",
+          invariant: "code.deployment-build-failed",
+          provider: target.providerError,
+        });
+      if (!["QUEUED", "INITIALIZING", "BUILDING"].includes(target.readyState))
+        throw new Error("code.deployment-readiness-invalid");
+      if (poll >= 120) throw new Error("code.deployment-readiness-timeout");
+      await (p.waitForPoll?.() ??
+        new Promise<void>((resolve) => setTimeout(resolve, 5000)));
+      const next = await codeGuard("vercel.deployment", () => p.deployment(id));
+      if (next.id !== id) throw new Error("code.native-deployment-identity");
+      target = next;
+    }
+  } else {
+    await codeGuard("vercel.identity", () =>
+      verifyReleaseDeploymentIdentity(target, m, manifestDigest, buildDigest),
+    );
+  }
+  if (m.kind !== "native-source") p.reportDeployment?.(target);
   // --skip-domain is a required staging property, verified independently of
   // CLI success. An unexpected assignment must stop before promotion.
   await p.guard([m.vercel.productionDeploymentId]);
@@ -136,6 +168,27 @@ export async function executeCodeRelease(
   }
   await codeGuard("health.public", () => p.health(target, true));
   return target.id;
+}
+
+export function verifyNativeDeploymentIdentity(
+  d: CodeDeployment,
+  m: NativeCodeEvidence,
+  evidenceDigest: string,
+) {
+  if (
+    !/^dpl_[A-Za-z0-9]+$/.test(d.id) ||
+    !/^[a-z0-9-]+\.vercel\.app$/.test(d.url) ||
+    d.projectId !== m.vercel.projectId ||
+    d.target !== "production" ||
+    d.meta?.releaseSha !== m.commit ||
+    d.meta?.githubCommitSha !== m.commit ||
+    d.meta?.releaseEvidence !== evidenceDigest ||
+    d.meta?.releaseSourceSha256 !== m.source.sha256 ||
+    d.meta?.releaseRunId !== m.workflow.runId ||
+    d.meta?.releaseRunAttempt !== m.workflow.runAttempt ||
+    d.meta?.collectionDisabled !== "true"
+  )
+    throw new Error("code.native-deployment-identity");
 }
 
 function outcomeError(

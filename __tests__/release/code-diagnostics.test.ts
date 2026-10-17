@@ -59,6 +59,33 @@ test("network errors retain only fixed cause codes", async () => {
     },
   });
 });
+test.each([
+  ["/actions/workflows/ci.yml", "github.ci-workflow"],
+  ["/actions/workflows/ci.yml/runs?head_sha=secret", "github.ci-runs"],
+  ["/check-suites/123/check-runs", "github.ci-checks"],
+  ["/rules/branches/main", "github.rules"],
+])(
+  "required validation API %s retains a safe operation label",
+  async (path, operation) => {
+    try {
+      await codeMetadataRequest(
+        `https://api.github.com/repos/tullyelly/tullyelly.com${path}`,
+        sensitive,
+        fetcher(new Response(sensitive, { status: 403 })),
+      );
+      throw new Error("unexpected success");
+    } catch (error) {
+      const diagnostic = classifyCodeFailure("production.check", error);
+      expect(diagnostic).toEqual({
+        guard: "api.request",
+        category: "http",
+        operation,
+        status: 403,
+      });
+      expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+    }
+  },
+);
 test("invalid JSON never exposes the response body", async () => {
   try {
     await codeMetadataRequest(
@@ -166,9 +193,9 @@ test("actual release startup emits no sensitive manifest or environment values",
       {
         env: {
           ...process.env,
-          RELEASE_MANIFEST_PATH: file,
+          RELEASE_EVIDENCE_PATH: file,
           RELEASE_SHA: "a".repeat(40),
-          RELEASE_MANIFEST_SHA256: crypto
+          RELEASE_EVIDENCE_SHA256: crypto
             .createHash("sha256")
             .update(bytes)
             .digest("hex"),

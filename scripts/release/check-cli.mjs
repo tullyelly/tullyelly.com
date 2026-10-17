@@ -1,8 +1,15 @@
-// Exercise the installed pinned CLI and the production wrapper against loopback
-// only. All credentials, project data and deployment responses are synthetic.
+// Exercise the real pinned CLI with a simulated provider on loopback only.
+// Nonempty source uploads and provider states are synthetic, not live acceptance.
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
@@ -15,12 +22,19 @@ const teamId = "team_fixture";
 const projectId = "prj_fixture";
 const token = "fixture_environment_token";
 const sensitive = "FIXTURE_PRIVATE_DETAIL_NEVER_REPORT";
+const source = "export default 'nonempty reviewed source upload';\n";
 const binding = {
   projectId,
   commit: "a".repeat(40),
-  manifestDigest: "b".repeat(64),
-  buildDigest: "c".repeat(64),
+  evidenceDigest: "b".repeat(64),
+  sourceDigest: "c".repeat(64),
+  workflowRunId: "1234",
+  workflowRunAttempt: "1",
 };
+const receipt = JSON.stringify({
+  commit: binding.commit,
+  archiveSha256: binding.sourceDigest,
+});
 const project = {
   id: projectId,
   accountId: teamId,
@@ -39,38 +53,86 @@ const deployment = {
   name: "fixture",
   createdAt: Date.now(),
   projectId,
+  team: { id: teamId },
+  ownerId: teamId,
   plan: "pro",
   regions: ["iad1"],
   builds: [],
 };
 let scenario = "rejection";
 let requests = [];
-let requestFailure = false;
+let requestFailure;
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, "http://localhost");
     assert.equal(req.headers.authorization, `Bearer ${token}`);
-    assert.equal(url.hostname, "localhost");
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
-    const body = chunks.length
-      ? JSON.parse(Buffer.concat(chunks).toString())
-      : undefined;
-    requests.push({ method: req.method, path: url.pathname, body });
+    const bytes = Buffer.concat(chunks);
+    const body =
+      bytes.length && url.pathname !== "/v2/files"
+        ? JSON.parse(bytes.toString())
+        : undefined;
+    requests.push({ method: req.method, path: url.pathname, body, bytes });
     res.setHeader("content-type", "application/json");
-    if (req.method === "POST" && url.pathname === "/v13/deployments") {
-      if (scenario === "rejection") {
-        res.statusCode = 403;
+    const reject = (code = "forbidden") => {
+      res.statusCode = 403;
+      res.end(
+        JSON.stringify({
+          error: {
+            code,
+            message: `Git author ${sensitive} must have access to team ${sensitive}; token=${token}; postgres://fixture:${sensitive}@localhost/database`,
+          },
+        }),
+      );
+    };
+    if (req.method === "POST" && url.pathname === "/v2/files") {
+      assert(bytes.length > 0, "Source upload must contain bytes");
+      assert.equal(
+        req.headers["x-vercel-digest"] ?? req.headers["x-now-digest"],
+        createHash("sha1").update(bytes).digest("hex"),
+      );
+      if (scenario === "upload-rejection") reject();
+      else res.end("{}");
+    } else if (req.method === "POST" && url.pathname === "/v13/deployments") {
+      assert(body.files.length > 0, "Source deployment must include files");
+      if (scenario === "rejection") reject();
+      else if (!requests.some((request) => request.path === "/v2/files")) {
+        res.statusCode = 400;
         res.end(
           JSON.stringify({
             error: {
-              code: "forbidden",
-              message: `Git author ${sensitive} must have access to team ${sensitive}`,
+              code: "missing_files",
+              missing: body.files.map((file) => file.sha),
             },
           }),
         );
-      } else res.end(JSON.stringify(deployment));
-    } else if (req.method !== "GET") throw Error("unexpected method");
+      } else {
+        const readyState = [
+          "INITIALIZING",
+          "QUEUED",
+          "BUILDING",
+          "ERROR",
+        ].includes(scenario)
+          ? scenario
+          : "READY";
+        res.end(
+          JSON.stringify({
+            ...deployment,
+            readyState,
+            status: readyState,
+            ...(readyState === "ERROR"
+              ? { errorCode: "BUILD_FAILED", errorMessage: sensitive }
+              : {}),
+          }),
+        );
+      }
+    } else if (
+      req.method === "POST" &&
+      url.pathname === `/v10/projects/${projectId}/promote/${deployment.id}`
+    )
+      reject();
+    else if (req.method !== "GET") throw Error("unexpected-method");
     else if (url.pathname === "/v2/user")
       res.end(
         JSON.stringify({ user: { uid: "user_fixture", username: "fixture" } }),
@@ -86,11 +148,14 @@ const server = createServer(async (req, res) => {
       );
     else if (url.pathname === `/v9/projects/${projectId}`)
       res.end(JSON.stringify(project));
+    else if (url.pathname === `/v13/deployments/${deployment.id}`)
+      res.end(JSON.stringify(deployment));
     else if (url.pathname === `/v3/now/deployments/${deployment.id}/events`)
       res.end("[]");
-    else throw Error("unexpected path");
+    else throw Error("unexpected-path");
   } catch {
-    requestFailure = true;
+    // Method/path are fixture-authored. Never retain request bodies or headers.
+    requestFailure = `${req.method} ${new URL(req.url, "http://localhost").pathname}`;
     res.statusCode = 500;
     res.end('{"error":{"code":"unexpected_error"}}');
   }
@@ -99,16 +164,18 @@ const childCode = `
 const cli = await import(process.argv[1]);
 const diagnostics = await import(process.argv[2]);
 const config = JSON.parse(process.argv[3]);
+const operation = config.promote ? 'vercel.promote' : 'vercel.stage';
 try {
- const output = cli.codeCli('vercel.stage', [...cli.prebuiltDeployArguments(config.binding), ...config.extra, '--api', config.api], config.teamId, config.token);
- console.log(JSON.stringify({ url: cli.stagedDeploymentUrl(output).origin }));
+ const args = config.promote ? ['promote', 'dpl_fixture', '--yes'] : cli.nativeSourceDeployArguments(config.binding);
+ const output = cli.codeCli(operation, [...args, ...config.extra, '--api', config.api], config.teamId, config.token);
+ console.log(JSON.stringify(config.promote ? { promoted: true } : { url: cli.stagedDeploymentUrl(output).origin, state: JSON.parse(output).deployment.readyState }));
 } catch (error) {
- console.log(JSON.stringify({ diagnostic: diagnostics.classifyCodeFailure('vercel.stage', error) }));
+ console.log(JSON.stringify({ diagnostic: diagnostics.classifyCodeFailure(operation, error) }));
  process.exitCode = 1;
 }`;
-async function check(extra = [], credential = token) {
+async function check({ extra = [], credential = token, promote = false } = {}) {
   requests = [];
-  requestFailure = false;
+  requestFailure = undefined;
   const child = spawn(
     process.execPath,
     [
@@ -124,6 +191,7 @@ async function check(extra = [], credential = token) {
         teamId,
         token: credential,
         extra,
+        promote,
         api: `http://127.0.0.1:${server.address().port}`,
       }),
     ],
@@ -140,7 +208,6 @@ async function check(extra = [], credential = token) {
     },
   );
   let output = "";
-  // CLI output is captured by the wrapper. Never print child stderr on failure.
   child.stdout.on("data", (bytes) => {
     output += bytes;
   });
@@ -149,8 +216,22 @@ async function check(extra = [], credential = token) {
     child.on("error", reject);
     child.on("close", accept);
   });
-  assert.equal(requestFailure, false, "Unexpected isolated API request");
-  assert(!output.includes(sensitive), "Provider detail escaped redaction");
+  assert.equal(
+    requestFailure,
+    undefined,
+    `Unexpected simulated API request: ${requestFailure}`,
+  );
+  for (const secret of [
+    sensitive,
+    token,
+    "wrong_inherited_token",
+    "postgres://",
+    "localhost",
+  ])
+    assert(
+      !output.includes(secret),
+      "Sensitive fixture value escaped redaction",
+    );
   return { status, result: JSON.parse(output) };
 }
 try {
@@ -167,15 +248,24 @@ try {
   });
   assert.equal(version.status, 0);
   assert.equal(version.stdout.trim(), "63.1.2", "Use the pinned CLI");
-  mkdirSync(join(root, ".vercel/output"), { recursive: true });
+  mkdirSync(join(root, ".vercel"), { recursive: true });
   writeFileSync(
     join(root, ".vercel/project.json"),
     JSON.stringify({ projectId, orgId: teamId }),
   );
-  writeFileSync(join(root, ".vercel/output/config.json"), '{"version":3}');
+  writeFileSync(join(root, "index.js"), source);
+  writeFileSync(join(root, "release-source.json"), receipt);
   writeFileSync(
-    join(root, ".vercel/output/builds.json"),
-    '{"target":"production","builds":[]}',
+    join(root, "package.json"),
+    '{"name":"fixture","private":true}',
+  );
+  writeFileSync(
+    join(root, ".env.local"),
+    `DATABASE_URL=postgres://fixture:${sensitive}@localhost/database`,
+  );
+  writeFileSync(
+    join(root, ".vercelignore"),
+    readFileSync(resolve(".vercelignore"), "utf8") + "\nhome\n",
   );
   await new Promise((accept, reject) => {
     server.once("error", reject);
@@ -187,33 +277,102 @@ try {
     reason: "deploy_failed",
     message: "git-author-access-required",
   });
-  assert.equal(requests.filter((r) => r.method === "POST").length, 1);
-  const posted = requests.find((r) => r.method === "POST").body;
+  const posted = requests.find(
+    (request) => request.path === "/v13/deployments",
+  ).body;
   assert.equal(posted.project, projectId);
   assert.equal(posted.target, "production");
   assert.equal(posted.autoAssignCustomDomains, false);
-  assert.equal(posted.env.ANALYTICS_SYNC_ENABLED, "false");
+  assert.deepEqual(posted.env ?? {}, {});
+  assert.deepEqual(posted.build?.env ?? {}, {});
   assert.equal(posted.meta.releaseSha, binding.commit);
-  assert.equal(posted.meta.releaseManifest, binding.manifestDigest);
-  assert.equal(posted.meta.releaseBuildSha256, binding.buildDigest);
-  assert.equal(posted.meta.collectionDisabled, "true");
-  scenario = "success";
+  assert.equal(posted.meta.releaseEvidence, binding.evidenceDigest);
+  assert.equal(posted.meta.releaseSourceSha256, binding.sourceDigest);
+  assert(posted.files.some((file) => file.file === "index.js"));
+  assert(posted.files.some((file) => file.file === "release-source.json"));
+  assert(
+    posted.files.every(
+      (file) =>
+        !file.file.startsWith(".env") &&
+        !file.file.startsWith("home/") &&
+        ![".next/", "node_modules/", ".cache/", "cipher/"].some((prefix) =>
+          file.file.startsWith(prefix),
+        ),
+    ),
+  );
+  scenario = "upload-rejection";
   checked = await check();
+  assert.equal(checked.status, 1);
+  assert(requests.some((request) => request.path === "/v2/files"));
+  assert.equal(
+    requests.filter((request) => request.path === "/v13/deployments").length,
+    1,
+  );
+  for (scenario of ["INITIALIZING", "READY", "QUEUED", "BUILDING"]) {
+    checked = await check();
+    assert.equal(
+      checked.status,
+      0,
+      `Simulated ${scenario} source acceptance: ${JSON.stringify(checked.result)}`,
+    );
+    assert.deepEqual(checked.result, {
+      url: "https://fixture.vercel.app",
+      state: scenario,
+    });
+    assert(
+      requests.some(
+        (request) =>
+          request.path === "/v2/files" && request.bytes.toString() === source,
+      ),
+      "Actual CLI must upload nonempty source bytes",
+    );
+    assert(
+      requests.some(
+        (request) =>
+          request.path === "/v2/files" && request.bytes.toString() === receipt,
+      ),
+      "Actual CLI must upload the source revision receipt",
+    );
+  }
+  scenario = "ERROR";
+  checked = await check();
+  // --no-wait acknowledges identity even for ERROR; executor API readiness
+  // checks, not CLI exit status, decide whether this candidate can promote.
   assert.equal(checked.status, 0);
-  assert.deepEqual(checked.result, { url: "https://fixture.vercel.app" });
-  assert.equal(requests.filter((r) => r.method === "POST").length, 1);
-  checked = await check([], "fixture_invalid_token\n");
+  assert.deepEqual(checked.result, {
+    url: "https://fixture.vercel.app",
+    state: "ERROR",
+  });
+  scenario = "promotion-rejection";
+  checked = await check({ promote: true });
+  assert.equal(checked.status, 1);
+  assert.equal(checked.result.diagnostic.operation, "vercel.promote");
+  assert(
+    requests.some(
+      (request) =>
+        request.method === "POST" &&
+        request.path === `/v10/projects/${projectId}/promote/${deployment.id}`,
+    ),
+  );
+  assert(
+    !requests.some(
+      (request) =>
+        request.method === "POST" && request.path === "/v13/deployments",
+    ),
+    "Promotion must not rebuild",
+  );
+  checked = await check({ credential: "fixture_invalid_token\n" });
   assert.equal(checked.status, 1);
   assert.equal(
     checked.result.diagnostic.provider?.message,
     "authentication-required",
   );
   assert.equal(requests.length, 0);
-  checked = await check(["--fixture-unknown-option"]);
+  checked = await check({ extra: ["--fixture-unknown-option"] });
   assert.equal(checked.status, 1);
   assert(requests.every((request) => request.method === "GET"));
   console.log(
-    "Pinned CLI contract passed: prebuilt arguments, environment authentication, JSON success, provider rejection, invalid token and invalid option. Loopback only; no production requests.",
+    "Pinned CLI simulated-provider contract passed: nonempty native source upload, upload/deploy rejection, accepted INITIALIZING/QUEUED/BUILDING/READY and ERROR states, JSON success, exact-ID promotion failure and credential redaction. Loopback only; real Vercel acceptance remains pending.",
   );
 } finally {
   server.closeAllConnections();

@@ -12,6 +12,7 @@ import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
 
 const labels = new Set([
   "Installing source dependencies",
+  "Generating automatic release evidence",
   "Installing release CLI",
   "Checking pinned CLI contract",
   "Checking published Chronicle",
@@ -80,6 +81,9 @@ const operations = new Set([
   "github.environment-policies",
   "github.main",
   "github.rules",
+  "github.ci-workflow",
+  "github.ci-runs",
+  "github.ci-checks",
   "vercel.project",
   "vercel.alias",
   "vercel.history",
@@ -170,24 +174,72 @@ export function renderReleaseSummary(events, results = {}) {
   const deployment =
     events.filter((e) => e.event === "deployment").at(-1) ?? {};
   const lines = [
-    "## Code-only production release",
+    context.evidenceSha256 || results.evidenceSha256
+      ? "## Native source production release"
+      : "## Code-only production release",
     "",
     `Revision: ${hex(context.revision ?? results.revision, 40)}`,
     `Target revision: ${hex(context.targetRevision, 40)}`,
     `Operation: ${["deploy", "rollback"].includes(context.operation) ? context.operation : "unavailable"}`,
-    `Manifest SHA-256: ${hex(context.manifestSha256 ?? results.manifestSha256, 64)}`,
+    ...(context.evidenceSha256 || results.evidenceSha256
+      ? [
+          `Evidence SHA-256: ${hex(context.evidenceSha256 ?? results.evidenceSha256, 64)}`,
+          `Source SHA-256: ${hex(context.sourceSha256, 64)}`,
+          `Workflow revision: ${hex(context.workflowRevision, 40)}`,
+          `Workflow run: ${typeof context.workflowRunId === "string" && /^[1-9][0-9]*$/.test(context.workflowRunId) ? context.workflowRunId : "unavailable"}`,
+          `Reused exact-revision CI run: ${typeof context.ciRunId === "string" && /^[1-9][0-9]*$/.test(context.ciRunId) ? context.ciRunId : "unavailable"}`,
+          "Canonical application build: Vercel native source build after human approval.",
+        ]
+      : [
+          `Manifest SHA-256: ${hex(context.manifestSha256 ?? results.manifestSha256, 64)}`,
+        ]),
     `Build settings SHA-256: ${hex(context.settingsSha256, 64)}`,
-    `Artifact SHA-256: ${hex(artifact.sha256, 64)}`,
-    `Artifact size: ${integer(artifact.sizeBytes) ? `${artifact.sizeBytes} bytes` : "unavailable (no verified new artifact)"}`,
-    `Build attempt: ${typeof artifact.buildAttempt === "string" && /^[1-9][0-9]*$/.test(artifact.buildAttempt) ? artifact.buildAttempt : "unavailable"}`,
+    ...(!(context.evidenceSha256 || results.evidenceSha256)
+      ? [
+          `Artifact SHA-256: ${hex(artifact.sha256, 64)}`,
+          `Artifact size: ${integer(artifact.sizeBytes) ? `${artifact.sizeBytes} bytes` : "unavailable (no verified new artifact)"}`,
+          `Build attempt: ${typeof artifact.buildAttempt === "string" && /^[1-9][0-9]*$/.test(artifact.buildAttempt) ? artifact.buildAttempt : "unavailable"}`,
+        ]
+      : []),
     `Previous deployment: ${identity(context.previousDeployment)}`,
     `Deployment identity: ${identity(deployment.deploymentId)}`,
-    `Rollback target: ${identity(context.rollbackDeployment)}`,
+    ...(!(context.evidenceSha256 || results.evidenceSha256)
+      ? [`Rollback target: ${identity(context.rollbackDeployment)}`]
+      : []),
     `Preparation: ${state(results.prepare)}; protected operation: ${state(results.production)}`,
     "",
     "| Stage | Duration | Result |",
     "| --- | ---: | --- |",
   ];
+  if (context.evidenceSha256 || results.evidenceSha256) {
+    const allowedRisks = new Set([
+      "database-schema",
+      "database-query-contract",
+      "authentication-policy",
+      "runtime-configuration",
+      "analytics-activation",
+    ]);
+    const risks = Array.isArray(context.compatibilityRisks)
+      ? context.compatibilityRisks.filter((risk) => allowedRisks.has(risk))
+      : [];
+    const paths = Array.isArray(context.changedPaths)
+      ? context.changedPaths
+          .filter(
+            (path) =>
+              typeof path === "string" &&
+              /^[A-Za-z0-9_./()@+ -]{1,500}$/.test(path),
+          )
+          .slice(0, 5000)
+      : [];
+    lines.splice(
+      lines.indexOf("| Stage | Duration | Result |"),
+      0,
+      `Compatibility risks: ${risks.length ? risks.join(", ") + (risks.some((risk) => ["database-schema", "analytics-activation"].includes(risk)) ? "; ordinary release blocked; use the applicable sensitive review procedure." : "; review compatibility at the human production gate.") : "No database, authentication, runtime configuration or analytics activation contract change detected."}`,
+      `Changed source paths: ${paths.length}`,
+      ...(risks.length ? paths.map((path) => `- ${path}`) : []),
+      "",
+    );
+  }
   for (const event of events) {
     if (
       event.event === "stage" &&
@@ -260,12 +312,16 @@ if (
     {
       revision: process.env.RELEASE_SHA,
       manifestSha256: process.env.RELEASE_MANIFEST_SHA256,
+      evidenceSha256: process.env.RELEASE_EVIDENCE_SHA256,
       prepare: process.env.PREPARATION_RESULT,
       production: approval ? "pending" : process.env.PRODUCTION_RESULT,
     },
   );
-  if (approval) writeFileSync(".cache/release-approval.md", summary);
-  else if (process.env.GITHUB_STEP_SUMMARY)
+  if (approval) {
+    writeFileSync(".cache/release-approval.md", summary);
+    if (process.env.GITHUB_STEP_SUMMARY)
+      appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+  } else if (process.env.GITHUB_STEP_SUMMARY)
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
   else console.log(summary);
 }

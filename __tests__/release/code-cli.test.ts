@@ -1,6 +1,10 @@
 /** @jest-environment node */
 import type { spawnSync, SpawnSyncReturns } from "node:child_process";
-import { codeCli, stagedDeploymentUrl } from "../../scripts/release/code-cli";
+import {
+  codeCli,
+  nativeSourceDeployArguments,
+  stagedDeploymentUrl,
+} from "../../scripts/release/code-cli";
 import { classifyCodeFailure } from "../../scripts/release/code-diagnostics";
 
 const sensitive = "SENSITIVE_TOKEN_URL_HEADER_DO_NOT_LOG";
@@ -197,4 +201,100 @@ test.each([
   expect(() => stagedDeploymentUrl(value)).toThrow(
     "code.stage-output-unresolved",
   );
+});
+
+test("native source arguments bind one production candidate without environment overrides", () => {
+  const binding = {
+    projectId: "prj_fixture",
+    commit: "a".repeat(40),
+    evidenceDigest: "b".repeat(64),
+    sourceDigest: "c".repeat(64),
+    workflowRunId: "1234",
+    workflowRunAttempt: "2",
+  };
+  const args = nativeSourceDeployArguments(binding);
+  expect(args.slice(0, 7)).toEqual([
+    "deploy",
+    "--prod",
+    "--skip-domain",
+    "--yes",
+    "--no-wait",
+    "--project",
+    binding.projectId,
+  ]);
+  expect(args).toEqual(
+    expect.arrayContaining([
+      `releaseSha=${binding.commit}`,
+      `githubCommitSha=${binding.commit}`,
+      `releaseEvidence=${binding.evidenceDigest}`,
+      `releaseSourceSha256=${binding.sourceDigest}`,
+      `releaseRunId=${binding.workflowRunId}`,
+      `releaseRunAttempt=${binding.workflowRunAttempt}`,
+    ]),
+  );
+  for (const forbidden of [
+    "--prebuilt",
+    "--env",
+    "--build-env",
+    "--token",
+    "--force",
+  ]) {
+    expect(args).not.toContain(forbidden);
+  }
+  const run = runner({});
+  codeCli("vercel.stage", args, "team_fixture", sensitive, run, {
+    cwd: "/isolated/approved-source",
+  });
+  expect(run.mock.calls[0][2]?.cwd).toBe("/isolated/approved-source");
+});
+
+test.each(["INITIALIZING", "QUEUED", "BUILDING", "READY", "ERROR"])(
+  "no-wait JSON preserves candidate origin for authoritative %s readiness checks",
+  (readyState) => {
+    expect(
+      stagedDeploymentUrl(
+        JSON.stringify({
+          status: "ok",
+          deployment: { url: "https://fixture.vercel.app", readyState },
+        }),
+      ).origin,
+    ).toBe("https://fixture.vercel.app");
+  },
+);
+
+test("promotion rejection retains its operation and redacts planted credentials", () => {
+  let failure: unknown;
+  try {
+    codeCli(
+      "vercel.promote",
+      ["promote", "dpl_fixture", "--yes"],
+      "team_fixture",
+      sensitive,
+      runner({
+        status: 1,
+        stdout: JSON.stringify({
+          status: "error",
+          reason: "deploy_failed",
+          message: `token=${sensitive}; postgres://fixture:${sensitive}@localhost/db`,
+        }),
+        stderr: `Authorization: Bearer ${sensitive}`,
+      }),
+    );
+  } catch (error) {
+    failure = error;
+  }
+  const diagnostic = classifyCodeFailure("production.check", failure);
+  expect(diagnostic).toMatchObject({
+    operation: "vercel.promote",
+    exitStatus: 1,
+    provider: { reason: "deploy_failed" },
+  });
+  for (const planted of [
+    sensitive,
+    "postgres://",
+    "Authorization",
+    "localhost",
+  ]) {
+    expect(JSON.stringify(diagnostic)).not.toContain(planted);
+  }
 });

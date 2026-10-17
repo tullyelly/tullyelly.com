@@ -656,22 +656,28 @@ describe("dedicated release App", () => {
     ])
       await expect(verifyHumanApproval(env, api(reviews))).rejects.toThrow();
   });
-  it("dispatches only fixed children on main with explicit production manifest binding", () => {
-    expect(dispatchPayload({ mode: "smoke", sha }, config, "100")).toEqual({
-      workflow: "release-gate-smoke.yml",
-      body: {
-        ref: "main",
-        inputs: {
-          release_sha: sha,
-          dispatch_run_id: "100",
-          dispatch_installation_id: "456",
+  it("dispatches ordinary production with a reviewed SHA and preserves sensitive manifest binding", () => {
+    expect(dispatchPayload({ mode: "production", sha }, config, "100")).toEqual(
+      {
+        workflow: "production-release.yml",
+        body: {
+          ref: "main",
+          inputs: {
+            release_sha: sha,
+            dispatch_run_id: "100",
+            dispatch_installation_id: "456",
+          },
         },
       },
+    );
+    expect(dispatchInputSchema.parse({ mode: "production", sha })).toEqual({
+      mode: "production",
+      sha,
     });
     expect(
       dispatchPayload(
         {
-          mode: "production",
+          mode: "analytics",
           sha,
           manifestPath: "releases/analytics.json",
           manifestSha256: "b".repeat(64),
@@ -680,12 +686,34 @@ describe("dedicated release App", () => {
         "100",
       ).body.inputs,
     ).toMatchObject({
-      release_sha: sha,
       manifest_path: "releases/analytics.json",
       manifest_sha256: "b".repeat(64),
     });
     expect(() =>
-      dispatchInputSchema.parse({ mode: "production", sha }),
+      dispatchInputSchema.parse({ mode: "analytics", sha }),
+    ).toThrow();
+    expect(
+      dispatchPayload(
+        {
+          mode: "rollback",
+          sha,
+          manifestPath: "releases/rollback.json",
+          manifestSha256: "c".repeat(64),
+        },
+        config,
+        "100",
+      ),
+    ).toMatchObject({
+      workflow: "production-rollback.yml",
+      body: {
+        inputs: {
+          manifest_path: "releases/rollback.json",
+          manifest_sha256: "c".repeat(64),
+        },
+      },
+    });
+    expect(() =>
+      dispatchInputSchema.parse({ mode: "rollback", sha }),
     ).toThrow();
     expect(() =>
       dispatchInputSchema.parse({

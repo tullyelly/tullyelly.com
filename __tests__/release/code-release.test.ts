@@ -322,32 +322,24 @@ test("separately bound rollback validates identity, never stages, and reconciles
     expect(p.rollback).toHaveBeenCalledTimes(bad ? 0 : 1);
   }
 });
-test("code workflow cannot invoke database/credential executors or expose secrets to preparation", () => {
-  const w = readFileSync(".github/workflows/production-release.yml", "utf8"),
-    prepare = w.slice(w.indexOf("  prepare:"), w.indexOf("  production:"));
-  expect(prepare).not.toContain("${{ secrets.");
+test("native workflow keeps read-only metadata separate and cannot invoke sensitive executors", () => {
+  const w = readFileSync(".github/workflows/production-release.yml", "utf8");
+  const prepare = w.slice(w.indexOf("  prepare:"), w.indexOf("  production:"));
+  expect(prepare).toContain("${{ secrets.VERCEL_RELEASE_READ_TOKEN }}");
+  expect(prepare).not.toContain("${{ secrets.VERCEL_RELEASE_TOKEN }}");
   expect(w).not.toMatch(
-    /release-db|NEON_API_KEY|RELEASE_DATABASE_URL|maintenance\.ts|db:migrate|seed/,
+    /release-db|NEON_API_KEY|RELEASE_DATABASE_URL|maintenance\.ts|db:migrate|seed|approved-prebuilt|run-stage\.mjs restore/,
   );
   expect(w).toContain("environment: production-release");
-  expect(w).toContain("run-stage.mjs restore");
   const code = readFileSync("scripts/production-release.ts", "utf8");
   expect(code).not.toMatch(
-    /console\.neon|env\/\$\{|cronSecret|RELEASE_DATABASE_URL/,
+    /console\.neon|env\/\$\{|cronSecret|RELEASE_DATABASE_URL|prebuiltDeployArguments|code-build-context\.py/,
   );
-  expect(code).toContain("prebuiltDeployArguments({");
-  expect(readFileSync("scripts/release/code-cli.ts", "utf8")).toContain(
-    "releaseBuildSha256=",
-  );
-  expect(code).toContain("scripts/release/code-build-context.py");
+  expect(code).toContain("createCleanSource");
+  expect(code).toContain("nativeSourceDeployArguments");
   expect(
-    readFileSync("scripts/release/code-build-context.py", "utf8"),
-  ).toContain('"--standalone"');
-  const legacy = readFileSync(
-    ".github/workflows/analytics-release.yml",
-    "utf8",
-  );
-  expect(legacy).toContain("scripts/release-db.ts apply");
+    readFileSync(".github/workflows/analytics-release.yml", "utf8"),
+  ).toContain("scripts/release-db.ts apply");
 });
 test.each([
   "portable",

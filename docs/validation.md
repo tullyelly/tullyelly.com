@@ -161,9 +161,12 @@ Generated Contentlayer documents, build info, completed builds, coverage results
 node_modules and credentials are not cached. Preparation still runs once per
 source-validation invocation and reuses the existing image-dimensions cache.
 
-Separate events, SHAs and protected release environments still validate
-independently. Code-only production releases now run verify:source followed by one
-canonical Vercel production artifact build; see [production releases](production-releases.md#single-artifact-production-path).
+Separate events and SHAs still require their own exact trusted CI evidence.
+Ordinary code-only releases reuse successful required checks from the trusted CI
+workflow for the exact reviewed main SHA. They do not repeat equivalent full
+validation or transfer the CI build. Vercel builds one clean source revision
+remotely after the protected human gate; see
+[production releases](production-releases.md#native-source-production-path).
 Analytics and credential-maintenance workflows retain separate full validation
 and Vercel builds. npm ci's postinstall and validation both generate Prisma. The pre-push
 hook still runs smoke followed by coverage and prepares via typecheck and coverage;
@@ -243,9 +246,12 @@ environment and restore inherited values after each test. Keep dedicated
 regressions proving `SKIP_DB` blocks real construction/query/listener paths.
 Do not disable the global safety flag or runtime guards to make fixtures pass.
 
-## Release-manifest secret scanning
+## Sensitive-operation manifest secret scanning
 
-The `custom-pg-url` pre-commit scanner permits only the canonical standalone
+Ordinary source releases generate non-secret evidence automatically and do not
+require a deploy-manifest PR. Separate sensitive-operation manifests retain their
+existing validation and scanning. The `custom-pg-url` pre-commit scanner permits
+only the canonical standalone
 `schemaCompatibility.databaseHost` occurrence in a version-2 code-only manifest
 that passes the actual release validator, including evidence freshness and target
 binding. Other Neon hostname occurrences remain flagged. The exception does not

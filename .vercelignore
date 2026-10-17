@@ -1,5 +1,17 @@
-# Native recovery uploads use existing production environment configuration.
+# Native source releases use the reviewed Git archive and existing production env.
 **/.env*
+.git/
+.cache/
+.next/
+.vercel/output/
+node_modules/
+out/
+dist/
+build/
+cipher/
+.turbo/
+*.log
+**/node_modules/
 .contentlayer/
 .build/
 lib/build-info.ts

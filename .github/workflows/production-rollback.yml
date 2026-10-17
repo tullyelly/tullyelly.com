@@ -1,0 +1,220 @@
+name: Approved production rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact reviewed 40-character commit on protected main
+        required: true
+        type: string
+      manifest_path:
+        description: Reviewed manifest on main, releases/<name>.json
+        required: true
+        type: string
+      dispatch_run_id:
+        description: Bound release-dispatch parent run ID
+        required: true
+        type: string
+      dispatch_installation_id:
+        description: Verified dedicated App installation ID
+        required: true
+        type: string
+      manifest_sha256:
+        description: Exact SHA-256 of the reviewed manifest file
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: production-release-tullyelly
+  cancel-in-progress: false
+
+env:
+  RELEASE_CHILD_WORKFLOW: .github/workflows/production-rollback.yml
+  RELEASE_SHA: ${{ inputs.release_sha }}
+  RELEASE_DISPATCH_RUN_ID: ${{ inputs.dispatch_run_id }}
+  RELEASE_DISPATCH_INSTALLATION_ID: ${{ inputs.dispatch_installation_id }}
+  RELEASE_APP_ID: ${{ vars.RELEASE_APP_ID }}
+  RELEASE_APP_INSTALLATION_ID: ${{ vars.RELEASE_APP_INSTALLATION_ID }}
+  RELEASE_APP_SLUG: ${{ vars.RELEASE_APP_SLUG }}
+  RELEASE_APP_BOT_USER_ID: ${{ vars.RELEASE_APP_BOT_USER_ID }}
+  RELEASE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+  RELEASE_MANIFEST_PATH: .cache/approved-release.json
+  VERCEL_CLI_VERSION: "63.1.2"
+  CI: "true"
+  NEXT_TELEMETRY_DISABLED: "1"
+  RELEASE_REPORT_PATH: .cache/release-report.jsonl
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      manifest_artifact: approved-manifest-${{ github.run_id }}-${{ github.run_attempt }}
+      executor_artifact: release-executor-${{ github.run_id }}-${{ github.run_attempt }}
+      executor_sha256: ${{ steps.executor.outputs.executor_sha256 }}
+      report_artifact: release-report-prepare-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - name: Initialize stage report
+        run: |
+          mkdir -p .cache
+          : > "$RELEASE_REPORT_PATH"
+      - name: Bind manifest and exact code
+        env:
+          MANIFEST_SOURCE: ${{ inputs.manifest_path }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$RELEASE_MANIFEST_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          [[ "$MANIFEST_SOURCE" =~ ^releases/[a-z0-9-]+\.json$ ]]
+          mkdir -p .cache "$RUNNER_TEMP/credential-free-vercel-home"
+          git show "$GITHUB_SHA:$MANIFEST_SOURCE" > "$RELEASE_MANIFEST_PATH"
+          git checkout --detach "$RELEASE_SHA"
+      - name: Install without production credentials
+        run: node scripts/release/run-stage.mjs install
+      - name: Check pinned CLI contract
+        run: node scripts/release/run-stage.mjs preflight
+      - name: Verify reviewed rollback plan before the human gate
+        run: npm exec -- tsx scripts/production-rollback.ts prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Bundle credential-free release executor
+        id: executor
+        run: node scripts/release/run-stage.mjs bundle
+        env:
+          RELEASE_EXECUTOR_KIND: rollback
+      - name: Publish checksum-bound release executor
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-executor-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/release-tools/production-release.cjs
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
+      - name: Publish non-secret reviewed manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: approved-manifest-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.RELEASE_MANIFEST_PATH }}
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
+      - name: Render readable approval evidence
+        if: always()
+        env:
+          PREPARATION_RESULT: ${{ job.status }}
+        run: node scripts/release/release-summary.mjs --approval-report .cache/release-report.jsonl
+      - name: Publish approval evidence and preparation diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-report-prepare-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .cache/release-report.jsonl
+            .cache/release-approval.md
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
+
+  production:
+    needs: prepare
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production-release
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.release_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+          cache: npm
+      - name: Initialize stage report
+        run: |
+          mkdir -p .cache
+          : > "$RELEASE_REPORT_PATH"
+      - name: Install pinned CLI before exposing credentials
+        run: node scripts/release/run-stage.mjs install-cli
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.prepare.outputs.executor_artifact }}
+          path: .cache/release-tools
+      - name: Verify reviewed release executor checksum
+        env:
+          EXECUTOR_SHA256: ${{ needs.prepare.outputs.executor_sha256 }}
+        run: node scripts/release/run-stage.mjs executor
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.prepare.outputs.manifest_artifact }}
+          path: .cache
+      - name: Recreate reviewed non-secret project link
+        run: node scripts/release/run-stage.mjs prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Post-approval target, protection and deployment drift checks
+        run: node scripts/release/run-stage.mjs check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
+          RELEASE_PRODUCTION_APPROVED: "true"
+      - name: Execute separately reviewed rollback without rebuilding
+        run: node scripts/release/run-stage.mjs deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          RELEASE_PRODUCTION_APPROVED: "true"
+      - name: Publish protected-operation diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-report-production-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.RELEASE_REPORT_PATH }}
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
+
+  summary:
+    needs: [prepare, production]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.20.0"
+      - name: Read preparation report when available
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.prepare.outputs.report_artifact || format('release-report-prepare-{0}-{1}', github.run_id, github.run_attempt) }}
+          path: .cache/preparation-report
+      - name: Read protected-operation report when available
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-report-production-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/production-report
+      - name: Write one release summary
+        env:
+          PREPARATION_RESULT: ${{ needs.prepare.result }}
+          PRODUCTION_RESULT: ${{ needs.production.result }}
+        run: node scripts/release/release-summary.mjs .cache/preparation-report/release-report.jsonl .cache/production-report/release-report.jsonl

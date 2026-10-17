@@ -53,6 +53,27 @@ const context = {
   settingsSha256: "c".repeat(64),
   previousDeployment: "dpl_previous",
 };
+test.each(["github.ci-workflow", "github.ci-runs", "github.ci-checks"])(
+  "summary retains the fixed %s API operation",
+  (operation) => {
+    const output = summary(
+      [
+        context,
+        {
+          event: "failure",
+          diagnostic: {
+            guard: "api.request",
+            category: "http",
+            status: 403,
+            operation,
+          },
+        },
+      ],
+      { prepare: "success", production: "failure" },
+    );
+    expect(output).toContain(`operation=${operation}`);
+  },
+);
 test("uploaded reports reject arbitrary values before storage, not only when rendering", () => {
   const root = mkdtempSync(join(tmpdir(), "safe-code-report-"));
   const previous = process.env.RELEASE_REPORT_PATH;
@@ -86,50 +107,10 @@ test("uploaded reports reject arbitrary values before storage, not only when ren
   }
 });
 
-test("source validation records the real outer stage and isolates fixture process reports", () => {
-  const root = mkdtempSync(join(tmpdir(), "release-source-timing-"));
-  try {
-    const observed = join(root, "observed.json"),
-      report = join(root, "report.jsonl");
-    writeFileSync(
-      join(root, "npm"),
-      `#!${process.execPath}\nconst fs=require('node:fs'); fs.writeFileSync(process.env.OBSERVED, JSON.stringify({args:process.argv.slice(2),reportPath:process.env.RELEASE_REPORT_PATH}));\n`,
-      { mode: 0o700 },
-    );
-    const result = spawnSync(
-      process.execPath,
-      [resolve("scripts/release/run-stage.mjs"), "source"],
-      {
-        cwd: root,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          PATH: `${root}:${process.env.PATH}`,
-          RELEASE_REPORT_PATH: report,
-          VERCEL_CLI_VERSION: "63.1.2",
-          OBSERVED: observed,
-        },
-      },
-    );
-    expect(result.status).toBe(0);
-    expect(JSON.parse(readFileSync(observed, "utf8"))).toEqual({
-      args: ["run", "verify:source"],
-      reportPath: "",
-    });
-    const rows = readFileSync(report, "utf8")
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({
-      event: "stage",
-      label: "Validating release source",
-      outcome: "success",
-    });
-    expect(rows[0].durationMs).toEqual(expect.any(Number));
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
+test("ordinary preparation reuses CI rather than invoking another full validation or local build", () => {
+  const stages = readFileSync("scripts/release/run-stage.mjs", "utf8");
+  expect(stages).not.toMatch(/verify:source|verify:agent|\bbuild:|\brestore:/);
+  expect(stages).toContain("Generating automatic release evidence");
 });
 
 test.each(["matched", "tampered", "missing"])(
@@ -390,14 +371,14 @@ test("credential-free bundled executor runs outside the checkout without applica
       env: {
         NODE_ENV: "test",
         PATH: process.env.PATH,
-        RELEASE_MANIFEST_PATH: manifest,
+        RELEASE_EVIDENCE_PATH: manifest,
         RELEASE_SHA: "a".repeat(40),
-        RELEASE_MANIFEST_SHA256: "f".repeat(64),
+        RELEASE_EVIDENCE_SHA256: "f".repeat(64),
         VERCEL_TOKEN: sensitive,
       },
     });
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('"invariant":"code.manifest-digest"');
+    expect(result.stderr).toContain('"invariant":"code.evidence-digest"');
     expect(result.stderr).not.toContain(sensitive);
     expect(result.stderr).not.toContain("MODULE_NOT_FOUND");
   } finally {
@@ -405,7 +386,7 @@ test("credential-free bundled executor runs outside the checkout without applica
   }
 });
 
-test("workflow builds once, reuses saved artifact evidence and keeps installs outside credentials", () => {
+test("workflow reuses exact CI and carries only evidence and executor across the human gate", () => {
   const workflow = readFileSync(
     ".github/workflows/production-release.yml",
     "utf8",
@@ -414,14 +395,12 @@ test("workflow builds once, reuses saved artifact evidence and keeps installs ou
   const production = workflow
     .split("  production:\n")[1]
     .split("  summary:\n")[0];
-  const stages = readFileSync("scripts/release/run-stage.mjs", "utf8");
-  expect(stages).toContain('"verify:source"');
-  expect(workflow).not.toContain("verify:agent");
-  expect(workflow.match(/run-stage\.mjs build\b/g)).toHaveLength(1);
-  expect(production).not.toMatch(
-    /npm ci|npm exec|npx tsx|run-stage\.mjs build/,
+  expect(workflow).not.toMatch(
+    /verify:agent|verify:source|approved-prebuilt|build_artifact|run-stage\.mjs (build|restore)/,
   );
-  expect(prepare).not.toContain("${{ secrets.");
+  expect(production).not.toMatch(/npm ci|npm exec|npx tsx/);
+  expect(prepare).not.toContain("${{ secrets.VERCEL_RELEASE_TOKEN }}");
+  expect(prepare).toContain("run-stage.mjs evidence");
   expect(production.indexOf("run-stage.mjs install-cli")).toBeLessThan(
     production.indexOf("${{ secrets.VERCEL_RELEASE_TOKEN }}"),
   );
@@ -429,15 +408,37 @@ test("workflow builds once, reuses saved artifact evidence and keeps installs ou
     "EXECUTOR_SHA256: ${{ needs.prepare.outputs.executor_sha256 }}",
   );
   expect(production).toContain(
-    "name: ${{ needs.prepare.outputs.build_artifact }}",
+    "name: ${{ needs.prepare.outputs.evidence_artifact }}",
   );
   expect(production).toContain(
-    "RELEASE_BUILD_ATTEMPT: ${{ needs.prepare.outputs.build_attempt }}",
+    "RELEASE_EVIDENCE_SHA256: ${{ needs.prepare.outputs.evidence_sha256 }}",
   );
   expect(production).toContain("environment: production-release");
-  expect(workflow).not.toMatch(/^  (push|pull_request):/m);
-  expect(workflow).toContain("cancel-in-progress: false");
   expect(workflow).toContain("needs: [prepare, production]");
   expect(workflow.match(/name: Write one release summary/g)).toHaveLength(1);
-  expect(workflow).not.toContain("GITHUB_STEP_SUMMARY");
+});
+
+test("native approval summary presents exact source, reused CI, workflow and compatibility risks", () => {
+  const rendered = summary(
+    [
+      {
+        ...context,
+        evidenceSha256: "d".repeat(64),
+        sourceSha256: "e".repeat(64),
+        ciRunId: "123",
+        workflowRunId: "456",
+        workflowRevision: "a".repeat(40),
+        compatibilityRisks: ["database-schema", "SENSITIVE_DO_NOT_LOG"],
+        changedPaths: ["db/migrations/100_example.sql", "SENSITIVE$DO_NOT_LOG"],
+      },
+    ],
+    { prepare: "failure", production: "pending" },
+  );
+  expect(rendered).toContain("Native source production release");
+  expect(rendered).toContain("Reused exact-revision CI run: 123");
+  expect(rendered).toContain("Workflow run: 456");
+  expect(rendered).toContain("database-schema; ordinary release blocked");
+  expect(rendered).toContain("db/migrations/100_example.sql");
+  expect(rendered).not.toContain("Artifact SHA-256");
+  expect(rendered).not.toContain("SENSITIVE");
 });

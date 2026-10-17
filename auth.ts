@@ -7,6 +7,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import { getAuthzRevision, getEffectiveFeatures } from "@/app/_auth/policy";
 import { isDbSkipEnabled } from "@/lib/escape-hatches";
+import { isNextBuild } from "@/lib/env";
 
 declare global {
   var __PRISMA_CLIENT__: PrismaClient | undefined;
@@ -15,6 +16,9 @@ declare global {
 let prisma: PrismaClient | undefined = global.__PRISMA_CLIENT__;
 
 export function getPrisma(): PrismaClient {
+  if (isNextBuild()) {
+    throw new Error("Prisma access disabled during Next.js production build.");
+  }
   if (isDbSkipEnabled()) {
     throw new Error("Prisma access disabled when SKIP_DB=true.");
   }
@@ -80,7 +84,9 @@ export const authOptions: NextAuthOptions = {
 
   // Use JWT sessions so NextAuth middleware can authorize requests.
   // We still keep the Prisma adapter for users/accounts persistence.
-  ...(isDbSkipEnabled() ? {} : { adapter: PrismaAdapter(getPrisma()) }),
+  ...(isNextBuild() || isDbSkipEnabled()
+    ? {}
+    : { adapter: PrismaAdapter(getPrisma()) }),
   session: { strategy: "jwt" },
 
   providers: [
