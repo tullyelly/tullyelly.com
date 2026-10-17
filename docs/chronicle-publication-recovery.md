@@ -93,10 +93,12 @@ do not reset this checkout to exclude it.
 
 ## Required recovery exception; historical preparation
 
-[Production policy](production-releases.md) requires the dedicated App dispatcher,
-protected `production-release` human gate, reviewed manifest, credential-free
-canonical prebuilt artifact and coordinator-only execution. A native owner CLI
-source deployment is outside that mechanism. This document does not amend it.
+At the time of this recovery, production policy required the dedicated App
+dispatcher, protected human gate, reviewed manifest and credential-free prebuilt
+artifact. The owner CLI recovery needed the one-time exception below. The current
+[production policy](production-releases.md) now uses native clean source deployment
+through that protected gate for ordinary releases; this historical exception does
+not authorize another owner CLI deployment or replace the current procedure.
 
 Before staging, the owner must explicitly record a **one-time incident exception**
 to those execution/artifact requirements, naming the exact source SHA, complete

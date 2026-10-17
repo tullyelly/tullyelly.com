@@ -1,511 +1,245 @@
 # Human-approved production releases
 
-Cipher prepares and tests code-only releases, then deploys the reviewed artifact
-through the protected GitHub workflow after a human approves the concrete plan.
-Database migrations and credential maintenance are separate explicit operations.
-Preparation and this policy do not authorize a production release. Do not approve
-the environment gate on the user's behalf. Only the coordinating agent initiates
-a release; specialists cannot perform production operations.
+Ordinary code-only releases use one native Vercel source deployment through the
+protected GitHub workflow. The operator selects the reviewed merged main SHA;
+tooling prepares non-secret evidence, the human approves the existing environment
+gate, and the workflow stages, verifies and conditionally promotes that exact
+deployment. There is no separate ordinary release-manifest PR or chat attestation.
+Database migrations, credential maintenance, analytics activation and other
+sensitive operations retain their separate concrete approvals and procedures.
 
-The [Appleton East incident recovery plan](chronicle-publication-recovery.md)
-records the completed, exact-SHA native source recovery. That one-time owner
-approval applied only to `b6f714ca6d83929096798df9543410bfc771a263`; it does not
-authorize another release, change the normal artifact workflow or replace its
-protected human gate.
-
-## Current readiness
-
-The App-authenticated release-control bootstrap is complete. Parent run
-[38175631646](https://github.com/tullyelly/tullyelly.com/actions/runs/38175631646)
-and human-approved child
-[38175750484](https://github.com/tullyelly/tullyelly.com/actions/runs/38175750484)
-succeeded at `b76d534c0dffa2e539670948f6beb331d8d1a9f5`. The approval was recorded
-under `tullyelly`; no production operation occurred.
-
-Vercel Git integration is disconnected. Pushes and merges do not automatically
-deploy production or previews. No replacement preview workflow is configured;
-previews require explicitly approved deployment with verified isolated databases.
-The known-good production baseline is `dpl_VnkLN4dbyV6DV8Bz6iJMmbm1LGYP`,
-at `b6f714ca6d83929096798df9543410bfc771a263`. The native recovery was publicly
-verified October 14, 2026 at 7:07 pm America/Chicago. Read-only project and alias
-checks reconfirmed that baseline during normal-path repair; refresh it before
-any authorized operation.
-
-The analytics migration release is not ready. Historical SQL was executed manually;
-production ledger reconciliation, current non-production integration, credential
-rotation and restore rehearsal remain analytics release prerequisites. Prior catalog
-observations must be refreshed before asserting current schema state. The
-analytics executor refuses missing ledgers, ambiguous history, checksum drift
-and failed entries rather than inserting invented baselines or replaying SQL.
-
-## Safe code-only check diagnostics
-
-Run `38202358849`, production job `114659659761`, stopped in post-approval
-checks before staging. Its old catch-all message did not retain the failing guard
-or API status, so the precise protected-token failure cannot be recovered from
-that log. A read-only local owner CLI replay confirmed a response-contract defect:
-the disconnected project omits `link`, while the old check demanded explicit
-`null`. Vercel documents [project `link` as optional](https://vercel.com/docs/rest-api/projects/find-a-project-by-id-or-name).
-The check now accepts either absent or null links, rejects connected/malformed
-links, and retains exact project/team, settings, domain and production checks.
-
-Errors emit fixed guard and API-operation labels, HTTP status, allowlisted network
-codes and sanitized validation-field names. Unknown fields are redacted; values,
-URLs, headers, provider bodies and arbitrary exceptions are never serialized.
-Manifest startup failures follow the same rule. An HTTP failure from a GitHub
-approval operation is distinguishable from a Vercel project operation.
-
-The separate local CLI metadata read succeeded and settings matched. That access
-is not `VERCEL_RELEASE_TOKEN`; its permissions remain untested independently.
-No token retrieval, permission expansion, deployment or retry is authorized by
-these diagnostics. A future explicitly authorized gated check must establish the
-protected token's actual operation/status if another failure occurs.
-
-Run `38318822912` passed validation, prebuilt verification and post-approval
-checks, then failed in the combined deploy step. Its default `production.check`
-label and missing CLI process evidence do not identify the failing operation.
-Owner CLI reconciliation found no matching staged deployment and unchanged live
-aliases; this does not independently establish the workflow token's CLI permissions.
-
-CLI failures now identify stage, promote or rollback and retain only exit status,
-allowlisted signal/spawn codes and a fixed process category. Stdout, stderr,
-process messages and environment values are never emitted. Staging reconciliation
-preserves the original sanitized failure and separately reports not-found or a
-failed lookup. A recovered deployment reports the found outcome and original
-failure without issuing a second stage. Lookup, identity and health failures have
-fixed labels. The restricted deployment environment is unchanged. Diagnostics do
-not authorize retries, manual deployment, gate bypass or promotion.
-
-The independent incident diagnostics patch also retains bounded, allowlisted
-provider reason/code labels, numeric HTTP status and fixed message classifications.
-It examines at most 16 KiB per captured stream, discards arbitrary provider text,
-JSON values, hints and suggested commands, and revalidates retained fields before
-report storage and summary rendering. Unknown provider details remain unavailable.
-Original provider labels survive failed/not-found reconciliation. Successful stage
-output accepts the pinned CLI JSON envelope only with `status: "ok"` and a
-`deployment.url` that is exactly one HTTPS deployment origin under vercel.app.
-Bare origins remain supported; error streams, messages, production URLs and
-suggested commands never supply a target. Provider API identity remains mandatory. These labels cannot recover suppressed
-output from earlier runs or establish their underlying cause.
-
-## Normal release acceptance after recovery
-
-This repair is **pending owner review and live acceptance**. No release for this
-story is authorized by the completed emergency exception. Local preparation is
-not a passing GitHub-to-Vercel rehearsal.
-
-### Reconciliation and diagnosis
-
-- The deployed recovery commit and clean starting local HEAD are
-  `b6f714ca6d83929096798df9543410bfc771a263`. Its 16-file change from the failed
-  application already includes publication readiness, safe provider diagnostics,
-  native-upload exclusions and incident documentation. Reuse that commit.
-- Remote main was rechecked at `4bb7d0adb7ea2cfdc09036ab99377072567440f3`.
-  Its parent is failed application `1f4ada0a16958e49042f1826028ffa9d57bd1c7e`;
-  only `releases/main-2026-10-13.json` was added. Main still has `draft: true`
-  and the original suppressing CLI wrapper. Local `origin/main` is stale.
-  Recovery changes are committed locally and deployed, but not on remote main.
-- The original date `2026-10-13`, all authored text and all other draft states
-  are preserved. The only Chronicle difference from the failed source is Appleton
-  East's `draft: false`; this repair changes no Chronicle or image bytes.
-- [Run 38512310587](https://github.com/tullyelly/tullyelly.com/actions/runs/38512310587),
-  job `115685176849`, confirms `vercel.stage`, exit 1 and reconciliation not-found.
-  Its original provider stderr was discarded. **The historical rejection remains
-  unknown.** Do not attribute it to Git author permissions, token scope or arguments
-  without evidence. No production retry is a diagnostic test.
-- Both paths used CLI 63.1.2 and the same project/team, production target and
-  `--skip-domain`. The failed workflow used `--prebuilt --yes`, a checksum-bound
-  credential-free artifact and environment `VERCEL_TOKEN` in an isolated runner.
-  Recovery uploaded reviewed clean source, used existing owner CLI credentials
-  and Vercel's remote builder with existing production build configuration.
-  It does not establish the protected token's write permissions or prebuilt success.
-- Actual pinned-CLI integration reproduces a separate success-contract defect:
-  `--non-interactive` returns JSON, while the wrapper accepted only a bare URL.
-  A synthetic provider 403 also becomes `reason: deploy_failed`; the allowlist
-  now retains that fixed label. These are demonstrated fixes, not proof of the
-  old exit-1 cause. No account, scope or deployment mechanism was substituted.
-
-### Acceptance and owner prerequisites
-
-1. Review the recovery commit plus this uncommitted repair against remote main,
-   preserving the published post. The recovery's parent is tree-equivalent to the
-   failed application, but has different Git ancestry. Ensure the actual recovery
-   commit remains an ancestor of the final protected-main dispatch SHA; copying
-   its tree alone will fail the previous-application ancestry guard. Leave source
-   commits, pushes and merges to the owner. Preserve required checks/protections.
-2. Run the required Node 22.20.0 / npm validation on the final candidate. Preparation
-   now checks the real installed CLI against a loopback-only fake provider and
-   runs `npm run chronicle:ready -- appleton-east --release` before expensive
-   source validation/build. The reviewed probe binds original date/text examples,
-   ten exact image hashes and all three folders; no stale Contentlayer is used.
-   Future intentional edits to this published article require reviewing its probe.
-3. After the application commit is final, prepare a **fresh** version-2 manifest
-   on main. Bind its `commit`, live settings digest, public build environment and
-   exact SHA-256. Use the current baseline above as `productionDeploymentId` and
-   `schemaCompatibility.previousApplicationSha`, only if still current. Review
-   the complete diff of DB consumers, auth and dependencies against that baseline
-   and record fresh owner compatibility evidence within 24 hours. This repair adds
-   no DB/schema/auth/dependency contract change. Never reuse the old manifest.
-4. Record one explicit approval naming the final application SHA, manifest path
-   and digest, dispatch/main SHA, project/team and baseline ID. Its allowed actions
-   are: App dispatch in mode `production`, one canonical prebuilt stage without
-   domains, read-only staged verification, and conditional promotion of that same
-   deployment only after every check passes; then anonymous public verification.
-   The owner separately approves the existing `production-release` environment
-   gate after reviewing the SHA, artifact digest and build attempt. No agent approves
-   that gate. No migrations, live settings/credentials, collection, notifications
-   or emergency source fallback are included.
-5. Execute that approved normal workflow. Artifact verification, READY identity,
-   exact SHA/manifest/build digests, project/team and disabled-collection metadata
-   remain mandatory. Alias guards require both domains to remain on the baseline
-   after stage and again after staged health. Staged and public GETs check the
-   existing app/cron authorization rules, `/api/health`, actual rendered article
-   text/date, list entry, all ten exact raw image bytes, all six rendered image
-   sources (including optimized thumbnails) and three carousel references.
-   Every new normal deployment must also report its exact SHA at `/api/__version`.
-   Public reads carry no cookies, auth or deployment-protection bypass credentials.
-6. No additional stage-only mode is introduced: the proposed approval explicitly
-   covers conditional promotion in the existing executor after those checks.
-   If approval allows staging only, do not dispatch this full-release operation;
-   a separately reviewed hold would be required. Failures stop before promotion,
-   expose only sanitized diagnostics and retain any observed candidate identity.
-   Ambiguous writes are reconciled, never blindly retried or rebuilt for promotion.
-7. Record parent/child run URLs, application/workflow SHAs, manifest/build/executor
-   digests, build attempt, candidate ID, aliases, staged/public results and existing
-   stage timings. Confirm image decoding and all carousel interactions in an
-   anonymous read-only browser; block non-GET/HEAD requests. HTTP probe checks
-   alone do not establish interactive carousel behavior or owner-session behavior.
-   Review owner/non-owner authorization before granting the release approval.
-
-Rollback eligibility must be refreshed, not inferred from an old manifest. The
-retained known-good ID is READY production in the intended project/team, with all
-three SHA metadata labels matching the recovery commit and `collectionDisabled`
-set to `true`. Its original per-deployment analytics override was `false`; encrypted
-runtime values were not retrieved. Verify continued retention, production config,
-protection and fresh schema compatibility before authorizing any rollback. Its
-native `/api/__version` reports `unknown`; rollback revision checks therefore use
-exact provider metadata and aliases, while still requiring the content/assets and
-health checks. This exception does not relax revision checks for new normal builds.
-No rollback drill or automatic reversal is authorized.
+Implementation and policy changes do not authorize a live release. Only the
+coordinating agent initiates an authorized release. Never approve the environment
+gate on the user's behalf, bypass protections, or deploy from an owner-login session.
+Pushes and merges do not deploy: Vercel Git integration remains disconnected, with
+no replacement automatic preview workflow. Previews need separate authorization
+and verified isolated databases.
 
 ## Ordinary code-only deployment
 
-The existing dispatcher mode `production` now accepts only a strict version-2
-`kind: "code-only"` manifest. It invokes `production-release.yml`; there are no
-Neon credentials, database connections, SQL statements, migrations, seeding,
-analytics imports or password operations in this execution path. Existing application
-writes triggered by ordinary users retain their normal behavior; release health
-checks use read-only GETs and do not log in, submit forms or invoke collection.
-No backup infrastructure, historical ledger reconciliation or credential rotation
-is required for a code-only release whose current schema is verified compatible.
+### Normal operator procedure
 
-### Minimum setup
+1. Review and merge the application and workflow changes through protected main.
+   Select the exact full merged SHA with successful trusted CI. Inspect the diff
+   against live production for database consumers, authentication, dependencies
+   and configuration compatibility. Surface actual risks before release; code-only
+   approval never authorizes migrations or credential/settings changes.
+2. Use the existing GitHub App dispatcher in `production` mode with `release_sha`
+   set to that SHA; for example:
+   `gh workflow run release-dispatch.yml --ref main -f mode=production -f release_sha=<full-reviewed-SHA>`.
+   Tooling binds the application/workflow revisions, actual run
+   and attempt, exact trusted checks, project/team, live production baseline,
+   configuration and compatibility-risk evidence. It does not create a manifest PR.
+3. Review the generated evidence and have the authorized human approve the existing
+   **production-release** environment gate. Confirm the approved SHA, checks,
+   configuration, compatibility risks and current production baseline. No agent
+   approves this gate; no second approval is added after staged checks pass.
+4. Observe one clean-source `vercel deploy --prod --skip-domain` operation using
+   the protected release credential. Wait for authoritative READY identity and
+   verify the exact application revision, health, authorization, existing content
+   and changed publications/assets on that deployment. Public domains must still
+   point at the baseline through staged verification.
+5. Recheck the baseline and promote the verified deployment by its exact ID.
+   Promotion never creates another build. Verify public aliases, revision,
+   health, authorization and publication probes, then record the final sanitized
+   report. Failures stop; ambiguous writes are reconciled before considering any
+   separately authorized retry. Never automatically roll back.
 
-Keep the existing App metadata variables and `release-dispatch` private key unchanged.
-In GitHub **Settings > Environments > production-release > Environment secrets**,
-add `VERCEL_RELEASE_TOKEN`. Give it the narrowest available scope to team
-`team_pB5TcLa7apLtPAiVrRbcjBG3` permitting inspection, staged production deployment,
-promotion and rollback for project `prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU`. Do not claim a
-project-only permission if the current account/token UI does not offer one.
-If staged deployments are protected, add `VERCEL_AUTOMATION_BYPASS_SECRET` there.
-Neither secret is present in preparation, validation or build jobs. Do not add
-`RELEASE_DATABASE_URL` or `NEON_RELEASE_API_KEY` for code-only releases.
-Production `DATABASE_URL`, auth and other runtime secrets stay on Vercel and are
-never pulled, decrypted or printed by this path. Vercel project metadata reads
-verify configuration presence, project/team identity, settings, Git disconnection,
-domain assignment and deployment drift. These reads do not independently prove
-DATABASE_URL contents; the owner verifies its non-secret target in the dashboard
-as part of the schema evidence. No environment setting is modified by the release.
+### One-time owner configuration
 
-### Reviewed manifest and compatibility evidence
+Reuse the existing project `prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU`, team
+`team_pB5TcLa7apLtPAiVrRbcjBG3`, GitHub App and protected environments. Keep
+`production-release` restricted to main, with `tullyelly` as required reviewer,
+self-review prevented and administrator bypass disabled. Verify effective branch
+protection and required checks before release; a protected-branch flag alone is
+insufficient evidence.
 
-Prepare `releases/<name>.json` on protected main. `scripts/release/code-manifest.ts`
-is the strict schema. Required fields:
+Keep `VERCEL_RELEASE_TOKEN` only in the protected `production-release` environment.
+Its narrowest available scope must permit target inspection, source upload,
+staged production deployment and promotion for the existing project/team. If the
+account cannot restrict a token to one project, document that actual scope. Keep
+`VERCEL_AUTOMATION_BYPASS_SECRET` there when deployment protection requires it.
+Do not copy the local owner's Vercel login or expand permissions silently.
 
-- `version: 2`, `kind: "code-only"`, `operation: "deploy"`, `commit`: exact reviewed
-  application SHA; `collectionEnabled: false`.
-- `vercel`: exact project/team, `productionDeploymentId`, `productionHost`, reviewed
-  settings and `settingsSha256`. The live domain is `tullyelly.com`.
-- `buildEnvironment`: explicit public `NEXT_PUBLIC_*` values only; no secrets.
-- `schemaCompatibility`: `checkedAt`, `checkedBy: "tullyelly"`, private-review
-  `evidenceUrl`, exact `previousApplicationSha`, confirmed production `databaseHost`
-  and `database`, `method`, `requiredObjects`, empty `missingObjects`,
-  `compatible: true`, `rollbackCompatible: true`.
+The pre-gate evidence step needs a separate `VERCEL_RELEASE_READ_TOKEN` in the
+main-only `release-dispatch` environment. Vercel's documented
+[access-token selector](https://vercel.com/kb/guide/how-do-i-use-a-vercel-api-access-token)
+scopes access to a team; it does not promise arbitrary read permissions or a
+project-only token. The owner must use a principal with a suitable read-only role,
+such as a plan-supported Viewer, and verify that its token can read the required
+non-secret project/configuration, alias and deployment metadata while lacking
+deployment and settings-write authority. Role/plan restrictions may prevent some
+required reads; [Vercel access roles](https://vercel.com/docs/rbac/access-roles)
+describe those limits. A token name or GET-only implementation does not establish
+read-only authority. Do not substitute an Owner token. Fail closed if the required
+reads and capability separation cannot both be established; resolve that owner
+configuration before live acceptance. Never retrieve decrypted values.
 
-Evidence expires after 24 hours and must correspond to both application SHAs.
-For `unchanged-database-contract`, review the diff of all database consumers against
-previousApplicationSha, including auth, raw SQL, generated clients and dependencies;
-record why no new table, column, view, function, grant or semantics is required.
-For `read-only-catalog-check`, list required objects and verify them with a clearly
-labeled read-only DataGrip production console. Use an explicit read-only transaction;
-inspect columns/types, constraints, views/functions and authorization requirements.
-Do not use the migration runner, which may initialize the ledger. Missing schema is
-NO-GO; never invoke the analytics or maintenance path as a fallback. The evidence is
-owner attestation under code-owner review, not an automated live schema test. Release
-automation itself never connects to Postgres. Optional analytics archive tables may
-be absent only when graceful unavailable states have been verified.
+Installation and validation steps receive neither Vercel credential; only the
+reviewed provider read step receives the read token. Credential provisioning and
+role changes require their own owner action; this implementation does not perform
+them.
 
-The application SHA must be an ancestor of the dispatch SHA on protected main.
-Only reviewed `releases/*.json` metadata may differ; changes to code/dependencies
-require a new application SHA and a fresh manifest. Compute manifest SHA-256 over
-its exact bytes, for example `sha256sum releases/<name>.json` in Bash. This avoids a
-self-referencing commit hash in a manifest. Do not publish an example with invented
-compatibility evidence as a runnable release.
+Production database, auth and runtime secrets stay on Vercel. This path never
+pulls environments, reads decrypted values, applies runtime-secret overrides,
+connects to Neon or runs SQL, migrations, seeding or collectors. No
+`RELEASE_DATABASE_URL` or `NEON_RELEASE_API_KEY` is needed for ordinary releases.
+Keep the reviewed analytics state disabled; do not use this change to activate it.
 
-### Build, approval and deployment
+### Native source production path
 
-1. After review/merge, select **Dispatch release as dedicated App**, branch `main`,
-   mode `production`, exact application `release_sha`, manifest path and digest.
-   This is a separate explicit dispatch authorization, not permission inferred
-   from preparing or publishing code.
-2. The App starts the child. Existing bot actor/triggering actor, installation,
-   dispatcher provenance, protected-main and reviewer checks remain mandatory.
-3. Preparation runs cheap pinned-CLI/publication preflights, `npm run verify:source` and exactly one `vercel build --prod --standalone
---non-interactive` using pinned CLI 63.1.2, reviewed local project settings,
-   an empty production env file and an empty authentication home. No `vercel pull`,
-   `--yes` build, deployment token, DB URL or production auth secret is supplied.
-4. The builder runs with an allowlisted environment. `SKIP_DB=true` is build-only.
-   The disposable build checkout temporarily quarantines only the tracked,
-   unmodified `.env.example` and `.env.test.example` templates. The pinned Vercel
-   builder otherwise packages these templates into functions. Unexpected root
-   `.env*` files, modified templates and template symlinks fail before exclusion.
-   Originals are restored after success, failure, SIGINT or SIGTERM; the child
-   process group is stopped before restoration. An I/O restoration failure retains
-   unrecovered originals and fails closed. SIGKILL or runner loss cannot execute
-   cleanup; this procedure runs only in a disposable build checkout.
-   Distinct auth canaries are scanned out of all output; `.env*` files, runtime
-   credential overrides and external symlinks fail artifact verification. Next
-   runtime env references remain references; deploy receives neither placeholders
-   nor SKIP_DB. Public build-time values must be reviewed because they are baked
-   into client output. Unsupported build-time secret requirements are NO-GO.
-5. Python validates output and extracts the tar into a fresh directory. A provenance
-   descriptor binds production target, exact application SHA, project/team,
-   reviewed settings and public-environment digests, manifest digest, CLI version,
-   run ID and builder attempt. The archive checksum covers that descriptor and all
-   output bytes. Artifact names are attempt-specific; retention is one day. After
-   approval, the same safe extraction and binding checks run on the downloaded bytes.
-6. You review the exact SHA, schema evidence, manifest/build digests and previous
-   deployment, then approve `production-release`. Never approve on your behalf.
-7. The protected step verifies recorded human approval before provider operations,
-   rechecks targets and stages `deploy --prebuilt --prod --skip-domain`, using the
-   existing Vercel production runtime configuration with an explicit per-deployment
-   `ANALYTICS_SYNC_ENABLED=false` override. It binds SHA/manifest/build metadata.
-8. Staged GET checks cover `/`, `/shaolin`, `/stats`, unauthorized cron access and
-   owner-admin authorization. There is no authenticated cron request or import.
-   Manually validate a representative database-backed page and owner/non-owner reads
-   before the first release approval; automated page checks alone do not prove all
-   schema contracts. The article/revision/assets/listing probes above also run
-   before promotion and against the public domain. Recheck drift immediately
-   before promoting the exact ID.
-9. Verify public health and record new and previous IDs. Provider write failures
-   are inspected using authoritative deployment identity or domain assignment;
-   no blind write retries, duplicate stages or automatic recovery are performed.
+The release workflow reuses successful `Lint, test, build` evidence only for the
+exact SHA from the trusted CI workflow. Existing CI remains application-wide and
+continues its useful validation build. That build is CI evidence, not the canonical
+production deployment. The release does not repeat equivalent full validation,
+create a local production artifact, run `vercel build`, or transfer an application
+build archive between jobs. Node 22.20.0, locked npm dependencies and Vercel CLI
+63.1.2 remain pinned.
 
-### Single-artifact production path
+Source comes from the immutable approved Git revision, independently checked
+against its commit. The provider receives a clean isolated source tree rather than
+the validation checkout's generated working directory. Upload exclusions remove
+local secrets, caches, node_modules, recovery artifacts and stale build output
+while retaining required application source and media. Source digests, run binding
+and provider metadata supplement identity checks; metadata alone never proves
+which revision the application is actually serving.
 
-Story 1.1's application-wide source validator replaces verify:agent in
-production-release preparation. It still checks workflows, prepares content,
-lints, typechecks, generates Prisma and runs full thresholded Jest coverage.
-The canonical builder alone creates the production deployment output; no separate
-Next build or preview artifact is accepted as production evidence. The builder
-checks the exact Git HEAD and clean tracked/untracked source inputs, local project/team and settings digest, empty production
-env file and absence of stale output before invoking the existing credential-free
-build context. Reviewed settings are not replaced with a faster build command.
-The default Vercel builder can still perform its own installation/preparation.
-The convenient full local verify:agent command remains unchanged.
+Vercel creates the canonical build in its production build environment. Unlike the
+retired credential-free local artifact builder, that environment contains production
+runtime configuration. The build command must isolate database access for the build
+process and never run migrations or query/mutate production databases. Build-only
+flags must not be written into function runtime configuration. Application runtime
+authorization, dynamic data and session behavior remain unchanged. New deployments
+must report the approved SHA from the existing `/api/__version` endpoint; `unknown`
+or provider metadata echoed as application evidence is refused.
 
-[Artifact handling](../scripts/release/code-artifact.ts) packages one archive,
-streams its digest, records its uncompressed byte size and verifies clean-directory
-extraction. Repeated packaging refuses to overwrite an existing archive. Strict
-Python extraction still rejects escaping paths/links, environment files, build
-credential canaries and runtime credential overrides. Downloaded output must match
-the full `.release-build.json` binding; a matching archive checksum alone cannot
-make a preview, another revision or changed settings/public build values equivalent.
-The executor rechecks provenance before a new prebuilt stage. Existing provider
-lookups retain exact SHA/manifest/build identity, production readiness, target,
-disabled collection and drift checks before reuse or promotion.
+After the existing human gate, reviewed provider operations receive the release
+credential. CLI installation and source preparation receive none. Staging uses the
+production target without assigning public domains, then authoritative API reads
+check deployment ID, project/team, source/run/revision binding, READY state and
+configuration. QUEUED, BUILDING, failed, cancelled and invalid states cannot promote.
+The workflow serializes production operations with the existing non-cancelling
+concurrency group and rechecks both production aliases against the baseline before
+promotion. Ambiguous operations reconcile the candidate within the bound run and
+attempt instead of blindly staging again. Evidence from a different attempt is
+refused; a production-job-only rerun cannot reuse the old preparation evidence.
+A separately authorized new attempt needs fresh evidence and its human gate;
+no retry or full-workflow rerun is automatic.
 
-Preparation bundles the reviewed TypeScript release executor with the existing
-lockfile-installed esbuild used by tsx. This tooling file is separate from the
-single deployment artifact and has its own SHA-256. The protected job downloads
-and verifies that checksum before execution; it runs the bundle directly with
-Node and does **not** install application dependencies, tsx or Prisma. It still
-installs pinned Vercel CLI 63.1.2 before any protected token is exposed. Tooling
-is never downloaded from a different run or executed before checksum verification.
-No production credentials are packaged, cached, passed to installation or supplied
-to the build. Provider credentials remain scoped to the existing protected check
-and deploy steps. The executor's restricted CLI child environment is preserved.
+### Verification and diagnostics
 
-Artifact names include run ID and the preparation job's saved builder attempt.
-A deployment-only rerun downloads names/checksum/binding from those saved outputs,
-even when its own GITHUB_RUN_ATTEMPT changes. A full preparation rerun creates a
-new artifact identity; previous bytes are not overwritten or treated as equivalent.
-Any already-created provider deployment must still match the selected build digest;
-an ambiguous or different build stops rather than staging another deployment blindly.
-Rollback performs source validation and uses the verified executor but creates no
-new application artifact. Its separate manifest, approval, exact retained target,
-schema compatibility and public health checks remain mandatory.
+Staged and public probes check `/api/__version`, `/api/health`, owner/non-owner
+route denial and the disabled collection cron contract. Representative existing
+Chronicle coverage includes Appleton East's original date/text, ten raw image
+hashes, six rendered image sources and three carousel references. Publication
+readiness also selects changed chronicles and their assets; an ordinary release
+is not an Appleton-East-only publication check. Intentional edits to a reviewed
+probe require updating its expectations through review.
 
-### Release summary and failure diagnostics
+A staged production deployment has production runtime credentials. Automated
+verification uses read-only GETs, with no login, forms, collection or owner mutation
+flows. Normal user traffic may still write data. Provider-triggered collection
+must remain disabled by the reviewed configuration.
 
-[run-stages](../scripts/run-stages.mjs) retains its existing console timing and
-optionally appends stage records to RELEASE_REPORT_PATH. The fixed
-[release stage runner](../scripts/release/run-stage.mjs) reuses that timer for
-installation, plan, source validation, build/package, executor verification,
-artifact restoration, post-approval checks and the approved operation. Parent
-source timing includes the individual source stages, which retain console timing.
-Source validation's child processes do not inherit the release report path, so
-unit fixtures cannot add fake release stages or failures. The summary records the
-outer source-validation stage; do not count approval wait as build time.
+Owner-admin denial can be an HTTP redirect or Next.js's exact streamed
+`__next-page-redirect` refresh marker inside a 200 document. The reader accepts
+only `/login` or `/api/auth/signin` on the checked origin without following it.
+Ordinary admin content, private analytics controls, marker examples, malformed
+refreshes, userinfo, fragments, other hosts and HTTP downgrades fail closed.
 
-Preparation publishes credential-free approval evidence before the environment
-gate: revision, manifest/settings digests, artifact digest/size, builder attempt,
-previous deployment and rollback target in its report artifact and build logs.
-The preparation report includes a readable `release-approval.md`; it is published
-as evidence without adding a second GitHub step summary. Hidden-file inclusion is
-limited to explicit reviewed manifest, executor and sanitized report files.
-Review that evidence and the approved manifest before granting approval. Evidence
-URLs and arbitrary manifest/provider strings are excluded from the report.
-After preparation and the protected job finish, one `summary` job runs with
-`always()` and writes the single consolidated release summary. It needs only Node,
-reviewed source and the selected report artifacts; it receives no protected token.
-
-The summary contains revision/target revision, operation, manifest/settings/build
-digests, archive size, builder attempt, available verified deployment identity,
-previous/rollback IDs, job outcomes and recorded stage durations. IDs observed
-before a later health failure remain available; they do not imply successful
-promotion. Missing reports, early failures, cancellation and skipped protected
-jobs show unavailable evidence and explicit outcomes rather than invented timings
-or a successful release. Runner loss or summary-job infrastructure failure can
-prevent complete diagnostics; the authoritative failed workflow steps remain.
-
-| Failure                                              | Retained safe context                                                                               |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Manifest/revision/settings/provenance/checksum       | Fixed guard and invariant; known validation field paths                                             |
-| Metadata HTTP/network/JSON                           | Fixed provider operation, HTTP status or allowlisted network codes; no response body                |
-| Builder or provider CLI process                      | Fixed operation/check, numeric exit status and allowlisted signal/spawn code; no raw process output |
-| Staging/promotion/rollback reconciliation            | Original sanitized failure plus recovered/not-found/failed reconciliation; no second blind mutation |
-| Install/runner failure before structured diagnostics | Last recorded fixed stage and preparation/protected-job result; details explicitly unavailable      |
-
-Failure reports and the Markdown renderer both allowlist fields. Raw exceptions,
-paths, URLs, environment values, headers, stdout/stderr and provider payloads are
-never copied into diagnostics or uploaded reports. Known JSON syntax failures
-are classified as JSON without including source bytes. Report artifacts retain
-for one day and contain no deployment credentials. Analytics, maintenance,
-native Git integration, approval policy and the authoritative Vercel prebuilt
-deployment mechanism are unchanged.
-
-### Story 1.2 live rehearsal; separate approval required
-
-No live rehearsal is authorized by implementation or local tests. Prepare a
-concrete review of the following steps and obtain explicit approval before
-dispatching any workflow or contacting a staged production deployment:
-
-1. Land reviewed code through the ordinary protected process; select the exact
-   application/workflow SHAs, fresh schema evidence, current deployment and
-   reviewed production settings/public build values. Keep Git integration disconnected.
-2. Use the dedicated App dispatcher for the reviewed code-only manifest. Confirm
-   credential-free installation and source validation, one `--prod --standalone`
-   build and one deployment archive for the builder attempt.
-3. Before the human gate, inspect the approval report, full binding, artifact/tooling
-   digests and byte size. Prove clean extraction with the source unavailable;
-   confirm there are no env files, escaped links, auth canaries or runtime overrides.
-4. Prove the deploy job has no application npm ci and verifies its executor checksum
-   before running it. Confirm Vercel CLI installation has no protected credentials.
-5. Review the exact evidence, then have the authorized human approve the existing
-   production-release environment. Never approve the gate on the user's behalf.
-6. Observe authoritative target/approval/drift checks, one prebuilt production
-   stage when none exists, matching remote SHA/manifest/build metadata, staged
-   read-only health checks, exact-ID promotion and public health. Keep collection disabled.
-7. Review the single final summary and redacted logs. Exercise corrupt checksum,
-   wrong target/revision/settings and safe HTTP/CLI failure classification first
-   in isolated fixtures; do not manufacture production failures to test diagnostics.
-8. A production-job-only rerun or rollback requires its own explicit approval.
-   Verify saved builder-attempt evidence and retained-target compatibility; confirm
-   no rebuild, duplicate stage, blind retry, database reset or automatic recovery.
-
-Owner-admin denial can be an HTTP redirect or Next.js's streamed login redirect
-inside an HTTP 200 document. The health reader validates the framework's exact
-`__next-page-redirect` refresh marker on the checked origin, with only `/login`
-and `/api/auth/signin` destinations. It never follows the login URL. Ordinary
-200 admin content, private analytics sections/controls, marker examples in comments
-or raw-text elements, malformed/additional refreshes, userinfo, fragments, other
-hosts and HTTP downgrades fail. The actual HTTP status is preserved; recognizing
-a streamed denial does not turn the response into a synthetic HTTP redirect.
-Fixtures use the installed Next renderer that generates the real marker.
-
-Public health checks accept one HTTPS redirect from `tullyelly.com` to
+Public checks accept one HTTPS redirect from `tullyelly.com` to
 `www.tullyelly.com` with the exact path and query preserved. Both aliases must
-belong to the approved project and current expected deployment before and after
-promotion. HTTP downgrades, other hosts/ports, userinfo, fragments, changed
-paths/queries and additional domain redirects fail closed. Owner login redirects
-are inspected on the actual checked origin and never followed. Staged reads stay
-on the exact API-verified deployment URL; they cannot fall back to production.
-Automation bypass credentials are sent only to that staged URL, never to either
-public domain or a redirect destination. All requests omit ambient credentials.
+belong to the intended project and expected deployment before and after promotion.
+Staged reads remain on the exact API-verified deployment origin. Automation bypass
+credentials go only to that staged origin, never public domains or redirect targets;
+all requests omit ambient credentials. HTTP probes do not prove interactive carousel
+behavior or signed-in owner behavior; keep those limitations visible in acceptance.
 
-A staged production deployment uses the production database. Keep analytics disabled
-and do not browse mutation flows during staging. Provider-triggered cron remains
-safe because the collection switch is false. Regular traffic may still write data;
-code-only refers to the release operations, not globally read-only application use.
+Provider failures retain bounded allowlisted operation, process, HTTP/network,
+reason/code and fixed message labels. Raw stdout/stderr, provider bodies, URLs,
+headers, credentials, environment values, arbitrary exceptions and suggested
+commands are never published. A safe provider label survives failed/not-found
+reconciliation, and the report retains any verified candidate identity. Reconcile
+ambiguous writes using authoritative deployment identity before a retry; do not
+repeat staging or build another candidate during promotion.
+
+`node scripts/release/check-cli.mjs` executes the real pinned CLI against a **simulated
+loopback provider**, with nonempty source upload, upload/deployment rejection,
+accepted INITIALIZING/QUEUED/BUILDING/READY and ERROR states, JSON success parsing, promotion
+failure and planted-credential redaction. These tests establish the local CLI
+contract only. They are not real Vercel acceptance, protected-token permission
+proof, live environment attachment or a completed production release.
 
 ### Separately approved rollback
 
-Use a new version-2 manifest with `operation: "rollback"`. `commit` is the reviewed
-executor/application code on main; `vercel.productionDeploymentId` is the deployment
-currently serving traffic. Add `rollback.deploymentId`, exact `applicationSha` and
-`collectionDisabledVerified: true`. The owner verifies retained deployment analytics
-configuration without sharing secret values. Refresh schema evidence to show the
-rollback code works with the current database. Rollback does not build or deploy
-new application bytes and never restores a database or reinstalls credentials.
-
-Dispatch through the same App `production` mode and obtain a fresh human gate
-approval. Identity, readiness, target and live drift are checked before the single
-`vercel rollback <exact-id>` operation. Check public health afterward. Vercel plan
-limits and deployment retention may restrict rollback targets; verify eligibility
-before approving a release. Never automatically roll back on failed health checks.
-The original known-good deployment may lack analytics routes; rollback checks public
-home/Chronicle reads rather than requiring features introduced by newer code.
+Rollback remains a separate sensitive operation in dispatcher mode `rollback`,
+with its existing version-2 rollback manifest, explicit approval and fresh
+compatibility evidence. Its rollback-only protected workflow cannot stage source
+or build an ordinary deployment. Verify the retained
+READY production deployment, exact application SHA, current production baseline,
+configuration and disabled analytics before authorizing the exact-ID rollback.
+It does not build new application bytes, restore a database or reinstall credentials.
+Never automatically reverse migrations or roll back after failed health checks.
 
 ### Separate inactive paths
 
-Dispatcher mode `analytics` selects `analytics-release.yml` and
-`scripts/analytics-release.ts`, retaining the original version-1 migration manifest,
-ledger checks, backup evidence and separate credentials. Mode `maintenance` retains
-the existing credential-maintenance path. Neither is invoked by code-only deployment
-or rollback, and neither is authorized by code-only approval. All production paths
-share the existing non-cancelling production concurrency group.
+Dispatcher mode `analytics` retains `analytics-release.yml`, the version-1
+migration manifest, ledger checks, backup evidence and separate credentials.
+Mode `maintenance` retains credential maintenance. Neither path is invoked or
+authorized by ordinary source deployment. Sensitive operations retain their existing
+approval procedures and share the production concurrency boundary.
 
-Local portability rehearsal evidence: CLI 63.1.2 built the actual application in
-an isolated source copy with an empty authentication home and no DB/deployment
-credentials. The complete source directory was renamed out of reach while a
-checksum-bound tar was extracted into another empty directory and verified.
-Eight function descriptors had no runtime env overrides; all 205 symlinks stayed
-within output. Build credential canaries were absent; compiled SKIP_DB checks
-remained runtime environment reads. The uncompressed artifact was 1,284,864,000
-bytes; upload compression is handled by GitHub artifact storage. This proves local
-packaging and inspection, not live provider deployment or runtime secret attachment.
+The analytics migration release remains unready: historical SQL was executed
+manually, and production ledger reconciliation, current non-production integration,
+credential rotation and restore rehearsal remain prerequisites. Refresh catalog
+evidence before asserting current schema state. The analytics executor refuses
+missing ledgers, ambiguous history, checksum drift and failed entries; it never
+invents a baseline or replays historical SQL as part of an ordinary release.
 
-The first clean Actions checkout failed at `code.artifact-env-file` because the
-builder packaged the two tracked env templates. The corrected build-context
-rehearsal used Node 22.20.0, CLI 63.1.2, locked dependencies and reviewed public
-settings in an isolated clone of `fc64135469b71cfbfa6519b367a492915dd692d0`
-with only the proposed build correction. The real builder and strict validator
-passed; both originals were restored byte-for-byte. Eight function descriptors
-contained no env files. Checksum-bound extraction also passed with the original
-source path unavailable. The archive was 1,278,504,960 bytes, SHA-256
-`f1c9074e52ee29941a90462f63081d88598f453ad82af885418a7f54734b57d7`.
-This is local build evidence, not deployment authorization or live runtime proof.
+## Normal release acceptance after recovery
 
-Official CLI build documentation and installed 63.1.2 help support `--standalone`;
-the flag alone is not portability evidence. The output/extraction checks and actual
-clean-directory build rehearsal establish local portability. Artifact errors expose
-only allowlisted invariant names; arbitrary exception details and file contents are
-omitted. Live Vercel environment
-attachment, staging, promotion and rollback still require an approved first run.
-See [build](https://vercel.com/docs/cli/build),
-[deploy](https://vercel.com/docs/cli/deploy) and
-[rollback](https://vercel.com/docs/deployments/rollback-production-deployment).
+Implementation is complete only after the reviewed change and required checks
+pass; **protected live acceptance remains pending** until a separately authorized
+merged-SHA release succeeds through the real human gate, source upload, remote
+build, staged verification, exact-ID promotion and public checks. Do not deploy,
+dispatch a release or approve a gate as an implementation test.
+
+Read-only inspection on October 17, 2026 refreshed production as
+`dpl_GhRyVjUaGMM3tHFwKjw9esA7aHGm`, READY and promoted for application SHA
+`b30853a7a7cef33a6680efbcae66114b462dbd30`, with apex and www aliases. Its version endpoint still reported `unknown`; the
+provider metadata identifies this baseline, and new releases require a source-bound
+application version. This is a
+recorded snapshot, not a baseline to copy into a future release. Evidence must
+refresh live identity and compatibility at execution time.
+
+### Incident and retired path
+
+[Run 38670911264](https://github.com/tullyelly/tullyelly.com/actions/runs/38670911264),
+production job `116215236556`, used application
+`181e8aa566988bb084026d98bb18704b60c8920d` and workflow
+`d60594db5bbfddc63c86e1c0443ab531ca0f882a`. Preparation/build and target checks
+passed. `vercel.stage` failed with exit 1 and reconciliation not-found. The available
+sanitized log retains those facts; the artifacts endpoint was empty when refreshed.
+The historical provider rejection remains unknown. Do not claim the separately
+reproduced JSON success-parser mismatch caused that exit-1 rejection.
+
+Earlier runs `38202358849`, `38318822912` and `38512310587` exposed missing
+diagnostics or stage failures. Merged repairs accept an absent/null disconnected
+project link, preserve fixed provider/process labels, parse CLI 63.1.2 JSON success,
+and reconcile authoritative identity. PR #626 also generalized App-owned review
+branches/PRs and preserved publication checks. Reuse those changes; do not repeat
+the resolved SSH or hardcoded-branch investigation.
+
+The [Appleton East recovery](chronicle-publication-recovery.md) records an
+individually approved source deployment and its then-current identity. Its approval
+was limited to that release, and its legacy `unknown` version endpoint is not
+acceptable for new releases. It is historical evidence, not current authorization.
+
+The ordinary version-2 deploy-manifest PR, fresh chat compatibility attestation,
+local `--prod --standalone` artifact builder and `deploy --prebuilt` handoff are
+retired. Legacy artifact code remains only where separate analytics, maintenance
+or rollback consumers require it; it is not a parallel ordinary deployer. Obsolete
+package entry points must not be used to bypass the single source-release path.
 
 ## Credential-only maintenance
 

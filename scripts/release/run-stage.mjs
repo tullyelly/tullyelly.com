@@ -28,20 +28,12 @@ const stages = {
       process.execPath,
       ["scripts/release/check-cli.mjs"],
     ],
-    [
-      "Checking published Chronicle",
-      npm,
-      ["run", "chronicle:ready", "--", "appleton-east", "--release"],
-    ],
   ],
-  // Fixtures execute child processes; only the outer validation duration belongs
-  // in the release report. Existing substage console timing remains available.
-  source: [
+  evidence: [
     [
-      "Validating release source",
-      npm,
-      ["run", "verify:source"],
-      { RELEASE_REPORT_PATH: "" },
+      "Generating automatic release evidence",
+      process.execPath,
+      [".cache/release-tools/prepare-evidence.cjs"],
     ],
   ],
   bundle: [
@@ -57,23 +49,6 @@ const stages = {
       process.execPath,
       ["scripts/release/verify-executor.mjs"],
     ],
-  ],
-  plan: [
-    [
-      "Binding release plan",
-      npm,
-      ["exec", "--", "tsx", "scripts/production-release.ts", "prepare"],
-    ],
-  ],
-  build: [
-    [
-      "Building canonical production artifact",
-      npm,
-      ["exec", "--", "tsx", "scripts/production-release.ts", "build"],
-    ],
-  ],
-  restore: [
-    ["Verifying downloaded artifact", executor[0], [...executor[1], "restore"]],
   ],
   prepare: [
     ["Rechecking release plan", executor[0], [...executor[1], "prepare"]],

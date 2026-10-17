@@ -27,7 +27,6 @@
     "build:e2e:prepared": "NEXT_E2E=1 NODE_ENV=test next build",
     "build:clean": "npm run prepare:content && (rimraf .next && npm run build:prepared || (rm -rf .next && npm run build:prepared))",
     "build:ci": "npm run build:prepared",
-    "deploy:prod": "vercel build && vercel deploy --prebuilt --prod",
     "start": "next start",
     "start:e2e": "npm run build:e2e && next start -p ${PORT:-4321} --hostname 127.0.0.1",
     "start:ci": "cross-env NODE_ENV=production PORT=4010 next start -p 4010 -H 127.0.0.1",

@@ -1,6 +1,4 @@
 /** Only the App-dispatched protected workflow may execute production mutations. */
-import { execFileSync, spawnSync } from "node:child_process";
-import { appendFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { z } from "zod";
 import { verifyChildDispatch, verifyHumanApproval } from "./release/app";
 import {
@@ -8,22 +6,20 @@ import {
   validateEnvironmentGate,
   validateReviewedMainRules,
 } from "./release/manifest";
-import { loadCodeManifest, type CodeManifest } from "./release/code-manifest";
+import {
+  loadNativeEvidence,
+  configurationEvidence,
+  trustedRequiredCi,
+  type NativeCodeEvidence,
+} from "./release/native-evidence";
+import { createCleanSource, sourceArchiveDigest } from "./release/code-source";
+import { providerDiagnostic } from "./release/provider-diagnostic.mjs";
 import { executeCodeRelease, type CodeProviders } from "./release/code-release";
 import {
   codeCli,
-  prebuiltDeployArguments,
+  nativeSourceDeployArguments,
   stagedDeploymentUrl,
 } from "./release/code-cli";
-import {
-  assertCodeRevision,
-  artifactBinding,
-  artifactCommand,
-  buildFailure,
-  packageCodeArtifact,
-  restoreCodeArtifact,
-  verifyBuildContext,
-} from "./release/code-artifact";
 import { reportCodeEvent, reportCodeFailure } from "./release/code-report";
 
 import {
@@ -31,7 +27,10 @@ import {
   readHealthResponse,
   verifyHealthDomainAliases,
 } from "./release/code-health";
-import { checkPublicationHealth } from "./release/code-publication-health";
+import {
+  checkPublicationHealth,
+  checkChangedPublicationHealth,
+} from "./release/code-publication-health";
 
 import {
   codeGuard,
@@ -40,7 +39,7 @@ import {
 } from "./release/code-diagnostics";
 
 const command = process.argv[2];
-let manifest: CodeManifest;
+let manifest: NativeCodeEvidence;
 function required(name: string) {
   const value = process.env[name];
   if (!value) throw missingConfiguration(name);
@@ -85,25 +84,20 @@ async function githubGate() {
       throw new Error(
         "Protected main moved since dispatch; prepare a new reviewed release",
       );
-    execFileSync("git", [
-      "merge-base",
-      "--is-ancestor",
-      manifest.commit,
-      required("GITHUB_SHA"),
-    ]);
-    const changed = execFileSync(
-      "git",
-      ["diff", "--name-only", manifest.commit, required("GITHUB_SHA")],
-      { encoding: "utf8" },
+    if (
+      manifest.commit !== required("GITHUB_SHA") ||
+      manifest.workflow.sha !== required("GITHUB_SHA")
     )
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-    if (changed.some((path) => !/^releases\/[a-z0-9-]+\.json$/.test(path)))
-      throw new Error(
-        "Deployment code or dependencies differ from reviewed workflow commit; only release manifest metadata may differ",
-      );
+      throw new Error("code.evidence-revision");
   });
+  const ci = await trustedRequiredCi(
+    manifest.commit,
+    token,
+    async (path, accessToken) =>
+      request(`https://api.github.com${path}`, accessToken),
+  );
+  if (JSON.stringify(ci) !== JSON.stringify(manifest.ci))
+    throw new Error("code.required-ci-unavailable");
 }
 let query: string;
 async function vercel(path: string) {
@@ -119,13 +113,22 @@ const deploymentSchema = z.object({
   target: z.string(),
   readyState: z.string(),
   meta: z.record(z.string(), z.unknown()).optional(),
+  errorCode: z.string().optional().nullable(),
+  errorMessage: z.string().optional().nullable(),
 });
 async function deployment(id: string) {
-  return codeGuard("vercel.deployment", async () =>
-    deploymentSchema.parse(
+  return codeGuard("vercel.deployment", async () => {
+    const d = deploymentSchema.parse(
       await vercel(`/v13/deployments/${encodeURIComponent(id)}`),
-    ),
-  );
+    );
+    return {
+      ...d,
+      providerError: providerDiagnostic(
+        JSON.stringify({ error: { code: d.errorCode?.toLowerCase() } }),
+        d.errorMessage,
+      ),
+    };
+  });
 }
 async function deploymentHistory() {
   const schema = z.object({
@@ -162,7 +165,9 @@ async function lookup() {
   const matches = (await deploymentHistory()).filter(
     (d) =>
       d.meta?.releaseSha === manifest.commit &&
-      d.meta?.releaseManifest === required("RELEASE_MANIFEST_SHA256"),
+      d.meta?.releaseEvidence === required("RELEASE_EVIDENCE_SHA256") &&
+      d.meta?.releaseRunId === manifest.workflow.runId &&
+      d.meta?.releaseRunAttempt === manifest.workflow.runAttempt,
   );
   if (matches.length > 1) throw new Error("code.ambiguous-deployment-identity");
   if (matches.length) return deployment(matches[0].uid);
@@ -196,34 +201,24 @@ async function guard(allowed: string[]) {
       ),
     );
     if (
-      (await deploymentHistory()).some((d) =>
-        ["QUEUED", "BUILDING", "INITIALIZING"].includes(d.readyState),
+      (await deploymentHistory()).some(
+        (d) =>
+          ["QUEUED", "BUILDING", "INITIALIZING"].includes(d.readyState) &&
+          !(
+            d.meta?.releaseEvidence === required("RELEASE_EVIDENCE_SHA256") &&
+            d.meta?.releaseRunId === manifest.workflow.runId &&
+            d.meta?.releaseRunAttempt === manifest.workflow.runAttempt
+          ),
       )
     )
       throw new Error("code.concurrent-deployment");
     // Metadata only. Never request decrypted values, DB URLs, cron secrets or Neon APIs.
-    const env = await codeGuard("vercel.environment", async () =>
-      z
-        .object({
-          envs: z.array(
-            z.object({
-              id: z.string(),
-              key: z.string(),
-              target: z.array(z.string()).optional(),
-            }),
-          ),
-          pagination: z.object({ next: z.number().nullable() }).optional(),
-        })
-        .parse(await vercel(`/v10/projects/${manifest.vercel.projectId}/env`)),
+    const env = await codeGuard("vercel.environment", () =>
+      vercel(`/v10/projects/${manifest.vercel.projectId}/env`),
     );
-    if (env.pagination?.next)
-      throw new Error("code.incomplete-environment-metadata");
-    if (
-      env.envs.filter(
-        (e) => e.key === "DATABASE_URL" && e.target?.includes("production"),
-      ).length !== 1
-    )
-      throw new Error("code.runtime-database-configuration");
+    const config = configurationEvidence(project, env);
+    if (JSON.stringify(config) !== JSON.stringify(manifest.config))
+      throw new Error("code.configuration-drift");
     return current;
   });
 }
@@ -252,143 +247,52 @@ async function health(
         bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
         timeoutMs: 30000,
       }),
-    manifest.operation === "deploy" ? manifest.commit : undefined,
+    manifest.commit,
+  );
+  await checkChangedPublicationHealth(
+    (path) =>
+      readHealthResponse({
+        stagedHost: d.url,
+        publicDomain,
+        path,
+        publicOrigin: publicDomain ? "https://www.tullyelly.com" : undefined,
+        bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+        timeoutMs: 30000,
+      }),
+    manifest.publication,
   );
 }
 async function main() {
   manifest = await codeGuard("manifest.validation", () =>
-    loadCodeManifest(
-      process.env.RELEASE_MANIFEST_PATH ?? "",
-      process.env.RELEASE_MANIFEST_SHA256 ?? "",
-      process.env.RELEASE_SHA ?? "",
+    loadNativeEvidence(
+      required("RELEASE_EVIDENCE_PATH"),
+      required("RELEASE_EVIDENCE_SHA256"),
+      required("RELEASE_SHA"),
     ),
-  );
-  await codeGuard("github.application-binding", () =>
-    assertCodeRevision(manifest.commit),
   );
   reportCodeEvent({
     event: "context",
     revision: manifest.commit,
     operation: manifest.operation,
-    manifestSha256: required("RELEASE_MANIFEST_SHA256"),
+    evidenceSha256: required("RELEASE_EVIDENCE_SHA256"),
+    sourceSha256: manifest.source.sha256,
+    ciRunId: manifest.ci.runId,
+    workflowRunId: manifest.workflow.runId,
+    workflowRevision: manifest.workflow.sha,
+    compatibilityRisks: manifest.compatibility.risks,
+    changedPaths: manifest.compatibility.changedPaths,
     settingsSha256: manifest.vercel.settingsSha256,
     previousDeployment: manifest.vercel.productionDeploymentId,
-    targetRevision: manifest.rollback?.applicationSha ?? manifest.commit,
-    rollbackDeployment: manifest.rollback?.deploymentId,
+    targetRevision: manifest.commit,
   });
   ghBase = `https://api.github.com/repos/${required("GITHUB_REPOSITORY")}`;
   query = `teamId=${encodeURIComponent(manifest.vercel.teamId)}`;
   if (command === "prepare") {
     await githubGate();
-    execFileSync("git", [
-      "merge-base",
-      "--is-ancestor",
-      manifest.schemaCompatibility.previousApplicationSha,
-      required("GITHUB_SHA"),
-    ]);
-    if (manifest.rollback)
-      execFileSync("git", [
-        "merge-base",
-        "--is-ancestor",
-        manifest.rollback.applicationSha,
-        required("GITHUB_SHA"),
-      ]);
-    mkdirSync(".vercel", { recursive: true });
-    writeFileSync(
-      ".vercel/project.json",
-      JSON.stringify({
-        orgId: manifest.vercel.teamId,
-        projectId: manifest.vercel.projectId,
-        settings: manifest.vercel.settings,
-      }),
-    );
-    writeFileSync(".vercel/.env.production.local", "");
+    if (sourceArchiveDigest(manifest.commit) !== manifest.source.sha256)
+      throw new Error("code.source-digest");
     console.log(
-      `Code-only ${manifest.operation}; application SHA ${manifest.commit}; manifest SHA-256 ${required("RELEASE_MANIFEST_SHA256")}`,
-    );
-    if (process.env.GITHUB_OUTPUT)
-      appendFileSync(
-        process.env.GITHUB_OUTPUT,
-        `operation=${manifest.operation}\nbuild_attempt=${required("GITHUB_RUN_ATTEMPT")}\n`,
-      );
-    return;
-  }
-  if (command === "build") {
-    if (manifest.operation !== "deploy")
-      throw new Error("code.rollback-cannot-build");
-    if (
-      [".env", ".env.local", ".env.production", ".env.production.local"].some(
-        existsSync,
-      )
-    )
-      throw new Error("code.build-local-env-present");
-    await codeGuard("build.configuration", () => verifyBuildContext(manifest));
-    const r = spawnSync(
-      "python3",
-      ["scripts/release/code-build-context.py", "."],
-      {
-        stdio: ["ignore", "inherit", "pipe"],
-        encoding: "utf8",
-        maxBuffer: 4 * 1024 * 1024,
-        timeout: 1800000,
-        env: {
-          NODE_ENV: "production",
-          PATH: process.env.PATH,
-          HOME: required("RELEASE_BUILD_HOME"),
-          CI: "true",
-          NO_UPDATE_NOTIFIER: "1",
-          NEXT_TELEMETRY_DISABLED: "1",
-          VERCEL_TELEMETRY_DISABLED: "1",
-          ...manifest.buildEnvironment,
-          SKIP_DB: "true",
-          ANALYTICS_SYNC_ENABLED: "false",
-          NEXTAUTH_SECRET: "CODE_RELEASE_BUILD_ONLY_SECRET",
-          NEXTAUTH_URL: "https://tullyelly.com",
-          GOOGLE_CLIENT_ID: "CODE_RELEASE_BUILD_ONLY_CLIENT",
-          GOOGLE_CLIENT_SECRET: "CODE_RELEASE_BUILD_ONLY_GOOGLE",
-        },
-      },
-    );
-    if (r.status !== 0 || r.error) throw buildFailure(r);
-    const artifact = await codeGuard("artifact.package", () =>
-      packageCodeArtifact(
-        artifactBinding(
-          manifest,
-          required("RELEASE_MANIFEST_SHA256"),
-          required("GITHUB_RUN_ID"),
-          required("GITHUB_RUN_ATTEMPT"),
-        ),
-        required("RUNNER_TEMP"),
-      ),
-    );
-    reportCodeEvent({
-      event: "artifact",
-      ...artifact,
-      buildAttempt: required("GITHUB_RUN_ATTEMPT"),
-    });
-    if (process.env.GITHUB_OUTPUT)
-      appendFileSync(
-        process.env.GITHUB_OUTPUT,
-        `sha256=${artifact.sha256}\nsize_bytes=${artifact.sizeBytes}\n`,
-      );
-    console.log(
-      `Canonical production artifact: SHA-256 ${artifact.sha256}; ${artifact.sizeBytes} bytes; build attempt ${required("GITHUB_RUN_ATTEMPT")}`,
-    );
-    return;
-  }
-  if (command === "restore") {
-    if (manifest.operation !== "deploy")
-      throw new Error("code.rollback-cannot-build");
-    mkdirSync(".vercel", { recursive: true });
-    await restoreCodeArtifact(
-      artifactBinding(
-        manifest,
-        required("RELEASE_MANIFEST_SHA256"),
-        required("GITHUB_RUN_ID"),
-        required("RELEASE_BUILD_ATTEMPT"),
-      ),
-      required("RELEASE_BUILD_SHA256"),
-      required("RUNNER_TEMP"),
+      `Native source release; application SHA ${manifest.commit}; evidence SHA-256 ${required("RELEASE_EVIDENCE_SHA256")}`,
     );
     return;
   }
@@ -405,8 +309,9 @@ async function main() {
     previous.projectId !== manifest.vercel.projectId ||
     previous.target !== "production" ||
     previous.readyState !== "READY" ||
-    (previous.meta?.githubCommitSha ?? previous.meta?.releaseSha) !==
-      manifest.schemaCompatibility.previousApplicationSha
+    (previous.meta?.gitCommitSha ??
+      previous.meta?.githubCommitSha ??
+      previous.meta?.releaseSha) !== manifest.baseline.applicationSha
   )
     throw new Error("code.previous-application-identity");
   if (command === "check") {
@@ -432,33 +337,34 @@ async function main() {
       );
     },
     async stage() {
-      // A provider lookup may reuse only identical production evidence; staging
-      // always rechecks the bound, safely extracted canonical output.
-      artifactCommand([
-        "verify",
-        ".vercel/output",
-        JSON.stringify(
-          artifactBinding(
-            manifest,
-            required("RELEASE_MANIFEST_SHA256"),
-            required("GITHUB_RUN_ID"),
-            required("RELEASE_BUILD_ATTEMPT"),
-          ),
-        ),
-      ]);
-      const output = codeCli(
-        "vercel.stage",
-        prebuiltDeployArguments({
-          projectId: manifest.vercel.projectId,
-          commit: manifest.commit,
-          manifestDigest: required("RELEASE_MANIFEST_SHA256"),
-          buildDigest: required("RELEASE_BUILD_SHA256"),
-        }),
-        manifest.vercel.teamId,
-        required("VERCEL_TOKEN"),
-      );
-      const u = stagedDeploymentUrl(output);
-      return deployment(u.hostname);
+      // Never upload the dependency-installed/generated validation directory.
+      const source = createCleanSource({
+        commit: manifest.commit,
+        sha256: manifest.source.sha256,
+        projectId: manifest.vercel.projectId,
+        teamId: manifest.vercel.teamId,
+        temporaryDirectory: required("RUNNER_TEMP"),
+      });
+      try {
+        const output = codeCli(
+          "vercel.stage",
+          nativeSourceDeployArguments({
+            projectId: manifest.vercel.projectId,
+            commit: manifest.commit,
+            evidenceDigest: required("RELEASE_EVIDENCE_SHA256"),
+            sourceDigest: manifest.source.sha256,
+            workflowRunId: manifest.workflow.runId,
+            workflowRunAttempt: manifest.workflow.runAttempt,
+          }),
+          manifest.vercel.teamId,
+          required("VERCEL_TOKEN"),
+          undefined,
+          { cwd: source.directory },
+        );
+        return deployment(stagedDeploymentUrl(output).hostname);
+      } finally {
+        source.dispose();
+      }
     },
     async promote(id) {
       codeCli(
@@ -479,28 +385,21 @@ async function main() {
   };
   const id = await executeCodeRelease(
     manifest,
-    required("RELEASE_MANIFEST_SHA256"),
-    manifest.operation === "deploy" ? required("RELEASE_BUILD_SHA256") : "",
+    required("RELEASE_EVIDENCE_SHA256"),
+    "",
     providers,
   );
   reportCodeEvent({ event: "deployment", deploymentId: id });
   console.log(
-    `Verified code-only ${manifest.operation}: ${id}; analytics remains disabled`,
+    `Verified native source ${manifest.operation}: ${id}; analytics remains disabled`,
   );
 }
 main().catch((error) => {
-  const guard =
-    command === "build"
-      ? "build.production"
-      : command === "restore"
-        ? "artifact.validation"
-        : "production.check";
+  const guard = "production.check";
   console.error(
     JSON.stringify({
       event: "code-release-failure",
-      command: ["prepare", "build", "restore", "check", "deploy"].includes(
-        command,
-      )
+      command: ["prepare", "check", "deploy"].includes(command)
         ? command
         : "unknown",
       ...reportCodeFailure(guard, error),

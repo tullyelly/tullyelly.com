@@ -24,18 +24,20 @@ const signals = new Set([
   "SIGBUS",
 ]);
 
-export function prebuiltDeployArguments(binding: {
+export function nativeSourceDeployArguments(binding: {
   projectId: string;
   commit: string;
-  manifestDigest: string;
-  buildDigest: string;
+  evidenceDigest: string;
+  sourceDigest: string;
+  workflowRunId: string;
+  workflowRunAttempt: string;
 }) {
   return [
     "deploy",
-    "--prebuilt",
     "--prod",
     "--skip-domain",
     "--yes",
+    "--no-wait",
     "--project",
     binding.projectId,
     "--meta",
@@ -43,13 +45,15 @@ export function prebuiltDeployArguments(binding: {
     "--meta",
     `githubCommitSha=${binding.commit}`,
     "--meta",
-    `releaseManifest=${binding.manifestDigest}`,
+    `releaseEvidence=${binding.evidenceDigest}`,
     "--meta",
-    `releaseBuildSha256=${binding.buildDigest}`,
+    `releaseSourceSha256=${binding.sourceDigest}`,
+    "--meta",
+    `releaseRunId=${binding.workflowRunId}`,
+    "--meta",
+    `releaseRunAttempt=${binding.workflowRunAttempt}`,
     "--meta",
     "collectionDisabled=true",
-    "--env",
-    "ANALYTICS_SYNC_ENABLED=false",
   ];
 }
 
@@ -60,6 +64,7 @@ export function codeCli(
   teamId: string,
   token: string,
   run: typeof spawnSync = spawnSync,
+  options: { cwd?: string } = {},
 ) {
   const result = run(
     "vercel",
@@ -68,6 +73,7 @@ export function codeCli(
       encoding: "utf8",
       timeout: 900000,
       maxBuffer: 1024 * 1024,
+      cwd: options.cwd,
       env: {
         NODE_ENV: "production",
         PATH: process.env.PATH,

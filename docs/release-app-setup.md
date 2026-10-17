@@ -40,8 +40,32 @@ is optional and defaults to a neutral review description.
 Ordinary branch and PR publication reports `up-to-date`, `behind` or `unavailable`
 main ancestry; being behind main does not itself refuse review publication.
 Required GitHub checks still determine merge readiness. Protected main validation,
-release manifest binding, production ancestry and human approval gates retain their
+exact revision/evidence binding, production ancestry and human approval gates retain their
 strict checks. Publishing a branch or PR never authorizes a merge or deployment.
+
+## Ordinary release evidence access
+
+Ordinary production dispatch selects the exact reviewed merged `release_sha`;
+tooling generates evidence instead of requiring a separate deploy-manifest PR or
+chat attestation. Keep the App identity and existing human `production-release`
+gate. Branch/PR publication still does not authorize deployment.
+
+The owner configures `VERCEL_RELEASE_READ_TOKEN` in the main-only
+`release-dispatch` environment for the reviewed pre-gate metadata step. The
+[access-token UI](https://vercel.com/kb/guide/how-do-i-use-a-vercel-api-access-token)
+provides team scope; read-only authority must come from an appropriate principal's
+[role and plan](https://vercel.com/docs/rbac/access-roles), not a token name or an
+invented read-permission selector. Verify required metadata reads and the absence
+of deployment/settings-write authority; do not use an Owner token here. Stop if
+role restrictions prevent the needed reads or capability separation cannot be
+established. No decrypted secret values are retrieved. Provisioning that principal
+and token is a separate owner action. Installation/source validation receive no
+Vercel credentials.
+`VERCEL_RELEASE_TOKEN` and any automation bypass secret stay in protected
+`production-release`, exposed only to reviewed provider operations after approval.
+See [the short operator procedure](production-releases.md#normal-operator-procedure)
+for exact-SHA evidence, clean source staging, verification and same-ID promotion.
+Sensitive migration, maintenance, analytics and rollback approvals are unchanged.
 
 ## Numbered account checklist
 
@@ -188,11 +212,13 @@ strict checks. Publishing a branch or PR never authorizes a merge or deployment.
 
 ## What is verified and what remains pending
 
-Installation authentication and its identity are checked in code and fixtures;
-the App now exists and local installation authentication/scope were verified
-on 2026-10-11. Workflow actor attribution, pending approval and human approval
-have not yet been demonstrated. Installing/configuring an App is not
-proof that it works. Use the harmless test before trusting the production gate.
+Installation authentication/scope and the separate App actor were verified;
+the completed parent/child smoke runs linked above also demonstrated the pending
+human gate and `tullyelly` approval without a production operation. Do not repeat
+that bootstrap as part of ordinary release preparation. It does not prove source
+upload, remote builds or protected release-token permissions. Protected native
+source live acceptance remains pending until a separately authorized release
+succeeds through the real workflow.
 
 Cipher does not use a user access token acting as tullyelly and does not expose
 installation tokens in Git remote URLs, CLI arguments, output or artifacts.

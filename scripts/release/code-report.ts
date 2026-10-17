@@ -26,6 +26,39 @@ export function reportCodeEvent(event: Record<string, unknown>) {
         ? event.operation
         : undefined,
       manifestSha256: hex(event.manifestSha256, 64),
+      evidenceSha256: hex(event.evidenceSha256, 64),
+      sourceSha256: hex(event.sourceSha256, 64),
+      workflowRevision: hex(event.workflowRevision, 40),
+      ciRunId:
+        typeof event.ciRunId === "string" && /^[1-9][0-9]*$/.test(event.ciRunId)
+          ? event.ciRunId
+          : undefined,
+      workflowRunId:
+        typeof event.workflowRunId === "string" &&
+        /^[1-9][0-9]*$/.test(event.workflowRunId)
+          ? event.workflowRunId
+          : undefined,
+      compatibilityRisks: Array.isArray(event.compatibilityRisks)
+        ? event.compatibilityRisks.filter((risk) =>
+            [
+              "database-schema",
+              "database-query-contract",
+              "authentication-policy",
+              "runtime-configuration",
+              "analytics-activation",
+            ].includes(String(risk)),
+          )
+        : undefined,
+      changedPaths: Array.isArray(event.changedPaths)
+        ? event.changedPaths
+            .filter(
+              (path) =>
+                typeof path === "string" &&
+                /^[A-Za-z0-9_./()@+ -]{1,500}$/.test(path) &&
+                !/(?:^|\/)\.env/.test(path),
+            )
+            .slice(0, 5000)
+        : undefined,
       settingsSha256: hex(event.settingsSha256, 64),
       previousDeployment: id(event.previousDeployment),
       rollbackDeployment: id(event.rollbackDeployment),

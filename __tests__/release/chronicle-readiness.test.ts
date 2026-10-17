@@ -11,12 +11,39 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import probe from "../../scripts/release/publication-probe.json";
 
-const script = resolve("scripts/check-chronicle-publication.ts");
-const loader = require.resolve("tsx");
+const executableDirectory = mkdtempSync(join(tmpdir(), "chronicle-ready-cli-"));
+const script = join(executableDirectory, "check-chronicle-publication.cjs");
+beforeAll(() => {
+  // Exercise the actual CLI for every fixture without repeatedly cold-starting
+  // tsx and the MDX dependency graph alongside parallel coverage workers.
+  const { buildSync } = require(
+    require.resolve("esbuild", { paths: [require.resolve("tsx")] }),
+  ) as {
+    buildSync(options: {
+      entryPoints: string[];
+      outfile: string;
+      bundle: boolean;
+      platform: "node";
+      format: "cjs";
+      target: string;
+      logLevel: "silent";
+    }): void;
+  };
+  buildSync({
+    entryPoints: [resolve("scripts/check-chronicle-publication.ts")],
+    outfile: script,
+    bundle: true,
+    platform: "node",
+    format: "cjs",
+    target: "node22",
+    logLevel: "silent",
+  });
+});
+afterAll(() => rmSync(executableDirectory, { recursive: true, force: true }));
 function check(root: string, slug = "intended", release = false) {
   return spawnSync(
     process.execPath,
-    ["--import", loader, script, slug, ...(release ? ["--release"] : [])],
+    [script, slug, ...(release ? ["--release"] : [])],
     {
       cwd: root,
       encoding: "utf8",

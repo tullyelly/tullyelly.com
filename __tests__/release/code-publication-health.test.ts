@@ -1,6 +1,10 @@
 /** @jest-environment node */
 import { readFileSync } from "node:fs";
-import { checkPublicationHealth } from "../../scripts/release/code-publication-health";
+import { createHash } from "node:crypto";
+import {
+  checkChangedPublicationHealth,
+  checkPublicationHealth,
+} from "../../scripts/release/code-publication-health";
 import probe from "../../scripts/release/publication-probe.json";
 
 const sha = "a".repeat(40);
@@ -92,4 +96,66 @@ test("external optimized image sources are rejected without requesting them", as
       ([path]) => path.startsWith("/") && !path.startsWith("//"),
     ),
   ).toBe(true);
+});
+
+const changedBytes = "candidate image bytes";
+const changedPlan = {
+  chronicles: [
+    {
+      path: "/shaolin/new-publication",
+      title: "New & published",
+      date: "2026-10-17",
+      text: ["Current authored publication text."],
+    },
+  ],
+  assets: [
+    {
+      path: "/images/optimus/new-publication/photo.webp",
+      sha256: createHash("sha256").update(changedBytes).digest("hex"),
+    },
+  ],
+};
+function changedFixture(body = changedBytes, heading = "New &amp; published") {
+  return jest.fn(async (path: string) =>
+    path.startsWith("/shaolin/")
+      ? new Response(
+          `<h1>Oct 17, 2026: ${heading}</h1><p>Current authored publication text.</p><img src="/_next/image?url=${encodeURIComponent(changedPlan.assets[0].path)}&amp;w=640&amp;q=75" />`,
+          {
+            headers: { "content-type": "text/html" },
+          },
+        )
+      : new Response(body, { headers: { "content-type": "image/webp" } }),
+  );
+}
+test("candidate checks cover changed Chronicles and exact assets beyond Appleton East", async () => {
+  const read = changedFixture();
+  await expect(
+    checkChangedPublicationHealth(read, changedPlan),
+  ).resolves.toBeUndefined();
+  expect(read).toHaveBeenCalledWith(changedPlan.chronicles[0].path);
+  expect(read).toHaveBeenCalledWith(changedPlan.assets[0].path);
+  expect(
+    read.mock.calls.some(([path]) => path.startsWith("/_next/image?")),
+  ).toBe(true);
+});
+test("stale candidate content and mismatched asset bytes fail staged acceptance", async () => {
+  await expect(
+    checkChangedPublicationHealth(
+      changedFixture(changedBytes, "Old title"),
+      changedPlan,
+    ),
+  ).rejects.toThrow("code.health-publication");
+  await expect(
+    checkChangedPublicationHealth(changedFixture("old image"), changedPlan),
+  ).rejects.toThrow("code.health-publication-asset");
+});
+test("unsafe generated publication paths are rejected without fetching", async () => {
+  const read = changedFixture();
+  await expect(
+    checkChangedPublicationHealth(read, {
+      chronicles: [],
+      assets: [{ ...changedPlan.assets[0], path: "/images/../private" }],
+    }),
+  ).rejects.toThrow("code.health-publication-asset");
+  expect(read).not.toHaveBeenCalled();
 });

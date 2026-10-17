@@ -44,6 +44,9 @@ export const operations = [
   "github.environment-policies",
   "github.main",
   "github.rules",
+  "github.ci-workflow",
+  "github.ci-runs",
+  "github.ci-checks",
   "vercel.project",
   "vercel.alias",
   "vercel.history",
@@ -285,8 +288,12 @@ export function apiOperation(url: string): Operation {
       return "github.environment-policies";
     if (p.endsWith("/environments/production-release"))
       return "github.environment";
-    if (p.endsWith("/branches/main")) return "github.main";
     if (p.endsWith("/rules/branches/main")) return "github.rules";
+    if (p.endsWith("/branches/main")) return "github.main";
+    if (p.endsWith("/actions/workflows/ci.yml")) return "github.ci-workflow";
+    if (p.endsWith("/actions/workflows/ci.yml/runs")) return "github.ci-runs";
+    if (/\/check-suites\/[0-9]+\/check-runs$/.test(p))
+      return "github.ci-checks";
   }
   if (u.hostname === "api.vercel.com") {
     if (/^\/v9\/projects\/[^/]+$/.test(p)) return "vercel.project";

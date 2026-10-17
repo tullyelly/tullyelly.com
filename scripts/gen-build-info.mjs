@@ -31,9 +31,34 @@ const name = typeof pkg.name === "string" ? pkg.name : "";
 const version = typeof pkg.version === "string" ? pkg.version : "0.0.0";
 
 const isVercel = !!process.env.VERCEL;
+let sourceReceipt;
+try {
+  sourceReceipt = JSON.parse(
+    readFileSync(resolve(process.cwd(), "release-source.json"), "utf8"),
+  );
+} catch (error) {
+  if (error.code !== "ENOENT")
+    throw new Error("Invalid native release source receipt");
+}
+if (
+  sourceReceipt &&
+  (!/^[a-f0-9]{40}$/.test(sourceReceipt.commit) ||
+    !/^[a-f0-9]{64}$/.test(sourceReceipt.archiveSha256))
+)
+  throw new Error("Invalid native release source receipt");
 const commit =
-  process.env.VERCEL_GIT_COMMIT_SHA || sh("git rev-parse HEAD") || "unknown";
+  sourceReceipt?.commit ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  sh("git rev-parse HEAD") ||
+  "unknown";
+if (
+  isVercel &&
+  process.env.VERCEL_ENV === "production" &&
+  !/^[a-f0-9]{40}$/.test(commit)
+)
+  throw new Error("Production build requires an exact application revision");
 const branch =
+  (sourceReceipt ? "main" : "") ||
   process.env.VERCEL_GIT_COMMIT_REF ||
   sh("git rev-parse --abbrev-ref HEAD") ||
   "unknown";

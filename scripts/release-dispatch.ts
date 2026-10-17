@@ -13,8 +13,8 @@ import {
   type Api,
   type AppConfiguration,
 } from "./release/app";
-import { loadMaintenanceManifest } from "./release/maintenance";
 import { loadCodeManifest } from "./release/code-manifest";
+import { loadMaintenanceManifest } from "./release/maintenance";
 import { loadReleaseManifest } from "./release/manifest";
 import { reviewBranchSchema } from "./release/review-branch";
 
@@ -28,6 +28,12 @@ export const dispatchInputSchema = z.discriminatedUnion("mode", [
   z
     .object({
       mode: z.literal("production"),
+      sha: z.string().regex(/^[a-f0-9]{40}$/),
+    })
+    .strict(),
+  z
+    .object({
+      mode: z.literal("rollback"),
       sha: z.string().regex(/^[a-f0-9]{40}$/),
       manifestPath: z.string().regex(/^releases\/[a-z0-9-]+\.json$/),
       manifestSha256: z.string().regex(/^[a-f0-9]{64}$/),
@@ -85,16 +91,18 @@ export function dispatchPayload(
           ? "credential-maintenance.yml"
           : input.mode === "analytics"
             ? "analytics-release.yml"
-            : "production-release.yml",
+            : input.mode === "rollback"
+              ? "production-rollback.yml"
+              : "production-release.yml",
     body: {
       ref: "main",
       inputs: {
         release_sha: input.sha,
         dispatch_run_id: id,
         dispatch_installation_id: configuration.installationId,
-        ...(input.mode === "production" ||
-        input.mode === "maintenance" ||
-        input.mode === "analytics"
+        ...(input.mode === "maintenance" ||
+        input.mode === "analytics" ||
+        input.mode === "rollback"
           ? {
               manifest_path: input.manifestPath,
               manifest_sha256: input.manifestSha256,
@@ -211,7 +219,7 @@ async function main() {
     throw new Error("The App dispatcher runs only from reviewed main");
   const mode = process.env.RELEASE_DISPATCH_MODE;
   const input = dispatchInputSchema.parse(
-    mode === "production" || mode === "maintenance" || mode === "analytics"
+    mode === "maintenance" || mode === "analytics" || mode === "rollback"
       ? {
           mode,
           sha: process.env.RELEASE_SHA,
@@ -281,10 +289,22 @@ async function main() {
     if (changed.some((path) => !/^maintenance\/[a-z0-9-]+\.json$/.test(path)))
       throw new Error("Maintenance executor differs from reviewed source");
   }
-  if (input.mode === "production" || input.mode === "analytics") {
-    if (input.mode === "production")
-      loadCodeManifest(input.manifestPath, input.manifestSha256, input.sha);
-    else
+  if (input.mode === "production" && input.sha !== workflowSha)
+    throw new Error(
+      "Ordinary production requires the current reviewed main SHA",
+    );
+  if (input.mode === "analytics" || input.mode === "rollback") {
+    if (input.mode === "rollback") {
+      const manifest = loadCodeManifest(
+        input.manifestPath,
+        input.manifestSha256,
+        input.sha,
+      );
+      if (manifest.operation !== "rollback")
+        throw new Error(
+          "Rollback dispatch requires an explicitly reviewed rollback manifest",
+        );
+    } else
       loadReleaseManifest(input.manifestPath, input.manifestSha256, input.sha);
     execFileSync("git", [
       "merge-base",
@@ -324,7 +344,7 @@ async function main() {
         "POST",
         payload.body,
       );
-      return `${input.mode === "smoke" ? "Harmless release gate smoke" : input.mode === "maintenance" ? "Credential maintenance preparation" : "Production release preparation"} dispatched by ${configuration.slug}[bot] for ${input.sha}. Human approval remains required. Inspect GitHub > Actions > ${input.mode === "smoke" ? "Release approval gate smoke" : input.mode === "maintenance" ? "Protected credential maintenance" : input.mode === "analytics" ? "Approved analytics release (explicit only)" : "Approved code-only production release"} > Review deployments > production-release. No gate was approved automatically.`;
+      return `${input.mode === "smoke" ? "Harmless release gate smoke" : input.mode === "maintenance" ? "Credential maintenance preparation" : "Production release preparation"} dispatched by ${configuration.slug}[bot] for ${input.sha}. Human approval remains required. Inspect GitHub > Actions > ${input.mode === "smoke" ? "Release approval gate smoke" : input.mode === "maintenance" ? "Protected credential maintenance" : input.mode === "analytics" ? "Approved analytics release (explicit only)" : input.mode === "rollback" ? "Approved production rollback" : "Native source production release"} > Review deployments > production-release. No gate was approved automatically.`;
     },
   );
   console.log(message);

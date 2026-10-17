@@ -1,14 +1,11 @@
-name: Approved code-only production release
+name: Native source production release
+run-name: Native production ${{ inputs.release_sha }}
 
 on:
   workflow_dispatch:
     inputs:
       release_sha:
-        description: Exact reviewed 40-character commit on protected main
-        required: true
-        type: string
-      manifest_path:
-        description: Reviewed manifest on main, releases/<name>.json
+        description: Exact reviewed 40-character commit on current protected main
         required: true
         type: string
       dispatch_run_id:
@@ -19,14 +16,11 @@ on:
         description: Verified dedicated App installation ID
         required: true
         type: string
-      manifest_sha256:
-        description: Exact SHA-256 of the reviewed manifest file
-        required: true
-        type: string
 
 permissions:
   contents: read
   actions: read
+  checks: read
 
 concurrency:
   group: production-release-tullyelly
@@ -41,8 +35,7 @@ env:
   RELEASE_APP_INSTALLATION_ID: ${{ vars.RELEASE_APP_INSTALLATION_ID }}
   RELEASE_APP_SLUG: ${{ vars.RELEASE_APP_SLUG }}
   RELEASE_APP_BOT_USER_ID: ${{ vars.RELEASE_APP_BOT_USER_ID }}
-  RELEASE_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
-  RELEASE_MANIFEST_PATH: .cache/approved-release.json
+  RELEASE_EVIDENCE_PATH: .cache/release-evidence.json
   VERCEL_CLI_VERSION: "63.1.2"
   CI: "true"
   NEXT_TELEMETRY_DISABLED: "1"
@@ -52,16 +45,15 @@ jobs:
   prepare:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 15
+    # Main-only, read-only metadata credential; the sole human gate is below.
+    environment: release-dispatch
     outputs:
-      build_sha256: ${{ steps.build.outputs.sha256 }}
-      build_attempt: ${{ steps.plan.outputs.build_attempt }}
-      build_artifact: approved-prebuilt-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
-      manifest_artifact: approved-manifest-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
-      executor_artifact: release-executor-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
+      evidence_sha256: ${{ steps.evidence.outputs.evidence_sha256 }}
+      evidence_artifact: release-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+      executor_artifact: release-executor-${{ github.run_id }}-${{ github.run_attempt }}
       executor_sha256: ${{ steps.executor.outputs.executor_sha256 }}
       report_artifact: release-report-prepare-${{ github.run_id }}-${{ github.run_attempt }}
-      operation: ${{ steps.plan.outputs.operation }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -71,74 +63,51 @@ jobs:
         with:
           node-version: "22.20.0"
           cache: npm
-      - name: Initialize stage report
-        run: |
-          mkdir -p .cache
-          : > "$RELEASE_REPORT_PATH"
-      - name: Bind manifest and exact code
-        env:
-          MANIFEST_SOURCE: ${{ inputs.manifest_path }}
+      - name: Initialize stage report and require exact reviewed main
         run: |
           set -euo pipefail
           [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
-          [[ "$RELEASE_MANIFEST_SHA256" =~ ^[a-f0-9]{64}$ ]]
-          [[ "$MANIFEST_SOURCE" =~ ^releases/[a-z0-9-]+\.json$ ]]
-          mkdir -p .cache "$RUNNER_TEMP/credential-free-vercel-home"
-          git show "$GITHUB_SHA:$MANIFEST_SOURCE" > "$RELEASE_MANIFEST_PATH"
-          git checkout --detach "$RELEASE_SHA"
-      - name: Install without production credentials
+          test "$RELEASE_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          mkdir -p .cache
+          : > "$RELEASE_REPORT_PATH"
+      - name: Install without provider credentials
         run: node scripts/release/run-stage.mjs install
-      - name: Check pinned CLI and publication before expensive validation
-        run: node scripts/release/run-stage.mjs preflight
-      - name: Verify human approval gate and reviewed settings
-        id: plan
-        run: node scripts/release/run-stage.mjs plan
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Required repository validation
-        run: node scripts/release/run-stage.mjs source
         env:
           SKIP_DB: "true"
-          ANALYTICS_SYNC_ENABLED: "false"
-      - name: Build prebuilt deployment without production credentials
-        id: build
-        # No vercel pull, --yes, --id, production database URL, or production token.
-        # Reviewed project settings + empty local env avoid automatic linking/pulls.
-        run: node scripts/release/run-stage.mjs build
-        if: steps.plan.outputs.operation == 'deploy'
-        env:
-          RELEASE_BUILD_HOME: ${{ runner.temp }}/credential-free-vercel-home
+      - name: Check pinned CLI contract
+        run: node scripts/release/run-stage.mjs preflight
       - name: Bundle credential-free release executor
         id: executor
         run: node scripts/release/run-stage.mjs bundle
+      - name: Generate non-secret evidence from exact trusted CI and live metadata
+        id: evidence
+        run: node scripts/release/run-stage.mjs evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_RELEASE_READ_TOKEN: ${{ secrets.VERCEL_RELEASE_READ_TOKEN }}
       - name: Publish checksum-bound release executor
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: release-executor-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
+          name: release-executor-${{ github.run_id }}-${{ github.run_attempt }}
           path: .cache/release-tools/production-release.cjs
           include-hidden-files: true
           retention-days: 1
           if-no-files-found: error
-      - name: Publish exact build for approved job
-        if: steps.plan.outputs.operation == 'deploy'
+      - name: Publish automatic non-secret release evidence
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: approved-prebuilt-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
-          path: ${{ runner.temp }}/approved-prebuilt.tar
-          retention-days: 1
-          if-no-files-found: error
-      - name: Publish non-secret reviewed manifest
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: approved-manifest-${{ github.run_id }}-${{ steps.plan.outputs.build_attempt }}
-          path: ${{ env.RELEASE_MANIFEST_PATH }}
+          name: release-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.RELEASE_EVIDENCE_PATH }}
           include-hidden-files: true
           retention-days: 1
-          if-no-files-found: error
+          if-no-files-found: warn
       - name: Render readable approval evidence
         if: always()
         env:
           PREPARATION_RESULT: ${{ job.status }}
+          RELEASE_EVIDENCE_SHA256: ${{ steps.evidence.outputs.evidence_sha256 }}
         run: node scripts/release/release-summary.mjs --approval-report .cache/release-report.jsonl
       - name: Publish approval evidence and preparation diagnostics
         if: always()
@@ -156,11 +125,10 @@ jobs:
     needs: prepare
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     environment: production-release
     env:
-      RELEASE_BUILD_ATTEMPT: ${{ needs.prepare.outputs.build_attempt }}
-      RELEASE_BUILD_SHA256: ${{ needs.prepare.outputs.build_sha256 }}
+      RELEASE_EVIDENCE_SHA256: ${{ needs.prepare.outputs.evidence_sha256 }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -170,7 +138,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22.20.0"
-          cache: npm
       - name: Initialize stage report
         run: |
           mkdir -p .cache
@@ -187,27 +154,19 @@ jobs:
         run: node scripts/release/run-stage.mjs executor
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: ${{ needs.prepare.outputs.manifest_artifact }}
+          name: ${{ needs.prepare.outputs.evidence_artifact }}
           path: .cache
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        if: needs.prepare.outputs.operation == 'deploy'
-        with:
-          name: ${{ needs.prepare.outputs.build_artifact }}
-          path: ${{ runner.temp }}
-      - name: Verify approved prebuilt bytes and restore file permissions
-        if: needs.prepare.outputs.operation == 'deploy'
-        run: node scripts/release/run-stage.mjs restore
-      - name: Recreate reviewed non-secret project link
+      - name: Verify exact source and workflow-bound evidence without provider credentials
         run: node scripts/release/run-stage.mjs prepare
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Post-approval target, protection and deployment drift checks
+      - name: Post-approval target, protection and baseline drift checks
         run: node scripts/release/run-stage.mjs check
         env:
           GH_TOKEN: ${{ github.token }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
           RELEASE_PRODUCTION_APPROVED: "true"
-      - name: Execute reviewed code-only deployment or separately approved rollback
+      - name: Stage clean source remotely, verify, promote exact deployment and verify publicly
         run: node scripts/release/run-stage.mjs deploy
         env:
           GH_TOKEN: ${{ github.token }}
@@ -252,4 +211,5 @@ jobs:
         env:
           PREPARATION_RESULT: ${{ needs.prepare.result }}
           PRODUCTION_RESULT: ${{ needs.production.result }}
+          RELEASE_EVIDENCE_SHA256: ${{ needs.prepare.outputs.evidence_sha256 }}
         run: node scripts/release/release-summary.mjs .cache/preparation-report/release-report.jsonl .cache/production-report/release-report.jsonl

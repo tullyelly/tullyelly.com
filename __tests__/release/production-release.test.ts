@@ -241,7 +241,7 @@ describe("human protected release", () => {
         assertVercelProject({ ...project, ...change }, manifest),
       ).toThrow();
   });
-  it("retains workflow secret, concurrency, build and rerun boundaries", () => {
+  it("retains one gate and separates non-secret evidence from protected native operations", () => {
     const workflow = readFileSync(
       ".github/workflows/production-release.yml",
       "utf8",
@@ -250,23 +250,27 @@ describe("human protected release", () => {
       workflow.indexOf("  prepare:"),
       workflow.indexOf("  production:"),
     );
-    expect(prepare).not.toContain("${{ secrets.");
-    expect(workflow).toContain("environment: production-release");
+    expect(prepare).toContain("environment: release-dispatch");
+    expect(prepare).toContain("${{ secrets.VERCEL_RELEASE_READ_TOKEN }}");
+    expect(prepare).not.toContain("${{ secrets.VERCEL_RELEASE_TOKEN }}");
+    expect(prepare.indexOf("run-stage.mjs install")).toBeLessThan(
+      prepare.indexOf("${{ secrets."),
+    );
+    expect(workflow.match(/environment: production-release/g)).toHaveLength(1);
     expect(workflow).toContain("cancel-in-progress: false");
     expect(workflow).not.toMatch(/^  (push|pull_request):/m);
-    expect(workflow).not.toMatch(/run:.*vercel pull/);
+    expect(workflow).not.toMatch(
+      /vercel pull|approved-prebuilt|run-stage\.mjs (build|source|restore)/,
+    );
     expect(workflow).toContain("run-stage.mjs executor");
     expect(readFileSync("scripts/release/code-cli.ts", "utf8")).toContain(
       "--skip-domain",
     );
     expect(workflow).toContain(
-      "build_attempt: ${{ steps.plan.outputs.build_attempt }}",
+      "RELEASE_EVIDENCE_SHA256: ${{ needs.prepare.outputs.evidence_sha256 }}",
     );
     expect(workflow).toContain(
-      "name: ${{ needs.prepare.outputs.build_artifact }}",
-    );
-    expect(workflow).toContain(
-      "RELEASE_BUILD_ATTEMPT: ${{ needs.prepare.outputs.build_attempt }}",
+      "name: ${{ needs.prepare.outputs.evidence_artifact }}",
     );
   });
 });
