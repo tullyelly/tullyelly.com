@@ -1,7 +1,10 @@
-/** Fixed labels only: never serialize exceptions, request URLs or provider values. */
+/** Fixed structure and bounded redacted provider errors; never serialize exceptions. */
 import { z } from "zod";
 import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
-import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
+import {
+  providerDiagnostic,
+  safeProviderDiagnostic,
+} from "./provider-diagnostic.mjs";
 import {
   GitHubApiError,
   ReleaseVerificationError,
@@ -25,6 +28,8 @@ export const guards = [
   "vercel.environment",
   "vercel.deployment",
   "production.check",
+  "vercel.auth-rest",
+  "vercel.auth-cli",
   "vercel.stage",
   "vercel.promote",
   "vercel.rollback",
@@ -52,6 +57,10 @@ export const operations = [
   "vercel.history",
   "vercel.environment",
   "vercel.deployment",
+  "vercel.auth-rest",
+  "vercel.auth-cli",
+  "vercel.user",
+  "vercel.team",
   "vercel.stage",
   "vercel.promote",
   "vercel.rollback",
@@ -106,6 +115,7 @@ export type Diagnostic = {
     reason?: string;
     code?: string;
     message?: string;
+    classification?: string;
     httpStatus?: number;
   };
   originalFailure?: Diagnostic;
@@ -296,6 +306,8 @@ export function apiOperation(url: string): Operation {
       return "github.ci-checks";
   }
   if (u.hostname === "api.vercel.com") {
+    if (p === "/v2/user") return "vercel.user";
+    if (/^\/teams\/[^/]+$/.test(p)) return "vercel.team";
     if (/^\/v9\/projects\/[^/]+$/.test(p)) return "vercel.project";
     if (/^\/v4\/aliases\/[^/]+$/.test(p)) return "vercel.alias";
     if (p === "/v6/deployments") return "vercel.history";
@@ -326,13 +338,43 @@ export async function codeMetadataRequest(
       networkCauseCodes: safeNetworkCauseCodes(error),
     });
   }
-  if (!response.ok)
+  if (!response.ok) {
+    // Only Vercel error fields are useful here; never retain bodies, URLs or
+    // headers. Bound the read as well as the published redacted message.
+    let provider: Diagnostic["provider"];
+    if (new URL(url).hostname === "api.vercel.com") {
+      const reader = response.body?.getReader();
+      if (reader) {
+        try {
+          const chunks: Uint8Array[] = [];
+          let size = 0;
+          while (size < 65536) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            const chunk = value.subarray(0, 65536 - size);
+            chunks.push(chunk);
+            size += chunk.byteLength;
+          }
+          provider = providerDiagnostic(
+            Buffer.concat(chunks).toString("utf8"),
+            "",
+            { secrets: [token] },
+          );
+        } catch {
+          // Preserve the authoritative HTTP failure even if its body is unreadable.
+        } finally {
+          await reader.cancel().catch(() => undefined);
+        }
+      }
+    }
     throw new CodeDiagnosticError({
       guard: "api.request",
       operation,
       category: "http",
       status: response.status,
+      ...(provider ? { provider } : {}),
     });
+  }
   try {
     return await response.json();
   } catch {

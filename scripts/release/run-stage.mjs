@@ -60,6 +60,13 @@ const stages = {
       [...executor[1], "check"],
     ],
   ],
+  auth: [
+    [
+      "Checking protected release credential",
+      executor[0],
+      [...executor[1], "auth"],
+    ],
+  ],
   deploy: [
     [
       "Executing approved production operation",

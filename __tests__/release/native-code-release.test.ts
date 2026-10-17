@@ -17,6 +17,7 @@ import {
 } from "../../scripts/release/code-source";
 import {
   executeCodeRelease,
+  type CodePhaseEvent,
   type CodeProviders,
 } from "../../scripts/release/code-release";
 import type { NativeCodeEvidence } from "../../scripts/release/native-evidence";
@@ -220,6 +221,126 @@ test("failed native staged checks and production drift block promotion", async (
     expect(p.promote).not.toHaveBeenCalled();
   }
 });
+test("phase reporting observes one opaque CLI call and confirms build completion only after READY", async () => {
+  const { p, d, run } = fixture();
+  const phases: CodePhaseEvent[] = [];
+  p.reportPhase = (event) => phases.push(event);
+  p.deployment = jest.fn(async () => {
+    expect(phases).not.toContainEqual(
+      expect.objectContaining({ phase: "remote-build", outcome: "success" }),
+    );
+    return { ...d, readyState: "READY" };
+  });
+  await expect(run()).resolves.toBe(d.id);
+  expect(phases.map(({ phase, outcome }) => `${phase}:${outcome}`)).toEqual([
+    "deployment-creation:started",
+    "cli-invocation-upload:started",
+    "cli-invocation-upload:success",
+    "deployment-creation:success",
+    "remote-build:started",
+    "remote-build:success",
+    "staged-verification:started",
+    "staged-verification:success",
+    "promotion:started",
+    "promotion:success",
+    "public-verification:started",
+    "public-verification:success",
+  ]);
+  for (const event of phases.filter((event) => event.outcome !== "started")) {
+    expect(Number.isSafeInteger(event.durationMs)).toBe(true);
+    expect(event.durationMs).toBeGreaterThanOrEqual(0);
+  }
+  expect(p.stage).toHaveBeenCalledTimes(1);
+  expect(p.promote).toHaveBeenCalledTimes(1);
+  expect(p.rollback).not.toHaveBeenCalled();
+});
+test("unresolved stage reports CLI and creation failure without inventing a deployment or build", async () => {
+  const { p, run } = fixture();
+  const phases: CodePhaseEvent[] = [];
+  p.reportPhase = (event) => phases.push(event);
+  p.stage = jest.fn(async () => {
+    throw new Error("opaque process failure");
+  });
+  await expect(run()).rejects.toThrow();
+  expect(phases.map(({ phase, outcome }) => `${phase}:${outcome}`)).toEqual([
+    "deployment-creation:started",
+    "cli-invocation-upload:started",
+    "cli-invocation-upload:failure",
+    "deployment-creation:failure",
+  ]);
+  expect(p.stage).toHaveBeenCalledTimes(1);
+  expect(p.promote).not.toHaveBeenCalled();
+});
+test("reconciled stage preserves the failed CLI observation and proceeds with the same candidate", async () => {
+  const { p, d, run } = fixture();
+  const phases: CodePhaseEvent[] = [];
+  p.reportPhase = (event) => phases.push(event);
+  p.stage = jest.fn(async () => {
+    throw new Error("timeout");
+  });
+  p.lookup = jest
+    .fn()
+    .mockResolvedValueOnce(undefined)
+    .mockResolvedValueOnce(d);
+  await expect(run()).resolves.toBe(d.id);
+  expect(phases).toContainEqual(
+    expect.objectContaining({
+      phase: "cli-invocation-upload",
+      outcome: "failure",
+    }),
+  );
+  expect(phases).toContainEqual(
+    expect.objectContaining({
+      phase: "deployment-creation",
+      outcome: "success",
+    }),
+  );
+  expect(p.stage).toHaveBeenCalledTimes(1);
+  expect(p.promote).toHaveBeenCalledWith(d.id);
+});
+test.each(["build", "staged", "promotion", "public"])(
+  "failed %s records only phases actually reached",
+  async (boundary) => {
+    const { p, d, run } = fixture();
+    const phases: CodePhaseEvent[] = [];
+    p.reportPhase = (event) => phases.push(event);
+    if (boundary === "build")
+      p.deployment = jest.fn(async () => ({ ...d, readyState: "ERROR" }));
+    if (boundary === "staged" || boundary === "public")
+      p.health = jest.fn(async (_d, publicDomain) => {
+        if (publicDomain === (boundary === "public"))
+          throw new Error("health failed");
+      });
+    if (boundary === "promotion")
+      p.promote = jest.fn(async () => {
+        throw new Error("promotion failed");
+      });
+    await expect(run()).rejects.toThrow();
+    const failed =
+      boundary === "build"
+        ? "remote-build"
+        : boundary === "staged"
+          ? "staged-verification"
+          : boundary === "public"
+            ? "public-verification"
+            : "promotion";
+    expect(phases).toContainEqual(
+      expect.objectContaining({ phase: failed, outcome: "failure" }),
+    );
+    expect(phases).not.toContainEqual(
+      expect.objectContaining({ phase: failed, outcome: "success" }),
+    );
+    if (boundary === "build" || boundary === "staged") {
+      expect(phases.some((event) => event.phase === "promotion")).toBe(false);
+      expect(p.promote).not.toHaveBeenCalled();
+    }
+    if (boundary !== "public")
+      expect(
+        phases.some((event) => event.phase === "public-verification"),
+      ).toBe(false);
+    expect(p.rollback).not.toHaveBeenCalled();
+  },
+);
 function inRepository(
   run: (directory: string, commit: string) => void,
   additional?: (directory: string) => void,

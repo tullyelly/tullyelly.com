@@ -1,5 +1,9 @@
 // Fixed invariant names shared by diagnostics and the credential-free summary.
 export const codeInvariants = [
+  "code.release-token-missing",
+  "code.release-token-malformed",
+  "code.auth-target-mismatch",
+  "code.auth-cli-output",
   "code.evidence-revision",
   "code.evidence-digest",
   "code.evidence-workflow-binding",

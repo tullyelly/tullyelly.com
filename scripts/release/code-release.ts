@@ -18,8 +18,21 @@ export type CodeDeployment = {
   meta?: Record<string, unknown>;
   providerError?: Diagnostic["provider"];
 };
+export type CodeReleasePhase =
+  | "cli-invocation-upload"
+  | "deployment-creation"
+  | "remote-build"
+  | "staged-verification"
+  | "promotion"
+  | "public-verification";
+export type CodePhaseEvent = {
+  phase: CodeReleasePhase;
+  outcome: "started" | "success" | "failure";
+  durationMs?: number;
+};
 export interface CodeProviders {
   waitForPoll?(): Promise<void>;
+  reportPhase?(event: CodePhaseEvent): void;
   reportDeployment?(deployment: CodeDeployment): void;
   reportReconciliation?(diagnostic: {
     outcome: "found";
@@ -32,6 +45,31 @@ export interface CodeProviders {
   promote(id: string): Promise<void>;
   rollback(id: string): Promise<void>;
   health(d: CodeDeployment, publicDomain: boolean): Promise<void>;
+}
+async function observePhase<T>(
+  p: CodeProviders,
+  phase: CodeReleasePhase,
+  work: () => Promise<T>,
+): Promise<T> {
+  // Match the existing stage timer; nested phase durations are not additive.
+  const startedAt = Date.now();
+  p.reportPhase?.({ phase, outcome: "started" });
+  try {
+    const value = await work();
+    p.reportPhase?.({
+      phase,
+      outcome: "success",
+      durationMs: Date.now() - startedAt,
+    });
+    return value;
+  } catch (error) {
+    p.reportPhase?.({
+      phase,
+      outcome: "failure",
+      durationMs: Date.now() - startedAt,
+    });
+    throw error;
+  }
 }
 export async function executeCodeRelease(
   m: CodeManifest | NativeCodeEvidence,
@@ -54,7 +92,9 @@ export async function executeCodeRelease(
     )
       throw new Error("code.rollback-identity");
     p.reportDeployment?.(d);
-    await codeGuard("health.staged", () => p.health(d, false));
+    await observePhase(p, "staged-verification", () =>
+      codeGuard("health.staged", () => p.health(d, false)),
+    );
     await p.guard([m.vercel.productionDeploymentId]);
     // Exactly one mutation. Ambiguous outcomes are verified, never blindly retried.
     let failure: Diagnostic | undefined;
@@ -74,68 +114,82 @@ export async function executeCodeRelease(
       );
     if (failure)
       p.reportReconciliation?.({ outcome: "found", originalFailure: failure });
-    await codeGuard("health.public", () => p.health(d, true));
+    await observePhase(p, "public-verification", () =>
+      codeGuard("health.public", () => p.health(d, true)),
+    );
     return d.id;
   }
-  let target = await codeGuard("vercel.lookup", () => p.lookup());
-  if (!target) {
-    try {
-      target = await codeGuard("vercel.stage", () => p.stage());
-    } catch (error) {
-      // A process timeout/error can follow a successful write. Preserve both observations.
-      const originalFailure = classifyCodeFailure("vercel.stage", error);
+  let target = await observePhase(p, "deployment-creation", async () => {
+    let target = await codeGuard("vercel.lookup", () => p.lookup());
+    if (!target) {
       try {
-        target = await codeGuard("vercel.lookup", () => p.lookup());
-      } catch (lookupError) {
-        throw new CodeDiagnosticError({
-          guard: "vercel.stage",
-          category: "invariant",
-          invariant: "code.stage-reconciliation-failed",
-          originalFailure,
-          reconciliation: "failed",
-          reconciliationFailure: classifyCodeFailure(
-            "vercel.lookup",
-            lookupError,
-          ),
-        });
+        // The CLI is opaque: this duration does not distinguish upload from its
+        // deployment request. Creation is observed only once an API candidate exists.
+        target = await observePhase(p, "cli-invocation-upload", () =>
+          codeGuard("vercel.stage", () => p.stage()),
+        );
+      } catch (error) {
+        // A process timeout/error can follow a successful write. Preserve both observations.
+        const originalFailure = classifyCodeFailure("vercel.stage", error);
+        try {
+          target = await codeGuard("vercel.lookup", () => p.lookup());
+        } catch (lookupError) {
+          throw new CodeDiagnosticError({
+            guard: "vercel.stage",
+            category: "invariant",
+            invariant: "code.stage-reconciliation-failed",
+            originalFailure,
+            reconciliation: "failed",
+            reconciliationFailure: classifyCodeFailure(
+              "vercel.lookup",
+              lookupError,
+            ),
+          });
+        }
+        if (!target)
+          throw new CodeDiagnosticError({
+            guard: "vercel.stage",
+            category: "invariant",
+            invariant: "code.stage-outcome-unresolved",
+            originalFailure,
+            reconciliation: "not-found",
+          });
+        p.reportReconciliation?.({ outcome: "found", originalFailure });
       }
-      if (!target)
-        throw new CodeDiagnosticError({
-          guard: "vercel.stage",
-          category: "invariant",
-          invariant: "code.stage-outcome-unresolved",
-          originalFailure,
-          reconciliation: "not-found",
-        });
-      p.reportReconciliation?.({ outcome: "found", originalFailure });
     }
-  }
+    return target;
+  });
   if (m.kind === "native-source") {
-    // --no-wait returns accepted/queued deployments. Poll only the identified write;
-    // no second deploy or rebuilt replacement is permitted while it becomes ready.
-    const id = target.id;
-    for (let poll = 0; ; poll++) {
-      await codeGuard("vercel.identity", () =>
-        verifyNativeDeploymentIdentity(target!, m, manifestDigest),
-      );
-      if (poll === 0) p.reportDeployment?.(target);
-      if (target.readyState === "READY") break;
-      if (["ERROR", "CANCELED"].includes(target.readyState))
-        throw new CodeDiagnosticError({
-          guard: "vercel.deployment",
-          category: "invariant",
-          invariant: "code.deployment-build-failed",
-          provider: target.providerError,
-        });
-      if (!["QUEUED", "INITIALIZING", "BUILDING"].includes(target.readyState))
-        throw new Error("code.deployment-readiness-invalid");
-      if (poll >= 120) throw new Error("code.deployment-readiness-timeout");
-      await (p.waitForPoll?.() ??
-        new Promise<void>((resolve) => setTimeout(resolve, 5000)));
-      const next = await codeGuard("vercel.deployment", () => p.deployment(id));
-      if (next.id !== id) throw new Error("code.native-deployment-identity");
-      target = next;
-    }
+    target = await observePhase(p, "remote-build", async () => {
+      // --no-wait returns accepted/queued deployments. Poll only the identified write;
+      // no second deploy or rebuilt replacement is permitted while it becomes ready.
+      const id = target.id;
+      for (let poll = 0; ; poll++) {
+        await codeGuard("vercel.identity", () =>
+          verifyNativeDeploymentIdentity(target!, m, manifestDigest),
+        );
+        if (poll === 0) p.reportDeployment?.(target);
+        if (target.readyState === "READY") break;
+        if (["ERROR", "CANCELED"].includes(target.readyState))
+          throw new CodeDiagnosticError({
+            guard: "vercel.deployment",
+            category: "invariant",
+            invariant: "code.deployment-build-failed",
+            provider: target.providerError,
+          });
+        if (!["QUEUED", "INITIALIZING", "BUILDING"].includes(target.readyState))
+          throw new Error("code.deployment-readiness-invalid");
+        if (poll >= 120) throw new Error("code.deployment-readiness-timeout");
+        await (p.waitForPoll?.() ??
+          new Promise<void>((resolve) => setTimeout(resolve, 5000)));
+        const next = await codeGuard("vercel.deployment", () =>
+          p.deployment(id),
+        );
+        if (next.id !== id) throw new Error("code.native-deployment-identity");
+        target = next;
+      }
+      return target;
+    });
   } else {
     await codeGuard("vercel.identity", () =>
       verifyReleaseDeploymentIdentity(target, m, manifestDigest, buildDigest),
@@ -145,28 +199,37 @@ export async function executeCodeRelease(
   // --skip-domain is a required staging property, verified independently of
   // CLI success. An unexpected assignment must stop before promotion.
   await p.guard([m.vercel.productionDeploymentId]);
-  await codeGuard("health.staged", () => p.health(target, false));
+  await observePhase(p, "staged-verification", () =>
+    codeGuard("health.staged", () => p.health(target, false)),
+  );
   const current = await p.guard([m.vercel.productionDeploymentId]);
   if (current !== target.id) {
-    let failure: Diagnostic | undefined;
-    try {
-      await codeGuard("vercel.promote", () => p.promote(target.id));
-    } catch (error) {
-      failure = classifyCodeFailure("vercel.promote", error);
-    }
-    const after = await p.guard([m.vercel.productionDeploymentId, target.id]);
-    if (after !== target.id)
-      throw outcomeError(
-        "vercel.promote",
-        failure
-          ? "code.promote-outcome-unresolved"
-          : "code.promote-not-assigned",
-        failure,
-      );
-    if (failure)
-      p.reportReconciliation?.({ outcome: "found", originalFailure: failure });
+    await observePhase(p, "promotion", async () => {
+      let failure: Diagnostic | undefined;
+      try {
+        await codeGuard("vercel.promote", () => p.promote(target.id));
+      } catch (error) {
+        failure = classifyCodeFailure("vercel.promote", error);
+      }
+      const after = await p.guard([m.vercel.productionDeploymentId, target.id]);
+      if (after !== target.id)
+        throw outcomeError(
+          "vercel.promote",
+          failure
+            ? "code.promote-outcome-unresolved"
+            : "code.promote-not-assigned",
+          failure,
+        );
+      if (failure)
+        p.reportReconciliation?.({
+          outcome: "found",
+          originalFailure: failure,
+        });
+    });
   }
-  await codeGuard("health.public", () => p.health(target, true));
+  await observePhase(p, "public-verification", () =>
+    codeGuard("health.public", () => p.health(target, true)),
+  );
   return target.id;
 }
 

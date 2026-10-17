@@ -21,6 +21,7 @@ import {
   stagedDeploymentUrl,
 } from "./release/code-cli";
 import { reportCodeEvent, reportCodeFailure } from "./release/code-report";
+import { checkCodeAuth } from "./release/code-auth";
 
 import {
   checkCodeHealth,
@@ -126,6 +127,13 @@ async function deployment(id: string) {
       providerError: providerDiagnostic(
         JSON.stringify({ error: { code: d.errorCode?.toLowerCase() } }),
         d.errorMessage,
+        {
+          secrets: [
+            process.env.VERCEL_TOKEN,
+            process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+            process.env.GH_TOKEN,
+          ].filter((value): value is string => Boolean(value)),
+        },
       ),
     };
   });
@@ -301,6 +309,19 @@ async function main() {
     process.env.GITHUB_ACTIONS !== "true"
   )
     throw new Error("code.human-gate-required");
+  if (command === "auth") {
+    // The preflight is a read-only operation inside the existing protected job.
+    // Validate the App dispatch and recorded approval before exposing the token.
+    await githubGate();
+    await codeGuard("human.approval", () => verifyHumanApproval(process.env));
+    await checkCodeAuth({
+      token: process.env.VERCEL_TOKEN,
+      projectId: manifest.vercel.projectId,
+      teamId: manifest.vercel.teamId,
+      report: reportCodeEvent,
+    });
+    return;
+  }
   await codeGuard("production.check", () =>
     guard([manifest.vercel.productionDeploymentId]),
   );
@@ -324,6 +345,9 @@ async function main() {
     deployment,
     lookup,
     health,
+    reportPhase(event) {
+      reportCodeEvent({ event: "phase", ...event });
+    },
     reportDeployment(d) {
       reportCodeEvent({ event: "deployment", deploymentId: d.id });
     },
@@ -399,14 +423,14 @@ main().catch((error) => {
   console.error(
     JSON.stringify({
       event: "code-release-failure",
-      command: ["prepare", "check", "deploy"].includes(command)
+      command: ["prepare", "check", "auth", "deploy"].includes(command)
         ? command
         : "unknown",
       ...reportCodeFailure(guard, error),
     }),
   );
   console.error(
-    "Release stopped; only allowlisted diagnostic fields are emitted. No automatic retry or recovery.",
+    "Release stopped; diagnostics are bounded and credential-redacted. No automatic retry or recovery.",
   );
   process.exitCode = 1;
 });
