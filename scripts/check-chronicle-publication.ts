@@ -196,4 +196,5 @@ function main() {
 }
 
 // Shared source readiness can be imported by evidence generation without running the CLI.
-if (process.argv[1]?.endsWith("check-chronicle-publication.ts")) main();
+if (/check-chronicle-publication\.(?:ts|cjs)$/.test(process.argv[1] ?? ""))
+  main();
