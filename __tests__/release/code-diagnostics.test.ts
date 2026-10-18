@@ -2,12 +2,58 @@
 import { z } from "zod";
 import {
   CodeDiagnosticError,
+  CodeHealthError,
   classifyCodeFailure,
   codeGuard,
   codeMetadataRequest,
 } from "../../scripts/release/code-diagnostics";
 import { GitHubApiError } from "../../scripts/release/app";
 const sensitive = "SENSITIVE_PASSWORD_TOKEN_DO_NOT_LOG";
+test("typed page health errors retain the original error code", () => {
+  expect(() => {
+    throw new CodeHealthError("/stats", 503, "http-status");
+  }).toThrow("code.health-page");
+});
+test.each([
+  { path: sensitive, condition: "http-status" },
+  { path: "/stats?token=" + sensitive, condition: "http-status" },
+  { path: "/stats", condition: sensitive },
+])(
+  "forged health observations cannot publish arbitrary paths or conditions",
+  (health) => {
+    const error = new CodeDiagnosticError({
+      guard: "health.public",
+      category: "invariant",
+      invariant: "code.health-page",
+      status: 503,
+    });
+    Object.assign(error.diagnostic, { health });
+    const diagnostic = classifyCodeFailure("health.public", error);
+    expect(diagnostic.health).toBeUndefined();
+    expect(diagnostic.status).toBe(503);
+    expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+  },
+);
+test("health observations retain only the path and condition fields", () => {
+  const error = new CodeDiagnosticError({
+    guard: "health.public",
+    category: "invariant",
+    invariant: "code.health-page",
+    status: 200,
+    health: { path: "/api/health", condition: "health-not-ok" },
+  });
+  Object.assign(error.diagnostic.health!, {
+    body: sensitive,
+    headers: { cookie: sensitive },
+    url: "https://private.example/" + sensitive,
+  });
+  const diagnostic = classifyCodeFailure("health.public", error);
+  expect(diagnostic.health).toEqual({
+    path: "/api/health",
+    condition: "health-not-ok",
+  });
+  expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+});
 function fetcher(response: Response): typeof fetch {
   return jest.fn(async () => response);
 }

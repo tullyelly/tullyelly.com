@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import probe from "./publication-probe.json";
 import type { PublicationPlan } from "./code-publication-plan";
+import { CodeHealthError } from "./code-diagnostics";
 
 type Read = (path: string) => Promise<Response>;
 
@@ -133,8 +134,16 @@ export async function checkPublicationHealth(
       throw new Error("code.health-revision");
   }
   const health = await read("/api/health");
-  if (health.status !== 200 || (await health.json())?.ok !== true)
-    throw new Error("code.health-page");
+  if (health.status !== 200)
+    throw new CodeHealthError("/api/health", health.status, "http-status");
+  const healthBody: unknown = await health.json();
+  if (
+    !healthBody ||
+    typeof healthBody !== "object" ||
+    !("ok" in healthBody) ||
+    healthBody.ok !== true
+  )
+    throw new CodeHealthError("/api/health", health.status, "health-not-ok");
   const post = await html(read, `/shaolin/${probe.slug}`);
   const visible = markup(post);
   const heading = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(visible)?.[1] ?? "";

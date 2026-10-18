@@ -6,6 +6,10 @@ import {
   checkPublicationHealth,
 } from "../../scripts/release/code-publication-health";
 import probe from "../../scripts/release/publication-probe.json";
+import {
+  classifyCodeFailure,
+  codeGuard,
+} from "../../scripts/release/code-diagnostics";
 
 const sha = "a".repeat(40);
 const rendered = probe.assets.filter(
@@ -69,6 +73,45 @@ test("retained rollback content checks do not substitute an unknown native build
     checkPublicationHealth(fixture({ sha: "unknown" }), sha),
   ).rejects.toThrow("code.health-revision");
 });
+test.each([
+  ["health.staged", 503, "http-status"],
+  ["health.public", 503, "http-status"],
+  ["health.staged", 200, "health-not-ok"],
+  ["health.public", 200, "health-not-ok"],
+] as const)(
+  "%s records API health status %s and %s without publishing JSON or headers",
+  async (guard, status, condition) => {
+    const sensitive = "PRIVATE_API_HEALTH_BODY_AND_COOKIE";
+    const baseline = fixture();
+    const read = jest.fn(async (path: string) =>
+      path === "/api/health"
+        ? Response.json(
+            { ok: false, details: sensitive },
+            { status, headers: { "set-cookie": sensitive } },
+          )
+        : baseline(path),
+    );
+    let diagnostic: ReturnType<typeof classifyCodeFailure> | undefined;
+    try {
+      await codeGuard(guard, () => checkPublicationHealth(read, sha));
+      throw new Error("Expected API health to reject");
+    } catch (error) {
+      diagnostic = classifyCodeFailure(guard, error);
+    }
+    expect(diagnostic).toEqual({
+      guard,
+      category: "invariant",
+      invariant: "code.health-page",
+      status,
+      health: { path: "/api/health", condition },
+    });
+    expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+    expect(read.mock.calls.map(([path]) => path)).toEqual([
+      "/api/__version",
+      "/api/health",
+    ]);
+  },
+);
 test.each([
   { sha: "b".repeat(40) },
   { "/shaolin/appleton-east": "<h1>draft</h1>" },

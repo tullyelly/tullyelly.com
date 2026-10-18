@@ -11,7 +11,10 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { classifyCodeFailure } from "../../scripts/release/code-diagnostics";
+import {
+  classifyCodeFailure,
+  CodeHealthError,
+} from "../../scripts/release/code-diagnostics";
 import { reportCodeEvent } from "../../scripts/release/code-report";
 import { createHash } from "node:crypto";
 
@@ -53,6 +56,52 @@ const context = {
   settingsSha256: "c".repeat(64),
   previousDeployment: "dpl_previous",
 };
+test("page health observations survive report storage and final rendering without response contents", () => {
+  const root = mkdtempSync(join(tmpdir(), "health-code-report-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  const sensitive = "PRIVATE_HEALTH_BODY_AND_HEADERS";
+  try {
+    const path = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = path;
+    const diagnostic = classifyCodeFailure(
+      "health.public",
+      new CodeHealthError("/stats", 503, "http-status"),
+    );
+    Object.assign(diagnostic.health!, {
+      body: sensitive,
+      headers: { cookie: sensitive },
+    });
+    reportCodeEvent({ event: "failure", diagnostic });
+    const stored = readFileSync(path, "utf8");
+    expect(stored).not.toContain(sensitive);
+    expect(JSON.parse(stored).diagnostic.health).toEqual({
+      path: "/stats",
+      condition: "http-status",
+    });
+    const rendered = summary([JSON.parse(stored)], {});
+    expect(rendered).toContain("HTTP=503; path=/stats; condition=http-status");
+    expect(rendered).not.toContain(sensitive);
+    expect(
+      summary(
+        [
+          {
+            event: "failure",
+            diagnostic: {
+              guard: "health.public",
+              category: "invariant",
+              health: { path: sensitive, condition: sensitive },
+            },
+          },
+        ],
+        {},
+      ),
+    ).not.toContain(sensitive);
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 test.each(["github.ci-workflow", "github.ci-runs", "github.ci-checks"])(
   "summary retains the fixed %s API operation",
   (operation) => {

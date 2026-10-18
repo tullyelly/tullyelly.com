@@ -95,6 +95,16 @@ const knownMessages = new Map([
     "code.project-git-linked",
   ],
 ]);
+const healthPaths = ["/", "/shaolin", "/stats", "/api/health"] as const;
+const healthConditions = [
+  "http-status",
+  "missing-doctype",
+  "health-not-ok",
+] as const;
+type HealthObservation = {
+  path: (typeof healthPaths)[number];
+  condition: (typeof healthConditions)[number];
+};
 export type Diagnostic = {
   guard: Guard;
   operation?: Operation;
@@ -122,6 +132,7 @@ export type Diagnostic = {
   reconciliation?: "not-found" | "failed";
   reconciliationFailure?: Diagnostic;
   status?: number;
+  health?: HealthObservation;
   networkCauseCodes?: string[];
   invariant?: string;
   fields?: { path: string; code: string }[];
@@ -131,8 +142,28 @@ export class CodeDiagnosticError extends Error {
     super("code.guard-failed");
   }
 }
+/** Fixed probe observations only; response bodies and headers are never retained. */
+export class CodeHealthError extends Error {
+  readonly health: HealthObservation;
+  constructor(
+    path: HealthObservation["path"],
+    readonly status: number,
+    condition: HealthObservation["condition"],
+  ) {
+    super("code.health-page");
+    this.health = { path, condition };
+  }
+}
 function classifyRaw(guard: Guard, error: unknown): Diagnostic {
   if (error instanceof CodeDiagnosticError) return error.diagnostic;
+  if (error instanceof CodeHealthError)
+    return {
+      guard,
+      category: "invariant",
+      invariant: "code.health-page",
+      status: error.status,
+      health: error.health,
+    };
   if (error instanceof SyntaxError) return { guard, category: "json" };
   if (error instanceof z.ZodError)
     return {
@@ -249,6 +280,12 @@ function sanitizeDiagnostic(
       d.status <= 599
     )
       safe.status = d.status;
+    if (
+      d.health &&
+      healthPaths.includes(d.health.path) &&
+      healthConditions.includes(d.health.condition)
+    )
+      safe.health = { path: d.health.path, condition: d.health.condition };
     if (
       d.invariant &&
       (invariants.has(d.invariant) ||
