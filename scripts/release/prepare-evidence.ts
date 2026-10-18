@@ -163,6 +163,7 @@ async function main() {
     previousDeployment: id,
     ciRunId: ci.runId,
     workflowRunId: evidence.workflow.runId,
+    workflowRunAttempt: evidence.workflow.runAttempt,
     workflowRevision: evidence.workflow.sha,
     compatibilityRisks: compatibility.risks,
     changedPaths: compatibility.changedPaths,

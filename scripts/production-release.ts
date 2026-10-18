@@ -23,15 +23,8 @@ import {
 import { reportCodeEvent, reportCodeFailure } from "./release/code-report";
 import { checkCodeAuth } from "./release/code-auth";
 
-import {
-  checkCodeHealth,
-  readHealthResponse,
-  verifyHealthDomainAliases,
-} from "./release/code-health";
-import {
-  checkPublicationHealth,
-  checkChangedPublicationHealth,
-} from "./release/code-publication-health";
+import { verifyHealthDomainAliases } from "./release/code-health";
+import { checkApplicationHealth } from "./release/application-health";
 
 import {
   codeGuard,
@@ -235,40 +228,14 @@ async function health(
   d: z.infer<typeof deploymentSchema>,
   publicDomain: boolean,
 ) {
-  await checkCodeHealth({
+  await checkApplicationHealth({
     deployment: d,
     projectId: manifest.vercel.projectId,
     publicDomain,
-    operation: manifest.operation,
+    commit: manifest.commit,
+    publication: manifest.publication,
     bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
   });
-  await checkPublicationHealth(
-    (path) =>
-      readHealthResponse({
-        stagedHost: d.url,
-        publicDomain,
-        path,
-        // Relative image URLs belong to the canonical rendered-page origin.
-        // The apex redirect strips Vercel's dpl image hint; do not relax its
-        // strict path/query redirect check to accommodate that rewrite.
-        publicOrigin: publicDomain ? "https://www.tullyelly.com" : undefined,
-        bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
-        timeoutMs: 30000,
-      }),
-    manifest.commit,
-  );
-  await checkChangedPublicationHealth(
-    (path) =>
-      readHealthResponse({
-        stagedHost: d.url,
-        publicDomain,
-        path,
-        publicOrigin: publicDomain ? "https://www.tullyelly.com" : undefined,
-        bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
-        timeoutMs: 30000,
-      }),
-    manifest.publication,
-  );
 }
 async function main() {
   manifest = await codeGuard("manifest.validation", () =>
@@ -286,6 +253,7 @@ async function main() {
     sourceSha256: manifest.source.sha256,
     ciRunId: manifest.ci.runId,
     workflowRunId: manifest.workflow.runId,
+    workflowRunAttempt: manifest.workflow.runAttempt,
     workflowRevision: manifest.workflow.sha,
     compatibilityRisks: manifest.compatibility.risks,
     changedPaths: manifest.compatibility.changedPaths,

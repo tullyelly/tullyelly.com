@@ -1,5 +1,10 @@
 // Fixed invariant names shared by diagnostics and the credential-free summary.
 export const codeInvariants = [
+  "code.health-security-challenge",
+  "code.public-verification-binding",
+  "code.public-verification-run",
+  "code.public-verification-input",
+  "code.public-verification-credentials",
   "code.release-token-missing",
   "code.release-token-malformed",
   "code.auth-target-mismatch",

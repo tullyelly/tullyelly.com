@@ -177,9 +177,12 @@ export function diagnosticSummary(d) {
   if (
     d.health &&
     ["/", "/shaolin", "/stats", "/api/health"].includes(d.health.path) &&
-    ["http-status", "missing-doctype", "health-not-ok"].includes(
-      d.health.condition,
-    )
+    [
+      "http-status",
+      "missing-doctype",
+      "health-not-ok",
+      "security-challenge",
+    ].includes(d.health.condition)
   ) {
     parts.push(`path=${d.health.path}`, `condition=${d.health.condition}`);
     const request = safeHealthRequestTrace(d.health.request);
@@ -235,18 +238,20 @@ export function renderReleaseSummary(events, results = {}) {
     );
   const promotion = lastPhase("promotion");
   const publicVerification = lastPhase("public-verification");
-  const promotedPublicFailure =
+  const publicVerificationPending =
     promotion >= 0 &&
-    publicVerification > promotion &&
     events[promotion].outcome === "success" &&
-    events[publicVerification].outcome === "failure";
+    !(
+      publicVerification > promotion &&
+      events[publicVerification].outcome === "success"
+    );
   const lines = [
     context.evidenceSha256 || results.evidenceSha256
       ? "## Native source production release"
       : "## Code-only production release",
     "",
-    ...(promotedPublicFailure
-      ? ["**Production promoted; public verification failed.**", ""]
+    ...(publicVerificationPending
+      ? ["**Production promoted; public verification pending.**", ""]
       : []),
     `Revision: ${hex(context.revision ?? results.revision, 40)}`,
     `Target revision: ${hex(context.targetRevision, 40)}`,
@@ -257,6 +262,7 @@ export function renderReleaseSummary(events, results = {}) {
           `Source SHA-256: ${hex(context.sourceSha256, 64)}`,
           `Workflow revision: ${hex(context.workflowRevision, 40)}`,
           `Workflow run: ${typeof context.workflowRunId === "string" && /^[1-9][0-9]*$/.test(context.workflowRunId) ? context.workflowRunId : "unavailable"}`,
+          `Workflow attempt: ${typeof context.workflowRunAttempt === "string" && /^[1-9][0-9]*$/.test(context.workflowRunAttempt) ? context.workflowRunAttempt : "unavailable"}`,
           `Reused exact-revision CI run: ${typeof context.ciRunId === "string" && /^[1-9][0-9]*$/.test(context.ciRunId) ? context.ciRunId : "unavailable"}`,
           "Canonical application build: Vercel native source build after human approval.",
         ]
@@ -281,6 +287,32 @@ export function renderReleaseSummary(events, results = {}) {
     "| Stage | Duration | Result |",
     "| --- | ---: | --- |",
   ];
+  if (publicVerificationPending) {
+    const bound =
+      typeof context.workflowRunId === "string" &&
+      /^[1-9][0-9]{0,14}$/.test(context.workflowRunId) &&
+      typeof context.workflowRunAttempt === "string" &&
+      /^[1-9][0-9]{0,14}$/.test(context.workflowRunAttempt) &&
+      identity(deployment.deploymentId) !== "unavailable" &&
+      hex(context.revision, 40) !== "unavailable";
+    lines.splice(
+      lines.indexOf("| Stage | Duration | Result |"),
+      0,
+      "Public verification execution: GitHub Actions; promotion alone does not establish public acceptance.",
+      "The public check remains incomplete. A Cloudflare challenge is not a pass; keep Bot Fight Mode enabled.",
+      ...(bound
+        ? [
+            "Read-only follow-up from any suitable execution environment, using the original release-evidence.json artifact:",
+            "```bash",
+            `npm run --silent release:verify-public -- --run ${context.workflowRunId} --attempt ${context.workflowRunAttempt} --deployment ${deployment.deploymentId} --sha ${context.revision} --evidence release-evidence.json --location EXECUTION_LABEL`,
+            "```",
+          ]
+        : [
+            "Recover the exact run, attempt, deployment and SHA before running the read-only follow-up.",
+          ]),
+      "",
+    );
+  }
   if (context.evidenceSha256 || results.evidenceSha256) {
     const allowedRisks = new Set([
       "database-schema",

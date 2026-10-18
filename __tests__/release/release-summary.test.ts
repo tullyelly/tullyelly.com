@@ -494,7 +494,7 @@ test("summary prominently distinguishes successful promotion followed by failed 
     ],
     { evidenceSha256: "b".repeat(64), production: "failure" },
   );
-  const notice = "**Production promoted; public verification failed.**";
+  const notice = "**Production promoted; public verification pending.**";
   expect(rendered).toContain(notice);
   expect(rendered.indexOf(notice)).toBeLessThan(rendered.indexOf("Revision:"));
   expect(rendered).toContain("Exact-deployment promotion | 7.2 s | success");
@@ -502,70 +502,132 @@ test("summary prominently distinguishes successful promotion followed by failed 
   expect(rendered).toContain("protected operation: failure");
 });
 test.each([
-  [
-    "promotion incomplete",
-    [
+  {
+    label: "promotion incomplete",
+    pending: false,
+    events: [
       { event: "phase", phase: "promotion", outcome: "started" },
       { event: "phase", phase: "public-verification", outcome: "failure" },
     ],
-  ],
-  [
-    "promotion failed",
-    [
+  },
+  {
+    label: "promotion failed",
+    pending: false,
+    events: [
       { event: "phase", phase: "promotion", outcome: "failure" },
       { event: "phase", phase: "public-verification", outcome: "failure" },
     ],
-  ],
-  [
-    "public verification cancelled while incomplete",
-    [
+  },
+  {
+    label: "public verification interrupted",
+    pending: true,
+    events: [
       { event: "phase", phase: "promotion", outcome: "success" },
       { event: "phase", phase: "public-verification", outcome: "started" },
     ],
-  ],
-  [
-    "public verification not reached",
-    [{ event: "phase", phase: "promotion", outcome: "success" }],
-  ],
-  [
-    "public verification passed",
-    [
+  },
+  {
+    label: "public verification not reached",
+    pending: true,
+    events: [{ event: "phase", phase: "promotion", outcome: "success" }],
+  },
+  {
+    label: "public verification passed",
+    pending: false,
+    events: [
       { event: "phase", phase: "promotion", outcome: "success" },
       { event: "phase", phase: "public-verification", outcome: "success" },
     ],
-  ],
-  [
-    "latest public phase is incomplete",
-    [
+  },
+  {
+    label: "new public phase incomplete",
+    pending: true,
+    events: [
       { event: "phase", phase: "promotion", outcome: "success" },
       { event: "phase", phase: "public-verification", outcome: "failure" },
       { event: "phase", phase: "public-verification", outcome: "started" },
     ],
-  ],
-  [
-    "latest promotion is incomplete",
-    [
+  },
+  {
+    label: "new promotion incomplete",
+    pending: false,
+    events: [
       { event: "phase", phase: "promotion", outcome: "success" },
       { event: "phase", phase: "promotion", outcome: "started" },
       { event: "phase", phase: "public-verification", outcome: "failure" },
     ],
-  ],
-  [
-    "public failure preceded latest promotion",
-    [
+  },
+  {
+    label: "old public failure predates latest promotion",
+    pending: true,
+    events: [
       { event: "phase", phase: "public-verification", outcome: "failure" },
       { event: "phase", phase: "promotion", outcome: "success" },
     ],
-  ],
-])("%s does not claim a promoted public failure", (_label, events) => {
-  const rendered = summary(events, {
-    evidenceSha256: "b".repeat(64),
-    production: "cancelled",
-  });
-  expect(rendered).not.toContain(
-    "Production promoted; public verification failed.",
+  },
+])(
+  "$label preserves the separate public-verification state",
+  ({ events, pending }) => {
+    const rendered = summary(events, {
+      evidenceSha256: "b".repeat(64),
+      production: "cancelled",
+    });
+    expect(
+      rendered.includes("Production promoted; public verification pending."),
+    ).toBe(pending);
+    expect(rendered).toContain("protected operation: cancelled");
+  },
+);
+test.each(["failure", "started", "absent"])(
+  "a promoted release names %s public verification pending and gives a bound portable command",
+  (outcome) => {
+    const events = [
+      {
+        ...context,
+        evidenceSha256: "b".repeat(64),
+        workflowRunId: "123",
+        workflowRunAttempt: "2",
+      },
+      { event: "deployment", deploymentId: "dpl_expected" },
+      { event: "phase", phase: "promotion", outcome: "success" },
+      ...(outcome === "absent"
+        ? []
+        : [{ event: "phase", phase: "public-verification", outcome }]),
+    ];
+    const output = summary(events, { production: "failure" });
+    expect(output).toContain(
+      "Production promoted; public verification pending.",
+    );
+    expect(output).toContain(
+      `npm run --silent release:verify-public -- --run 123 --attempt 2 --deployment dpl_expected --sha ${"a".repeat(40)} --evidence release-evidence.json --location EXECUTION_LABEL`,
+    );
+    expect(output).toContain("Public verification execution: GitHub Actions");
+    expect(output).toContain("protected operation: failure");
+    expect(output).toContain("keep Bot Fight Mode enabled");
+    expect(
+      summary(
+        [
+          ...events,
+          { event: "phase", phase: "public-verification", outcome: "success" },
+        ],
+        { production: "success" },
+      ),
+    ).not.toContain("public verification pending");
+  },
+);
+test("untrusted run/attempt/deployment fields cannot enter a follow-up command", () => {
+  const sensitive = "PRIVATE_VALUE_DO_NOT_RENDER";
+  const output = summary(
+    [
+      { ...context, workflowRunId: sensitive, workflowRunAttempt: sensitive },
+      { event: "deployment", deploymentId: sensitive },
+      { event: "phase", phase: "promotion", outcome: "success" },
+    ],
+    {},
   );
-  expect(rendered).toContain("protected operation: cancelled");
+  expect(output).toContain("public verification pending");
+  expect(output).not.toContain("npm run release:verify-public");
+  expect(output).not.toContain(sensitive);
 });
 test("report labels reject coercible objects without serializing their hidden fields", () => {
   const root = mkdtempSync(join(tmpdir(), "coercible-report-label-"));

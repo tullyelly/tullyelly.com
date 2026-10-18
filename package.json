@@ -7,6 +7,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "release:verify-public": "node --import tsx scripts/verify-public-release.ts",
     "dev": "next dev",
     "dev:full": "cross-env NEXT_WATCH_CONTENTLAYER=1 concurrently -k -n next,content \"npm run dev:stable\" \"npm run content:dev\"",
     "dev:full:turbo": "concurrently -k -n next,content \"npm run dev\" \"npm run content:dev\"",
