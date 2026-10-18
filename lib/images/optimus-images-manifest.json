@@ -1219,6 +1219,17 @@
     "/images/optimus/nature-preserve/first.webp",
     "/images/optimus/nature-preserve/second.webp",
     "/images/optimus/nature-preserve/wax.webp",
+    "/images/optimus/neenah/67.webp",
+    "/images/optimus/neenah/blue.webp",
+    "/images/optimus/neenah/cashed.webp",
+    "/images/optimus/neenah/ellyot.webp",
+    "/images/optimus/neenah/meff/meff-0.webp",
+    "/images/optimus/neenah/meff/meff-1.webp",
+    "/images/optimus/neenah/meff/meff-2.webp",
+    "/images/optimus/neenah/meff/meff-3.webp",
+    "/images/optimus/neenah/meff/meff-4.webp",
+    "/images/optimus/neenah/meff/meff-5.webp",
+    "/images/optimus/neenah/meff/meff-6.webp",
     "/images/optimus/new-besties/besties/besties-0.webp",
     "/images/optimus/new-besties/besties/besties-1.webp",
     "/images/optimus/new-besties/besties/besties-2.webp",
@@ -8310,6 +8321,61 @@
     },
     {
       "src": "/images/optimus/nature-preserve/wax.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/blue.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/cashed.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/ellyot.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/neenah/meff/meff-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/meff/meff-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/meff/meff-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/meff/meff-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/meff/meff-4.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/meff/meff-5.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/neenah/meff/meff-6.webp",
       "width": 1920,
       "height": 2550
     },
