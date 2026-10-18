@@ -56,6 +56,33 @@ const context = {
   settingsSha256: "c".repeat(64),
   previousDeployment: "dpl_previous",
 };
+const publicHealthRequest = {
+  initialOrigin: "https://tullyelly.com",
+  effectiveOrigin: "https://www.tullyelly.com",
+  responses: [
+    {
+      origin: "https://tullyelly.com",
+      hop: 0,
+      status: 307,
+      timestamp: "2026-10-18T04:12:09.600Z",
+      headers: {
+        "x-vercel-id": "cle1::abc123-1792296729600-abcdef1234567890",
+      },
+    },
+    {
+      origin: "https://www.tullyelly.com",
+      hop: 1,
+      status: 403,
+      timestamp: "2026-10-18T04:12:09.676Z",
+      headers: {
+        "x-vercel-id": "cle1::iad1::abc123-1792296729676-abcdef1234567890",
+        "x-vercel-error": "FORBIDDEN",
+        "x-vercel-mitigated": "challenge",
+        "cf-ray": "abcdef1234567890-ORD",
+      },
+    },
+  ],
+};
 test("page health observations survive report storage and final rendering without response contents", () => {
   const root = mkdtempSync(join(tmpdir(), "health-code-report-"));
   const previous = process.env.RELEASE_REPORT_PATH;
@@ -102,6 +129,164 @@ test("page health observations survive report storage and final rendering withou
     rmSync(root, { recursive: true, force: true });
   }
 });
+test("public response correlation survives storage and rendering with only fixed origins and selected headers", () => {
+  const root = mkdtempSync(join(tmpdir(), "health-trace-report-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  const sensitive = "PRIVATE_RESPONSE_COOKIE_BODY_DO_NOT_STORE";
+  try {
+    const path = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = path;
+    const request = {
+      ...publicHealthRequest,
+      url: "https://private.invalid/" + sensitive,
+      body: sensitive,
+      responses: publicHealthRequest.responses.map((response) => ({
+        ...response,
+        body: sensitive,
+        headers: {
+          ...response.headers,
+          cookie: sensitive,
+          authorization: sensitive,
+          "x-unlisted": sensitive,
+          "cf-mitigated": sensitive,
+        },
+      })),
+    };
+    const event = {
+      event: "failure",
+      diagnostic: {
+        guard: "health.public",
+        category: "invariant",
+        invariant: "code.health-page",
+        status: 403,
+        health: { path: "/", condition: "http-status", request },
+      },
+    };
+    reportCodeEvent(event);
+    const stored = readFileSync(path, "utf8");
+    expect(stored).not.toContain(sensitive);
+    expect(stored).not.toContain("private.invalid");
+    expect(JSON.parse(stored).diagnostic.health.request).toEqual(
+      publicHealthRequest,
+    );
+    for (const candidate of [JSON.parse(stored), event]) {
+      const rendered = summary([candidate], { production: "failure" });
+      expect(rendered).toContain("initial-origin=https://tullyelly.com");
+      expect(rendered).toContain("effective-origin=https://www.tullyelly.com");
+      expect(rendered).toContain(
+        "hop=0 origin=https://tullyelly.com status=307 at=2026-10-18T04:12:09.600Z",
+      );
+      expect(rendered).toContain(
+        "hop=1 origin=https://www.tullyelly.com status=403 at=2026-10-18T04:12:09.676Z",
+      );
+      for (const [name, value] of Object.entries(
+        publicHealthRequest.responses[1].headers,
+      ))
+        expect(rendered).toContain(`${name}=${value}`);
+      expect(rendered).not.toContain(sensitive);
+      expect(rendered).not.toContain("private.invalid");
+      expect(rendered).not.toContain("cookie=");
+      expect(rendered).not.toContain("authorization=");
+      expect(rendered).not.toContain("x-unlisted=");
+    }
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+test.each([
+  [
+    "external initial origin",
+    { ...publicHealthRequest, initialOrigin: "https://PRIVATE_ORIGIN.invalid" },
+  ],
+  [
+    "external effective origin",
+    {
+      ...publicHealthRequest,
+      effectiveOrigin: "https://PRIVATE_ORIGIN.invalid",
+    },
+  ],
+  [
+    "userinfo origin",
+    {
+      ...publicHealthRequest,
+      initialOrigin: "https://PRIVATE_ORIGIN@tullyelly.com",
+    },
+  ],
+  [
+    "too many hops",
+    {
+      ...publicHealthRequest,
+      responses: [
+        ...publicHealthRequest.responses,
+        { ...publicHealthRequest.responses[1], hop: 2 },
+      ],
+    },
+  ],
+  [
+    "external response origin",
+    {
+      ...publicHealthRequest,
+      responses: [
+        {
+          ...publicHealthRequest.responses[0],
+          origin: "https://PRIVATE_ORIGIN.invalid",
+        },
+        publicHealthRequest.responses[1],
+      ],
+    },
+  ],
+  [
+    "invalid timestamp",
+    {
+      ...publicHealthRequest,
+      responses: [
+        { ...publicHealthRequest.responses[0], timestamp: "PRIVATE_ORIGIN" },
+        publicHealthRequest.responses[1],
+      ],
+    },
+  ],
+])(
+  "%s correlation is rejected before report storage and again at rendering",
+  (_label, request) => {
+    const root = mkdtempSync(join(tmpdir(), "invalid-health-trace-"));
+    const previous = process.env.RELEASE_REPORT_PATH;
+    try {
+      const path = join(root, "report.jsonl");
+      process.env.RELEASE_REPORT_PATH = path;
+      const event = {
+        event: "failure",
+        diagnostic: {
+          guard: "health.public",
+          category: "invariant",
+          invariant: "code.health-page",
+          status: 403,
+          health: { path: "/", condition: "http-status", request },
+        },
+      };
+      reportCodeEvent(event);
+      const stored = readFileSync(path, "utf8");
+      expect(stored).not.toContain("PRIVATE_ORIGIN");
+      expect(JSON.parse(stored).diagnostic.health).toEqual({
+        path: "/",
+        condition: "http-status",
+      });
+      for (const candidate of [JSON.parse(stored), event]) {
+        const rendered = summary([candidate], { production: "failure" });
+        expect(rendered).toContain("HTTP=403; path=/; condition=http-status");
+        expect(rendered).not.toContain("PRIVATE_ORIGIN");
+        expect(rendered).not.toContain("initial-origin=");
+        expect(rendered).not.toContain("effective-origin=");
+        expect(rendered).not.toContain("hop=");
+      }
+    } finally {
+      if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+      else process.env.RELEASE_REPORT_PATH = previous;
+      rmSync(root, { recursive: true, force: true });
+    }
+  },
+);
 test.each(["github.ci-workflow", "github.ci-runs", "github.ci-checks"])(
   "summary retains the fixed %s API operation",
   (operation) => {
@@ -288,6 +473,99 @@ test("phase summary marks an interrupted build incomplete and never assumes late
   expect(rendered).toContain("Public verification | unavailable | not reached");
   expect(rendered).toContain("Protected credential: not observed");
   expect(rendered).not.toContain("SENSITIVE_");
+});
+test("summary prominently distinguishes successful promotion followed by failed public verification", () => {
+  const rendered = summary(
+    [
+      { event: "phase", phase: "promotion", outcome: "started" },
+      {
+        event: "phase",
+        phase: "promotion",
+        outcome: "success",
+        durationMs: 7227,
+      },
+      { event: "phase", phase: "public-verification", outcome: "started" },
+      {
+        event: "phase",
+        phase: "public-verification",
+        outcome: "failure",
+        durationMs: 99,
+      },
+    ],
+    { evidenceSha256: "b".repeat(64), production: "failure" },
+  );
+  const notice = "**Production promoted; public verification failed.**";
+  expect(rendered).toContain(notice);
+  expect(rendered.indexOf(notice)).toBeLessThan(rendered.indexOf("Revision:"));
+  expect(rendered).toContain("Exact-deployment promotion | 7.2 s | success");
+  expect(rendered).toContain("Public verification | 0.1 s | failure");
+  expect(rendered).toContain("protected operation: failure");
+});
+test.each([
+  [
+    "promotion incomplete",
+    [
+      { event: "phase", phase: "promotion", outcome: "started" },
+      { event: "phase", phase: "public-verification", outcome: "failure" },
+    ],
+  ],
+  [
+    "promotion failed",
+    [
+      { event: "phase", phase: "promotion", outcome: "failure" },
+      { event: "phase", phase: "public-verification", outcome: "failure" },
+    ],
+  ],
+  [
+    "public verification cancelled while incomplete",
+    [
+      { event: "phase", phase: "promotion", outcome: "success" },
+      { event: "phase", phase: "public-verification", outcome: "started" },
+    ],
+  ],
+  [
+    "public verification not reached",
+    [{ event: "phase", phase: "promotion", outcome: "success" }],
+  ],
+  [
+    "public verification passed",
+    [
+      { event: "phase", phase: "promotion", outcome: "success" },
+      { event: "phase", phase: "public-verification", outcome: "success" },
+    ],
+  ],
+  [
+    "latest public phase is incomplete",
+    [
+      { event: "phase", phase: "promotion", outcome: "success" },
+      { event: "phase", phase: "public-verification", outcome: "failure" },
+      { event: "phase", phase: "public-verification", outcome: "started" },
+    ],
+  ],
+  [
+    "latest promotion is incomplete",
+    [
+      { event: "phase", phase: "promotion", outcome: "success" },
+      { event: "phase", phase: "promotion", outcome: "started" },
+      { event: "phase", phase: "public-verification", outcome: "failure" },
+    ],
+  ],
+  [
+    "public failure preceded latest promotion",
+    [
+      { event: "phase", phase: "public-verification", outcome: "failure" },
+      { event: "phase", phase: "promotion", outcome: "success" },
+    ],
+  ],
+])("%s does not claim a promoted public failure", (_label, events) => {
+  const rendered = summary(events, {
+    evidenceSha256: "b".repeat(64),
+    production: "cancelled",
+  });
+  expect(rendered).not.toContain(
+    "Production promoted; public verification failed.",
+  );
+  expect(rendered).toContain("protected operation: cancelled");
 });
 test("report labels reject coercible objects without serializing their hidden fields", () => {
   const root = mkdtempSync(join(tmpdir(), "coercible-report-label-"));

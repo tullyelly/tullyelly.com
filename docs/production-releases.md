@@ -161,7 +161,14 @@ Page health failures preserve the exact allowlisted probe path, HTTP status and
 failed condition in the diagnostic report and final summary. The paths are `/`,
 `/shaolin`, `/stats` and `/api/health`; conditions distinguish an unexpected HTTP
 status, missing HTML doctype and JSON health that does not report `ok: true`.
-Response bodies, headers and arbitrary URLs are never retained. These diagnostics
+Public HTML probe failures also retain initial/effective public origins and at
+most two response observations: hop, origin, HTTP status, UTC timestamp and
+strictly validated `x-vercel-id`, selected `x-vercel-error` codes,
+`x-vercel-mitigated`, `cf-ray` and `cf-mitigated` values. Only those individual
+headers are read; cookies, authorization, response bodies, full header collections,
+redirect destinations and arbitrary URLs are never retained. The correlation
+fields are revalidated before report storage and summary rendering. Header
+presence alone does not identify the service that rejected a request. These diagnostics
 do not change the checks or retry failed requests. Older reports that contain only
 `code.health-page` cannot establish which probe failed from elapsed time alone.
 
@@ -204,6 +211,39 @@ completed when an authoritative candidate exists; remote build success requires
 READY. Unobserved phases say `not reached`, and a started phase without a terminal
 event says `incomplete`. Phase timings use the existing stage clock and may overlap;
 the CLI invocation does not expose a precise file-upload/request boundary.
+
+If promotion succeeded and public verification failed, the summary prominently
+states **Production promoted; public verification failed.** This records that
+production changed even though the release workflow failed; it does not authorize
+a retry or rollback.
+
+### Read-only GitHub runner diagnosis
+
+For a public rejection that cannot be correlated from existing evidence, run
+`node --import tsx scripts/diagnose-public-health.ts` locally. It reuses the release
+request helper with its 30-second deadline and redirect rules, checking the
+homepage through both public origins with anonymous GETs and default Node request
+attributes. Each origin is checked once; safe observations are printed as JSON,
+and any failed status, redirect or HTML assertion makes the command fail. It does
+not establish full revision, authorization or publication acceptance.
+
+After the patch is reviewed and merged, an authorized operator can execute the
+same probe on GitHub's `ubuntu-latest` runner:
+
+```bash
+gh workflow run public-health-diagnostic.yml --repo tullyelly/tullyelly.com --ref main
+```
+
+The manual diagnostic workflow needs only `contents: read`; it has no production
+environment, application build, production secrets, provider authentication or
+mutation. Inspect its safe hop/status/timestamp/request identifiers and correlate
+any rejection with provider request evidence. Local success cannot establish
+GitHub runner success. A successful runner probe supports reassessment of a fresh
+protected release; it does not prove the historical cause or replace release
+assertions. Resolve any reproduced rejection before another production attempt.
+Do not rerun an old production job for diagnosis. The release entry point remains
+`release-dispatch.yml` on main, `mode=production`, with the full reviewed current-main
+SHA, empty ordinary manifest fields and the existing human production gate.
 
 `node scripts/release/check-cli.mjs` executes the real pinned CLI against a **simulated
 loopback provider**, with nonempty source upload, upload/deployment rejection,

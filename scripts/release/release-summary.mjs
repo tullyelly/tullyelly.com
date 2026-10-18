@@ -9,6 +9,7 @@ import {
 import { pathToFileURL } from "node:url";
 import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
 import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
+import { safeHealthRequestTrace } from "./health-observation.mjs";
 
 const labels = new Set([
   "Installing source dependencies",
@@ -179,8 +180,24 @@ export function diagnosticSummary(d) {
     ["http-status", "missing-doctype", "health-not-ok"].includes(
       d.health.condition,
     )
-  )
+  ) {
     parts.push(`path=${d.health.path}`, `condition=${d.health.condition}`);
+    const request = safeHealthRequestTrace(d.health.request);
+    if (request) {
+      parts.push(
+        `initial-origin=${request.initialOrigin}`,
+        `effective-origin=${request.effectiveOrigin}`,
+      );
+      for (const response of request.responses)
+        parts.push(
+          `hop=${response.hop} origin=${response.origin} status=${response.status} at=${response.timestamp}${Object.entries(
+            response.headers,
+          )
+            .map(([name, value]) => ` ${name}=${value}`)
+            .join("")}`,
+        );
+    }
+  }
   if (d.exitStatus === null || (integer(d.exitStatus) && d.exitStatus <= 255))
     parts.push(`exit=${d.exitStatus}`);
   if (
@@ -209,11 +226,28 @@ export function renderReleaseSummary(events, results = {}) {
   const artifact = events.find((e) => e.event === "artifact") ?? {};
   const deployment =
     events.filter((e) => e.event === "deployment").at(-1) ?? {};
+  const lastPhase = (phase) =>
+    events.findLastIndex(
+      (event) =>
+        event.event === "phase" &&
+        event.phase === phase &&
+        phaseOutcomes.has(event.outcome),
+    );
+  const promotion = lastPhase("promotion");
+  const publicVerification = lastPhase("public-verification");
+  const promotedPublicFailure =
+    promotion >= 0 &&
+    publicVerification > promotion &&
+    events[promotion].outcome === "success" &&
+    events[publicVerification].outcome === "failure";
   const lines = [
     context.evidenceSha256 || results.evidenceSha256
       ? "## Native source production release"
       : "## Code-only production release",
     "",
+    ...(promotedPublicFailure
+      ? ["**Production promoted; public verification failed.**", ""]
+      : []),
     `Revision: ${hex(context.revision ?? results.revision, 40)}`,
     `Target revision: ${hex(context.targetRevision, 40)}`,
     `Operation: ${["deploy", "rollback"].includes(context.operation) ? context.operation : "unavailable"}`,
