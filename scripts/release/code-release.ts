@@ -1,4 +1,5 @@
 /** Provider orchestration has no database API, migration runner or credential mutator. */
+import { confirmedCloudflareChallenge } from "./health-observation.mjs";
 import type { CodeManifest } from "./code-manifest";
 import type { NativeCodeEvidence } from "./native-evidence";
 import { verifyReleaseDeploymentIdentity } from "./manifest";
@@ -27,7 +28,7 @@ export type CodeReleasePhase =
   | "public-verification";
 export type CodePhaseEvent = {
   phase: CodeReleasePhase;
-  outcome: "started" | "success" | "failure";
+  outcome: "started" | "success" | "failure" | "pending";
   durationMs?: number;
 };
 export interface CodeProviders {
@@ -71,6 +72,31 @@ async function observePhase<T>(
     throw error;
   }
 }
+export type CodeReleaseResult = {
+  deploymentId: string;
+  deployment_succeeded: true;
+} & (
+  | { public_verified: true; publicVerification: "public verification passed" }
+  | {
+      public_verified: false;
+      publicVerification: "public verification pending";
+      reason: Diagnostic;
+    }
+);
+function verifiedResult(deploymentId: string): CodeReleaseResult {
+  return {
+    deploymentId,
+    deployment_succeeded: true,
+    public_verified: true,
+    publicVerification: "public verification passed",
+  };
+}
+export function nativeReleaseMessage(result: CodeReleaseResult) {
+  return result.public_verified
+    ? `Verified native source deploy: ${result.deploymentId}; analytics remains disabled`
+    : `Native source deployment succeeded: ${result.deploymentId}; public verification pending; public_verified=false; analytics remains disabled`;
+}
+
 export async function executeCodeRelease(
   m: CodeManifest | NativeCodeEvidence,
   manifestDigest: string,
@@ -117,7 +143,7 @@ export async function executeCodeRelease(
     await observePhase(p, "public-verification", () =>
       codeGuard("health.public", () => p.health(d, true)),
     );
-    return d.id;
+    return verifiedResult(d.id);
   }
   let target = await observePhase(p, "deployment-creation", async () => {
     let target = await codeGuard("vercel.lookup", () => p.lookup());
@@ -202,6 +228,7 @@ export async function executeCodeRelease(
   await observePhase(p, "staged-verification", () =>
     codeGuard("health.staged", () => p.health(target, false)),
   );
+  let promotionConfirmed = false;
   const current = await p.guard([m.vercel.productionDeploymentId]);
   if (current !== target.id) {
     await observePhase(p, "promotion", async () => {
@@ -226,11 +253,61 @@ export async function executeCodeRelease(
           originalFailure: failure,
         });
     });
+    promotionConfirmed = true;
   }
-  await observePhase(p, "public-verification", () =>
-    codeGuard("health.public", () => p.health(target, true)),
-  );
-  return target.id;
+  const startedAt = Date.now();
+  p.reportPhase?.({ phase: "public-verification", outcome: "started" });
+  try {
+    try {
+      await codeGuard("health.public", () => p.health(target, true));
+    } catch (error) {
+      const reason = classifyCodeFailure("health.public", error);
+      if (
+        m.kind !== "native-source" ||
+        m.operation !== "deploy" ||
+        !promotionConfirmed ||
+        !confirmedCloudflareChallenge(reason)
+      )
+        throw error;
+      // guard rechecks protected main, approval, current production target and BOTH
+      // aliases. Fresh deployment metadata independently rebinds the exact revision.
+      const current = await p.guard([target.id]);
+      if (current !== target.id) throw new Error("code.production-drift");
+      const fresh = await codeGuard("vercel.deployment", () =>
+        p.deployment(target.id),
+      );
+      await codeGuard("vercel.identity", () => {
+        verifyNativeDeploymentIdentity(fresh, m, manifestDigest);
+        if (fresh.id !== target.id || fresh.readyState !== "READY")
+          throw new Error("code.native-deployment-identity");
+      });
+      p.reportPhase?.({
+        phase: "public-verification",
+        outcome: "pending",
+        durationMs: Date.now() - startedAt,
+      });
+      return {
+        deploymentId: target.id,
+        deployment_succeeded: true,
+        public_verified: false,
+        publicVerification: "public verification pending",
+        reason,
+      } satisfies CodeReleaseResult;
+    }
+    p.reportPhase?.({
+      phase: "public-verification",
+      outcome: "success",
+      durationMs: Date.now() - startedAt,
+    });
+    return verifiedResult(target.id);
+  } catch (error) {
+    p.reportPhase?.({
+      phase: "public-verification",
+      outcome: "failure",
+      durationMs: Date.now() - startedAt,
+    });
+    throw error;
+  }
 }
 
 export function verifyNativeDeploymentIdentity(

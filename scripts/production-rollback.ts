@@ -336,13 +336,15 @@ async function main() {
       );
     },
   };
-  const id = await executeCodeRelease(
+  const result = await executeCodeRelease(
     manifest,
     required("RELEASE_MANIFEST_SHA256"),
     "",
     providers,
   );
+  const id = result.deploymentId;
   reportCodeEvent({ event: "deployment", deploymentId: id });
+  reportCodeEvent({ event: "release-result", ...result });
   console.log(
     `Verified code-only ${manifest.operation}: ${id}; analytics remains disabled`,
   );

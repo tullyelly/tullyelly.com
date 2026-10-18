@@ -172,7 +172,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_RELEASE_TOKEN }}
           RELEASE_PRODUCTION_APPROVED: "true"
-      - name: Stage clean source remotely, verify, promote exact deployment and verify publicly
+      - name: Stage and verify clean source, promote exact deployment and assess public verification
         run: node scripts/release/run-stage.mjs deploy
         env:
           GH_TOKEN: ${{ github.token }}

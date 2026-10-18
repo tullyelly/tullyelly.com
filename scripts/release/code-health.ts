@@ -162,8 +162,8 @@ export async function readHealthResponse(options: {
     }
   };
   let response = await request(url);
-  inspect(response);
   if (response.redirected) throw new Error("code.health-unexpected-follow");
+  inspect(response);
   if (options.publicDomain && redirects.has(response.status)) {
     const location = response.headers.get("location");
     if (!location) throw new Error("code.health-redirect");
@@ -178,8 +178,8 @@ export async function readHealthResponse(options: {
     ) {
       url = next;
       response = await request(url);
-      inspect(response);
       if (response.redirected) throw new Error("code.health-unexpected-follow");
+      inspect(response);
     } else if (!options.allowLoginRedirect)
       throw new Error("code.health-redirect");
   }

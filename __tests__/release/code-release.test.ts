@@ -186,7 +186,11 @@ test("manifest digest and exact SHA are independently bound", () => {
 test("normal stage, prepromotion guard, promotion and public health", async () => {
   const m = manifest(),
     { p } = fixture(m);
-  expect(await run(m, p)).toBe("dpl_new");
+  expect(await run(m, p)).toMatchObject({
+    deploymentId: "dpl_new",
+    deployment_succeeded: true,
+    public_verified: true,
+  });
   expect(p.stage).toHaveBeenCalledTimes(1);
   expect(p.promote).toHaveBeenCalledTimes(1);
   expect(p.health).toHaveBeenCalledTimes(2);
@@ -226,7 +230,11 @@ test("successful write followed by timeout is inspected, not retried", async () 
     .fn()
     .mockResolvedValueOnce(undefined)
     .mockResolvedValueOnce(d);
-  expect(await run(m, p)).toBe(d.id);
+  expect(await run(m, p)).toMatchObject({
+    deploymentId: d.id,
+    deployment_succeeded: true,
+    public_verified: true,
+  });
   expect(p.stage).toHaveBeenCalledTimes(1);
   expect(p.lookup).toHaveBeenCalledTimes(2);
 });
@@ -289,7 +297,12 @@ test("ambiguous promotion is reconciled once, including unresolved outcome", asy
       if (succeeded) setCurrent(id);
       throw Error("timeout");
     });
-    if (succeeded) await expect(run(m, p)).resolves.toBe("dpl_new");
+    if (succeeded)
+      await expect(run(m, p)).resolves.toMatchObject({
+        deploymentId: "dpl_new",
+        deployment_succeeded: true,
+        public_verified: true,
+      });
     else await expect(run(m, p)).rejects.toThrow("unresolved");
     expect(p.promote).toHaveBeenCalledTimes(1);
   }
@@ -316,7 +329,12 @@ test("separately bound rollback validates identity, never stages, and reconciles
       throw Error("timeout");
     });
     if (bad) await expect(run(m, p)).rejects.toThrow("identity");
-    else await expect(run(m, p)).resolves.toBe("dpl_good");
+    else
+      await expect(run(m, p)).resolves.toMatchObject({
+        deploymentId: "dpl_good",
+        deployment_succeeded: true,
+        public_verified: true,
+      });
     expect(p.stage).not.toHaveBeenCalled();
     expect(p.promote).not.toHaveBeenCalled();
     expect(p.rollback).toHaveBeenCalledTimes(bad ? 0 : 1);
@@ -560,7 +578,11 @@ test("recovered stage reports original failure alongside the found outcome", asy
     .fn()
     .mockResolvedValueOnce(undefined)
     .mockResolvedValueOnce(d);
-  expect(await run(m, p)).toBe(d.id);
+  expect(await run(m, p)).toMatchObject({
+    deploymentId: d.id,
+    deployment_succeeded: true,
+    public_verified: true,
+  });
   expect(p.reportReconciliation).toHaveBeenCalledWith({
     outcome: "found",
     originalFailure: expect.objectContaining({
@@ -570,3 +592,55 @@ test("recovered stage reports original failure alongside the found outcome", asy
   });
   expect(p.stage).toHaveBeenCalledTimes(1);
 });
+
+test.each(["deploy", "rollback"] as const)(
+  "legacy %s keeps confirmed Cloudflare public challenges fatal",
+  async (operation) => {
+    const m = manifest();
+    m.operation = operation;
+    if (operation === "rollback")
+      m.rollback = {
+        deploymentId: "dpl_good",
+        applicationSha: "b".repeat(40),
+        collectionDisabledVerified: true,
+      };
+    const { p, d } = fixture(m);
+    if (operation === "rollback")
+      p.deployment = jest.fn(async () => ({
+        ...d,
+        id: "dpl_good",
+        meta: { githubCommitSha: m.rollback!.applicationSha },
+      }));
+    p.health = jest.fn(async (_, publicDomain) => {
+      if (publicDomain)
+        throw new CodeDiagnosticError({
+          guard: "health.public",
+          category: "invariant",
+          invariant: "code.health-page",
+          status: 403,
+          health: {
+            path: "/",
+            condition: "security-challenge",
+            request: {
+              initialOrigin: "https://tullyelly.com",
+              effectiveOrigin: "https://tullyelly.com",
+              responses: [
+                {
+                  origin: "https://tullyelly.com",
+                  hop: 0,
+                  status: 403,
+                  timestamp: "2026-10-18T16:45:10.176Z",
+                  headers: {
+                    "cf-mitigated": "challenge",
+                    "cf-ray": "a4c9030a7b8f6b31-DFW",
+                  },
+                },
+              ],
+            },
+          },
+        });
+    });
+    await expect(run(m, p)).rejects.toThrow();
+    expect(p.rollback).toHaveBeenCalledTimes(operation === "rollback" ? 1 : 0);
+  },
+);

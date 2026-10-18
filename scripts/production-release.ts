@@ -14,7 +14,11 @@ import {
 } from "./release/native-evidence";
 import { createCleanSource, sourceArchiveDigest } from "./release/code-source";
 import { providerDiagnostic } from "./release/provider-diagnostic.mjs";
-import { executeCodeRelease, type CodeProviders } from "./release/code-release";
+import {
+  executeCodeRelease,
+  nativeReleaseMessage,
+  type CodeProviders,
+} from "./release/code-release";
 import {
   codeCli,
   nativeSourceDeployArguments,
@@ -375,16 +379,15 @@ async function main() {
       );
     },
   };
-  const id = await executeCodeRelease(
+  const result = await executeCodeRelease(
     manifest,
     required("RELEASE_EVIDENCE_SHA256"),
     "",
     providers,
   );
-  reportCodeEvent({ event: "deployment", deploymentId: id });
-  console.log(
-    `Verified native source ${manifest.operation}: ${id}; analytics remains disabled`,
-  );
+  reportCodeEvent({ event: "deployment", deploymentId: result.deploymentId });
+  reportCodeEvent({ event: "release-result", ...result });
+  console.log(nativeReleaseMessage(result));
 }
 main().catch((error) => {
   const guard = "production.check";
