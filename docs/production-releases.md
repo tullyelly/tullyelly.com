@@ -157,6 +157,14 @@ readiness also selects changed chronicles and their assets; an ordinary release
 is not an Appleton-East-only publication check. Intentional edits to a reviewed
 probe require updating its expectations through review.
 
+Page health failures preserve the exact allowlisted probe path, HTTP status and
+failed condition in the diagnostic report and final summary. The paths are `/`,
+`/shaolin`, `/stats` and `/api/health`; conditions distinguish an unexpected HTTP
+status, missing HTML doctype and JSON health that does not report `ok: true`.
+Response bodies, headers and arbitrary URLs are never retained. These diagnostics
+do not change the checks or retry failed requests. Older reports that contain only
+`code.health-page` cannot establish which probe failed from elapsed time alone.
+
 A staged production deployment has production runtime credentials. Automated
 verification uses read-only GETs, with no login, forms, collection or owner mutation
 flows. Normal user traffic may still write data. Provider-triggered collection

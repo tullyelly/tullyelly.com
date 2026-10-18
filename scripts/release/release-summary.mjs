@@ -173,6 +173,14 @@ export function diagnosticSummary(d) {
     );
   if (integer(d.status) && d.status >= 100 && d.status <= 599)
     parts.push(`HTTP=${d.status}`);
+  if (
+    d.health &&
+    ["/", "/shaolin", "/stats", "/api/health"].includes(d.health.path) &&
+    ["http-status", "missing-doctype", "health-not-ok"].includes(
+      d.health.condition,
+    )
+  )
+    parts.push(`path=${d.health.path}`, `condition=${d.health.condition}`);
   if (d.exitStatus === null || (integer(d.exitStatus) && d.exitStatus <= 255))
     parts.push(`exit=${d.exitStatus}`);
   if (

@@ -1,6 +1,7 @@
 /** Release-only reads; one verified domain redirect, never a staged fallback. */
 import { z } from "zod";
 import type { CodeDeployment } from "./code-release";
+import { CodeHealthError } from "./code-diagnostics";
 
 const apex = "https://tullyelly.com";
 const www = "https://www.tullyelly.com";
@@ -184,15 +185,16 @@ export async function checkCodeHealth(options: {
       allowLoginRedirect,
       onLoginRedirect,
     });
-  for (const path of options.operation === "deploy"
-    ? ["/", "/shaolin", "/stats"]
-    : ["/", "/shaolin"]) {
+  const paths =
+    options.operation === "deploy"
+      ? (["/", "/shaolin", "/stats"] as const)
+      : (["/", "/shaolin"] as const);
+  for (const path of paths) {
     const r = await read(path, 30000);
-    if (
-      r.status !== 200 ||
-      !(await r.text()).toLowerCase().includes("<!doctype html>")
-    )
-      throw new Error("code.health-page");
+    if (r.status !== 200)
+      throw new CodeHealthError(path, r.status, "http-status");
+    if (!(await r.text()).toLowerCase().includes("<!doctype html>"))
+      throw new CodeHealthError(path, r.status, "missing-doctype");
   }
   if (options.operation === "rollback") return;
   if ((await read("/api/cron/analytics", 15000)).status !== 401)

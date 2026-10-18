@@ -4,6 +4,10 @@ import {
   readHealthResponse,
   verifyHealthDomainAliases,
 } from "../../scripts/release/code-health";
+import {
+  classifyCodeFailure,
+  codeGuard,
+} from "../../scripts/release/code-diagnostics";
 const stage = "approved-stage.vercel.app";
 const apex = "https://tullyelly.com";
 const www = "https://www.tullyelly.com";
@@ -235,6 +239,88 @@ test("stage health stays on the exact URL and sends only the stage bypass header
     expect(init.headers).toEqual({ "x-vercel-protection-bypass": secret });
   }
 });
+test.each([
+  [false, "/"],
+  [false, "/shaolin"],
+  [false, "/stats"],
+  [true, "/"],
+  [true, "/shaolin"],
+  [true, "/stats"],
+] as const)(
+  "failed HTML status retains %s public-domain context and exact %s probe without response contents",
+  async (publicDomain, path) => {
+    const sensitive = "PRIVATE_RESPONSE_BODY_AND_COOKIE";
+    const baseline = fixture(publicDomain);
+    const response = new Response(sensitive, {
+      status: 503,
+      headers: { "set-cookie": sensitive },
+    });
+    const bodyRead = jest.spyOn(response, "text");
+    const fetcher = jest.fn(async (input: string | URL | Request) => {
+      const url = new URL(String(input));
+      if (url.pathname === path && (!publicDomain || url.origin === www))
+        return response;
+      return baseline(input);
+    });
+    const guard = publicDomain ? "health.public" : "health.staged";
+    let diagnostic: ReturnType<typeof classifyCodeFailure> | undefined;
+    try {
+      await codeGuard(guard, () =>
+        checkCodeHealth({
+          deployment,
+          projectId: "prj_fixture",
+          publicDomain,
+          operation: "deploy",
+          fetcher,
+          bypassSecret: secret,
+        }),
+      );
+      throw new Error("Expected the failed probe to reject");
+    } catch (error) {
+      diagnostic = classifyCodeFailure(guard, error);
+    }
+    expect(diagnostic).toEqual({
+      guard,
+      category: "invariant",
+      invariant: "code.health-page",
+      status: 503,
+      health: { path, condition: "http-status" },
+    });
+    expect(bodyRead).not.toHaveBeenCalled();
+    expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+  },
+);
+test.each([false, true])(
+  "successful HTTP with missing HTML doctype still fails with its exact probe; public=%s",
+  async (publicDomain) => {
+    const baseline = fixture(publicDomain);
+    const fetcher = jest.fn(async (input: string | URL | Request) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/stats" && (!publicDomain || url.origin === www))
+        return new Response("<html>PRIVATE_RESPONSE_BODY</html>");
+      return baseline(input);
+    });
+    const guard = publicDomain ? "health.public" : "health.staged";
+    await expect(
+      codeGuard(guard, () =>
+        checkCodeHealth({
+          deployment,
+          projectId: "prj_fixture",
+          publicDomain,
+          operation: "deploy",
+          fetcher,
+        }),
+      ),
+    ).rejects.toMatchObject({
+      diagnostic: {
+        guard,
+        invariant: "code.health-page",
+        status: 200,
+        health: { path: "/stats", condition: "missing-doctype" },
+      },
+    });
+  },
+);
 test("owner and cron authorization failures remain failures", async () => {
   for (const [cronStatus, adminStatus] of [
     [200, 302],
