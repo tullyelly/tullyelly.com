@@ -1,4 +1,5 @@
 import { appendFileSync } from "node:fs";
+import { confirmedCloudflareChallenge } from "./health-observation.mjs";
 import {
   classifyCodeFailure,
   CodeDiagnosticError,
@@ -88,7 +89,31 @@ export function reportCodeEvent(event: Record<string, unknown>) {
     };
   else if (event.event === "deployment")
     safe = { event: "deployment", deploymentId: id(event.deploymentId) };
-  else if (event.event === "auth") {
+  else if (event.event === "release-result") {
+    if (
+      !id(event.deploymentId) ||
+      event.deployment_succeeded !== true ||
+      typeof event.public_verified !== "boolean"
+    )
+      return;
+    const reason = event.public_verified
+      ? undefined
+      : classifyCodeFailure(
+          "health.public",
+          new CodeDiagnosticError(event.reason as Diagnostic),
+        );
+    if (!event.public_verified && !confirmedCloudflareChallenge(reason)) return;
+    safe = {
+      event: "release-result",
+      deploymentId: id(event.deploymentId),
+      deployment_succeeded: true,
+      public_verified: event.public_verified,
+      publicVerification: event.public_verified
+        ? "public verification passed"
+        : "public verification pending",
+      ...(reason ? { reason } : {}),
+    };
+  } else if (event.event === "auth") {
     const keys = [
       "tokenPresent",
       "tokenMalformed",
@@ -131,7 +156,8 @@ export function reportCodeEvent(event: Record<string, unknown>) {
         "promotion",
         "public-verification",
       ].includes(event.phase) ||
-      !["started", "success", "failure"].includes(event.outcome)
+      !["started", "success", "failure", "pending"].includes(event.outcome) ||
+      (event.outcome === "pending" && event.phase !== "public-verification")
     )
       return;
     safe = {

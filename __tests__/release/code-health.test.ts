@@ -555,3 +555,21 @@ test("streamed denial does not excuse private content, hidden markers or a secon
     expect(fetcher).toHaveBeenCalledTimes(1);
   }
 });
+
+test("an unexpectedly followed response cannot be accepted as a Cloudflare pending challenge", async () => {
+  const response = new Response(null, {
+    status: 403,
+    headers: { "cf-mitigated": "challenge", "cf-ray": "a4c9030a7b8f6b31-DFW" },
+  });
+  Object.defineProperty(response, "redirected", { value: true });
+  await expect(
+    readHealthResponse({
+      stagedHost: stage,
+      publicDomain: true,
+      path: "/",
+      timeoutMs: 1000,
+      rejectChallenges: true,
+      fetcher: jest.fn(async () => response),
+    }),
+  ).rejects.toThrow("code.health-unexpected-follow");
+});

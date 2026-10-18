@@ -244,9 +244,29 @@ the CLI invocation does not expose a precise file-upload/request boundary.
 If promotion succeeded and public verification failed, the summary prominently
 states **Production promoted; public verification pending.** The same deferred
 state applies when promotion succeeded but public checks were interrupted or never
-completed. Preserve the underlying failed/incomplete phase and nonzero workflow
-result. Successful promotion is not successful public verification, and this state
-does not authorize a retry or rollback.
+completed. Successful promotion is not successful public verification, and this
+state does not authorize a retry or rollback.
+
+For native-source deploys only, successful required staged checks and confirmed
+exact promotion may produce a green deployment with **public verification pending**
+when the public failure is a structured HTTP 403 Cloudflare challenge. Acceptance
+requires the actual `cf-mitigated: challenge` marker, a validated trace from an
+allowed public production origin and Ray ID, and fresh production-target, both-alias
+and exact deployment/revision identity guards. Error text or the generic
+`security-challenge` condition alone is insufficient. The final release report
+records `deployment_succeeded=true`, `public_verified=false`, the sanitized reason,
+and the existing run, attempt, evidence, deployment and application identities.
+The public-verification phase is `pending`, never `success`, and the command does
+not print "Verified native source" for this outcome. Preserve that report and its
+original evidence in the coordinator's existing release record; a green deployment
+badge does not establish full public acceptance.
+
+Every staged failure and every other public failure remains fatal, including bare
+403s, Vercel challenges, revision/auth/publication/asset assertions, redirects,
+timeouts, 5xx responses and deployment drift. Rollback and the portable full
+verifier remain strict. Historical failed/incomplete workflows keep their original
+conclusions; this policy change does not rewrite earlier results or bypass a
+Cloudflare challenge.
 
 ### Portable completion of public verification
 

@@ -13,6 +13,36 @@ const headerPatterns = {
 /** @typedef {{origin: string, hop: number, status: number, timestamp: string, headers: Record<string, string>}} HealthResponseObservation */
 /** @typedef {{initialOrigin: string, effectiveOrigin: string, responses: HealthResponseObservation[]}} HealthRequestTrace */
 
+/** Structured policy evidence only; messages and generic challenge labels are insufficient.
+ * @param {unknown} value
+ */
+export function confirmedCloudflareChallenge(value) {
+  const d = record(value);
+  const health = record(d?.health);
+  const trace = safeHealthRequestTrace(health?.request);
+  const last = trace?.responses.at(-1);
+  if (
+    d?.guard !== "health.public" ||
+    d.category !== "invariant" ||
+    d.invariant !== "code.health-page" ||
+    d.status !== 403 ||
+    !["/", "/shaolin", "/stats", "/api/health"].includes(
+      String(health?.path),
+    ) ||
+    !trace ||
+    last?.status !== 403 ||
+    last.headers["cf-mitigated"] !== "challenge" ||
+    !last.headers["cf-ray"] ||
+    last.headers["x-vercel-mitigated"] === "challenge" ||
+    (trace.responses.length === 2 &&
+      (trace.initialOrigin !== "https://tullyelly.com" ||
+        trace.responses[0].headers["cf-mitigated"] === "challenge" ||
+        trace.responses[0].headers["x-vercel-mitigated"] === "challenge"))
+  )
+    return undefined;
+  return trace;
+}
+
 /** @param {unknown} value @returns {Record<string, unknown> | undefined} */
 function record(value) {
   return value && typeof value === "object" && !Array.isArray(value)

@@ -1059,3 +1059,100 @@ test("native approval summary presents exact source, reused CI, workflow and com
   expect(rendered).not.toContain("Artifact SHA-256");
   expect(rendered).not.toContain("SENSITIVE");
 });
+
+test("green deployment retains serialized pending reason and never reports public success", () => {
+  const root = mkdtempSync(join(tmpdir(), "pending-release-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  try {
+    const path = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = path;
+    const diagnostic = classifyCodeFailure(
+      "health.public",
+      new CodeHealthError("/", 403, "security-challenge", {
+        initialOrigin: "https://tullyelly.com",
+        effectiveOrigin: "https://tullyelly.com",
+        responses: [
+          {
+            origin: "https://tullyelly.com",
+            hop: 0,
+            status: 403,
+            timestamp: "2026-10-18T16:45:10.176Z",
+            headers: {
+              "cf-mitigated": "challenge",
+              "cf-ray": "a4c9030a7b8f6b31-DFW",
+            },
+          },
+        ],
+      }),
+    );
+    reportCodeEvent({
+      ...context,
+      evidenceSha256: "b".repeat(64),
+      workflowRunId: "39145981617",
+      workflowRunAttempt: "1",
+    });
+    reportCodeEvent({ event: "deployment", deploymentId: "dpl_intended" });
+    reportCodeEvent({ event: "phase", phase: "promotion", outcome: "success" });
+    reportCodeEvent({
+      event: "phase",
+      phase: "public-verification",
+      outcome: "pending",
+      durationMs: 123,
+    });
+    reportCodeEvent({
+      event: "release-result",
+      deploymentId: "dpl_intended",
+      deployment_succeeded: true,
+      public_verified: false,
+      reason: { ...diagnostic, body: "PRIVATE_BODY" },
+    });
+    const stored = readFileSync(path, "utf8");
+    expect(stored).not.toContain("PRIVATE_BODY");
+    const events = stored
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events.at(-1)).toMatchObject({
+      event: "release-result",
+      public_verified: false,
+      publicVerification: "public verification pending",
+      reason: { status: 403 },
+    });
+    const output = summary(events, {
+      prepare: "success",
+      production: "success",
+    });
+    expect(output).toContain(
+      "Production promoted; public verification pending.",
+    );
+    expect(output).toContain(
+      "Deployment succeeded: true; public_verified=false",
+    );
+    expect(output).toContain("cf-mitigated=challenge");
+    expect(output).toContain("a4c9030a7b8f6b31-DFW");
+    expect(output).toContain("Public verification | 0.1 s | pending");
+    expect(output).not.toContain("Verified native source");
+    expect(output).toContain("--run 39145981617 --attempt 1");
+    reportCodeEvent({
+      event: "release-result",
+      deploymentId: "dpl_intended",
+      deployment_succeeded: true,
+      public_verified: false,
+      reason: {
+        ...diagnostic,
+        health: { path: "/", condition: "security-challenge" },
+      },
+    });
+    expect(readFileSync(path, "utf8")).toBe(stored);
+    reportCodeEvent({
+      event: "phase",
+      phase: "staged-verification",
+      outcome: "pending",
+    });
+    expect(readFileSync(path, "utf8")).toBe(stored);
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});

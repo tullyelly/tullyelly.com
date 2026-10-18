@@ -9,7 +9,10 @@ import {
 import { pathToFileURL } from "node:url";
 import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
 import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
-import { safeHealthRequestTrace } from "./health-observation.mjs";
+import {
+  confirmedCloudflareChallenge,
+  safeHealthRequestTrace,
+} from "./health-observation.mjs";
 
 const labels = new Set([
   "Installing source dependencies",
@@ -131,7 +134,7 @@ const phaseLabels = new Map([
   ["promotion", "Exact-deployment promotion"],
   ["public-verification", "Public verification"],
 ]);
-const phaseOutcomes = new Set(["started", "success", "failure"]);
+const phaseOutcomes = new Set(["started", "success", "failure", "pending"]);
 // Provider messages are sanitized data, not Markdown or HTML instructions.
 const markdownText = (value) =>
   value
@@ -236,15 +239,27 @@ export function renderReleaseSummary(events, results = {}) {
         event.phase === phase &&
         phaseOutcomes.has(event.outcome),
     );
+  const releaseResult = events
+    .filter(
+      (e) =>
+        e.event === "release-result" &&
+        identity(e.deploymentId) !== "unavailable" &&
+        e.deployment_succeeded === true &&
+        (e.public_verified === true ||
+          (e.public_verified === false &&
+            confirmedCloudflareChallenge(e.reason))),
+    )
+    .at(-1);
   const promotion = lastPhase("promotion");
   const publicVerification = lastPhase("public-verification");
   const publicVerificationPending =
-    promotion >= 0 &&
-    events[promotion].outcome === "success" &&
-    !(
-      publicVerification > promotion &&
-      events[publicVerification].outcome === "success"
-    );
+    releaseResult?.public_verified === false ||
+    (promotion >= 0 &&
+      events[promotion].outcome === "success" &&
+      !(
+        publicVerification > promotion &&
+        events[publicVerification].outcome === "success"
+      ));
   const lines = [
     context.evidenceSha256 || results.evidenceSha256
       ? "## Native source production release"
@@ -252,6 +267,18 @@ export function renderReleaseSummary(events, results = {}) {
     "",
     ...(publicVerificationPending
       ? ["**Production promoted; public verification pending.**", ""]
+      : []),
+    ...(releaseResult
+      ? [
+          `Deployment succeeded: true; public_verified=${releaseResult.public_verified === true ? "true" : "false"}.`,
+          ...(releaseResult.public_verified === false
+            ? [
+                "Green protected operation means deployment succeeded; public verification pending is not full public acceptance.",
+                `Pending reason: ${diagnosticSummary(releaseResult.reason)}`,
+              ]
+            : []),
+          "",
+        ]
       : []),
     `Revision: ${hex(context.revision ?? results.revision, 40)}`,
     `Target revision: ${hex(context.targetRevision, 40)}`,
