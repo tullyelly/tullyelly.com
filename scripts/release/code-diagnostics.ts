@@ -101,6 +101,7 @@ const knownMessages = new Map([
 ]);
 const healthPaths = ["/", "/shaolin", "/stats", "/api/health"] as const;
 const healthConditions = [
+  "security-challenge",
   "http-status",
   "missing-doctype",
   "health-not-ok",
@@ -367,7 +368,7 @@ export function apiOperation(url: string): Operation {
 }
 export async function codeMetadataRequest(
   url: string,
-  token: string,
+  token: string | undefined,
   fetcher: typeof fetch = fetch,
 ): Promise<unknown> {
   const operation = apiOperation(url);
@@ -375,7 +376,11 @@ export async function codeMetadataRequest(
   try {
     response = await fetcher(url, {
       method: "GET",
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      credentials: "omit",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        Accept: "application/json",
+      },
       signal: AbortSignal.timeout(15000),
       redirect: "error",
     });
@@ -407,7 +412,7 @@ export async function codeMetadataRequest(
           provider = providerDiagnostic(
             Buffer.concat(chunks).toString("utf8"),
             "",
-            { secrets: [token] },
+            { secrets: token ? [token] : [] },
           );
         } catch {
           // Preserve the authoritative HTTP failure even if its body is unreadable.

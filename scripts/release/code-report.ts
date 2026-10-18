@@ -40,6 +40,11 @@ export function reportCodeEvent(event: Record<string, unknown>) {
         /^[1-9][0-9]*$/.test(event.workflowRunId)
           ? event.workflowRunId
           : undefined,
+      workflowRunAttempt:
+        typeof event.workflowRunAttempt === "string" &&
+        /^[1-9][0-9]*$/.test(event.workflowRunAttempt)
+          ? event.workflowRunAttempt
+          : undefined,
       compatibilityRisks: Array.isArray(event.compatibilityRisks)
         ? event.compatibilityRisks.filter((risk) =>
             [

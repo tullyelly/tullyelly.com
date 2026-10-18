@@ -332,7 +332,7 @@ test.each([apex, www])(
       status: 403,
       health: {
         path: "/",
-        condition: "http-status",
+        condition: "security-challenge",
         request: {
           initialOrigin: apex,
           effectiveOrigin: rejectedOrigin,

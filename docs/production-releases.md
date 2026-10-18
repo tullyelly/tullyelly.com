@@ -45,6 +45,32 @@ and verified isolated databases.
    report. Failures stop; ambiguous writes are reconciled before considering any
    separately authorized retry. Never automatically roll back.
 
+### Coordination across coding agents
+
+Local and cloud coding agents use isolated checkouts/worktrees and separate working
+branches. Existing CI validates their proposed changes. One release coordinator
+initiates production through the existing App dispatcher; the protected GitHub
+workflow owns production credentials, human approval, the native source deployment,
+staged acceptance, exact-deployment promotion and alias verification. No coding
+agent, laptop, WSL installation or owner-login session is a required release host.
+
+Keep **main stable for the entire GitHub production run**, from dispatcher selection
+through preparation, the human gate, staging, promotion and final checks. Current
+guards repeatedly compare live main to the dispatched SHA, including after promotion;
+a merge during the run can stop it after production has changed. Agents may keep
+working, committing and opening PRs on their own branches; coordinate merges to
+main until the run finishes. This documents the current guard, not a new approval
+gate or a change to CI.
+
+Before initiating another production release, the coordinator reviews outstanding
+**public verification pending** records. Track each exact run, attempt, deployment,
+application SHA, failure evidence and latest verification receipt in the existing
+release record. Preserve these non-secret records beyond the workflow's short
+artifact retention. Do not silently discard pending verification when a newer run
+or deployment appears. Record resolution or an explicit supersession decision;
+superseded verification is not passed verification. Working branches can advance
+while this coordination is pending.
+
 ### One-time owner configuration
 
 Reuse the existing project `prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU`, team
@@ -161,6 +187,9 @@ Page health failures preserve the exact allowlisted probe path, HTTP status and
 failed condition in the diagnostic report and final summary. The paths are `/`,
 `/shaolin`, `/stats` and `/api/health`; conditions distinguish an unexpected HTTP
 status, missing HTML doctype and JSON health that does not report `ok: true`.
+Full acceptance also rejects explicit `cf-mitigated: challenge` and
+`x-vercel-mitigated: challenge` responses, including otherwise acceptable HTTP
+statuses. Allowlisted page observations label these `security-challenge`.
 Public HTML probe failures also retain initial/effective public origins and at
 most two response observations: hop, origin, HTTP status, UTC timestamp and
 strictly validated `x-vercel-id`, selected `x-vercel-error` codes,
@@ -213,9 +242,63 @@ event says `incomplete`. Phase timings use the existing stage clock and may over
 the CLI invocation does not expose a precise file-upload/request boundary.
 
 If promotion succeeded and public verification failed, the summary prominently
-states **Production promoted; public verification failed.** This records that
-production changed even though the release workflow failed; it does not authorize
-a retry or rollback.
+states **Production promoted; public verification pending.** The same deferred
+state applies when promotion succeeded but public checks were interrupted or never
+completed. Preserve the underlying failed/incomplete phase and nonzero workflow
+result. Successful promotion is not successful public verification, and this state
+does not authorize a retry or rollback.
+
+### Portable completion of public verification
+
+Use a reviewed checkout with npm dependencies installed and the original
+`release-evidence.json` from `release-evidence-<run>-<attempt>`. The evidence is
+non-secret. Do not reconstruct it from current main or substitute an empty
+publication plan if the original artifact is unavailable. Run this one command,
+substituting the exact release identities and a truthful execution-location label:
+
+```bash
+npm run --silent release:verify-public -- --run RUN_ID --attempt ATTEMPT --deployment DEPLOYMENT_ID --sha FULL_APPLICATION_SHA --evidence release-evidence.json --location EXECUTION_LABEL
+```
+
+The command is portable across suitable local and cloud environments. It does not
+load `.env` files, owner CLI credentials, App private keys or production deployment
+tokens. Supply the existing `VERCEL_RELEASE_READ_TOKEN` through an approved
+read-only metadata credential context; use optional `GH_TOKEN` with repository and
+Actions read access when GitHub requires authentication. Never substitute
+`VERCEL_TOKEN` or export the protected deployment credential. If suitable read
+access is unavailable, verification remains pending; this change provisions no
+credentials, changes no provider settings and requires no plan upgrade.
+
+Only GET requests are made. Before public probes, the command validates the exact
+completed native GitHub production run and attempt, repository and application SHA.
+It hashes and validates the original evidence and checks that the expected READY
+production deployment's recorded metadata binds that digest, source digest, SHA,
+run and attempt. Both public aliases and the project's current production target
+must match that deployment before and after the checks. A different or superseded
+deployment is not accepted as evidence for the requested release. Current main is
+not required to remain at the old SHA after the GitHub run has finished.
+
+The protected workflow and follow-up command call the same `checkApplicationHealth`
+implementation: representative HTML and health, exact application revision, owner
+and cron authorization, retained publication content/listing, all retained image
+hashes/rendered sources, and the evidence-bound changed publication/assets. Public
+requests remain anonymous, with the same deadlines and strict redirect policy.
+The verifier's checkout and execution location are independent of the live
+application revision; their difference alone is not a website failure.
+
+The command emits a bounded JSON receipt to stdout with run, attempt, deployment,
+SHA, execution label, OS/architecture, Node version, timestamps and result. Preserve
+that receipt in the coordinator's release record. It exits zero only for
+`public verification passed`; errors, challenges and failed assertions return
+`public verification pending` and a nonzero exit, with sanitized diagnostics.
+A later successful receipt completes the tracked public checks; it does not rewrite
+the original GitHub run's conclusion or prove all release stages succeeded.
+
+Keep **Bot Fight Mode enabled**. A Cloudflare challenge is incomplete public
+verification wherever it occurs. Moving the command to another local or cloud
+environment may encounter the same challenge; it is not a guaranteed correction.
+There is no new runner, verification service, paid service, provider-setting change
+or automatic bypass/retry in this procedure.
 
 ### Read-only GitHub runner diagnosis
 
@@ -241,6 +324,8 @@ any rejection with provider request evidence. Local success cannot establish
 GitHub runner success. A successful runner probe supports reassessment of a fresh
 protected release; it does not prove the historical cause or replace release
 assertions. Resolve any reproduced rejection before another production attempt.
+This homepage-only diagnostic cannot complete a pending release; use the full
+bound command above for that purpose.
 Do not rerun an old production job for diagnosis. The release entry point remains
 `release-dispatch.yml` on main, `mode=production`, with the full reviewed current-main
 SHA, empty ordinary manifest fields and the existing human production gate.

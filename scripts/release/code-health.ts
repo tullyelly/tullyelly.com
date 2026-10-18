@@ -85,6 +85,7 @@ export async function readHealthResponse(options: {
   allowLoginRedirect?: boolean;
   onLoginRedirect?: (protocol: "http" | "streamed") => void;
   onObservation?: (trace: HealthRequestTrace) => void;
+  rejectChallenges?: boolean;
   timeoutMs: number;
   fetcher?: typeof fetch;
 }) {
@@ -119,6 +120,7 @@ export async function readHealthResponse(options: {
     });
   let url = initial;
   const responses: HealthRequestTrace["responses"] = [];
+  let observation: HealthRequestTrace | undefined;
   const observe = (response: Response) => {
     if (!options.publicDomain) return;
     responses.push({
@@ -131,15 +133,36 @@ export async function readHealthResponse(options: {
         options.bypassSecret ? [options.bypassSecret] : [],
       ),
     });
-    const trace = safeHealthRequestTrace({
+    observation = safeHealthRequestTrace({
       initialOrigin: initial.origin,
       effectiveOrigin: url.origin,
       responses,
     });
-    if (trace) options.onObservation?.(trace);
+    if (observation) options.onObservation?.(observation);
+  };
+  const inspect = (response: Response) => {
+    observe(response);
+    if (
+      options.rejectChallenges &&
+      ["cf-mitigated", "x-vercel-mitigated"].some(
+        (name) => response.headers.get(name) === "challenge",
+      )
+    ) {
+      const path = (["/", "/shaolin", "/stats", "/api/health"] as const).find(
+        (path) => path === url.pathname,
+      );
+      if (path)
+        throw new CodeHealthError(
+          path,
+          response.status,
+          "security-challenge",
+          observation,
+        );
+      throw new Error("code.health-security-challenge");
+    }
   };
   let response = await request(url);
-  observe(response);
+  inspect(response);
   if (response.redirected) throw new Error("code.health-unexpected-follow");
   if (options.publicDomain && redirects.has(response.status)) {
     const location = response.headers.get("location");
@@ -155,7 +178,7 @@ export async function readHealthResponse(options: {
     ) {
       url = next;
       response = await request(url);
-      observe(response);
+      inspect(response);
       if (response.redirected) throw new Error("code.health-unexpected-follow");
     } else if (!options.allowLoginRedirect)
       throw new Error("code.health-redirect");
@@ -213,6 +236,7 @@ export async function checkCodeHealth(options: {
       timeoutMs,
       allowLoginRedirect,
       onLoginRedirect,
+      rejectChallenges: true,
       onObservation: (trace) => {
         requestTrace = trace;
       },
