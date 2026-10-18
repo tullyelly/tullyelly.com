@@ -279,7 +279,7 @@ test.each([
     } catch (error) {
       diagnostic = classifyCodeFailure(guard, error);
     }
-    expect(diagnostic).toEqual({
+    expect(diagnostic).toMatchObject({
       guard,
       category: "invariant",
       invariant: "code.health-page",
@@ -288,6 +288,90 @@ test.each([
     });
     expect(bodyRead).not.toHaveBeenCalled();
     expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+  },
+);
+test.each([apex, www])(
+  "a public homepage 403 at %s preserves its actual origin and redirect hop",
+  async (rejectedOrigin) => {
+    const sensitive = "PRIVATE_RESPONSE_BODY_COOKIE_BYPASS";
+    const denied = new Response(sensitive, {
+      status: 403,
+      headers: {
+        "x-vercel-id": "cle1::iad1::abc12-1792331886740-bd412d2176fe",
+        "x-vercel-error": "DEPLOYMENT_BLOCKED",
+        "x-vercel-mitigated": "challenge",
+        "cf-ray": "a4c80e51c8b91891-ORD",
+        "cf-mitigated": "challenge",
+        "set-cookie": sensitive,
+        authorization: sensitive,
+        location: `https://private.example/?token=${sensitive}`,
+      },
+    });
+    const readBody = jest.spyOn(denied, "text");
+    const fetcher = jest.fn(async (input: string | URL | Request) => {
+      const url = new URL(String(input));
+      return url.origin === rejectedOrigin ? denied : redirect(www + "/");
+    });
+    let diagnostic;
+    try {
+      await checkCodeHealth({
+        deployment,
+        projectId: "prj_fixture",
+        publicDomain: true,
+        operation: "deploy",
+        bypassSecret: sensitive,
+        fetcher,
+      });
+      throw new Error("Expected homepage denial");
+    } catch (error) {
+      diagnostic = classifyCodeFailure("health.public", error);
+    }
+    expect(diagnostic).toMatchObject({
+      guard: "health.public",
+      invariant: "code.health-page",
+      status: 403,
+      health: {
+        path: "/",
+        condition: "http-status",
+        request: {
+          initialOrigin: apex,
+          effectiveOrigin: rejectedOrigin,
+        },
+      },
+    });
+    const responses = diagnostic.health?.request?.responses;
+    expect(responses).toHaveLength(rejectedOrigin === apex ? 1 : 2);
+    expect(responses?.at(-1)).toEqual({
+      origin: rejectedOrigin,
+      hop: rejectedOrigin === apex ? 0 : 1,
+      status: 403,
+      timestamp: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      headers: {
+        "x-vercel-id": "cle1::iad1::abc12-1792331886740-bd412d2176fe",
+        "x-vercel-error": "DEPLOYMENT_BLOCKED",
+        "x-vercel-mitigated": "challenge",
+        "cf-ray": "a4c80e51c8b91891-ORD",
+        "cf-mitigated": "challenge",
+      },
+    });
+    if (rejectedOrigin === www)
+      expect(responses?.[0]).toMatchObject({
+        origin: apex,
+        hop: 0,
+        status: 307,
+      });
+    for (const [, init] of fetcher.mock.calls as unknown as [
+      URL,
+      RequestInit,
+    ][])
+      expect(init).toMatchObject({
+        headers: {},
+        credentials: "omit",
+        redirect: "manual",
+      });
+    expect(readBody).not.toHaveBeenCalled();
+    expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+    expect(JSON.stringify(diagnostic)).not.toContain("private.example");
   },
 );
 test.each([false, true])(

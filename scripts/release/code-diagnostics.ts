@@ -2,6 +2,10 @@
 import { z } from "zod";
 import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
 import {
+  safeHealthRequestTrace,
+  type HealthRequestTrace,
+} from "./health-observation.mjs";
+import {
   providerDiagnostic,
   safeProviderDiagnostic,
 } from "./provider-diagnostic.mjs";
@@ -104,6 +108,7 @@ const healthConditions = [
 type HealthObservation = {
   path: (typeof healthPaths)[number];
   condition: (typeof healthConditions)[number];
+  request?: HealthRequestTrace;
 };
 export type Diagnostic = {
   guard: Guard;
@@ -142,16 +147,17 @@ export class CodeDiagnosticError extends Error {
     super("code.guard-failed");
   }
 }
-/** Fixed probe observations only; response bodies and headers are never retained. */
+/** Fixed probe observations and allowlisted public correlation; no response content. */
 export class CodeHealthError extends Error {
   readonly health: HealthObservation;
   constructor(
     path: HealthObservation["path"],
     readonly status: number,
     condition: HealthObservation["condition"],
+    request?: HealthRequestTrace,
   ) {
     super("code.health-page");
-    this.health = { path, condition };
+    this.health = { path, condition, ...(request ? { request } : {}) };
   }
 }
 function classifyRaw(guard: Guard, error: unknown): Diagnostic {
@@ -284,8 +290,14 @@ function sanitizeDiagnostic(
       d.health &&
       healthPaths.includes(d.health.path) &&
       healthConditions.includes(d.health.condition)
-    )
-      safe.health = { path: d.health.path, condition: d.health.condition };
+    ) {
+      const request = safeHealthRequestTrace(d.health.request);
+      safe.health = {
+        path: d.health.path,
+        condition: d.health.condition,
+        ...(request ? { request } : {}),
+      };
+    }
     if (
       d.invariant &&
       (invariants.has(d.invariant) ||

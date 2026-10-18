@@ -2,6 +2,11 @@
 import { z } from "zod";
 import type { CodeDeployment } from "./code-release";
 import { CodeHealthError } from "./code-diagnostics";
+import {
+  observeHealthHeaders,
+  safeHealthRequestTrace,
+  type HealthRequestTrace,
+} from "./health-observation.mjs";
 
 const apex = "https://tullyelly.com";
 const www = "https://www.tullyelly.com";
@@ -79,6 +84,7 @@ export async function readHealthResponse(options: {
   bypassSecret?: string;
   allowLoginRedirect?: boolean;
   onLoginRedirect?: (protocol: "http" | "streamed") => void;
+  onObservation?: (trace: HealthRequestTrace) => void;
   timeoutMs: number;
   fetcher?: typeof fetch;
 }) {
@@ -112,7 +118,28 @@ export async function readHealthResponse(options: {
           : {},
     });
   let url = initial;
+  const responses: HealthRequestTrace["responses"] = [];
+  const observe = (response: Response) => {
+    if (!options.publicDomain) return;
+    responses.push({
+      origin: url.origin,
+      hop: responses.length,
+      status: response.status,
+      timestamp: new Date().toISOString(),
+      headers: observeHealthHeaders(
+        response.headers,
+        options.bypassSecret ? [options.bypassSecret] : [],
+      ),
+    });
+    const trace = safeHealthRequestTrace({
+      initialOrigin: initial.origin,
+      effectiveOrigin: url.origin,
+      responses,
+    });
+    if (trace) options.onObservation?.(trace);
+  };
   let response = await request(url);
+  observe(response);
   if (response.redirected) throw new Error("code.health-unexpected-follow");
   if (options.publicDomain && redirects.has(response.status)) {
     const location = response.headers.get("location");
@@ -128,6 +155,7 @@ export async function readHealthResponse(options: {
     ) {
       url = next;
       response = await request(url);
+      observe(response);
       if (response.redirected) throw new Error("code.health-unexpected-follow");
     } else if (!options.allowLoginRedirect)
       throw new Error("code.health-redirect");
@@ -169,6 +197,7 @@ export async function checkCodeHealth(options: {
     d.readyState !== "READY"
   )
     throw new Error("code.health-deployment-identity");
+  let requestTrace: HealthRequestTrace | undefined;
   const read = (
     path: string,
     timeoutMs: number,
@@ -184,6 +213,9 @@ export async function checkCodeHealth(options: {
       timeoutMs,
       allowLoginRedirect,
       onLoginRedirect,
+      onObservation: (trace) => {
+        requestTrace = trace;
+      },
     });
   const paths =
     options.operation === "deploy"
@@ -192,9 +224,14 @@ export async function checkCodeHealth(options: {
   for (const path of paths) {
     const r = await read(path, 30000);
     if (r.status !== 200)
-      throw new CodeHealthError(path, r.status, "http-status");
+      throw new CodeHealthError(path, r.status, "http-status", requestTrace);
     if (!(await r.text()).toLowerCase().includes("<!doctype html>"))
-      throw new CodeHealthError(path, r.status, "missing-doctype");
+      throw new CodeHealthError(
+        path,
+        r.status,
+        "missing-doctype",
+        requestTrace,
+      );
   }
   if (options.operation === "rollback") return;
   if ((await read("/api/cron/analytics", 15000)).status !== 401)

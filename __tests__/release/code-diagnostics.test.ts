@@ -8,7 +8,117 @@ import {
   codeMetadataRequest,
 } from "../../scripts/release/code-diagnostics";
 import { GitHubApiError } from "../../scripts/release/app";
+import {
+  observeHealthHeaders,
+  safeHealthRequestTrace,
+  type HealthRequestTrace,
+} from "../../scripts/release/health-observation.mjs";
 const sensitive = "SENSITIVE_PASSWORD_TOKEN_DO_NOT_LOG";
+const publicTrace: HealthRequestTrace = {
+  initialOrigin: "https://tullyelly.com",
+  effectiveOrigin: "https://www.tullyelly.com",
+  responses: [
+    {
+      origin: "https://tullyelly.com",
+      hop: 0,
+      status: 307,
+      timestamp: "2026-10-18T04:12:09.000Z",
+      headers: {},
+    },
+    {
+      origin: "https://www.tullyelly.com",
+      hop: 1,
+      status: 403,
+      timestamp: "2026-10-18T04:12:09.099Z",
+      headers: { "cf-ray": "a4c80e51c8b91891-ORD" },
+    },
+  ],
+};
+test("public correlation survives reclassification without unrelated fields", () => {
+  const request = {
+    ...publicTrace,
+    body: sensitive,
+    url: `https://private.example/?token=${sensitive}`,
+    responses: publicTrace.responses.map((r) => ({
+      ...r,
+      headers: {
+        ...r.headers,
+        cookie: sensitive,
+        "set-cookie": sensitive,
+        authorization: sensitive,
+        "x-vercel-error": sensitive,
+      },
+      body: sensitive,
+    })),
+  };
+  const diagnostic = classifyCodeFailure(
+    "health.public",
+    new CodeHealthError("/", 403, "http-status", request),
+  );
+  expect(diagnostic.health?.request).toEqual(publicTrace);
+  expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+  expect(JSON.stringify(diagnostic)).not.toContain("private.example");
+});
+test.each([
+  { ...publicTrace, initialOrigin: "https://private.example/" + sensitive },
+  {
+    ...publicTrace,
+    effectiveOrigin: "https://www.tullyelly.com/?token=" + sensitive,
+  },
+  {
+    ...publicTrace,
+    responses: [...publicTrace.responses, publicTrace.responses[1]],
+  },
+  { ...publicTrace, responses: [] },
+  { ...publicTrace, responses: [{ ...publicTrace.responses[0], hop: 9 }] },
+  { ...publicTrace, responses: [{ ...publicTrace.responses[0], status: 999 }] },
+  {
+    ...publicTrace,
+    responses: [{ ...publicTrace.responses[0], timestamp: sensitive }],
+  },
+  {
+    ...publicTrace,
+    responses: [
+      { ...publicTrace.responses[0], origin: "https://private.example" },
+    ],
+  },
+  {
+    ...publicTrace,
+    responses: [
+      { ...publicTrace.responses[0], status: 200 },
+      publicTrace.responses[1],
+    ],
+  },
+])("forged correlation is discarded before reporting %#", (request) => {
+  expect(safeHealthRequestTrace(request)).toBeUndefined();
+  const diagnostic = classifyCodeFailure(
+    "health.public",
+    new CodeHealthError("/", 403, "http-status", request),
+  );
+  expect(diagnostic.health).toEqual({ path: "/", condition: "http-status" });
+  expect(JSON.stringify(diagnostic)).not.toContain(sensitive);
+});
+test("header collection reads only bounded allowlisted correlation and drops known bypass values", () => {
+  const id = "cle1::abc12-1792331886740-bd412d2176fe";
+  const get = jest.fn(
+    (name: string) =>
+      ({
+        "x-vercel-id": id,
+        "cf-ray": "a4c80e51c8b91891-ORD" + sensitive.repeat(30),
+        "cf-mitigated": "challenge " + sensitive,
+        "x-vercel-mitigated": "challenge\n" + sensitive,
+        "x-vercel-error": sensitive,
+      })[name] ?? sensitive,
+  );
+  expect(observeHealthHeaders({ get }, [id])).toEqual({});
+  expect(get.mock.calls.map(([name]) => name)).toEqual([
+    "x-vercel-id",
+    "x-vercel-error",
+    "x-vercel-mitigated",
+    "cf-ray",
+    "cf-mitigated",
+  ]);
+});
 test("typed page health errors retain the original error code", () => {
   expect(() => {
     throw new CodeHealthError("/stats", 503, "http-status");
