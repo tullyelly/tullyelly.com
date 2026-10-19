@@ -2103,6 +2103,13 @@
     "/images/optimus/uncomfortable/puzzle/puzzle-0.webp",
     "/images/optimus/uncomfortable/puzzle/puzzle-1.webp",
     "/images/optimus/uncomfortable/puzzle/puzzle-2.webp",
+    "/images/optimus/under-pressure/1057687.webp",
+    "/images/optimus/under-pressure/binder/binder-0.webp",
+    "/images/optimus/under-pressure/binder/binder-1.webp",
+    "/images/optimus/under-pressure/binder/binder-2.webp",
+    "/images/optimus/under-pressure/binder/binder-3.webp",
+    "/images/optimus/under-pressure/lawn.webp",
+    "/images/optimus/under-pressure/production-release.webp",
     "/images/optimus/unexpected-pedestrians/freddys.webp",
     "/images/optimus/unexpected-pedestrians/gem-mint.webp",
     "/images/optimus/unexpected-pedestrians/giannis.webp",
@@ -12743,6 +12750,41 @@
       "src": "/images/optimus/uncomfortable/puzzle/puzzle-2.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/under-pressure/1057687.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/under-pressure/binder/binder-0.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/under-pressure/binder/binder-1.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/under-pressure/binder/binder-2.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/under-pressure/binder/binder-3.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/under-pressure/lawn.webp",
+      "width": 960,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/under-pressure/production-release.webp",
+      "width": 1407,
+      "height": 466
     },
     {
       "src": "/images/optimus/unexpected-pedestrians/freddys.webp",
