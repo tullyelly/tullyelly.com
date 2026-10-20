@@ -1,8 +1,9 @@
 /** Fixed read-only acceptance probe for the published incident recovery. */
 import { createHash } from "node:crypto";
+import { decodeHTML, decodeHTMLAttribute } from "entities";
 import probe from "./publication-probe.json";
 import type { PublicationPlan } from "./code-publication-plan";
-import { CodeHealthError } from "./code-diagnostics";
+import { CodeHealthError, CodePublicationError } from "./code-diagnostics";
 
 type Read = (path: string) => Promise<Response>;
 
@@ -12,20 +13,81 @@ function markup(html: string) {
     .replace(/<(script|style|textarea)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
 }
 function text(html: string) {
-  return markup(html)
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ");
+  // Strip markup before decoding so escaped angle brackets remain visible text.
+  // Decode only the rendered side, once; source samples may contain literal entities.
+  return decodeHTML(markup(html).replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ");
 }
 async function html(read: Read, path: string) {
   const response = await read(path);
-  if (
-    response.status !== 200 ||
-    !response.headers.get("content-type")?.startsWith("text/html")
-  )
-    throw new Error("code.health-publication");
+  if (response.status !== 200)
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "http-status",
+      response.status,
+    );
+  if (!response.headers.get("content-type")?.startsWith("text/html"))
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "content-type",
+      response.status,
+    );
   const body = await response.text();
-  if (body.length > 4 * 1024 * 1024) throw new Error("code.health-publication");
-  return body;
+  if (body.length > 4 * 1024 * 1024)
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "body-too-large",
+      response.status,
+    );
+  return { body, status: response.status };
+}
+
+async function image(
+  read: Read,
+  requestPath: string,
+  assetPath = requestPath,
+  hash?: string,
+  maxBytes?: number,
+) {
+  const response = await read(requestPath);
+  if (response.status !== 200)
+    throw new CodePublicationError(
+      "code.health-publication-asset",
+      assetPath,
+      "http-status",
+      response.status,
+    );
+  if (!response.headers.get("content-type")?.startsWith("image/"))
+    throw new CodePublicationError(
+      "code.health-publication-asset",
+      assetPath,
+      "content-type",
+      response.status,
+    );
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (!bytes.length)
+    throw new CodePublicationError(
+      "code.health-publication-asset",
+      assetPath,
+      "asset-empty",
+      response.status,
+    );
+  if (maxBytes && bytes.length > maxBytes)
+    throw new CodePublicationError(
+      "code.health-publication-asset",
+      assetPath,
+      "asset-too-large",
+      response.status,
+    );
+  if (hash && createHash("sha256").update(bytes).digest("hex") !== hash)
+    throw new CodePublicationError(
+      "code.health-publication-asset",
+      assetPath,
+      "asset-hash",
+      response.status,
+    );
 }
 
 /** Candidate-specific checks supplement the retained Appleton East regression. */
@@ -33,41 +95,56 @@ export async function checkChangedPublicationHealth(
   read: Read,
   plan: PublicationPlan,
 ) {
-  const decode = (value: string) =>
-    value.replace(
-      /&(?:amp|quot|apos|#39|lt|gt|nbsp);/g,
-      (entity) =>
-        ({
-          "&amp;": "&",
-          "&quot;": '"',
-          "&apos;": "'",
-          "&#39;": "'",
-          "&lt;": "<",
-          "&gt;": ">",
-          "&nbsp;": " ",
-        })[entity] ?? entity,
-    );
-  const renderedAssets = new Set<string>();
+  const renderedAssets = new Map<string, string>();
   for (const chronicle of plan.chronicles) {
     if (!/^\/shaolin\/[a-z0-9-]+$/.test(chronicle.path))
       throw new Error("code.health-publication");
-    const page = markup(await html(read, chronicle.path));
+    const { body, status } = await html(read, chronicle.path);
+    const page = markup(body);
     const heading = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(page)?.[1] ?? "";
     const date = new Date(chronicle.date);
+    if (!Number.isFinite(date.getTime()))
+      throw new CodePublicationError(
+        "code.health-publication",
+        chronicle.path,
+        "invalid-date",
+        status,
+      );
     const expectedDate = date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
       timeZone: "UTC",
     });
-    if (
-      !Number.isFinite(date.getTime()) ||
-      !decode(text(heading)).includes(`${expectedDate}: ${chronicle.title}`) ||
-      chronicle.text.some((example) => !decode(text(page)).includes(example))
-    )
-      throw new Error("code.health-publication");
+    if (!text(heading).includes(`${expectedDate}: ${chronicle.title}`))
+      throw new CodePublicationError(
+        "code.health-publication",
+        chronicle.path,
+        "heading-mismatch",
+        status,
+      );
+    const visibleText = text(page);
+    for (const [index, example] of chronicle.text.entries())
+      if (!visibleText.includes(example))
+        throw new CodePublicationError(
+          "code.health-publication",
+          chronicle.path,
+          "text-mismatch",
+          status,
+          index,
+        );
     for (const match of page.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gi)) {
-      const url = new URL(decode(match[1]), "https://tullyelly.com");
+      let url: URL;
+      try {
+        url = new URL(decodeHTMLAttribute(match[1]), "https://tullyelly.com");
+      } catch {
+        throw new CodePublicationError(
+          "code.health-publication-asset",
+          chronicle.path,
+          "asset-url",
+          status,
+        );
+      }
       const asset =
         url.pathname === "/_next/image"
           ? url.searchParams.get("url")
@@ -78,8 +155,13 @@ export async function checkChangedPublicationHealth(
         url.username ||
         url.password
       )
-        throw new Error("code.health-publication-asset");
-      renderedAssets.add(url.pathname + url.search);
+        throw new CodePublicationError(
+          "code.health-publication-asset",
+          chronicle.path,
+          "asset-origin",
+          status,
+        );
+      renderedAssets.set(url.pathname + url.search, asset!);
     }
   }
   for (const asset of plan.assets) {
@@ -89,29 +171,9 @@ export async function checkChangedPublicationHealth(
       !/^[a-f0-9]{64}$/.test(asset.sha256)
     )
       throw new Error("code.health-publication-asset");
-    const response = await read(asset.path);
-    if (
-      response.status !== 200 ||
-      !response.headers.get("content-type")?.startsWith("image/")
-    )
-      throw new Error("code.health-publication-asset");
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (
-      !bytes.length ||
-      bytes.length > 64 * 1024 * 1024 ||
-      createHash("sha256").update(bytes).digest("hex") !== asset.sha256
-    )
-      throw new Error("code.health-publication-asset");
+    await image(read, asset.path, asset.path, asset.sha256, 64 * 1024 * 1024);
   }
-  for (const path of renderedAssets) {
-    const response = await read(path);
-    if (
-      response.status !== 200 ||
-      !response.headers.get("content-type")?.startsWith("image/") ||
-      !(await response.arrayBuffer()).byteLength
-    )
-      throw new Error("code.health-publication-asset");
-  }
+  for (const [path, asset] of renderedAssets) await image(read, path, asset);
 }
 
 export async function checkPublicationHealth(
@@ -144,23 +206,60 @@ export async function checkPublicationHealth(
     healthBody.ok !== true
   )
     throw new CodeHealthError("/api/health", health.status, "health-not-ok");
-  const post = await html(read, `/shaolin/${probe.slug}`);
+  const path = `/shaolin/${probe.slug}`;
+  const { body: post, status } = await html(read, path);
   const visible = markup(post);
   const heading = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(visible)?.[1] ?? "";
+  if (!text(heading).includes(`Oct 13, 2026: ${probe.title}`))
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "heading-mismatch",
+      status,
+    );
+  const visibleText = text(visible);
+  for (const [index, expected] of probe.text.entries())
+    if (!visibleText.includes(expected))
+      throw new CodePublicationError(
+        "code.health-publication",
+        path,
+        "text-mismatch",
+        status,
+        index,
+      );
   if (
-    !text(heading).includes(`Oct 13, 2026: ${probe.title}`) ||
-    probe.text.some((expected) => !text(visible).includes(expected)) ||
     (visible.match(/data-testid="folder-carousel-thumbnail"/g) ?? []).length !==
-      probe.folders.length ||
-    probe.assets.some((asset) => !post.includes(asset))
+    probe.folders.length
   )
-    throw new Error("code.health-publication");
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "carousel-mismatch",
+      status,
+    );
+  if (probe.assets.some((asset) => !post.includes(asset)))
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "asset-missing",
+      status,
+    );
 
   // Check the actual six server-rendered image sources, including optimized
   // thumbnail URLs, as well as every slide supplied to the three carousels.
   const images = [...visible.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gi)]
-    .map((match) => match[1].replaceAll("&amp;", "&"))
-    .map((src) => new URL(src, "https://tullyelly.com"))
+    .map((match) => {
+      try {
+        return new URL(decodeHTMLAttribute(match[1]), "https://tullyelly.com");
+      } catch {
+        throw new CodePublicationError(
+          "code.health-publication",
+          path,
+          "asset-url",
+          status,
+        );
+      }
+    })
     .filter((url) => {
       const asset =
         url.pathname === "/_next/image"
@@ -179,28 +278,33 @@ export async function checkPublicationHealth(
       ? url.searchParams.get("url")
       : url.pathname,
   );
-  if (
-    images.some((url) => url.origin !== "https://tullyelly.com") ||
-    expected.some((asset) => !rendered.includes(asset))
-  )
-    throw new Error("code.health-publication");
-  for (const path of new Set([
+  if (images.some((url) => url.origin !== "https://tullyelly.com"))
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "asset-origin",
+      status,
+    );
+  if (expected.some((asset) => !rendered.includes(asset)))
+    throw new CodePublicationError(
+      "code.health-publication",
+      path,
+      "asset-missing",
+      status,
+    );
+  for (const requestPath of new Set([
     ...probe.assets,
     ...images.map((url) => url.pathname + url.search),
   ])) {
-    const response = await read(path);
-    if (
-      response.status !== 200 ||
-      !response.headers.get("content-type")?.startsWith("image/")
-    )
-      throw new Error("code.health-publication-asset");
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (!bytes.length) throw new Error("code.health-publication-asset");
-    const hash = probe.assetSha256[path as keyof typeof probe.assetSha256];
-    if (hash && createHash("sha256").update(bytes).digest("hex") !== hash)
-      throw new Error("code.health-publication-asset");
+    const asset = requestPath.startsWith("/_next/image?")
+      ? new URL(requestPath, "https://tullyelly.com").searchParams.get("url")!
+      : requestPath;
+    const hash =
+      probe.assetSha256[requestPath as keyof typeof probe.assetSha256];
+    await image(read, requestPath, asset, hash);
   }
-  const listing = markup(await html(read, "/shaolin"));
+  const listingResponse = await html(read, "/shaolin");
+  const listing = markup(listingResponse.body);
   if (
     ![
       ...listing.matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi),
@@ -210,5 +314,10 @@ export async function checkPublicationHealth(
         text(match[2]).includes(probe.title),
     )
   )
-    throw new Error("code.health-publication-listing");
+    throw new CodePublicationError(
+      "code.health-publication-listing",
+      "/shaolin",
+      "listing-mismatch",
+      listingResponse.status,
+    );
 }

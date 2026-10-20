@@ -183,6 +183,16 @@ readiness also selects changed chronicles and their assets; an ordinary release
 is not an Appleton-East-only publication check. Intentional edits to a reviewed
 probe require updating its expectations through review.
 
+Publication text checks decode rendered HTML entities once after excluding comments
+and script, style and textarea content. Heading, content and listing comparisons
+preserve literal entity-looking source text and visible escaped angle brackets.
+Publication failures retain their existing invariant plus a validated relative
+Chronicle/listing route or trusted image path, a fixed failed-condition label, an
+optional zero-based text-sample index (0 through 3), and HTTP status when available.
+These observations are revalidated for report storage and final summaries; they
+never include page content, expected samples, image query URLs or arbitrary headers.
+Publication failures remain fatal and cannot use the Cloudflare pending exception.
+
 Page health failures preserve the exact allowlisted probe path, HTTP status and
 failed condition in the diagnostic report and final summary. The paths are `/`,
 `/shaolin`, `/stats` and `/api/health`; conditions distinguish an unexpected HTTP

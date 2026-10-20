@@ -1,6 +1,8 @@
 /** @jest-environment node */
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   checkChangedPublicationHealth,
   checkPublicationHealth,
@@ -170,6 +172,217 @@ function changedFixture(body = changedBytes, heading = "New &amp; published") {
       : new Response(body, { headers: { "content-type": "image/webp" } }),
   );
 }
+const apostropheSentence =
+  "This week's work made releases more automated and easier to trust:";
+function candidatePage(
+  source: string[],
+  page: string,
+  title = "under pressure",
+  date = "2026-10-18",
+) {
+  const read = jest.fn(
+    async () =>
+      new Response(page, {
+        headers: { "content-type": "text/html" },
+      }),
+  );
+  const plan = {
+    chronicles: [
+      { path: "/shaolin/under-pressure", title, date, text: source },
+    ],
+    assets: [],
+  };
+  return { read, plan, check: () => checkChangedPublicationHealth(read, plan) };
+}
+function reactPage(source: string[], title = "under pressure") {
+  return renderToStaticMarkup(
+    createElement(
+      "article",
+      null,
+      createElement("h1", null, `Oct 18, 2026: ${title}`),
+      ...source.map((value, index) =>
+        createElement("p", { key: index }, value),
+      ),
+    ),
+  );
+}
+test("accepts the exact under pressure publication rendered by React", async () => {
+  const page = reactPage([apostropheSentence]);
+  expect(page).toContain("<h1>Oct 18, 2026: under pressure</h1>");
+  expect(page).toContain("This week&#x27;s work");
+  await expect(
+    candidatePage([apostropheSentence], page).check(),
+  ).resolves.toBeUndefined();
+});
+test("compares React quotes, ampersands and escaped angles in headings and samples", async () => {
+  const title = `"It's <ready> & published"`;
+  const source = [apostropheSentence, `Quotes: "it's <ready> & © café 🎉".`];
+  await expect(
+    candidatePage(source, reactPage(source, title), title).check(),
+  ).resolves.toBeUndefined();
+});
+test.each([
+  [
+    "decimal",
+    "&#34;it&#39;s &#60;ready&#62; &#38; &#169; caf&#233; &#127881;&#34;",
+  ],
+  [
+    "hexadecimal",
+    "&#x22;it&#x27;s &#x3c;ready&#x3e; &#x26; &#xa9; caf&#xe9; &#x1f389;&#x22;",
+  ],
+  [
+    "uppercase hexadecimal",
+    "&#X22;it&#X27;s &#X3C;ready&#X3E; &#X26; &#XA9; caf&#XE9; &#X1F389;&#X22;",
+  ],
+  ["named", "&quot;it&apos;s &lt;ready&gt; &amp; &copy; caf&eacute; 🎉&quot;"],
+])("normalizes %s entities in headings and samples", async (_kind, encoded) => {
+  const sample = `"it's <ready> & © café 🎉"`;
+  await expect(
+    candidatePage(
+      [sample],
+      `<h1>Oct 18, 2026: ${encoded}</h1><p>${encoded}</p>`,
+      sample,
+    ).check(),
+  ).resolves.toBeUndefined();
+});
+test("collapses whitespace after decoding HTML spaces", async () => {
+  await expect(
+    candidatePage(
+      ["Spaced text stays visible"],
+      "<h1>Oct 18, 2026: under pressure</h1><p>Spaced&nbsp;text&#32;stays&#x20;visible</p>",
+    ).check(),
+  ).resolves.toBeUndefined();
+});
+test("decodes rendered entities once and keeps encoded literal tags visible", async () => {
+  const title = "literal &amp; &#x27;";
+  const source = [
+    "Keep &amp; &#39; &#x27; &apos; &lt; &unknown; literal.",
+    "<script>Visible literal text</script>",
+    "<!-- Visible literal comment -->",
+  ];
+  const candidate = candidatePage(source, reactPage(source, title), title);
+  await expect(candidate.check()).resolves.toBeUndefined();
+  expect(candidate.plan.chronicles[0].text).toEqual(source);
+});
+test("does not decode source expectations to accept genuinely different text", async () => {
+  await expect(
+    candidatePage(
+      ["Keep &amp; literal."],
+      reactPage(["Keep & literal."]),
+    ).check(),
+  ).rejects.toMatchObject({
+    message: "code.health-publication",
+    publication: {
+      path: "/shaolin/under-pressure",
+      condition: "text-mismatch",
+      textSampleIndex: 0,
+    },
+  });
+});
+test.each([
+  [
+    "missing sample",
+    "<h1>Oct 18, 2026: under pressure</h1><p>Stale content</p>",
+    "2026-10-18",
+    "text-mismatch",
+  ],
+  [
+    "wrong heading",
+    "<h1>Oct 18, 2026: old title</h1>",
+    "2026-10-18",
+    "heading-mismatch",
+  ],
+  [
+    "wrong rendered date",
+    "<h1>Oct 17, 2026: under pressure</h1>",
+    "2026-10-18",
+    "heading-mismatch",
+  ],
+  [
+    "wrong expected date",
+    "<h1>Oct 18, 2026: under pressure</h1>",
+    "2026-10-19",
+    "heading-mismatch",
+  ],
+  [
+    "invalid expected date",
+    "<h1>Oct 18, 2026: under pressure</h1>",
+    "invalid",
+    "invalid-date",
+  ],
+  [
+    "missing heading",
+    "<h2>Oct 18, 2026: under pressure</h2>",
+    "2026-10-18",
+    "heading-mismatch",
+  ],
+])(
+  "rejects %s with a bounded condition",
+  async (_kind, page, date, condition) => {
+    await expect(
+      candidatePage([apostropheSentence], page, "under pressure", date).check(),
+    ).rejects.toMatchObject({
+      message: "code.health-publication",
+      status: 200,
+      publication: { path: "/shaolin/under-pressure", condition },
+    });
+  },
+);
+test.each(["comment", "script", "style", "textarea", "attribute"])(
+  "text only inside %s does not satisfy publication",
+  async (container) => {
+    const encoded =
+      "This week&#x27;s work made releases more automated and easier to trust:";
+    const hidden =
+      container === "comment"
+        ? `<!--${encoded}-->`
+        : container === "attribute"
+          ? `<p title="${encoded}"></p>`
+          : `<${container}>${encoded}</${container}>`;
+    await expect(
+      candidatePage(
+        [apostropheSentence],
+        `<h1>Oct 18, 2026: under pressure</h1>${hidden}`,
+      ).check(),
+    ).rejects.toMatchObject({
+      publication: { condition: "text-mismatch" },
+    });
+  },
+);
+test.each(["comment", "script", "style", "textarea"])(
+  "heading only inside %s does not satisfy publication",
+  async (container) => {
+    const heading = "<h1>Oct 18, 2026: under pressure</h1>";
+    const hidden =
+      container === "comment"
+        ? `<!--${heading}-->`
+        : `<${container}>${heading}</${container}>`;
+    await expect(candidatePage([], hidden).check()).rejects.toMatchObject({
+      publication: { condition: "heading-mismatch" },
+    });
+  },
+);
+test("fixed publication heading, samples and listing share entity normalization", async () => {
+  const encode = (value: string) =>
+    [...value]
+      .map((char) => `&#x${char.codePointAt(0)!.toString(16)};`)
+      .join("");
+  const read = fixture();
+  const page = await (await read(`/shaolin/${probe.slug}`)).text();
+  const encodedPage = [probe.title, ...probe.text].reduce(
+    (body, value) => body.replace(value, encode(value)),
+    page,
+  );
+  await expect(
+    checkPublicationHealth(
+      fixture({
+        [`/shaolin/${probe.slug}`]: encodedPage,
+        "/shaolin": `<a href="/shaolin/${probe.slug}">${encode(probe.title)}</a>`,
+      }),
+      sha,
+    ),
+  ).resolves.toBeUndefined();
+});
 test("candidate checks cover changed Chronicles and exact assets beyond Appleton East", async () => {
   const read = changedFixture();
   await expect(
