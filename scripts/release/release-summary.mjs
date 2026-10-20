@@ -9,6 +9,7 @@ import {
 import { pathToFileURL } from "node:url";
 import { codeInvariants, codeDiagnosticFields } from "./code-invariants.mjs";
 import { safeProviderDiagnostic } from "./provider-diagnostic.mjs";
+import { safePublicationObservation } from "./publication-observation.mjs";
 import {
   confirmedCloudflareChallenge,
   safeHealthRequestTrace,
@@ -177,6 +178,15 @@ export function diagnosticSummary(d) {
     );
   if (integer(d.status) && d.status >= 100 && d.status <= 599)
     parts.push(`HTTP=${d.status}`);
+  const publication = safePublicationObservation(d.publication);
+  if (publication) {
+    parts.push(
+      `path=${publication.path}`,
+      `condition=${publication.condition}`,
+    );
+    if (publication.textSampleIndex !== undefined)
+      parts.push(`text-sample=${publication.textSampleIndex}`);
+  }
   if (
     d.health &&
     ["/", "/shaolin", "/stats", "/api/health"].includes(d.health.path) &&

@@ -1027,6 +1027,7 @@
     "/images/optimus/living-proof/corbin.webp",
     "/images/optimus/living-proof/me.webp",
     "/images/optimus/living-proof/party.webp",
+    "/images/optimus/lol/sun.webp",
     "/images/optimus/long-live-asap/back-4.webp",
     "/images/optimus/long-live-asap/back/back-0.webp",
     "/images/optimus/long-live-asap/back/back-1.webp",
@@ -7370,6 +7371,11 @@
       "src": "/images/optimus/living-proof/party.webp",
       "width": 1920,
       "height": 1440
+    },
+    {
+      "src": "/images/optimus/lol/sun.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/long-live-asap/back-4.webp",

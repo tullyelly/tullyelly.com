@@ -10,6 +10,11 @@ import {
   safeProviderDiagnostic,
 } from "./provider-diagnostic.mjs";
 import {
+  safePublicationObservation,
+  type PublicationCondition,
+  type PublicationObservation,
+} from "./publication-observation.mjs";
+import {
   GitHubApiError,
   ReleaseVerificationError,
   safeNetworkCauseCodes,
@@ -139,6 +144,7 @@ export type Diagnostic = {
   reconciliationFailure?: Diagnostic;
   status?: number;
   health?: HealthObservation;
+  publication?: PublicationObservation;
   networkCauseCodes?: string[];
   invariant?: string;
   fields?: { path: string; code: string }[];
@@ -161,8 +167,37 @@ export class CodeHealthError extends Error {
     this.health = { path, condition, ...(request ? { request } : {}) };
   }
 }
+/** Identify a publication assertion without retaining expected or actual content. */
+export class CodePublicationError extends Error {
+  readonly publication: PublicationObservation;
+  constructor(
+    invariant:
+      | "code.health-publication"
+      | "code.health-publication-asset"
+      | "code.health-publication-listing",
+    path: string,
+    condition: PublicationCondition,
+    readonly status?: number,
+    textSampleIndex?: number,
+  ) {
+    super(invariant);
+    this.publication = {
+      path,
+      condition,
+      ...(textSampleIndex === undefined ? {} : { textSampleIndex }),
+    };
+  }
+}
 function classifyRaw(guard: Guard, error: unknown): Diagnostic {
   if (error instanceof CodeDiagnosticError) return error.diagnostic;
+  if (error instanceof CodePublicationError)
+    return {
+      guard,
+      category: "invariant",
+      invariant: error.message,
+      ...(error.status === undefined ? {} : { status: error.status }),
+      publication: error.publication,
+    };
   if (error instanceof CodeHealthError)
     return {
       guard,
@@ -299,6 +334,8 @@ function sanitizeDiagnostic(
         ...(request ? { request } : {}),
       };
     }
+    const publication = safePublicationObservation(d.publication);
+    if (publication) safe.publication = publication;
     if (
       d.invariant &&
       (invariants.has(d.invariant) ||
