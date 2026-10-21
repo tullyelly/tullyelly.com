@@ -80,6 +80,13 @@
     "/images/optimus/above-the-clouds/serves/serves-3.webp",
     "/images/optimus/above-the-clouds/serves/serves-4.webp",
     "/images/optimus/above-the-clouds/serves/serves-5.webp",
+    "/images/optimus/accordion/home.webp",
+    "/images/optimus/accordion/sun.webp",
+    "/images/optimus/accordion/winnie/winnie-0.webp",
+    "/images/optimus/accordion/winnie/winnie-1.webp",
+    "/images/optimus/accordion/winnie/winnie-2.webp",
+    "/images/optimus/accordion/winnie/winnie-3.webp",
+    "/images/optimus/accordion/winnie/winnie-4.webp",
     "/images/optimus/act-of-god/fern.webp",
     "/images/optimus/aden-first/67.webp",
     "/images/optimus/aden-first/aden-jimmy.webp",
@@ -2634,6 +2641,41 @@
     },
     {
       "src": "/images/optimus/above-the-clouds/serves/serves-5.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/accordion/home.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/accordion/sun.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/accordion/winnie/winnie-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/accordion/winnie/winnie-1.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/accordion/winnie/winnie-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/accordion/winnie/winnie-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/accordion/winnie/winnie-4.webp",
       "width": 1920,
       "height": 2550
     },
