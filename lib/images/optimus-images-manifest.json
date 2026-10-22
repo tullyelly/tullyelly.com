@@ -261,6 +261,11 @@
     "/images/optimus/batman/fern/fern-0.webp",
     "/images/optimus/batman/fern/fern-1.webp",
     "/images/optimus/batman/they-live.webp",
+    "/images/optimus/besties/guard.webp",
+    "/images/optimus/besties/hide.webp",
+    "/images/optimus/besties/pooh.webp",
+    "/images/optimus/besties/river.webp",
+    "/images/optimus/besties/teamwork.webp",
     "/images/optimus/birthday-drive-by/28.webp",
     "/images/optimus/birthday-drive-by/allure-0.webp",
     "/images/optimus/birthday-drive-by/allure-1.webp",
@@ -3548,6 +3553,31 @@
       "src": "/images/optimus/batman/they-live.webp",
       "width": 794,
       "height": 1000
+    },
+    {
+      "src": "/images/optimus/besties/guard.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/besties/hide.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/besties/pooh.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/besties/river.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/besties/teamwork.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/birthday-drive-by/28.webp",
