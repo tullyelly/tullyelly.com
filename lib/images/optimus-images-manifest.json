@@ -768,6 +768,11 @@
     "/images/optimus/holiday-checkout/james-hr.webp",
     "/images/optimus/holy-grail/box.webp",
     "/images/optimus/homepage.webp",
+    "/images/optimus/honorable-mention/cards.webp",
+    "/images/optimus/honorable-mention/fern.webp",
+    "/images/optimus/honorable-mention/honorable.webp",
+    "/images/optimus/honorable-mention/mention.webp",
+    "/images/optimus/honorable-mention/spy.webp",
     "/images/optimus/hortonville/67.webp",
     "/images/optimus/hortonville/877264.webp",
     "/images/optimus/hortonville/george.webp",
@@ -6088,6 +6093,31 @@
       "src": "/images/optimus/homepage.webp",
       "width": 1280,
       "height": 853
+    },
+    {
+      "src": "/images/optimus/honorable-mention/cards.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/honorable-mention/fern.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/honorable-mention/honorable.webp",
+      "width": 863,
+      "height": 1173
+    },
+    {
+      "src": "/images/optimus/honorable-mention/mention.webp",
+      "width": 1401,
+      "height": 1113
+    },
+    {
+      "src": "/images/optimus/honorable-mention/spy.webp",
+      "width": 964,
+      "height": 1280
     },
     {
       "src": "/images/optimus/hortonville/67.webp",
