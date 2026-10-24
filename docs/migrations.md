@@ -104,6 +104,12 @@ records its reviewed scope, missing homie tag identities, career/college
 memberships and records deliberately held for review. The SQL is prepared for
 manual execution; production was queried read-only and no migration was applied.
 
+[081_add_lakers_player_memberships.sql](../db/migrations/081_add_lakers_player_memberships.sql)
+adds only the reviewed memberships for the new Lakers clan `purple-and-gold`.
+The [Lakers comparison and evidence](lakers-membership-backfill.md) records all
+20 pairs and the refreshed development/production endpoint checks. Existing
+identities and relationships remain unchanged; no player or clan rows are created.
+
 ## Existing Databases
 
 A database that predates this ledger has no migration history recorded, so
