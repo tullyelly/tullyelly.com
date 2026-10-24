@@ -110,6 +110,12 @@ The [Lakers comparison and evidence](lakers-membership-backfill.md) records all
 20 pairs and the refreshed development/production endpoint checks. Existing
 identities and relationships remain unchanged; no player or clan rows are created.
 
+[082_add_celtics_player_memberships.sql](../db/migrations/082_add_celtics_player_memberships.sql)
+adds the reviewed Boston playing-career memberships to the new `green-beer` clan.
+The [Celtics comparison and evidence](celtics-membership-backfill.md) records all
+22 pairs and both branch checks. It changes only relationships and preserves
+existing metadata when a pair already exists.
+
 ## Existing Databases
 
 A database that predates this ledger has no migration history recorded, so
