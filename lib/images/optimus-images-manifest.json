@@ -2100,6 +2100,7 @@
     "/images/optimus/training-wreck/mess/mess-1.webp",
     "/images/optimus/training-wreck/mess/mess-2.webp",
     "/images/optimus/training-wreck/mess/mess-3.webp",
+    "/images/optimus/trapped-in-my-mind/codex.webp",
     "/images/optimus/travel-day/fern.webp",
     "/images/optimus/travel-day/travel.webp",
     "/images/optimus/triumph/border.webp",
@@ -12753,6 +12754,11 @@
       "src": "/images/optimus/training-wreck/mess/mess-3.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/trapped-in-my-mind/codex.webp",
+      "width": 535,
+      "height": 328
     },
     {
       "src": "/images/optimus/travel-day/fern.webp",
