@@ -20,6 +20,7 @@ import {
   verifyHealthDomainAliases,
 } from "./release/code-health";
 import { checkPublicationHealth } from "./release/code-publication-health";
+import { planArchiveListing } from "./release/code-publication-plan";
 
 import {
   codeGuard,
@@ -231,6 +232,7 @@ async function health(
         timeoutMs: 30000,
       }),
     undefined,
+    planArchiveListing(manifest.rollback!.applicationSha),
   );
 }
 async function main() {

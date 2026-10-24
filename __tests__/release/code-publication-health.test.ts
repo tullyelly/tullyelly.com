@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import ChronicleListClient, {
+  type ChronicleListRow,
+} from "../../app/shaolin/_components/ChronicleListClient";
+import { ALTER_EGO_OPTIONS } from "../../lib/alterEgo";
 import {
   checkChangedPublicationHealth,
   checkPublicationHealth,
@@ -14,6 +18,37 @@ import {
 } from "../../scripts/release/code-diagnostics";
 
 const sha = "a".repeat(40);
+const archive = {
+  path: "/shaolin/wild-for-the-night",
+  title: "Wild for the night",
+};
+const archiveRows: ChronicleListRow[] = [
+  ...Array.from({ length: 10 }, (_, index) => ({
+    slug: index === 9 ? "wild-for-the-night" : `newer-${index}`,
+    url: index === 9 ? archive.path : `/shaolin/newer-${index}`,
+    title: index === 9 ? archive.title : `Newer Chronicle ${index}`,
+    summary: "Published archive entry",
+    date: `2026-10-${index + 14}T00:00:00.000Z`,
+    alterEgo: "mark2" as const,
+    tags: [],
+    infinityStone: false,
+  })),
+  {
+    slug: probe.slug,
+    url: `/shaolin/${probe.slug}`,
+    title: probe.title,
+    summary: "The retained publication regression probe",
+    date: "2026-10-13T00:00:00.000Z",
+    alterEgo: "mark2",
+    tags: [],
+    infinityStone: false,
+  },
+];
+function archiveMarkup(rows = archiveRows) {
+  return renderToStaticMarkup(
+    createElement(ChronicleListClient, { rows, alterEgos: ALTER_EGO_OPTIONS }),
+  );
+}
 const rendered = probe.assets.filter(
   (asset) =>
     !probe.folders.some((folder) =>
@@ -48,10 +83,7 @@ function fixture(change: Record<string, string | number | undefined> = {}) {
         },
       );
     }
-    const body =
-      path === "/shaolin"
-        ? `<a href="/shaolin/${probe.slug}">${probe.title}</a>`
-        : page;
+    const body = path === "/shaolin" ? archiveMarkup() : page;
     return new Response(
       typeof change[path] === "string" ? change[path] : body,
       { headers: { "content-type": "text/html; charset=utf-8" } },
@@ -61,18 +93,91 @@ function fixture(change: Record<string, string | number | undefined> = {}) {
 }
 test("checks revision, rendered content, all images including optimized sources and listing", async () => {
   const read = fixture();
-  await expect(checkPublicationHealth(read, sha)).resolves.toBeUndefined();
+  await expect(
+    checkPublicationHealth(read, sha, archive),
+  ).resolves.toBeUndefined();
   for (const asset of probe.assets) expect(read).toHaveBeenCalledWith(asset);
   expect(
     read.mock.calls.filter(([path]) => path.startsWith("/_next/image")),
   ).toHaveLength(6);
 });
+test("accepts the rendered ten-post archive with Appleton East on page two", async () => {
+  const listing = archiveMarkup();
+  expect(listing).not.toContain(`/shaolin/${probe.slug}`);
+  expect(listing).toContain("Page 1 of 2");
+  expect((listing.match(/<tr\b/g) ?? []).length).toBe(11); // Header plus ten entries.
+  const read = fixture({ "/shaolin": listing });
+  await expect(
+    checkPublicationHealth(read, sha, archive),
+  ).resolves.toBeUndefined();
+  expect(read).toHaveBeenCalledWith(`/shaolin/${probe.slug}`);
+});
+
+const expectedLink = `<a href="${archive.path}">${archive.title}</a>`;
+const emptyArchive = archiveMarkup([]);
+test.each([
+  ["empty archive", emptyArchive],
+  ["stale archive", archiveMarkup(archiveRows.slice(0, 9))],
+  ["wrong path", archiveMarkup().replaceAll(archive.path, "/shaolin/wrong")],
+  ["wrong title", archiveMarkup().replaceAll(archive.title, "Wrong title")],
+  [
+    "title substring",
+    archiveMarkup().replaceAll(archive.title, `Old ${archive.title}`),
+  ],
+  ["script", `${emptyArchive}<script>${archiveMarkup()}</script>`],
+  [
+    "Flight payload",
+    `${emptyArchive}<script>self.__next_f.push(${JSON.stringify(archiveMarkup())})</script>`,
+  ],
+  ["comment", `${emptyArchive}<!--${archiveMarkup()}-->`],
+  ["navigation", `<nav>${expectedLink}</nav>${emptyArchive}`],
+  [
+    "Latest metric",
+    `<section aria-label="Chronicle metrics">Latest ${expectedLink}</section>${emptyArchive}`,
+  ],
+  [
+    "archive controls",
+    `<div aria-label="Chronicles archive">${expectedLink}${emptyArchive}</div>`,
+  ],
+  [
+    "table caption",
+    emptyArchive.replace("<thead", `<caption>${expectedLink}</caption><thead`),
+  ],
+])("rejects %s as archive publication evidence", async (_kind, listing) => {
+  await expect(
+    checkPublicationHealth(fixture({ "/shaolin": listing }), sha, archive),
+  ).rejects.toMatchObject({
+    message: "code.health-publication-listing",
+    status: 200,
+    publication: { path: "/shaolin", condition: "listing-mismatch" },
+  });
+});
+test("archive title comparison decodes React entities once", async () => {
+  const title = `It's <ready> &amp; published`;
+  const rows = archiveRows.map((row) =>
+    row.url === archive.path ? { ...row, title } : row,
+  );
+  await expect(
+    checkPublicationHealth(fixture({ "/shaolin": archiveMarkup(rows) }), sha, {
+      ...archive,
+      title,
+    }),
+  ).resolves.toBeUndefined();
+  await expect(
+    checkPublicationHealth(fixture({ "/shaolin": archiveMarkup(rows) }), sha, {
+      ...archive,
+      title: `It's <ready> & published`,
+    }),
+  ).rejects.toThrow("code.health-publication-listing");
+});
 test("retained rollback content checks do not substitute an unknown native build revision for provider identity", async () => {
   const read = fixture({ sha: "unknown" });
-  await expect(checkPublicationHealth(read)).resolves.toBeUndefined();
+  await expect(
+    checkPublicationHealth(read, undefined, archive),
+  ).resolves.toBeUndefined();
   expect(read).not.toHaveBeenCalledWith("/api/__version");
   await expect(
-    checkPublicationHealth(fixture({ sha: "unknown" }), sha),
+    checkPublicationHealth(fixture({ sha: "unknown" }), sha, archive),
   ).rejects.toThrow("code.health-revision");
 });
 test.each([
@@ -95,7 +200,7 @@ test.each([
     );
     let diagnostic: ReturnType<typeof classifyCodeFailure> | undefined;
     try {
-      await codeGuard(guard, () => checkPublicationHealth(read, sha));
+      await codeGuard(guard, () => checkPublicationHealth(read, sha, archive));
       throw new Error("Expected API health to reject");
     } catch (error) {
       diagnostic = classifyCodeFailure(guard, error);
@@ -125,15 +230,15 @@ test.each([
   { status: probe.assets[1] },
   { type: probe.assets[2] },
 ])("publication failure prevents acceptance %#", async (change) => {
-  await expect(checkPublicationHealth(fixture(change), sha)).rejects.toThrow(
-    /^code\.health-/,
-  );
+  await expect(
+    checkPublicationHealth(fixture(change), sha, archive),
+  ).rejects.toThrow(/^code\.health-/);
 });
 test("external optimized image sources are rejected without requesting them", async () => {
   const read = fixture({
     "/shaolin/appleton-east": `<h1>Oct 13, 2026: ${probe.title}</h1>${probe.text.join(" ")}${probe.folders.map(() => '<button data-testid="folder-carousel-thumbnail"></button>').join("")}<img src="https://evil.example/_next/image?url=${encodeURIComponent(rendered[0])}" /><script>${JSON.stringify(probe.assets)}</script>`,
   });
-  await expect(checkPublicationHealth(read, sha)).rejects.toThrow(
+  await expect(checkPublicationHealth(read, sha, archive)).rejects.toThrow(
     "code.health-publication",
   );
   expect(
@@ -377,9 +482,13 @@ test("fixed publication heading, samples and listing share entity normalization"
     checkPublicationHealth(
       fixture({
         [`/shaolin/${probe.slug}`]: encodedPage,
-        "/shaolin": `<a href="/shaolin/${probe.slug}">${encode(probe.title)}</a>`,
+        "/shaolin": archiveMarkup().replaceAll(
+          archive.title,
+          encode(archive.title),
+        ),
       }),
       sha,
+      archive,
     ),
   ).resolves.toBeUndefined();
 });

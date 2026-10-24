@@ -36,6 +36,13 @@ function fixture(
     adminChallenge?: boolean;
     wrongAsset?: boolean;
     wrongPublication?: boolean;
+    archive?:
+      | "empty"
+      | "stale"
+      | "wrong-title"
+      | "outside"
+      | "script"
+      | "comment";
   } = {},
 ) {
   const settings = {
@@ -78,6 +85,7 @@ function fixture(
     },
     compatibility: { changedPaths: [], risks: [] },
     publication: {
+      archive: { path: "/shaolin/target-newest", title: "Target newest" },
       chronicles: [
         {
           path: "/shaolin/changed",
@@ -116,6 +124,35 @@ function fixture(
       ) || path.endsWith("-0.webp"),
   );
   const article = `<h1>Oct 13, 2026: ${probe.title}</h1>${probe.text.join(" ")}${rendered.map((path) => `<img src="/_next/image?url=${encodeURIComponent(path)}&amp;w=640&amp;q=75" />`).join("")}${probe.folders.map(() => '<button data-testid="folder-carousel-thumbnail"></button>').join("")}<script>${JSON.stringify(probe.assets)}</script>`;
+  const expectedLink = `<a href="${evidence.publication.archive.path}">${evidence.publication.archive.title}</a>`;
+  const archiveRows = Array.from({ length: 10 }, (_, index) =>
+    index === 0
+      ? `<tr><td>${expectedLink}</td></tr>`
+      : `<tr><td><a href="/shaolin/newer-${index}">Newer ${index}</a></td></tr>`,
+  ).join("");
+  const archive = `<table id="chronicles-table"><tbody>${
+    change.archive === "empty" ||
+    change.archive === "outside" ||
+    change.archive === "script" ||
+    change.archive === "comment"
+      ? ""
+      : change.archive === "stale"
+        ? `<tr><td><a href="/shaolin/${probe.slug}">${probe.title}</a></td></tr>`
+        : change.archive === "wrong-title"
+          ? archiveRows.replace(
+              expectedLink,
+              `<a href="${evidence.publication.archive.path}">Wrong title</a>`,
+            )
+          : archiveRows
+  }</tbody></table>${
+    change.archive === "outside"
+      ? `<nav>${expectedLink}</nav>`
+      : change.archive === "script"
+        ? `<script>${expectedLink}</script>`
+        : change.archive === "comment"
+          ? `<!-- ${expectedLink} -->`
+          : ""
+  }`;
   let aliasReads = 0;
   const fetcher = jest.fn(
     async (target: string | URL | Request, _init?: RequestInit) => {
@@ -201,7 +238,7 @@ function fixture(
         url.pathname === "/shaolin/changed"
           ? `<h1>Oct 18, 2026: changed</h1>${change.wrongPublication ? "wrong text" : "Bound changed text"}<img src="${asset}" />`
           : url.pathname === "/shaolin"
-            ? `<a href="/shaolin/${probe.slug}">${probe.title}</a>`
+            ? archive
             : url.pathname === `/shaolin/${probe.slug}`
               ? article
               : "public";
@@ -279,6 +316,32 @@ test("portable completion runs the complete shared acceptance and rechecks ident
   ).toHaveLength(4);
   expect(JSON.stringify(result)).not.toContain(secret);
 });
+
+test.each([
+  "empty",
+  "stale",
+  "wrong-title",
+  "outside",
+  "script",
+  "comment",
+] as const)(
+  "portable completion rejects a %s archive against the target evidence",
+  async (archive) => {
+    const { verify } = fixture({ archive });
+    expect(await verify()).toMatchObject({
+      state: "public verification pending",
+      diagnostic: {
+        guard: "health.public",
+        invariant: "code.health-publication-listing",
+        status: 200,
+        publication: {
+          path: "/shaolin",
+          condition: "listing-mismatch",
+        },
+      },
+    });
+  },
+);
 
 test.each([
   { run: { id: 124 } },

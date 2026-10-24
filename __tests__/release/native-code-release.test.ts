@@ -68,7 +68,11 @@ function evidence(): NativeCodeEvidence {
       environmentMetadataSha256: "e".repeat(64),
     },
     compatibility: { changedPaths: [], risks: [] },
-    publication: { chronicles: [], assets: [] },
+    publication: {
+      archive: { path: "/shaolin/target-newest", title: "Target newest" },
+      chronicles: [],
+      assets: [],
+    },
   };
 }
 function fixture() {

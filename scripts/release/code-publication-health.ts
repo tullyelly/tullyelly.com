@@ -1,4 +1,4 @@
-/** Fixed read-only acceptance probe for the published incident recovery. */
+/** Read-only historical content and source-bound archive acceptance. */
 import { createHash } from "node:crypto";
 import { decodeHTML, decodeHTMLAttribute } from "entities";
 import probe from "./publication-probe.json";
@@ -93,7 +93,7 @@ async function image(
 /** Candidate-specific checks supplement the retained Appleton East regression. */
 export async function checkChangedPublicationHealth(
   read: Read,
-  plan: PublicationPlan,
+  plan: Pick<PublicationPlan, "chronicles" | "assets">,
 ) {
   const renderedAssets = new Map<string, string>();
   for (const chronicle of plan.chronicles) {
@@ -178,7 +178,8 @@ export async function checkChangedPublicationHealth(
 
 export async function checkPublicationHealth(
   read: Read,
-  applicationSha?: string,
+  applicationSha: string | undefined,
+  archive: PublicationPlan["archive"],
 ) {
   // Native recovery has no Git metadata at remote build time and reports
   // "unknown" here. Rollbacks bind its revision through provider identity and
@@ -305,13 +306,20 @@ export async function checkPublicationHealth(
   }
   const listingResponse = await html(read, "/shaolin");
   const listing = markup(listingResponse.body);
+  // The archive's actual rows must contain the source-bound newest publication.
+  // Metrics, navigation and Flight payloads are not archive listing evidence.
+  const table =
+    /<table\b[^>]*\sid="chronicles-table"[^>]*>([\s\S]*?)<\/table\s*>/i.exec(
+      listing,
+    )?.[1] ?? "";
+  const rows = /<tbody\b[^>]*>([\s\S]*?)<\/tbody\s*>/i.exec(table)?.[1] ?? "";
   if (
     ![
-      ...listing.matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi),
+      ...rows.matchAll(/<a\b[^>]*\shref="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi),
     ].some(
       (match) =>
-        match[1] === `/shaolin/${probe.slug}` &&
-        text(match[2]).includes(probe.title),
+        decodeHTMLAttribute(match[1]) === archive.path &&
+        text(match[2]).trim() === archive.title.replace(/\s+/g, " ").trim(),
     )
   )
     throw new CodePublicationError(
