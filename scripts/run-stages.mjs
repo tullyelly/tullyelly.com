@@ -5,6 +5,12 @@ const heartbeatIntervalMs = 30_000;
 
 function runCommand(label, command, args, startedAt, envOverrides) {
   return new Promise((resolve) => {
+    // npm.cmd needs a shell on Windows. Reuse the launching npm CLI instead,
+    // keeping paths and arguments literal on every platform.
+    if (/^npm(?:\.cmd)?$/.test(command) && process.env.npm_execpath) {
+      args = [process.env.npm_execpath, ...args];
+      command = process.execPath;
+    }
     const child = spawn(command, args, {
       stdio: "inherit",
       shell: false,
@@ -15,8 +21,12 @@ function runCommand(label, command, args, startedAt, envOverrides) {
       console.log(`... ${label} still running (${seconds}s)`);
     }, heartbeatIntervalMs);
 
-    child.on("error", () => {
+    child.on("error", (error) => {
       clearInterval(heartbeat);
+      const code = ["ENOENT", "EACCES", "EPERM"].includes(error.code)
+        ? error.code
+        : "SPAWN_ERROR";
+      console.error(`${label}: command could not start (${code}).`);
       resolve({ status: 1, signal: null });
     });
     child.on("exit", (status, signal) => {

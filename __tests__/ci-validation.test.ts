@@ -9,7 +9,8 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { delimiter, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const sourceCommands = [
   "workflows:check",
@@ -20,40 +21,93 @@ const sourceCommands = [
   "test:ci:prepared",
 ];
 
-function runEntry(entry: string, failAt = "") {
+interface StageObservation {
+  args: string[];
+  skipDb?: string;
+  fixtureValue?: string;
+}
+
+interface StageReport {
+  event: string;
+  label: string;
+  durationMs: number;
+  outcome: string;
+}
+
+function runFixture(
+  args: string[],
+  failAt = "",
+  env: Partial<NodeJS.ProcessEnv> = {},
+) {
   const root = mkdtempSync(join(tmpdir(), "ci-validation-"));
   const log = join(root, "commands.jsonl");
+  const report = join(root, "report.jsonl");
+  const npmCli = join(root, "fixture npm.cjs");
   writeFileSync(
-    join(root, "npm"),
-    `#!${process.execPath}
-const fs = require('node:fs');
+    npmCli,
+    `const fs = require('node:fs');
 const args = process.argv.slice(2);
-fs.appendFileSync(process.env.FIXTURE_LOG, JSON.stringify(args) + '\\n');
+fs.appendFileSync(process.env.FIXTURE_LOG, JSON.stringify({args, skipDb: process.env.SKIP_DB, fixtureValue: process.env.STAGE_FIXTURE}) + '\\n');
 process.exit(args[1] === process.env.FIXTURE_FAIL_AT ? 7 : 0);
 `,
-    { mode: 0o700 },
   );
   try {
-    const result = spawnSync(process.execPath, [resolve(entry)], {
+    const result = spawnSync(process.execPath, args, {
       cwd: root,
       env: {
         ...process.env,
-        PATH: `${root}${delimiter}${process.env.PATH}`,
+        ...env,
+        npm_execpath: npmCli,
         FIXTURE_LOG: log,
         FIXTURE_FAIL_AT: failAt,
+        RELEASE_REPORT_PATH: report,
       },
       encoding: "utf8",
       timeout: 10000,
     });
     expect(result.error).toBeUndefined();
-    const commands = readFileSync(log, "utf8")
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
-    return { result, commands };
+    const observations: StageObservation[] = existsSync(log)
+      ? readFileSync(log, "utf8")
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line))
+      : [];
+    const reports: StageReport[] = existsSync(report)
+      ? readFileSync(report, "utf8")
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line))
+      : [];
+    return {
+      result,
+      commands: observations.map((observation) => observation.args),
+      observations,
+      reports,
+    };
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+}
+
+function runEntry(
+  entry: string,
+  failAt = "",
+  env: Partial<NodeJS.ProcessEnv> = {},
+) {
+  return runFixture([resolve(entry)], failAt, env);
+}
+
+function runStageSource(source: string, env: Partial<NodeJS.ProcessEnv> = {}) {
+  const runner = pathToFileURL(resolve("scripts/run-stages.mjs")).href;
+  return runFixture(
+    [
+      "--input-type=module",
+      "--eval",
+      `import { runStages } from ${JSON.stringify(runner)}; ${source}`,
+    ],
+    "",
+    env,
+  );
 }
 
 test.each([
@@ -74,6 +128,106 @@ test.each([
     expect(result.stdout).toMatch(/All stages completed in \d+\.\ds/);
   },
 );
+
+test.each(["true", "false", undefined])(
+  "source stages preserve inherited SKIP_DB=%s while the build is always guarded",
+  (flag) => {
+    const { result, observations } = runEntry("scripts/verify-agent.mjs", "", {
+      SKIP_DB: flag,
+    });
+    expect(result.status).toBe(0);
+    expect(observations.slice(0, -1).map((stage) => stage.skipDb)).toEqual(
+      sourceCommands.map(() => flag),
+    );
+    expect(observations.at(-1)?.skipDb).toBe("true");
+  },
+);
+
+test("stage overrides remain in the child and npm arguments stay literal", () => {
+  const { result, observations } = runStageSource(
+    `await runStages([
+      ['override', 'npm.cmd', ['run', 'literal $(command); value'], {SKIP_DB: 'true', STAGE_FIXTURE: 'child'}],
+      ['inherited', 'npm', ['run', 'later']],
+    ]);
+    if (process.env.SKIP_DB !== 'false' || process.env.STAGE_FIXTURE !== 'parent') process.exit(9);`,
+    { SKIP_DB: "false", STAGE_FIXTURE: "parent" },
+  );
+  expect(result.status).toBe(0);
+  expect(observations).toEqual([
+    {
+      args: ["run", "literal $(command); value"],
+      skipDb: "true",
+      fixtureValue: "child",
+    },
+    {
+      args: ["run", "later"],
+      skipDb: "false",
+      fixtureValue: "parent",
+    },
+  ]);
+});
+
+test("stage reports retain success and failure timings without environment values", () => {
+  const { result, reports } = runEntry("scripts/verify-agent.mjs", "lint", {
+    STAGE_FIXTURE: "private-fixture-value",
+  });
+  expect(result.status).toBe(7);
+  expect(reports).toHaveLength(3);
+  for (const report of reports) {
+    expect(report).toEqual({
+      event: "stage",
+      label: expect.any(String),
+      durationMs: expect.any(Number),
+      outcome: expect.stringMatching(/^(success|failure)$/),
+    });
+    expect(report.durationMs).toBeGreaterThanOrEqual(0);
+  }
+  expect(reports.map((report) => report.outcome)).toEqual([
+    "success",
+    "success",
+    "failure",
+  ]);
+  expect(JSON.stringify(reports)).not.toContain("private-fixture-value");
+});
+
+test("a missing executable fails promptly with a bounded diagnostic and report", () => {
+  const { result, reports } = runStageSource(
+    `await runStages([
+      ['missing executable', 'tullyelly-nonexistent-command', []],
+      ['must not run', 'npm', ['run', 'later']],
+    ]);`,
+  );
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain("command could not start (ENOENT)");
+  expect(result.stdout).not.toContain("must not run");
+  expect(reports).toEqual([
+    {
+      event: "stage",
+      label: "missing executable",
+      durationMs: expect.any(Number),
+      outcome: "failure",
+    },
+  ]);
+});
+
+test("a signalled stage stops subsequent commands and records failure", () => {
+  const { result, reports } = runStageSource(
+    `await runStages([
+      ['terminated', process.execPath, ['-e', 'process.kill(process.pid, "SIGTERM")']],
+      ['must not run', 'npm', ['run', 'later']],
+    ]);`,
+  );
+  expect(result.status).toBe(1);
+  expect(result.stdout).not.toContain("must not run");
+  expect(reports).toEqual([
+    {
+      event: "stage",
+      label: "terminated",
+      durationMs: expect.any(Number),
+      outcome: "failure",
+    },
+  ]);
+});
 
 test.each(["lint", "test:ci:prepared"])(
   "full verification stops before the build when %s fails",
@@ -138,28 +292,51 @@ test("full coverage retains thresholds, while smoke remains available separately
   }
 });
 
-test("workflow Node pins and reusable caches invalidate on relevant configuration", () => {
+test("CI and release workflows share a precise Node baseline and immutable Actions", () => {
   const version = readFileSync(".nvmrc", "utf8").trim();
   const setup = readFileSync(".github/actions/setup/action.yml", "utf8");
-  const workflow = readFileSync(".github/workflows/ci.yml", "utf8");
-  const files = [
-    setup,
-    ...readdirSync(".github/workflows").map((file) =>
-      readFileSync(join(".github/workflows", file), "utf8"),
-    ),
-  ];
-  const pins = files.flatMap((file) =>
-    [...file.matchAll(/node-version: "([^"]+)"/g)].map((match) => match[1]),
+  const workflows = readdirSync(".github/workflows").map((file) =>
+    readFileSync(join(".github/workflows", file), "utf8"),
   );
-  expect(pins.length).toBeGreaterThan(1);
-  expect(new Set(pins)).toEqual(new Set([version]));
+  expect(version).toMatch(/^\d+\.\d+\.\d+$/);
+  for (const file of [setup, ...workflows]) {
+    const externalUses = [...file.matchAll(/^\s*(?:- )?uses: (\S+)/gm)]
+      .map((match) => match[1])
+      .filter((action) => !action.startsWith("./"));
+    for (const action of externalUses) {
+      expect(action).toMatch(/^[\w.-]+\/[\w./-]+@[a-f0-9]{40}$/);
+    }
+    const nodeSetups = externalUses.filter((action) =>
+      action.startsWith("actions/setup-node@"),
+    );
+    const nodeFiles = [...file.matchAll(/node-version-file: "([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+    expect(nodeFiles).toEqual(nodeSetups.map(() => ".nvmrc"));
+    expect(file).not.toMatch(/^\s*node-version:[ \t]+\S/m);
+  }
+  const runners = workflows.flatMap((file) =>
+    [...file.matchAll(/^\s*runs-on: (.+)$/gm)].map((match) => match[1]),
+  );
+  expect(runners.length).toBeGreaterThan(1);
+  expect(new Set(runners)).toEqual(new Set(["ubuntu-24.04"]));
+});
+
+test("reusable caches invalidate on the resolved Node version and configuration", () => {
+  const setup = readFileSync(".github/actions/setup/action.yml", "utf8");
+  const workflow = readFileSync(".github/workflows/ci.yml", "utf8");
   expect(workflow).toContain("uses: ./.github/actions/setup");
+  expect(workflow).toContain("id: setup");
+  expect(setup).toContain("id: node");
+  expect(setup).toContain("value: ${{ steps.node.outputs.node-version }}");
+  expect(setup).toContain("-node${{ steps.node.outputs.node-version }}-");
+  expect(workflow).toContain("-node${{ steps.setup.outputs.node-version }}-");
   expect(setup).toContain("path: .cache/eslint");
   expect(workflow).toContain("path: .next/cache");
   for (const cache of [setup, workflow]) {
     expect(cache).toContain("runner.os");
     expect(cache).toContain("runner.arch");
-    expect(cache).toContain(`node${version}`);
+    expect(cache).toContain("'.nvmrc'");
     expect(cache).toContain("'package-lock.json'");
     expect(cache).toContain("'tsconfig.json'");
     expect(cache).toContain("github.sha");

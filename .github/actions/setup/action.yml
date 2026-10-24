@@ -1,21 +1,26 @@
 name: "Setup Node and install deps"
-description: "Install Node.js 22.20.0 and project dependencies"
+description: "Install the Node.js version from .nvmrc and project dependencies"
 inputs: {}
+outputs:
+  node-version:
+    description: "Resolved Node.js version used by validation"
+    value: ${{ steps.node.outputs.node-version }}
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      id: node
       with:
-        node-version: "22.20.0"
+        node-version-file: ".nvmrc"
         cache: "npm"
         cache-dependency-path: package-lock.json
     - name: Cache ESLint cache
-      uses: actions/cache@v4
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: .cache/eslint
-        key: eslint-v2-${{ runner.os }}-${{ runner.arch }}-node22.20.0-${{ hashFiles('package-lock.json', 'package.json', 'eslint.config.*', 'eslint-rules/**', 'tsconfig.json') }}-${{ github.sha }}
+        key: eslint-v3-${{ runner.os }}-${{ runner.arch }}-node${{ steps.node.outputs.node-version }}-${{ hashFiles('.nvmrc', 'package-lock.json', 'package.json', 'eslint.config.*', 'eslint-rules/**', 'tsconfig.json') }}-${{ github.sha }}
         restore-keys: |
-          eslint-v2-${{ runner.os }}-${{ runner.arch }}-node22.20.0-${{ hashFiles('package-lock.json', 'package.json', 'eslint.config.*', 'eslint-rules/**', 'tsconfig.json') }}-
+          eslint-v3-${{ runner.os }}-${{ runner.arch }}-node${{ steps.node.outputs.node-version }}-${{ hashFiles('.nvmrc', 'package-lock.json', 'package.json', 'eslint.config.*', 'eslint-rules/**', 'tsconfig.json') }}-
     - name: Install dependencies
       shell: bash
       env:
