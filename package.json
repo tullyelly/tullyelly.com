@@ -218,7 +218,7 @@
     "prisma": "^6.15.0",
     "remark-directive": "^3.0.0",
     "remark-frontmatter": "^5.0.0",
-    "remark-mdx-frontmatter": "^5.2.0",
+    "remark-mdx-frontmatter": "^6.0.0",
     "secretlint": "^11.2.4",
     "secretlint-rule-custom-pg-url": "file:tools/secretlint-rules",
     "server-only": "^0.0.1",
