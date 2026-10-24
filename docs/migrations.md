@@ -95,6 +95,15 @@ Review and reconcile the ledger separately after manually applying SQL.
 SQL assertions for a non-production database after applying the migration. It
 replaces the older migration 078 fixture, which required the retired column.
 
+## Player and clan memberships
+
+Player-to-team identity data is covered by
+[080_populate_player_clan_memberships.sql](../db/migrations/080_populate_player_clan_memberships.sql).
+The [production comparison and evidence](player-clan-membership-backfill.md)
+records its reviewed scope, missing homie tag identities, career/college
+memberships and records deliberately held for review. The SQL is prepared for
+manual execution; production was queried read-only and no migration was applied.
+
 ## Existing Databases
 
 A database that predates this ledger has no migration history recorded, so
