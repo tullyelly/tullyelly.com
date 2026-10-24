@@ -119,8 +119,8 @@ exact SHA from the trusted CI workflow. Existing CI remains application-wide and
 continues its useful validation build. That build is CI evidence, not the canonical
 production deployment. The release does not repeat equivalent full validation,
 create a local production artifact, run `vercel build`, or transfer an application
-build archive between jobs. Node 22.20.0, locked npm dependencies and Vercel CLI
-63.1.2 remain pinned.
+build archive between jobs. Node 22.20.0 selected from .nvmrc, locked npm
+dependencies and Vercel CLI 63.1.2 remain pinned.
 
 Source comes from the immutable approved Git revision, independently checked
 against its commit. The provider receives a clean isolated source tree rather than

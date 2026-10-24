@@ -12,7 +12,7 @@
 4. typecheck:prepared: TypeScript without regenerating content.
 5. gen:prisma: Prisma client generation.
 6. test:ci:prepared: full Jest coverage in band, once.
-7. build:next: Next production build.
+7. build:next: Next production build, with SKIP_DB=true scoped to that child.
 
 Jest thresholds are 85% lines/statements/functions and 80% branches, defined in
 [jest.config.cjs](../jest.config.cjs). A successful baseline covers lint,
@@ -30,6 +30,15 @@ entry points share [validation stages](../scripts/validation-stages.mjs) and
 The related smoke suite remains available through `npm run test:smoke` and the
 pre-push hook. Running it immediately before the full suite adds no test coverage,
 so it is no longer part of the complete baseline. No content-only bypass exists.
+
+The shared runner reuses the launching npm CLI through Node without shell parsing,
+including npm.cmd invocations on Windows. Stage environment overrides apply only
+to that child; they do not mutate the parent or subsequent stages. Source validation
+preserves inherited database guards. Every validated build forces SKIP_DB=true even
+when the caller omitted it. Exit failures and signals stop subsequent stages, and
+spawn failures report only a fixed diagnostic code. Existing console timings and
+optional RELEASE_REPORT_PATH stage records cover all three entry points. The
+existing Jest suite exercises these contracts; no duplicate tooling suite is added.
 
 ## GitHub Actions workflow validation
 
@@ -120,12 +129,39 @@ SKIP_COVERAGE_GUARD=1 bypasses the whole hook, only when needed, and does not
 waive required validation. [Coverage guard](coverage-guard.md) tracks gate policy.
 
 [ci.yml](../.github/workflows/ci.yml) runs on pushes to main and PRs targeting
-main, using Node 22.20.0, matching .nvmrc and all release workflows. Its
+main, using Node 22.20.0 from .nvmrc, matching all release workflows. Its
 `guardrails` job retains the exact `Lint, test, build` check name. It runs
 verify:source with SKIP_DB=true, uploads `coverage-lcov` (missing lcov fails the
 job), runs build:validated in the same checkout, then checks security headers on
 the production server. There is no CI_ENABLED gate or path-based bypass. Vitest,
 formatting, metadata, Playwright, images, and SEO are not CI baseline steps.
+
+All workflows use ubuntu-24.04 and select the application Node version through
+node-version-file: .nvmrc. External Actions use full commit SHA pins with release
+version comments, including the shared setup action. Their Node 24 action runtime
+is independent of the application's Node 22 runtime. The reviewed upstream versions
+are [checkout 7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1),
+[setup-node 7.1.0](https://github.com/actions/setup-node/releases/tag/v7.1.0),
+[cache 6.1.0](https://github.com/actions/cache/releases/tag/v6.1.0),
+[upload-artifact 7.0.2](https://github.com/actions/upload-artifact/releases/tag/v7.0.2)
+and [download-artifact 8.0.2](https://github.com/actions/download-artifact/releases/tag/v8.0.2).
+Artifact names, ZIP layout, extraction paths, checksums, hidden-file settings and
+retention policies remain part of the existing protected release contracts.
+
+[Dependabot](../.github/dependabot.yml) proposes grouped Actions updates weekly
+and npm updates monthly, with at most three and five open version-update PRs
+respectively. Next, React and Prisma minor/patch updates are grouped by platform;
+major npm upgrades remain individual proposals. These are review proposals with
+the normal CI gates; no automatic merge or release is configured. Review Action
+release notes, resolved commit SHAs and artifact compatibility before updating pins.
+The [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference)
+defines the schedule and grouping behavior.
+
+Application runtime upgrades require coordinated changes: release preflight requires
+exactly Node 22.20.0 and the Vercel target validators require 22.x. Changing .nvmrc
+alone does not update those contracts or the provider runtime. Keep mocked database
+fixture isolation explicit as described below; never globally reset Jest's database
+safety flag to accommodate a runtime or workflow update.
 
 The `coverage` job in CI retains the exact `coverage` status context and requires
 successful guardrails. It uses `always()` and explicitly fails on failure,
@@ -143,13 +179,15 @@ locked dependencies, restores npm's download cache and caches `.cache/eslint`.
 ESLint uses the content strategy so fresh-checkout mtimes do not invalidate all
 entries. Its immutable cache key includes OS, architecture, Node, lockfile,
 package/configuration, local ESLint rules, TypeScript configuration and commit.
+The Node identity comes from setup-node's resolved output; .nvmrc is also hashed.
 Restore prefixes retain all compatibility inputs and omit only the commit; each
 new commit can save updated results. Lint and documentation checks always run.
 
 CI caches only `.next/cache`, with OS, architecture, Node, lockfile, package,
 Next/TypeScript/Contentlayer/CSS configuration, CI setup/environment definition
-and commit in the key. Restore prefixes omit only the commit. Next still builds
-every time and owns source dependency invalidation, following its
+and commit in the key. It uses the shared setup's resolved Node output and hashes
+.nvmrc, avoiding a second handwritten version pin. Restore prefixes omit only the
+commit. Next still builds every time and owns source dependency invalidation, following its
 [CI cache guidance](https://nextjs.org/docs/app/guides/ci-build-caching).
 Next 16.1.6 disables Turbopack build persistence by default, so CI explicitly sets
 NEXT_BUILD_CACHE=1 to enable experimental.turbopackFileSystemCacheForBuild in

@@ -11,5 +11,10 @@ export const sourceValidationStages = [
 ];
 
 export const applicationBuildStages = [
-  ["Starting Next production build", npm, ["run", "build:next"]],
+  [
+    "Starting Next production build",
+    npm,
+    ["run", "build:next"],
+    { SKIP_DB: "true" },
+  ],
 ];

@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+      time: "09:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    groups:
+      next:
+        patterns: ["next", "@next/*", "eslint-config-next"]
+        update-types: [minor, patch]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+        update-types: [minor, patch]
+      prisma:
+        patterns: ["prisma", "@prisma/client"]
+        update-types: [minor, patch]
