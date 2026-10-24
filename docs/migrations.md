@@ -63,6 +63,30 @@ prod-looking URLs outside `NODE_ENV=production`, and keeps the production
 Do not edit a migration after it has been applied to a shared database. Add a
 new numbered migration instead.
 
+## Clan tag creation
+
+[078_create_missing_clan_tags.sql](../db/migrations/078_create_missing_clan_tags.sql)
+is a self-contained SQL transaction for review and manual execution by the operator;
+it needs no provider tooling. It targets `dojo.clan` (singular) and requires the
+existing tag route metadata and identity triggers through migration 074.
+
+Inserting a clan with a nonblank `tag_slug` creates a missing `dojo.tags` row:
+`slug` and `name` use `tag_slug`, `display_name` uses the trimmed, lowercase clan
+name, `href` is `/cardattack/clans/{tag_slug}`, `href_kind` is `clan`, and
+`is_clickable` is true. Existing tag triggers supply audit and identity metadata.
+Updates to `name` or `tag_slug` also create the tag if missing, including when a
+clan receives its first `tag_slug`. Clans without `tag_slug` are skipped, matching
+the homie trigger convention.
+
+The migration backfills missing tags for existing clans through the same helper.
+Existing tags are preserved in full; rerunning the SQL does not overwrite labels,
+routes or metadata. Renaming a clan does not rename an existing tag, and changing
+`tag_slug` does not remove the previous tag. Review and reconcile the migration
+ledger separately for manually applied SQL before using the ledger runner.
+
+[078_clan_tags_test.sql](../db/tests/078_clan_tags_test.sql) provides rollback-only
+SQL assertions for a non-production database after applying the migration.
+
 ## Existing Databases
 
 A database that predates this ledger has no migration history recorded, so
