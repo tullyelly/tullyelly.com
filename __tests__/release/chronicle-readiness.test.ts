@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
   mkdtempSync,
   mkdirSync,
@@ -13,6 +13,7 @@ import probe from "../../scripts/release/publication-probe.json";
 
 const executableDirectory = mkdtempSync(join(tmpdir(), "chronicle-ready-cli-"));
 const script = join(executableDirectory, "check-chronicle-publication.cjs");
+const planScript = join(executableDirectory, "publication-plan.cjs");
 beforeAll(() => {
   // Exercise the actual CLI for every fixture without repeatedly cold-starting
   // tsx and the MDX dependency graph alongside parallel coverage workers.
@@ -38,6 +39,156 @@ beforeAll(() => {
     target: "node22",
     logLevel: "silent",
   });
+  const entry = join(executableDirectory, "publication-plan.ts");
+  writeFileSync(
+    entry,
+    `import { planArchiveListing, planPublicationChecks } from ${JSON.stringify(resolve("scripts/release/code-publication-plan.ts"))};
+const [previous, commit] = process.argv.slice(2);
+try {
+  console.log(JSON.stringify(previous === "-" ? planArchiveListing(commit) : planPublicationChecks(previous, commit)));
+} catch (error) {
+  console.error(error instanceof Error ? error.message : "failed");
+  process.exitCode = 1;
+}
+`,
+  );
+  buildSync({
+    entryPoints: [entry],
+    outfile: planScript,
+    bundle: true,
+    platform: "node",
+    format: "cjs",
+    target: "node22",
+    logLevel: "silent",
+  });
+});
+
+function archiveFixture() {
+  const root = mkdtempSync(join(tmpdir(), "publication-plan-"));
+  const env = { ...process.env };
+  for (const key of Object.keys(env))
+    if (key.startsWith("GIT_")) delete env[key];
+  function git(...args: string[]) {
+    return execFileSync("git", args, {
+      cwd: root,
+      env,
+      encoding: "utf8",
+    }).trim();
+  }
+  git("init", "--quiet");
+  for (const directory of ["content/chronicles", "lib/images", "public"])
+    mkdirSync(join(root, directory), { recursive: true });
+  writeFileSync(join(root, "public/.keep"), "");
+  writeFileSync(
+    join(root, "lib/images/optimus-images-manifest.json"),
+    JSON.stringify({ urls: [], images: [] }),
+  );
+  function post(slug: string, date: string, extra = "draft: false") {
+    writeFileSync(
+      join(root, `content/chronicles/${slug}.mdx`),
+      `---\ntitle: ${slug}\nsummary: fixture\ndate: ${date}\n${extra}\n---\nThe rendered Chronicle still contains this authored publication sample.\n`,
+    );
+  }
+  function commit() {
+    git("add", ".");
+    git(
+      "-c",
+      "user.name=Fixture",
+      "-c",
+      "user.email=fixture@example.test",
+      "commit",
+      "--quiet",
+      "--no-verify",
+      "-m",
+      "Reviewed fixture",
+    );
+    return git("rev-parse", "HEAD");
+  }
+  function plan(previous: string, target: string) {
+    return spawnSync(process.execPath, [planScript, previous, target], {
+      cwd: root,
+      env,
+      encoding: "utf8",
+      timeout: 15000,
+    });
+  }
+  return {
+    root,
+    post,
+    commit,
+    plan,
+    dispose: () => rmSync(root, { recursive: true, force: true }),
+  };
+}
+
+test("archive expectation uses the full target publication order for old edits, backfills and code-only releases", () => {
+  const f = archiveFixture();
+  try {
+    f.post("old-post", '"2026-01-01"');
+    f.post("b-date-only", "2026-10-23", "published: false");
+    f.post("a-latest", '"2026-10-23T00:00:00-05:00"', "");
+    for (let index = 0; index < 10; index++)
+      f.post(`c-same-date-${index}`, '"2026-10-23"');
+    f.post("z-earlier-offset", '"2026-10-23T04:30:00Z"');
+    f.post("future-draft", '"2027-01-01"', "draft: true");
+    let previous = f.commit();
+    const archive = { path: "/shaolin/b-date-only", title: "b-date-only" };
+    for (const change of ["old-post", "backfill", "code-only"]) {
+      if (change === "code-only")
+        writeFileSync(
+          join(f.root, "source.ts"),
+          "export const reviewed = true;\n",
+        );
+      else f.post(change, '"2026-01-02"');
+      const target = f.commit();
+      // A dirty future Chronicle must never participate in the approved plan.
+      f.post("dirty-future", '"2028-01-01"');
+      const result = f.plan(previous, target);
+      expect(result.error).toBeUndefined();
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout)).toMatchObject({
+        archive,
+        chronicles:
+          change === "code-only" ? [] : [{ path: `/shaolin/${change}` }],
+        assets: [],
+      });
+      rmSync(join(f.root, "content/chronicles/dirty-future.mdx"));
+      previous = target;
+    }
+    const retained = previous;
+    f.post("new-release", '"2026-10-24"');
+    const newer = f.commit();
+    expect(JSON.parse(f.plan("-", newer).stdout)).toEqual({
+      path: "/shaolin/new-release",
+      title: "new-release",
+    });
+    expect(JSON.parse(f.plan("-", retained).stdout)).toEqual(archive);
+  } finally {
+    f.dispose();
+  }
+});
+
+test("archive planning fails closed without a published collection or valid target metadata", () => {
+  const f = archiveFixture();
+  try {
+    f.post("only-draft", '"2027-01-01"', "draft: true");
+    const empty = f.commit();
+    expect(f.plan("-", empty)).toMatchObject({
+      status: 1,
+      stderr: "code.publication-plan\n",
+    });
+    f.post("broken-date", '"invalid-date"');
+    expect(f.plan("-", f.commit())).toMatchObject({
+      status: 1,
+      stderr: "code.publication-plan\n",
+    });
+    expect(f.plan("-", "main")).toMatchObject({
+      status: 1,
+      stderr: "code.application-sha\n",
+    });
+  } finally {
+    f.dispose();
+  }
 });
 afterAll(() => rmSync(executableDirectory, { recursive: true, force: true }));
 function check(root: string, slug = "intended", release = false) {

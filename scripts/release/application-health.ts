@@ -31,6 +31,10 @@ export async function checkApplicationHealth(options: {
       timeoutMs: 30000,
       rejectChallenges: true,
     });
-  await checkPublicationHealth(read, options.commit);
+  await checkPublicationHealth(
+    read,
+    options.commit,
+    options.publication.archive,
+  );
   await checkChangedPublicationHealth(read, options.publication);
 }

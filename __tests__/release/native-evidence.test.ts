@@ -75,7 +75,11 @@ function evidence() {
       changedPaths: ["content/chronicles/example.mdx"],
       risks: [],
     },
-    publication: { chronicles: [], assets: [] },
+    publication: {
+      archive: { path: "/shaolin/newest", title: "Newest Chronicle" },
+      chronicles: [],
+      assets: [],
+    },
   };
 }
 
@@ -137,6 +141,29 @@ test("automatic evidence binds exact application/workflow/CI revisions, own run 
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("archive evidence is required, bounded and independent of changed chronicles", () => {
+  expect(validateNativeEvidence(evidence()).publication.archive).toEqual({
+    path: "/shaolin/newest",
+    title: "Newest Chronicle",
+  });
+  for (const archive of [
+    undefined,
+    null,
+    { path: "/shaolin/newest", title: "" },
+    { path: "/shaolin/newest", title: "x".repeat(301) },
+    { path: "https://example.com/shaolin/newest", title: "Newest" },
+    { path: "/shaolin/../newest", title: "Newest" },
+    { path: "/shaolin/newest?query=1", title: "Newest" },
+    { path: "/shaolin/newest", title: "Newest", commit: sha },
+  ])
+    expect(() =>
+      validateNativeEvidence({
+        ...evidence(),
+        publication: { ...evidence().publication, archive },
+      }),
+    ).toThrow();
 });
 
 test("metadata-only config evidence never publishes planted credentials, raw env values or bypass settings", () => {

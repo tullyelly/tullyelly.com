@@ -73,6 +73,12 @@ export const nativeEvidenceSchema = z
       .strict(),
     publication: z
       .object({
+        archive: z
+          .object({
+            path: z.string().regex(/^\/shaolin\/[a-z0-9]+(?:-[a-z0-9]+)*$/),
+            title: z.string().min(1).max(300),
+          })
+          .strict(),
         chronicles: z
           .array(
             z

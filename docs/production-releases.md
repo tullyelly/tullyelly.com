@@ -183,6 +183,17 @@ readiness also selects changed chronicles and their assets; an ordinary release
 is not an Appleton-East-only publication check. Intentional edits to a reviewed
 probe require updating its expectations through review.
 
+Archive acceptance checks the newest published Chronicle's exact link and title
+inside the rendered archive table, using the complete target commit's publication,
+date and ordering rules. That expectation is bound into release evidence and reused
+before and after promotion and by standalone verification; rollback derives it
+from the retained application's SHA. Appleton East keeps its direct content and
+asset checks and may fall beyond the archive's first ten entries. Old-post edits,
+backfills and code-only releases still derive the expectation from the full target
+archive.
+Earlier evidence artifacts without this archive expectation fail validation; do
+not edit their provider-bound bytes or substitute current-main content.
+
 Publication text checks decode rendered HTML entities once after excluding comments
 and script, style and textarea content. Heading, content and listing comparisons
 preserve literal entity-looking source text and visible escaped angle brackets.

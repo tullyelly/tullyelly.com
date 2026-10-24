@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import matter from "gray-matter";
+import { Temporal } from "contentlayer2/utils";
 import { checkChroniclePublication } from "../check-chronicle-publication";
 import { createCleanSource, sourceArchiveDigest } from "./code-source";
 import { readFileSync } from "node:fs";
@@ -8,6 +9,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 export type PublicationPlan = {
+  archive: { path: string; title: string };
   chronicles: Array<{
     path: string;
     title: string;
@@ -16,6 +18,83 @@ export type PublicationPlan = {
   }>;
   assets: Array<{ path: string; sha256: string }>;
 };
+
+/** Select from the complete target tree, never the release diff or rendered HTML. */
+export function planArchiveListing(commit: string): PublicationPlan["archive"] {
+  if (!/^[a-f0-9]{40}$/.test(commit)) throw new Error("code.application-sha");
+  const paths = execFileSync(
+    "git",
+    ["ls-tree", "-rz", "--name-only", commit, "--", "content/chronicles/"],
+    { encoding: "utf8" },
+  )
+    .split("\0")
+    .filter((path) => path.endsWith(".mdx"));
+  const posts = paths.flatMap((path) => {
+    const parsed = matter(
+      execFileSync("git", ["show", `${commit}:${path}`], {
+        encoding: "utf8",
+        maxBuffer: 4 * 1024 * 1024,
+      }),
+    );
+    // lib/blog.isPublished uses only draft; Contentlayer defaults it to false.
+    if (parsed.data.draft) return [];
+    const slug = path.slice("content/chronicles/".length, -4);
+    const title: unknown = parsed.data.title;
+    // Contentlayer's YAML engine keeps dates as strings. Recover an unquoted
+    // YAML date before gray-matter's Date coercion loses its timezone spelling.
+    const date: unknown =
+      parsed.data.date instanceof Date
+        ? parsed.matter.match(/^date:[ \t]*([^\n#]+)/m)?.[1].trim()
+        : parsed.data.date;
+    if (
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ||
+      typeof title !== "string" ||
+      !title.trim() ||
+      title.length > 300 ||
+      typeof date !== "string"
+    )
+      throw new Error("code.publication-plan");
+    let timestamp: number;
+    let normalizedDate: string;
+    try {
+      // Match Contentlayer's date mapping with contentlayer.config.ts timezone.
+      let instant = Temporal.Instant.fromEpochMilliseconds(
+        new Date(date).getTime(),
+      );
+      let explicitTimezone = false;
+      try {
+        Temporal.TimeZone.from(date);
+        explicitTimezone = true;
+      } catch {
+        // A timezone-free source date uses the configured Contentlayer zone.
+      }
+      if (!explicitTimezone) {
+        const offset =
+          Temporal.TimeZone.from("America/Chicago").getOffsetNanosecondsFor(
+            instant,
+          );
+        instant = instant.subtract({ nanoseconds: offset });
+      }
+      timestamp = instant.epochMilliseconds;
+      normalizedDate = explicitTimezone
+        ? new Date(date).toISOString()
+        : instant.toString();
+    } catch {
+      throw new Error("code.publication-plan");
+    }
+    return [{ slug, title, timestamp, normalizedDate }];
+  });
+  // Apply lib/blog.byDateDesc, then the client's stable newest-first string
+  // sort. Contentlayer retains different fractional-second formatting for
+  // explicit timezones, so the second comparison can affect equal instants.
+  posts.sort(
+    (a, b) => b.timestamp - a.timestamp || a.slug.localeCompare(b.slug),
+  );
+  posts.sort((a, b) => b.normalizedDate.localeCompare(a.normalizedDate));
+  const newest = posts[0];
+  if (!newest) throw new Error("code.publication-plan");
+  return { path: `/shaolin/${newest.slug}`, title: newest.title };
+}
 /** Compare approved source trees, independently of generated Contentlayer output. */
 export function planPublicationChecks(
   previousSha: string,
@@ -30,7 +109,11 @@ export function planPublicationChecks(
   )
     .split("\0")
     .filter(Boolean);
-  const plan: PublicationPlan = { chronicles: [], assets: [] };
+  const plan: PublicationPlan = {
+    archive: planArchiveListing(commit),
+    chronicles: [],
+    assets: [],
+  };
   let source: ReturnType<typeof createCleanSource> | undefined;
   const assets = new Map<string, string>();
   try {
