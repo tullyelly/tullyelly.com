@@ -145,15 +145,12 @@ export async function getClanSnapshotsForTagOnDate(
       `
         WITH matched_clans AS (
           SELECT
-            c.id::text AS clan_id,
-            CASE WHEN to_jsonb(c) ->> 'tag_slug' = $2 THEN 0 ELSE 1 END AS match_rank
+            c.id::text AS clan_id
           FROM dojo.clan AS c
-          WHERE to_jsonb(c) ->> 'tag_slug' = $2
-             OR c.slug = $2
+          WHERE c.slug = $2
         ),
         matched_snapshots AS (
           SELECT
-            c.match_rank,
             snapshot.clan_id::text AS clan_id,
             snapshot.name,
             snapshot.slug,
@@ -198,7 +195,7 @@ export async function getClanSnapshotsForTagOnDate(
         FROM matched_snapshots AS s
         WHERE TRUE
         ${sportFilter}
-        ORDER BY s.match_rank ASC, s.sport ASC, s.ranking ASC, s.slug ASC
+        ORDER BY s.sport ASC, s.ranking ASC, s.slug ASC
       `,
       values,
     ),

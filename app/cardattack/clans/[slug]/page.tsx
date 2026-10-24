@@ -153,7 +153,7 @@ export default async function Page({ params }: PageProps) {
   const ranking = rankings[0];
   const clanHref = getTcdbClanRankingHref(ranking);
   const tagMetadata = await getStoredTagMetadataForHrefKind({
-    slug: ranking.tag_slug,
+    slug: ranking.slug,
     href: clanHref,
     hrefKind: "clan",
   });

@@ -63,29 +63,37 @@ prod-looking URLs outside `NODE_ENV=production`, and keeps the production
 Do not edit a migration after it has been applied to a shared database. Add a
 new numbered migration instead.
 
-## Clan tag creation
+## Clan slug and tag creation
 
-[078_create_missing_clan_tags.sql](../db/migrations/078_create_missing_clan_tags.sql)
-is a self-contained SQL transaction for review and manual execution by the operator;
-it needs no provider tooling. It targets `dojo.clan` (singular) and requires the
-existing tag route metadata and identity triggers through migration 074.
+[079_remove_clan_tag_slug.sql](../db/migrations/079_remove_clan_tag_slug.sql)
+supersedes migration 078's dependency on the unused `dojo.clan.tag_slug` column.
+Run the complete SQL transaction manually after reviewing it; no provider tooling
+is required. Existing applied migration files remain unchanged.
 
-Inserting a clan with a nonblank `tag_slug` creates a missing `dojo.tags` row:
-`slug` and `name` use `tag_slug`, `display_name` uses the trimmed, lowercase clan
-name, `href` is `/cardattack/clans/{tag_slug}`, `href_kind` is `clan`, and
-`is_clickable` is true. Existing tag triggers supply audit and identity metadata.
-Updates to `name` or `tag_slug` also create the tag if missing, including when a
-clan receives its first `tag_slug`. Clans without `tag_slug` are skipped, matching
-the homie trigger convention.
+`dojo.clan.slug` is the sole clan identifier. Inserts and updates of `name` or
+`slug` create missing `dojo.tags` records: `slug` and `name` use the clan slug,
+`display_name` uses the trimmed, lowercase clan name, `href` is
+`/cardattack/clans/{slug}`, `href_kind` is `clan`, and `is_clickable` is true.
+The migration backfills all missing clan tags using that same helper. Existing
+tag labels, routes, metadata and audit fields are preserved. Changing a clan
+slug creates its missing tag but does not delete the old tag.
 
-The migration backfills missing tags for existing clans through the same helper.
-Existing tags are preserved in full; rerunning the SQL does not overwrite labels,
-routes or metadata. Renaming a clan does not rename an existing tag, and changing
-`tag_slug` does not remove the previous tag. Review and reconcile the migration
-ledger separately for manually applied SQL before using the ledger runner.
+Migration 079 replaces both affected views and the old trigger, then drops
+`dojo.clan.tag_slug` and its column constraints. The snapshot view no longer
+exposes `clan_tag_slug`; its owner, grants and view options are retained. The
+trade-partner content-tag view joins clan tags using `clan.slug`. Unexpected
+populated legacy values or unknown dependent database objects stop the entire
+transaction; the migration does not use cascading drops.
 
-[078_clan_tags_test.sql](../db/tests/078_clan_tags_test.sql) provides rollback-only
-SQL assertions for a non-production database after applying the migration.
+The matching application changes remove clan reads of the retired column and use
+`slug` for ranking metadata, snapshots and trade-partner tag links. They work
+before and after migration 079, so the application can be released first.
+Homie `tag_slug` fields and aliases representing `dojo.tags.slug` remain valid.
+Review and reconcile the ledger separately after manually applying SQL.
+
+[079_clan_slug_test.sql](../db/tests/079_clan_slug_test.sql) supplies rollback-only
+SQL assertions for a non-production database after applying the migration. It
+replaces the older migration 078 fixture, which required the retired column.
 
 ## Existing Databases
 

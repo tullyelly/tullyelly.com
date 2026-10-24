@@ -107,13 +107,11 @@ describe("clan snapshot data helper", () => {
     expect(query).not.toContain(
       "PARTITION BY snapshot.clan_id, snapshot.sport",
     );
-    expect(query).toContain("WHERE to_jsonb(c) ->> 'tag_slug' = $2");
-    expect(query).toContain("OR c.slug = $2");
+    expect(query).toContain("WHERE c.slug = $2");
+    expect(query).not.toContain("tag_slug");
     expect(query).not.toContain("LIMIT 1");
     expect(query).toContain("WHERE snapshot.ranking_at = $1::date");
-    expect(query).toContain(
-      "ORDER BY s.match_rank ASC, s.sport ASC, s.ranking ASC, s.slug ASC",
-    );
+    expect(query).toContain("ORDER BY s.sport ASC, s.ranking ASC, s.slug ASC");
     expect(values).toEqual(["2026-04-10", "noles"]);
   });
 

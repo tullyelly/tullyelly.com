@@ -27,7 +27,6 @@ export type TcdbTradePartnerClan = {
   id: number;
   name: string;
   slug: string;
-  tagSlug?: string;
 };
 export type TcdbTradePartnerTag = {
   id: number;
@@ -174,13 +173,12 @@ export async function listClansForTradePartnerFromDb(
   id: number,
 ): Promise<TcdbTradePartnerClan[]> {
   const rows =
-    await sql<Row>`SELECT clan.id, clan.name, clan.slug, clan.tag_slug FROM dojo.tcdb_trade_partner_clan link
+    await sql<Row>`SELECT clan.id, clan.name, clan.slug FROM dojo.tcdb_trade_partner_clan link
     JOIN dojo.clan AS clan ON clan.id = link.clan_id WHERE link.trade_partner_id = ${id} ORDER BY clan.name`;
   return rows.map((row) => ({
     id: integer(row.id),
     name: String(row.name),
     slug: String(row.slug),
-    ...(optional(row.tag_slug) ? { tagSlug: optional(row.tag_slug) } : {}),
   }));
 }
 

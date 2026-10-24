@@ -149,7 +149,6 @@ const homieRanking = {
 
 const clanRanking = {
   clan_id: 12,
-  tag_slug: "bucks-n-six",
   name: "Milwaukee Bucks",
   slug: "milwaukee-bucks",
   sport: "basketball",
@@ -550,7 +549,7 @@ describe("TCDB rankings pages", () => {
 
   it("renders clan detail as a page", async () => {
     mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
-      slug: "bucks-n-six",
+      slug: "milwaukee-bucks",
       displayName: "Milwaukee Bucks",
       href: "/cardattack/clans/milwaukee-bucks",
       hrefKind: "clan",
@@ -559,7 +558,7 @@ describe("TCDB rankings pages", () => {
     });
     mockListChronicleTagDisplayNames.mockReturnValue([
       { displayName: "bucks", count: 2, chronicleCount: 2 },
-      { displayName: "bucks-n-six", count: 1, chronicleCount: 1 },
+      { displayName: "milwaukee-bucks", count: 1, chronicleCount: 1 },
     ]);
     mockGetTaggedPosts.mockReturnValue([
       {
@@ -568,7 +567,7 @@ describe("TCDB rankings pages", () => {
         summary: "A Chronicle with a Bucks clan tag.",
         date: "2026-07-06",
         url: "/shaolin/wu-tang-clans",
-        tags: ["bucks-n-six"],
+        tags: ["milwaukee-bucks"],
       },
     ]);
     mockGetTcdbClanRankingsBySlug.mockResolvedValue([
@@ -626,7 +625,7 @@ describe("TCDB rankings pages", () => {
       screen.getByText("chronicle display names for milwaukee bucks"),
     ).toBeInTheDocument();
     expect(screen.getByText("Default tag")).toBeInTheDocument();
-    expect(screen.getByText("#bucks-n-six")).toBeInTheDocument();
+    expect(screen.getByText("#milwaukee-bucks")).toBeInTheDocument();
     expect(screen.getByText("Total uses")).toBeInTheDocument();
     expect(screen.getByText("3 mentions")).toBeInTheDocument();
     expect(screen.getByText("bucks")).toBeInTheDocument();
@@ -635,7 +634,7 @@ describe("TCDB rankings pages", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: "recent chronicles for bucks-n-six",
+        name: "recent chronicles for milwaukee-bucks",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "wu-tang clans" })).toHaveAttribute(
@@ -647,20 +646,20 @@ describe("TCDB rankings pages", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(mockGetStoredTagMetadataForHrefKind).toHaveBeenCalledWith({
-      slug: "bucks-n-six",
+      slug: "milwaukee-bucks",
       href: "/cardattack/clans/milwaukee-bucks",
       hrefKind: "clan",
     });
     expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith(
-      "bucks-n-six",
+      "milwaukee-bucks",
     );
-    expect(mockGetTaggedPosts).toHaveBeenCalledWith(["bucks-n-six"]);
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith(["milwaukee-bucks"]);
     expect(mockListClanTcdbSnapshotHistory).toHaveBeenCalledWith(12);
   });
 
   it("renders a clan's parent clan only when the linkage exists", async () => {
     mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
-      slug: "bucks-n-six",
+      slug: "milwaukee-bucks",
       displayName: "Milwaukee Bucks",
       href: "/cardattack/clans/milwaukee-bucks",
       hrefKind: "clan",
@@ -687,12 +686,12 @@ describe("TCDB rankings pages", () => {
 
     expect(screen.getByRole("heading", { name: "Member of" })).toBeVisible();
     expect(screen.getByText("Wisconsin Clans")).toBeVisible();
-    expect(mockListIdentityGroups).toHaveBeenCalledWith("bucks-n-six");
+    expect(mockListIdentityGroups).toHaveBeenCalledWith("milwaukee-bucks");
   });
 
   it("inherits Homie Chronicles on the Clan detail page", async () => {
     mockGetStoredTagMetadataForHrefKind.mockResolvedValue({
-      slug: "bucks-n-six",
+      slug: "milwaukee-bucks",
       displayName: "Milwaukee Bucks",
       href: "/cardattack/clans/milwaukee-bucks",
       hrefKind: "clan",
@@ -727,8 +726,11 @@ describe("TCDB rankings pages", () => {
       }),
     );
 
-    expect(mockListIdentityDescendants).toHaveBeenCalledWith("bucks-n-six");
-    expect(mockGetTaggedPosts).toHaveBeenCalledWith(["bucks-n-six", "freak"]);
+    expect(mockListIdentityDescendants).toHaveBeenCalledWith("milwaukee-bucks");
+    expect(mockGetTaggedPosts).toHaveBeenCalledWith([
+      "milwaukee-bucks",
+      "freak",
+    ]);
     expect(
       screen.getByRole("link", { name: "Ultralight Beam" }),
     ).toHaveAttribute("href", "/shaolin/ultralight-beam");

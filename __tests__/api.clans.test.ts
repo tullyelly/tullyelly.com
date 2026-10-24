@@ -22,7 +22,6 @@ const mockListTcdbClanRankings = listTcdbClanRankings as jest.Mock;
 
 const ranking = {
   clan_id: 12,
-  tag_slug: "bucks-n-six",
   name: "Milwaukee Bucks",
   slug: "milwaukee-bucks",
   sport: "basketball",

@@ -7,7 +7,6 @@ import type { RankingMeta, Trend } from "@/lib/data/tcdb";
 
 export type ClanRankingRow = {
   clan_id: number;
-  tag_slug: string | null;
   name: string;
   slug: string;
   sport: string;
@@ -126,7 +125,6 @@ export async function listTcdbClanRankings(opts: {
     queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
-               NULLIF(btrim(c.tag_slug), '') AS tag_slug,
                r.name,
                r.slug,
                r.sport,
@@ -230,7 +228,6 @@ export async function getTcdbClanRankingsBySlug(
     queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
-               NULLIF(btrim(c.tag_slug), '') AS tag_slug,
                r.name,
                r.slug,
                r.sport,
@@ -289,7 +286,6 @@ export async function listNumberOneTcdbClanRankings(): Promise<
     queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
-               NULLIF(btrim(c.tag_slug), '') AS tag_slug,
                r.name,
                r.slug,
                r.sport,
@@ -322,7 +318,6 @@ export async function listTopTcdbClanRankings(
     queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
-               NULLIF(btrim(c.tag_slug), '') AS tag_slug,
                r.name,
                r.slug,
                r.sport,
@@ -358,7 +353,6 @@ async function listRecentTcdbClanMovers(
     queryRows<DbClanRankingRow>(
       `
         SELECT r.clan_id,
-               NULLIF(btrim(c.tag_slug), '') AS tag_slug,
                r.name,
                r.slug,
                r.sport,

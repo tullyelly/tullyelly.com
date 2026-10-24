@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS dojo.clan
     id         BIGINT GENERATED ALWAYS AS IDENTITY,
     name       VARCHAR(100)                                       NOT NULL,
     slug       VARCHAR(100)                                       NOT NULL,
-    tag_slug   VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by VARCHAR(100)             DEFAULT CURRENT_USER,
     updated_at TIMESTAMP WITH TIME ZONE,
@@ -11,10 +10,6 @@ CREATE TABLE IF NOT EXISTS dojo.clan
     PRIMARY KEY (id),
     CONSTRAINT clan_slug_key
         UNIQUE (slug),
-    CONSTRAINT clan_tag_slug_key
-        UNIQUE (tag_slug),
-    CONSTRAINT clan_tag_slug_check
-        CHECK (tag_slug IS NULL OR tag_slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
     CONSTRAINT clan_slug_check
         CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
@@ -30,3 +25,10 @@ CREATE TRIGGER trg_audit_clan
     ON dojo.clan
     FOR EACH ROW
 EXECUTE PROCEDURE dojo.audit_stamp_generic();
+
+CREATE TRIGGER trg_create_missing_clan_tag
+    AFTER INSERT OR UPDATE OF name, slug
+    ON dojo.clan
+    FOR EACH ROW
+    WHEN (NEW.slug IS NOT NULL AND btrim(NEW.slug) <> '')
+EXECUTE FUNCTION dojo.create_missing_clan_tag_from_row();
