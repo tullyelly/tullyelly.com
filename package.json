@@ -192,7 +192,7 @@
     "@types/twemoji": "^13.1.1",
     "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.1",
     "dotenv-cli": "^10.0.0",
     "entities": "6.0.1",
