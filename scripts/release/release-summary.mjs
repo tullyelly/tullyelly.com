@@ -370,10 +370,24 @@ export function renderReleaseSummary(events, results = {}) {
           )
           .slice(0, 5000)
       : [];
+    const schemaDeferred =
+      typeof context.schemaDeferralSha256 === "string" &&
+      /^[a-f0-9]{64}$/.test(context.schemaDeferralSha256);
+    const blocked = risks.some(
+      (risk) =>
+        risk === "analytics-activation" ||
+        (risk === "database-schema" && !schemaDeferred),
+    );
     lines.splice(
       lines.indexOf("| Stage | Duration | Result |"),
       0,
-      `Compatibility risks: ${risks.length ? risks.join(", ") + (risks.some((risk) => ["database-schema", "analytics-activation"].includes(risk)) ? "; ordinary release blocked; use the applicable sensitive review procedure." : "; review compatibility at the human production gate.") : "No database, authentication, runtime configuration or analytics activation contract change detected."}`,
+      `Compatibility risks: ${risks.length ? risks.join(", ") + (blocked ? "; ordinary release blocked; use the applicable sensitive review procedure." : "; review compatibility at the human production gate.") : "No database, authentication, runtime configuration or analytics activation contract change detected."}`,
+      ...(schemaDeferred
+        ? [
+            "Application-only schema deferral: reviewed in releases/deferred-schema.json; SQL is not applied and migration approval remains separate.",
+            `Schema deferral SHA-256: ${context.schemaDeferralSha256}`,
+          ]
+        : []),
       `Changed source paths: ${paths.length}`,
       ...(risks.length ? paths.map((path) => `- ${path}`) : []),
       "",

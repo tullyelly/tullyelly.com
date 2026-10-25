@@ -30,6 +30,7 @@ export function reportCodeEvent(event: Record<string, unknown>) {
           : undefined,
       manifestSha256: hex(event.manifestSha256, 64),
       evidenceSha256: hex(event.evidenceSha256, 64),
+      schemaDeferralSha256: hex(event.schemaDeferralSha256, 64),
       sourceSha256: hex(event.sourceSha256, 64),
       workflowRevision: hex(event.workflowRevision, 40),
       ciRunId:

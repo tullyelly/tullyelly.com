@@ -188,6 +188,42 @@ test("automatic evidence binds exact application/workflow/CI revisions, own run 
   }
 });
 
+test("schema deferral remains baseline-bound and never authorizes analytics activation", () => {
+  const base = evidence();
+  const compatibility = {
+    changedPaths: ["db/schema/tables/clan.sql"],
+    risks: ["database-schema"],
+    schemaDeferral: {
+      version: 1,
+      scope: "application-only",
+      baselineSha: base.baseline.applicationSha,
+      schemaDiffSha256: "d".repeat(64),
+      rationale: "Application remains compatible without applying SQL.",
+    },
+  };
+  expect(() =>
+    validateNativeEvidence({ ...base, compatibility }),
+  ).not.toThrow();
+  expect(() =>
+    validateNativeEvidence({
+      ...base,
+      compatibility: {
+        ...compatibility,
+        schemaDeferral: { ...compatibility.schemaDeferral, baselineSha: sha },
+      },
+    }),
+  ).toThrow("code.sensitive-compatibility-review");
+  expect(() =>
+    validateNativeEvidence({
+      ...base,
+      compatibility: {
+        ...compatibility,
+        risks: ["database-schema", "analytics-activation"],
+      },
+    }),
+  ).toThrow("code.sensitive-compatibility-review");
+});
+
 test("archive evidence is required, bounded and independent of changed chronicles", () => {
   expect(validateNativeEvidence(evidence()).publication.archive).toEqual({
     path: "/shaolin/newest",
@@ -272,6 +308,12 @@ test("metadata-only config evidence never publishes planted credentials, raw env
 });
 
 test("compatibility surfaces code review risks and blocks operations with separate sensitive procedures", () => {
+  expect(
+    blockingCompatibilityRisks(
+      ["database-schema", "analytics-activation"],
+      true,
+    ),
+  ).toEqual(["analytics-activation"]);
   expect(
     compatibilityRisks(
       ["content/chronicles/example.mdx", "scripts/release/native-evidence.ts"],

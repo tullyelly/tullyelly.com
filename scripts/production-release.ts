@@ -5,6 +5,7 @@ import {
   assertVercelProject,
   validateEnvironmentGate,
   validateReviewedMainRules,
+  sha256,
 } from "./release/manifest";
 import {
   loadNativeEvidence,
@@ -261,6 +262,9 @@ async function main() {
     workflowRevision: manifest.workflow.sha,
     compatibilityRisks: manifest.compatibility.risks,
     changedPaths: manifest.compatibility.changedPaths,
+    schemaDeferralSha256: manifest.compatibility.schemaDeferral
+      ? sha256(JSON.stringify(manifest.compatibility.schemaDeferral))
+      : undefined,
     settingsSha256: manifest.vercel.settingsSha256,
     previousDeployment: manifest.vercel.productionDeploymentId,
     targetRevision: manifest.commit,

@@ -167,6 +167,9 @@ async function main() {
     workflowRevision: evidence.workflow.sha,
     compatibilityRisks: compatibility.risks,
     changedPaths: compatibility.changedPaths,
+    schemaDeferralSha256: compatibility.schemaDeferral
+      ? sha256(JSON.stringify(compatibility.schemaDeferral))
+      : undefined,
   });
   if (process.env.GITHUB_OUTPUT)
     appendFileSync(
@@ -176,7 +179,12 @@ async function main() {
   console.log(
     `Native source release evidence ${evidenceSha256}; exact successful CI run ${ci.runId}; baseline ${id}.`,
   );
-  if (blockingCompatibilityRisks(compatibility.risks).length)
+  if (
+    blockingCompatibilityRisks(
+      compatibility.risks,
+      !!compatibility.schemaDeferral,
+    ).length
+  )
     throw new Error("code.sensitive-compatibility-review");
   // Prove the evidence source matches the checked-out immutable tree. Generated
   // dependency files in this preparation checkout are never uploaded to Vercel.
