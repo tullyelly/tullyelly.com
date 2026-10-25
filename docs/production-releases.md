@@ -8,6 +8,11 @@ deployment. There is no separate ordinary release-manifest PR or chat attestatio
 Database migrations, credential maintenance, analytics activation and other
 sensitive operations retain their separate concrete approvals and procedures.
 
+Changed-source evidence and approval reports accept Next.js route brackets,
+including `[slug]`, `[...slug]` and `[[...slug]]`, within the existing bounded
+filename allowlist. These paths do not bypass compatibility review or the
+protected production gate.
+
 Implementation and policy changes do not authorize a live release. Only the
 coordinating agent initiates an authorized release. Never approve the environment
 gate on the user's behalf, bypass protections, or deploy from an owner-login session.

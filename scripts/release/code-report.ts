@@ -62,7 +62,7 @@ export function reportCodeEvent(event: Record<string, unknown>) {
             .filter(
               (path) =>
                 typeof path === "string" &&
-                /^[A-Za-z0-9_./()@+ -]{1,500}$/.test(path) &&
+                /^[A-Za-z0-9_./()@+ \[\]-]{1,500}$/.test(path) &&
                 !/(?:^|\/)\.env/.test(path),
             )
             .slice(0, 5000)

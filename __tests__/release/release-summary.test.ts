@@ -1046,7 +1046,12 @@ test("native approval summary presents exact source, reused CI, workflow and com
         workflowRunId: "456",
         workflowRevision: "a".repeat(40),
         compatibilityRisks: ["database-schema", "SENSITIVE_DO_NOT_LOG"],
-        changedPaths: ["db/migrations/100_example.sql", "SENSITIVE$DO_NOT_LOG"],
+        changedPaths: [
+          "db/migrations/100_example.sql",
+          "app/cardattack/clans/[slug]/page.tsx",
+          "app/cardattack/tcdb-trade-partners/[id]/page.tsx",
+          "SENSITIVE$DO_NOT_LOG",
+        ],
       },
     ],
     { prepare: "failure", production: "pending" },
@@ -1056,6 +1061,10 @@ test("native approval summary presents exact source, reused CI, workflow and com
   expect(rendered).toContain("Workflow run: 456");
   expect(rendered).toContain("database-schema; ordinary release blocked");
   expect(rendered).toContain("db/migrations/100_example.sql");
+  expect(rendered).toContain("app/cardattack/clans/[slug]/page.tsx");
+  expect(rendered).toContain(
+    "app/cardattack/tcdb-trade-partners/[id]/page.tsx",
+  );
   expect(rendered).not.toContain("Artifact SHA-256");
   expect(rendered).not.toContain("SENSITIVE");
 });
