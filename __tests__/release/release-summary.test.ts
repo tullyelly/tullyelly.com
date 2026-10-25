@@ -1069,6 +1069,37 @@ test("native approval summary presents exact source, reused CI, workflow and com
   expect(rendered).not.toContain("SENSITIVE");
 });
 
+test("schema deferral is explicit at the existing gate and never permits analytics activation", () => {
+  const event = {
+    ...context,
+    evidenceSha256: "d".repeat(64),
+    schemaDeferralSha256: "e".repeat(64),
+    compatibilityRisks: ["database-schema"],
+    changedPaths: ["db/migrations/079_remove_clan_tag_slug.sql"],
+  };
+  const rendered = summary([event], {
+    prepare: "success",
+    production: "pending",
+  });
+  expect(rendered).toContain("Application-only schema deferral");
+  expect(rendered).toContain("SQL is not applied");
+  expect(rendered).toContain(
+    "review compatibility at the human production gate",
+  );
+  expect(rendered).not.toContain("ordinary release blocked");
+  expect(
+    summary(
+      [
+        {
+          ...event,
+          compatibilityRisks: ["database-schema", "analytics-activation"],
+        },
+      ],
+      { prepare: "failure", production: "pending" },
+    ),
+  ).toContain("ordinary release blocked");
+});
+
 test("green deployment retains serialized pending reason and never reports public success", () => {
   const root = mkdtempSync(join(tmpdir(), "pending-release-"));
   const previous = process.env.RELEASE_REPORT_PATH;

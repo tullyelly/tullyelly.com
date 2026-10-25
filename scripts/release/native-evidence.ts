@@ -9,6 +9,7 @@ import {
   sha256,
 } from "./manifest";
 import { RELEASE_REPOSITORY, RELEASE_REPOSITORY_ID, type Api } from "./app";
+import { readSchemaDeferral, schemaDeferralSchema } from "./schema-deferral";
 
 const sha = z.string().regex(/^[a-f0-9]{40}$/);
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
@@ -69,6 +70,7 @@ export const nativeEvidenceSchema = z
       .object({
         changedPaths: z.array(path).max(5000),
         risks: z.array(compatibilityRiskSchema).max(5),
+        schemaDeferral: schemaDeferralSchema.optional(),
       })
       .strict(),
     publication: z
@@ -119,7 +121,12 @@ export function validateNativeEvidence(value: unknown): NativeCodeEvidence {
     settingsDigest(evidence.vercel.settings) !== evidence.vercel.settingsSha256
   )
     throw new Error("code.settings-digest");
-  if (blockingCompatibilityRisks(evidence.compatibility.risks).length)
+  const deferral = evidence.compatibility.schemaDeferral;
+  if (deferral && deferral.baselineSha !== evidence.baseline.applicationSha)
+    throw new Error("code.sensitive-compatibility-review");
+  if (
+    blockingCompatibilityRisks(evidence.compatibility.risks, !!deferral).length
+  )
     throw new Error("code.sensitive-compatibility-review");
   return evidence;
 }
@@ -134,6 +141,17 @@ export function loadNativeEvidence(
   const bytes = readFileSync(file);
   if (sha256(bytes) !== expectedDigest) throw new Error("code.evidence-digest");
   const evidence = validateNativeEvidence(JSON.parse(bytes.toString("utf8")));
+  if (evidence.compatibility.schemaDeferral) {
+    const reviewed = readSchemaDeferral(
+      evidence.baseline.applicationSha,
+      commit,
+    );
+    if (
+      JSON.stringify(reviewed) !==
+      JSON.stringify(evidence.compatibility.schemaDeferral)
+    )
+      throw new Error("code.sensitive-compatibility-review");
+  }
   if (
     evidence.commit !== commit ||
     evidence.workflow.sha !== env.GITHUB_SHA ||
@@ -193,13 +211,16 @@ export function configurationEvidence(project: unknown, environment: unknown) {
   };
 }
 
-/** Only operations with separate sensitive procedures block ordinary execution.
- * Query/auth/config code compatibility risks are presented at the existing gate. */
+/** A verified schema deferral permits application-only deployment at the existing
+ * human gate. SQL execution and analytics activation retain separate procedures. */
 export function blockingCompatibilityRisks(
   risks: readonly z.infer<typeof compatibilityRiskSchema>[],
+  schemaDeferred = false,
 ) {
   return risks.filter(
-    (risk) => risk === "database-schema" || risk === "analytics-activation",
+    (risk) =>
+      (risk === "database-schema" && !schemaDeferred) ||
+      risk === "analytics-activation",
   );
 }
 export function compatibilityRisks(
@@ -282,15 +303,19 @@ export function changedCompatibility(baselineSha: string, commit: string) {
     .trim()
     .split("\n")
     .filter(Boolean);
+  const risks = compatibilityRisks(changedPaths, (file) =>
+    execFileSync(
+      "git",
+      ["diff", "--unified=0", baselineSha, commit, "--", file],
+      { encoding: "utf8" },
+    ),
+  );
   return {
     changedPaths,
-    risks: compatibilityRisks(changedPaths, (file) =>
-      execFileSync(
-        "git",
-        ["diff", "--unified=0", baselineSha, commit, "--", file],
-        { encoding: "utf8" },
-      ),
-    ),
+    risks,
+    ...(risks.includes("database-schema")
+      ? { schemaDeferral: readSchemaDeferral(baselineSha, commit) }
+      : {}),
   };
 }
 

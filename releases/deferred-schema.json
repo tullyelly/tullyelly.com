@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "scope": "application-only",
+  "baselineSha": "2d64c44f28b63300b9d06b059af411c42820d25e",
+  "schemaDiffSha256": "1933f8ba7b4b63c859b7e458548220d1a07397d955ba289cfa929c6f08cca3bb",
+  "rationale": "WU-1194: defer execution of migrations 078-082 and their schema mirrors. The application uses existing dojo.clan.slug and no longer selects the retired clan.tag_slug column; docs/migrations.md documents compatibility before and after migration 079. Missing-tag creation and player/Lakers/Celtics membership backfills are data maintenance and are not prerequisites for the application build or startup. Review the exact application and SQL diff at the protected production gate. This record authorizes no SQL execution, ledger reconciliation, or database-state claim."
+}

@@ -13,6 +13,24 @@ including `[slug]`, `[...slug]` and `[[...slug]]`, within the existing bounded
 filename allowlist. These paths do not bypass compatibility review or the
 protected production gate.
 
+An application that remains compatible with the existing database can defer
+schema execution using the reviewed `releases/deferred-schema.json` record.
+The record binds the exact production application baseline and SHA-256 of the
+complete binary Git diff for `db/migrations`, `db/schema` and `prisma/schema*`.
+Preparation reads the record from the immutable release commit; the protected
+executor rechecks it before deployment. Missing records retain the schema block;
+baseline or SQL changes invalidate an existing record. The existing human gate
+shows the deferral digest and all compatibility risks. Analytics activation
+remains blocked. This record permits application deployment only; it neither
+applies SQL nor claims that migrations have run. A separately reviewed migration
+release remains necessary for database writes.
+
+The WU-1194 record defers migrations 078-082 and their schema mirrors. The clan
+application consumers use the existing `slug` column and work before migration
+079, as described in [migrations](migrations.md#clan-slug-and-tag-creation).
+Tag creation and membership backfills can be applied separately. Review this
+compatibility claim when approving the record and again at the production gate.
+
 Implementation and policy changes do not authorize a live release. Only the
 coordinating agent initiates an authorized release. Never approve the environment
 gate on the user's behalf, bypass protections, or deploy from an owner-login session.
