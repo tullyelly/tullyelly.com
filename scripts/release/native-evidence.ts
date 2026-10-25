@@ -17,7 +17,7 @@ const path = z
   .string()
   .min(1)
   .max(500)
-  .regex(/^[A-Za-z0-9_./()@+ -]+$/);
+  .regex(/^[A-Za-z0-9_./()@+ \[\]-]+$/);
 export const compatibilityRiskSchema = z.enum([
   "database-schema",
   "database-query-contract",

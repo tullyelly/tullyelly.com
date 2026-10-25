@@ -12,6 +12,7 @@ import {
   validateNativeEvidence,
 } from "../../scripts/release/native-evidence";
 import { settingsDigest, sha256 } from "../../scripts/release/manifest";
+import { reportCodeEvent } from "../../scripts/release/code-report";
 import {
   RELEASE_REPOSITORY,
   RELEASE_REPOSITORY_ID,
@@ -82,6 +83,50 @@ function evidence() {
     },
   };
 }
+
+test("changed paths accept dynamic Next.js routes and reject unsafe characters", () => {
+  const changedPaths = [
+    "app/cardattack/clans/[slug]/page.tsx",
+    "app/cardattack/tcdb-trade-partners/[id]/page.tsx",
+    "app/(site)/[...slug]/page.tsx",
+    "app/[[...slug]]/page.tsx",
+  ];
+  expect(
+    validateNativeEvidence({
+      ...evidence(),
+      compatibility: { changedPaths, risks: [] },
+    }).compatibility.changedPaths,
+  ).toEqual(changedPaths);
+  for (const path of ["bad$path", "bad`path", "bad\npath", "x".repeat(501)]) {
+    expect(() =>
+      validateNativeEvidence({
+        ...evidence(),
+        compatibility: { changedPaths: [path], risks: [] },
+      }),
+    ).toThrow();
+  }
+});
+
+test("release reports retain dynamic routes and omit unsafe or secret paths", () => {
+  const root = mkdtempSync(join(tmpdir(), "route-report-"));
+  const previous = process.env.RELEASE_REPORT_PATH;
+  try {
+    const file = join(root, "report.jsonl");
+    process.env.RELEASE_REPORT_PATH = file;
+    const route = "app/cardattack/clans/[slug]/page.tsx";
+    reportCodeEvent({
+      event: "context",
+      changedPaths: [route, "bad$path", "app/[slug]/.env.local"],
+    });
+    expect(JSON.parse(readFileSync(file, "utf8")).changedPaths).toEqual([
+      route,
+    ]);
+  } finally {
+    if (previous === undefined) delete process.env.RELEASE_REPORT_PATH;
+    else process.env.RELEASE_REPORT_PATH = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("automatic evidence binds exact application/workflow/CI revisions, own run attempt and checksum", () => {
   const root = mkdtempSync(join(tmpdir(), "native-evidence-"));
