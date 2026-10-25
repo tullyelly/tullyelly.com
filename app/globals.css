@@ -70,6 +70,11 @@
   --surface-card: var(--white); /* reading surfaces */
   --border-subtle: color-mix(in srgb, var(--blue) 12%, var(--white));
 
+  /* Set Collector completion: hue moves continuously from red to green. */
+  --collector-progress-saturation: 85%;
+  --collector-progress-lightness: 40%;
+  --collector-progress-track: color-mix(in srgb, var(--ink) 12%, transparent);
+
   /* Layout scale */
   --container: 72rem;
   --content-max: 72rem; /* 1152px desktop rail, matches ruins */

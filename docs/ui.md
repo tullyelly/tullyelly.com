@@ -42,3 +42,11 @@ height inside their h-24 wrappers; their height follows the root font size.
 Do not guess positive initial dimensions or add a second resize observer around
 Recharts. Real chart layout and warning coverage lives in
 [chart-sizing.spec.ts](../tests/browser/chart-sizing.spec.ts).
+
+SetCollector MDX entries stay inline in paragraphs and lists. Recognized sports
+use labeled emojis before the linked set name; other categories retain text. Counts and formatted percentages
+come from the selected summary snapshot. The compact completion bar uses the raw
+owned/total ratio clamped to 0–100, with a solid HSL hue interpolated from red
+through orange, yellow and yellow-green to green. Its scale and neutral track use
+`--collector-progress-*` tokens in `app/globals.css`. Missing snapshots or invalid
+progress omit the counts and bar; only actual completion earns 💯.
