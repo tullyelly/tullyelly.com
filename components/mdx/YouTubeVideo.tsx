@@ -44,8 +44,8 @@ export default function YouTubeVideo({
 
   const embedSrc = `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
   const artistTag = tag ? normalizeTagSlug(tag) : "";
-  const songTitle = song?.trim();
-  const albumTitle = album?.trim();
+  const songTitle = typeof song === "string" ? song.trim() : "";
+  const albumTitle = typeof album === "string" ? album.trim() : "";
   const hasMetadata = Boolean(artistTag || songTitle || albumTitle);
 
   return (

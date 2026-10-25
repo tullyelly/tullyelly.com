@@ -1,7 +1,28 @@
 import { render, screen } from "@testing-library/react";
-import YouTubeVideo from "@/components/mdx/YouTubeVideo";
+import YouTubeVideo, {
+  type YouTubeVideoProps,
+} from "@/components/mdx/YouTubeVideo";
 
 describe("YouTubeVideo", () => {
+  it.each([true, false, 42, {}, [], null])(
+    "ignores non-string MDX titles (%p) while preserving the embed and artist",
+    (value) => {
+      const props = {
+        id: "1eWdbMBYlH4",
+        tag: "doom",
+        song: value,
+        album: value,
+      } as unknown as YouTubeVideoProps;
+
+      render(<YouTubeVideo {...props} />);
+
+      expect(screen.getByTitle("YouTube video player")).toBeInTheDocument();
+      expect(screen.getByText("DOOM")).toBeInTheDocument();
+      expect(screen.queryByText("song:")).not.toBeInTheDocument();
+      expect(screen.queryByText("album:")).not.toBeInTheDocument();
+    },
+  );
+
   it("keeps the existing embed behavior intact", () => {
     const { container } = render(
       <YouTubeVideo
