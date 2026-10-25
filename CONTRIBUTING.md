@@ -14,3 +14,5 @@
 
 Date rendering rules live in [hydration](docs/hydration.md); database procedures
 live in [migrations](docs/migrations.md). Keep requirements in their owning docs.
+Dependency updates and install-script approvals follow
+[dependency maintenance](docs/dependencies.md).

@@ -19,6 +19,8 @@ import {
   cleanup,
 } from "@testing-library/react";
 import { axe, toHaveNoViolations } from "jest-axe";
+import { SessionProvider } from "next-auth/react";
+import { NavControllerProvider } from "@/components/nav/NavController";
 import type { PersonaItem } from "@/types/nav";
 import type { MenuPayload, PersonaChildren } from "@/lib/menu/types";
 import { buildMenuPayload, buildPersonaChildren } from "@/lib/menu/buildMenu";
@@ -104,9 +106,11 @@ type Recorded = { name: EventName; props: Record<string, unknown> };
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
-    <CommandMenuProvider items={TEST_MENU_ITEMS}>
-      {children}
-    </CommandMenuProvider>
+    <SessionProvider session={null}>
+      <CommandMenuProvider items={TEST_MENU_ITEMS}>
+        <NavControllerProvider>{children}</NavControllerProvider>
+      </CommandMenuProvider>
+    </SessionProvider>
   );
 }
 
@@ -265,7 +269,10 @@ describe("navigation analytics instrumentation", () => {
       ).toBe(true);
     });
 
-    const drillButton = await screen.findByLabelText("View mark2 links");
+    const drillButton = await screen.findByRole("button", {
+      name: "mark2",
+      expanded: false,
+    });
     fireEvent.click(drillButton);
 
     const menuItem = await screen.findByRole("button", {

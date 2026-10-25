@@ -17,14 +17,13 @@ jest.mock("react-dom/server", () =>
   jest.requireActual("react-dom/server.edge"),
 );
 import { getRedirectError } from "next/dist/client/components/redirect";
-import { RedirectType } from "next/dist/client/components/redirect-error";
 import { makeGetServerInsertedHTML } from "next/dist/server/app-render/make-get-server-inserted-html";
 
 async function streamedRedirect(location: string) {
   return makeGetServerInsertedHTML({
     polyfills: [],
     renderServerInsertedHTML: () => [],
-    serverCapturedErrors: [getRedirectError(location, RedirectType.replace)],
+    serverCapturedErrors: [getRedirectError(location, "replace")],
     tracingMetadata: undefined,
     basePath: "",
   })();

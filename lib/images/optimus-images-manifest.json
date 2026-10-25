@@ -2195,6 +2195,17 @@
     "/images/optimus/whole-lotta-nadda/donut/donut-1.webp",
     "/images/optimus/whole-lotta-nadda/donut/donut-2.webp",
     "/images/optimus/whos-your-daddy/cook.webp",
+    "/images/optimus/wild-for-the-night/67.webp",
+    "/images/optimus/wild-for-the-night/celly/celly-0.webp",
+    "/images/optimus/wild-for-the-night/celly/celly-1.webp",
+    "/images/optimus/wild-for-the-night/celly/celly-2.webp",
+    "/images/optimus/wild-for-the-night/celly/celly-3.webp",
+    "/images/optimus/wild-for-the-night/dinner.webp",
+    "/images/optimus/wild-for-the-night/george/george-0.webp",
+    "/images/optimus/wild-for-the-night/george/george-1.webp",
+    "/images/optimus/wild-for-the-night/jeff/jeff-0.webp",
+    "/images/optimus/wild-for-the-night/jeff/jeff-1.webp",
+    "/images/optimus/wild-for-the-night/jeff/jeff-2.webp",
     "/images/optimus/wiscopullz-begins/4000.webp",
     "/images/optimus/wiscopullz-begins/junk-wax.webp",
     "/images/optimus/wiscopullz-begins/wiscopullz/wiscopullz1.webp",
@@ -13229,6 +13240,61 @@
       "src": "/images/optimus/whos-your-daddy/cook.webp",
       "width": 480,
       "height": 480
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/67.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/celly/celly-0.webp",
+      "width": 1280,
+      "height": 964
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/celly/celly-1.webp",
+      "width": 1280,
+      "height": 964
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/celly/celly-2.webp",
+      "width": 1280,
+      "height": 964
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/celly/celly-3.webp",
+      "width": 1280,
+      "height": 964
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/dinner.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/george/george-0.webp",
+      "width": 960,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/george/george-1.webp",
+      "width": 960,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/jeff/jeff-0.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/jeff/jeff-1.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/wild-for-the-night/jeff/jeff-2.webp",
+      "width": 964,
+      "height": 1280
     },
     {
       "src": "/images/optimus/wiscopullz-begins/4000.webp",
