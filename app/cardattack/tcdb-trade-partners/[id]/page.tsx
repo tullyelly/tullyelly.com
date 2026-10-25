@@ -163,25 +163,15 @@ export default async function Page({ params }: Props) {
               {clans.length ? (
                 <div>
                   <h3 className="font-semibold">Clans</h3>
-                  {clans.map((clan) =>
-                    clan.tagSlug ? (
-                      <TagLink
-                        key={clan.id}
-                        tag={clan.tagSlug}
-                        className="link-blue mr-3 inline-block"
-                      >
-                        {clan.name}
-                      </TagLink>
-                    ) : (
-                      <Link
-                        key={clan.id}
-                        href={`/cardattack/clans/${clan.slug}`}
-                        className="link-blue mr-3 inline-block"
-                      >
-                        {clan.name}
-                      </Link>
-                    ),
-                  )}
+                  {clans.map((clan) => (
+                    <TagLink
+                      key={clan.id}
+                      tag={clan.slug}
+                      className="link-blue mr-3 inline-block"
+                    >
+                      {clan.name}
+                    </TagLink>
+                  ))}
                 </div>
               ) : null}
               {tags.length ? (

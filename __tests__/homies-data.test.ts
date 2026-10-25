@@ -34,7 +34,6 @@ import {
 
 const clanRow = {
   clan_id: 12,
-  tag_slug: "bucks-n-six",
   name: "Milwaukee Bucks",
   slug: "milwaukee-bucks",
   sport: "basketball",
@@ -113,7 +112,7 @@ describe("tcdb clan ranking data helpers", () => {
     const [query, values] = queryRowsMock.mock.calls[0] as [string, unknown[]];
     expect(query).toContain("FROM dojo.clan_tcdb_ranking_rt");
     expect(query).toContain("JOIN dojo.clan AS c");
-    expect(query).toContain("NULLIF(btrim(c.tag_slug), '') AS tag_slug");
+    expect(query).not.toContain("tag_slug");
     expect(query).toContain(
       "r.name ILIKE $1 OR r.slug ILIKE $1 OR r.sport ILIKE $1",
     );

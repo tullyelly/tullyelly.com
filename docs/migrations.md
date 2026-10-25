@@ -63,6 +63,59 @@ prod-looking URLs outside `NODE_ENV=production`, and keeps the production
 Do not edit a migration after it has been applied to a shared database. Add a
 new numbered migration instead.
 
+## Clan slug and tag creation
+
+[079_remove_clan_tag_slug.sql](../db/migrations/079_remove_clan_tag_slug.sql)
+supersedes migration 078's dependency on the unused `dojo.clan.tag_slug` column.
+Run the complete SQL transaction manually after reviewing it; no provider tooling
+is required. Existing applied migration files remain unchanged.
+
+`dojo.clan.slug` is the sole clan identifier. Inserts and updates of `name` or
+`slug` create missing `dojo.tags` records: `slug` and `name` use the clan slug,
+`display_name` uses the trimmed, lowercase clan name, `href` is
+`/cardattack/clans/{slug}`, `href_kind` is `clan`, and `is_clickable` is true.
+The migration backfills all missing clan tags using that same helper. Existing
+tag labels, routes, metadata and audit fields are preserved. Changing a clan
+slug creates its missing tag but does not delete the old tag.
+
+Migration 079 replaces both affected views and the old trigger, then drops
+`dojo.clan.tag_slug` and its column constraints. The snapshot view no longer
+exposes `clan_tag_slug`; its owner, grants and view options are retained. The
+trade-partner content-tag view joins clan tags using `clan.slug`. Unexpected
+populated legacy values or unknown dependent database objects stop the entire
+transaction; the migration does not use cascading drops.
+
+The matching application changes remove clan reads of the retired column and use
+`slug` for ranking metadata, snapshots and trade-partner tag links. They work
+before and after migration 079, so the application can be released first.
+Homie `tag_slug` fields and aliases representing `dojo.tags.slug` remain valid.
+Review and reconcile the ledger separately after manually applying SQL.
+
+[079_clan_slug_test.sql](../db/tests/079_clan_slug_test.sql) supplies rollback-only
+SQL assertions for a non-production database after applying the migration. It
+replaces the older migration 078 fixture, which required the retired column.
+
+## Player and clan memberships
+
+Player-to-team identity data is covered by
+[080_populate_player_clan_memberships.sql](../db/migrations/080_populate_player_clan_memberships.sql).
+The [production comparison and evidence](player-clan-membership-backfill.md)
+records its reviewed scope, missing homie tag identities, career/college
+memberships and records deliberately held for review. The SQL is prepared for
+manual execution; production was queried read-only and no migration was applied.
+
+[081_add_lakers_player_memberships.sql](../db/migrations/081_add_lakers_player_memberships.sql)
+adds only the reviewed memberships for the new Lakers clan `purple-and-gold`.
+The [Lakers comparison and evidence](lakers-membership-backfill.md) records all
+20 pairs and the refreshed development/production endpoint checks. Existing
+identities and relationships remain unchanged; no player or clan rows are created.
+
+[082_add_celtics_player_memberships.sql](../db/migrations/082_add_celtics_player_memberships.sql)
+adds the reviewed Boston playing-career memberships to the new `green-beer` clan.
+The [Celtics comparison and evidence](celtics-membership-backfill.md) records all
+22 pairs and both branch checks. It changes only relationships and preserves
+existing metadata when a pair already exists.
+
 ## Existing Databases
 
 A database that predates this ledger has no migration history recorded, so

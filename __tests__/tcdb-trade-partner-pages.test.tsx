@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { TagMetadataProvider } from "@/components/tags/TagLink";
 
 const listHomiesMock = jest.fn(
   async () => [] as Array<Record<string, unknown>>,
@@ -110,5 +111,27 @@ describe("TCDb trade partner pages", () => {
     expect(screen.getByRole("heading", { name: "Homies" })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Clans" })).toBeNull();
     expect(screen.queryByRole("heading", { name: "Tags" })).toBeNull();
+  });
+
+  it("renders clan interests from the canonical clan slug", async () => {
+    listClansMock.mockResolvedValue([
+      { id: 17, name: "Portland Trail Blazers", slug: "blazers" },
+    ]);
+    render(
+      <TagMetadataProvider
+        metadata={{
+          blazers: {
+            href: "/stored-clan-route",
+            hrefKind: "custom",
+            isClickable: true,
+          },
+        }}
+      >
+        {await PartnerDetailPage({ params: Promise.resolve({ id: "1" }) })}
+      </TagMetadataProvider>,
+    );
+    expect(
+      screen.getByRole("link", { name: "Portland Trail Blazers" }),
+    ).toHaveAttribute("href", "/stored-clan-route");
   });
 });

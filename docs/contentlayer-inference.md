@@ -125,6 +125,9 @@ This adds `t-wolves` to computed tags and records this clan usage:
 />
 ```
 
+The video uses optional string `song` and `album` titles, with surrounding whitespace trimmed.
+Blank or non-string titles, including bare boolean MDX attributes, are ignored.
+
 This adds `dj-shadow` to computed tags. `tag` is optional; a YouTube video
 without `tag` does not add an artist tag. Chronicle wrappers use the matching `dojo.tags.display_name` for the artist
 label. Artist links everywhere follow the canonical `dojo.tags.href` rule in
