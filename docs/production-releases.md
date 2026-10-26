@@ -25,11 +25,16 @@ remains blocked. This record permits application deployment only; it neither
 applies SQL nor claims that migrations have run. A separately reviewed migration
 release remains necessary for database writes.
 
-The WU-1194 record defers migrations 078-082 and their schema mirrors. The clan
-application consumers use the existing `slug` column and work before migration
-079, as described in [migrations](migrations.md#clan-slug-and-tag-creation).
-Tag creation and membership backfills can be applied separately. Review this
-compatibility claim when approving the record and again at the production gate.
+The WU-1021 record defers migrations 083-087 and the category schema mirrors
+from production application baseline `ee1ee21450276885363bd388db376a0c97ab1900`.
+Category pages expose prerequisite/unavailable states if their schema is absent;
+Chronicle category references retain their links without measurements when reads
+fail. Category data, rankings, menu provisioning and snapshot writes still need
+separately reviewed database setup. Migration 087 is a Marquette membership
+backfill and is not required for application build or startup. This record makes
+no claim about live migration state. See [category prerequisites](card-category-counts.md)
+and [membership migrations](migrations.md#player-and-clan-memberships).
+Review these limitations when approving the record and again at the production gate.
 
 Implementation and policy changes do not authorize a live release. Only the
 coordinating agent initiates an authorized release. Never approve the environment
