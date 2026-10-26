@@ -1,10 +1,14 @@
 import * as React from "react";
+import CategoryOverview from "@/components/categories/CategoryOverview";
+import SnapshotButton from "@/components/categories/SnapshotButton";
+import { ActivityProvider } from "@/components/activity/activity-provider";
 import { TrafficChart } from "@/components/analytics/TrafficChart";
 import { createRoot } from "react-dom/client";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { TcdbCardTrafficChartClient } from "@/components/chronicles/TcdbCardTrafficChartClient";
 import { PersonaActivityChartClient } from "@/components/analytics/PersonaActivityChartClient";
 import HomieCardCountSparkline from "@/components/tcdb/HomieCardCountSparkline";
+import CategoryHistoryChart from "@/components/categories/CategoryHistoryChart";
 import ClanCardCountSparkline from "@/components/tcdb/ClanCardCountSparkline";
 import HomieTagUsageChart from "@/app/cardattack/homies/_components/HomieTagUsageChart";
 import SquadCommentaryChart from "@/app/unclejimmy/squad/_components/SquadCommentaryChart";
@@ -88,6 +92,59 @@ function Charts({ empty, compact }: { empty: boolean; compact: boolean }) {
       />
       <HomieCardCountSparkline snapshots={empty ? [] : snapshots} />
       <ClanCardCountSparkline snapshots={empty ? [] : snapshots} />
+      <CategoryHistoryChart
+        snapshots={
+          empty
+            ? []
+            : snapshots.map((row, index) => ({
+                category_id: "1",
+                slug: "basketball",
+                name: "Basketball",
+                snapshot_id: String(index + 1),
+                measured_on: row.ranking_at,
+                card_count: row.card_count,
+                previous_date: null,
+                previous_count: null,
+                count_change: null,
+                ranking: index === 4 ? null : 10 - index,
+                previous_ranking: null,
+                rank_delta: null,
+                trend_rank: null,
+                difference: null,
+                previous_difference: null,
+                diff_delta: null,
+                trend_overall: null,
+                diff_sign_changed: null,
+              }))
+        }
+      />
+      <CategoryHistoryChart
+        metric="ranking"
+        snapshots={
+          empty
+            ? []
+            : snapshots.map((row, index) => ({
+                category_id: "1",
+                slug: "basketball",
+                name: "Basketball",
+                snapshot_id: String(index + 1),
+                measured_on: row.ranking_at,
+                card_count: row.card_count,
+                previous_date: null,
+                previous_count: null,
+                count_change: null,
+                ranking: index === 4 ? null : 10 - index,
+                previous_ranking: null,
+                rank_delta: null,
+                trend_rank: null,
+                difference: null,
+                previous_difference: null,
+                diff_delta: null,
+                trend_overall: null,
+                diff_sign_changed: null,
+              }))
+        }
+      />
       <HomieTagUsageChart
         rows={empty ? [] : compact ? tags.slice(0, 3) : tags}
       />
@@ -111,6 +168,80 @@ function Harness() {
   const [generation, setGeneration] = React.useState(0);
   const [empty, setEmpty] = React.useState(false);
   const [compact, setCompact] = React.useState(false);
+  if (params.has("categories")) {
+    const category = {
+      category_id: "1",
+      slug: "basketball",
+      name: "Basketball",
+      snapshot_id: "2",
+      measured_on: "2026-10-20",
+      card_count: 12125,
+      previous_count: 12000,
+      previous_date: "2026-10-01",
+      count_change: 125,
+      ranking: 1400,
+      previous_ranking: 1500,
+      rank_delta: 100,
+      trend_rank: "up" as const,
+      difference: -50,
+      previous_difference: -100,
+      diff_delta: 50,
+      trend_overall: "up" as const,
+      diff_sign_changed: false,
+    };
+    return (
+      <ActivityProvider>
+        <main
+          style={tcdbTradePageThemeVars}
+          className="mx-auto w-full max-w-3xl p-4"
+        >
+          <h1>Categories</h1>
+          <SnapshotButton
+            categories={[category]}
+            defaultDate="2026-10-25"
+            category="basketball"
+          />
+          <CategoryOverview
+            categories={[
+              category,
+              {
+                ...category,
+                slug: "non-sport",
+                name: "Non-sport",
+                snapshot_id: null,
+                measured_on: null,
+                card_count: null,
+                previous_count: null,
+                previous_date: null,
+                count_change: null,
+                ranking: null,
+                previous_ranking: null,
+                rank_delta: null,
+                trend_rank: null,
+                difference: null,
+                previous_difference: null,
+                diff_delta: null,
+                trend_overall: null,
+                diff_sign_changed: null,
+              },
+            ]}
+          />
+          <SnapshotButton
+            categories={[category]}
+            defaultDate="2026-10-25"
+            category="basketball"
+            snapshot={{
+              snapshot_id: "2",
+              measured_on: "2026-10-20",
+              card_count: 12125,
+              ranking: 1400,
+              difference: -50,
+            }}
+          />
+        </main>
+      </ActivityProvider>
+    );
+  }
   if (params.has("legacy")) {
     // Real pre-fix container: the test must detect the -1/-1 warning.
     return (

@@ -52,6 +52,20 @@ jest.mock("@/components/mdx-renderer", () => ({
     components?: Record<string, unknown>;
   }) => mdxRendererMock(props),
 }));
+jest.mock("@/components/mdx/CategorySnapshot", () => ({
+  __esModule: true,
+  default: ({
+    category,
+    snapshotDate,
+  }: {
+    category: string;
+    snapshotDate: string;
+  }) => (
+    <span data-testid="category-snapshot">
+      {category}@{snapshotDate}
+    </span>
+  ),
+}));
 jest.mock("@/components/mdx/TcdbSnapshot", () => ({
   __esModule: true,
   default: (props: { tag: string; snapshotDate: string }) =>
@@ -92,17 +106,13 @@ describe("ChronicleSectionMdxRenderer", () => {
     );
 
     const props = mdxRendererMock.mock.calls[0]?.[0] as
-      | { components?: Record<string, unknown> }
-      | undefined;
+      { components?: Record<string, unknown> } | undefined;
     const BoundSetCollector = props?.components?.SetCollector as
-      | ComponentType<{ set: string }>
-      | undefined;
+      ComponentType<{ set: string }> | undefined;
     const BoundClanSnapshot = props?.components?.ClanSnapshot as
-      | ComponentType<{ tag: string; sport?: string }>
-      | undefined;
+      ComponentType<{ tag: string; sport?: string }> | undefined;
     const BoundTcdbSnapshot = props?.components?.TcdbSnapshot as
-      | ComponentType<{ tag: string }>
-      | undefined;
+      ComponentType<{ tag: string }> | undefined;
 
     expect(props?.components?.CustomThing).toBe(CustomThing);
     expect(BoundClanSnapshot).toBeDefined();
@@ -218,11 +228,9 @@ describe("ChronicleSectionMdxRenderer", () => {
     );
 
     const props = mdxRendererMock.mock.calls[0]?.[0] as
-      | { components?: Record<string, unknown> }
-      | undefined;
+      { components?: Record<string, unknown> } | undefined;
     const BoundClanSnapshot = props?.components?.ClanSnapshot as
-      | ComponentType<{ href?: string; tag: string; sport?: string }>
-      | undefined;
+      ComponentType<{ href?: string; tag: string; sport?: string }> | undefined;
 
     expect(BoundClanSnapshot).toBeDefined();
     if (!BoundClanSnapshot) {
@@ -260,4 +268,20 @@ describe("ChronicleSectionMdxRenderer", () => {
       metadata: tagMetadataBySlug.get("tcdb"),
     });
   });
+});
+
+it("binds CategorySnapshot to the Chronicle date in extracted sections", () => {
+  render(
+    <ChronicleSectionMdxRenderer
+      code="compiled"
+      postDate="2026-10-01T00:00:00.000Z"
+    />,
+  );
+  const bound = mdxRendererMock.mock.calls.at(-1)?.[0].components
+    ?.CategorySnapshot as ComponentType<{ category: string }>;
+  const Bound = bound;
+  render(<Bound category="basketball" />);
+  expect(screen.getByTestId("category-snapshot")).toHaveTextContent(
+    "basketball@2026-10-01T00:00:00.000Z",
+  );
 });

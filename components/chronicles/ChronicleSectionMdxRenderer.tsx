@@ -4,6 +4,7 @@ import type { MDXComponents } from "mdx/types";
 import ChronicleImage, {
   type ChronicleImageProps,
 } from "@/components/chronicles/ChronicleImage";
+import CategorySnapshot from "@/components/mdx/CategorySnapshot";
 import ClanSnapshot, {
   type ClanSnapshotProps,
 } from "@/components/mdx/ClanSnapshot";
@@ -107,6 +108,10 @@ export function ChronicleSectionMdxRenderer({
     );
   }
 
+  function BoundCategorySnapshot({ category }: { category: string }) {
+    return <CategorySnapshot category={category} snapshotDate={postDate} />;
+  }
+
   function BoundTcdbSnapshot({ tag }: BoundTcdbSnapshotProps) {
     return (
       <TcdbSnapshot
@@ -128,6 +133,7 @@ export function ChronicleSectionMdxRenderer({
         ...(chronicleSlug ? { img: BoundChronicleImage } : {}),
         ScrollAmendment: BoundScrollAmendment,
         ClanSnapshot: BoundClanSnapshot,
+        CategorySnapshot: BoundCategorySnapshot,
         SetCollector: BoundSetCollector,
         TcdbSnapshot: BoundTcdbSnapshot,
       }}

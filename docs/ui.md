@@ -37,7 +37,7 @@ passes the numeric height to its container using a hydration-safe media-query
 effect that updates only at the md breakpoint. Its existing Recharts resize callback
 updates only label-capacity buckets; all daily data points remain plotted. Exact
 values use an in-flow day selector and readout, with expandable daily data. The card-count
-sparklines use Recharts' responsive LineChart measurement with 100% width and
+sparklines and category count/ranking history charts use Recharts' responsive LineChart measurement with 100% width and
 height inside their h-24 wrappers; their height follows the root font size.
 Do not guess positive initial dimensions or add a second resize observer around
 Recharts. Real chart layout and warning coverage lives in

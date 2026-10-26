@@ -63,3 +63,12 @@ collection work. Actions additionally require an explicit same-origin header;
 all collection entry points honor the default-off server switch. See the
 [analytics rollout](../analytics-rollout.md) for budgets, configuration and the
 non-production setup handoff.
+
+## Category measurements
+
+Category snapshot POST and PATCH enforce strict `tcdb.category.snapshot.create`
+and `tcdb.category.snapshot.correct` respectively. Migration 084 grants existing
+editor/admin roles on the TCDB app without assigning memberships, preserves
+explicit denies/disables, and bumps/notifies affected members. Public reads stay
+public; UI capability checks are hints. Mutations and actor/before/after audit
+events commit on one connected client. See [category counts](../card-category-counts.md).

@@ -169,6 +169,13 @@ const FALLBACK_PRIMARY: Record<PersonaKey, MenuItem[]> = {
       feature: "menu.cardattack.clans",
     },
     {
+      id: "categories",
+      label: "Categories",
+      href: "/cardattack/categories",
+      iconKey: "Archive",
+      feature: "menu.cardattack.categories",
+    },
+    {
       id: "tcdb-trades",
       label: "Trades",
       href: "/cardattack/tcdb-trades",

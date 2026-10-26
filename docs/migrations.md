@@ -132,3 +132,14 @@ For the analytics archive on a manually migrated Neon database, use the
 initial catalog inspection uses explicit read-only transactions and does not
 initialize the ledger. An unrecorded migration is not proof of missing schema;
 review each file before any baseline or replay.
+
+## Category counts
+
+Apply reviewed migration [083](../db/migrations/083_card_category_snapshots.sql),
+then [084](../db/migrations/084_card_category_access_and_menu.sql), then
+[085](../db/migrations/085_card_category_rankings.sql), then
+[086](../db/migrations/086_card_category_difference_and_trends.sql) manually before
+using category counts, optional TCDb rankings, signed differences and full trends.
+085/086 extend the already delivered schema; 083/084/085 remain unchanged. [Category setup](card-category-counts.md) owns prerequisites,
+read-only preflight/postflight SQL, rollback-only manual fixtures and recovery.
+These migrations have not been applied by application validation.
