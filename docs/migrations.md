@@ -116,6 +116,19 @@ The [Celtics comparison and evidence](celtics-membership-backfill.md) records al
 22 pairs and both branch checks. It changes only relationships and preserves
 existing metadata when a pair already exists.
 
+[087_add_marquette_player_memberships.sql](../db/migrations/087_add_marquette_player_memberships.sql)
+adds college playing memberships for Dwyane Wade (`flash`), Jimmy Butler
+(`playoff-jimmy`) and Wes Matthews (`wes-matthews`) to `golden-eagles`.
+Read-only production inspection on 2026-10-25 checked the named homie inventory,
+confirmed all required tag endpoints and found none of these three relationships.
+Wes Matthews has draft year 2009 in production, identifying Wesley Matthews
+rather than his father. Primary Marquette evidence URLs are recorded per seed.
+The migration checks identities, resolves IDs at runtime and preserves existing
+relationship metadata on reruns. No production writes were performed.
+[Read-only postflight assertions](../db/tests/087_marquette_memberships_test.sql)
+check the pairs and college evidence metadata after an approved application;
+they have not been run against an applied database.
+
 ## Existing Databases
 
 A database that predates this ledger has no migration history recorded, so
