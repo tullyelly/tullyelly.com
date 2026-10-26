@@ -68,11 +68,21 @@ describe("SetCollector", () => {
     expect(
       screen.getByRole("link", { name: "1991-92 Upper Deck" }),
     ).toHaveAttribute("href", "/cardattack/set-collector/1991-92-upper-deck");
-    expect(screen.getByText(", basketball")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "basketball" })).toHaveTextContent(
+      "🏀",
+    );
+    expect(container.querySelector("li")?.textContent).toBe(
+      "🏀 1991-92 Upper Deck (456/500; 91.2%)",
+    );
     expect(screen.getByText("(456/500; 91.2%)")).toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "960943" }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("progressbar", {
+        name: "1991-92 Upper Deck completion",
+      }),
+    ).toHaveAttribute("aria-valuenow", "91.2");
     expect(container.querySelector("li > div")).toBeNull();
     expect(container.querySelector("li > p")).toBeNull();
   });
@@ -98,6 +108,13 @@ describe("SetCollector", () => {
 
     expect(screen.getByText("(500/500; 💯)")).toBeInTheDocument();
     expect(screen.queryByText("(500/500; 100%)")).not.toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "100",
+    );
+    expect(screen.getByRole("progressbar").firstElementChild).toHaveStyle({
+      width: "100%",
+    });
   });
 
   it("keeps rounded 100 percent incomplete sets as percentages", async () => {
@@ -120,6 +137,12 @@ describe("SetCollector", () => {
 
     expect(screen.getByText("(2999/3000; 100%)")).toBeInTheDocument();
     expect(screen.queryByText("(2999/3000; 💯)")).not.toBeInTheDocument();
+    expect(
+      Number(screen.getByRole("progressbar").getAttribute("aria-valuenow")),
+    ).toBeCloseTo(99.9666667);
+    expect(screen.getByRole("progressbar").firstElementChild).not.toHaveStyle({
+      width: "100%",
+    });
   });
 
   it("uses the provided snapshot date for chronicle-bound rendering", async () => {
@@ -157,6 +180,9 @@ describe("SetCollector", () => {
     );
     expect(screen.getByText("(133/147; 90.5%)")).toBeInTheDocument();
     expect(
+      Number(screen.getByRole("progressbar").getAttribute("aria-valuenow")),
+    ).toBeCloseTo((133 / 147) * 100);
+    expect(
       screen.queryByRole("link", { name: "1004001" }),
     ).not.toBeInTheDocument();
   });
@@ -183,9 +209,118 @@ describe("SetCollector", () => {
       screen.getByRole("link", { name: "1991-92 Upper Deck" }),
     ).toHaveAttribute("href", "/cardattack/set-collector/1991-92-upper-deck");
     expect(screen.queryByText(/\(.*%/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "960943" }),
     ).not.toBeInTheDocument();
+  });
+
+  const baseSummary = {
+    setSlug: "optic",
+    setName: "Donruss Optic",
+    totalCards: 299,
+    cardsOwned: 230,
+    percentComplete: 76.9,
+  };
+
+  it.each([
+    [" Basketball ", "basketball", "🏀"],
+    ["BASEBALL", "baseball", "⚾"],
+    ["football", "football", "🏈"],
+    [" American Football ", "american football", "🏈"],
+    ["hockey", "hockey", "🏒"],
+    ["ICE HOCKEY", "ice hockey", "🏒"],
+    ["soccer", "soccer", "⚽"],
+    ["golf", "golf", "⛳"],
+    ["tennis", "tennis", "🎾"],
+    ["racing", "racing", "🏎️"],
+    ["Auto Racing", "auto racing", "🏎️"],
+    ["wrestling", "wrestling", "🤼"],
+    ["boxing", "boxing", "🥊"],
+  ])("labels the sport %s", async (categoryTag, label, emoji) => {
+    getSetCollectorSummaryRowMock.mockResolvedValue({
+      ...baseSummary,
+      categoryTag,
+    });
+    render(await SetCollector({ set: "optic" }));
+    expect(screen.getByRole("img", { name: label })).toHaveTextContent(emoji);
+  });
+
+  it.each(["Non-Sport", "Cricket", "constructor"])(
+    "preserves category fallback for %s",
+    async (categoryTag) => {
+      getSetCollectorSummaryRowMock.mockResolvedValue({
+        ...baseSummary,
+        categoryTag,
+      });
+      render(await SetCollector({ set: "optic" }));
+      expect(
+        screen.getByText(`, ${categoryTag.toLowerCase()}`),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([undefined, ""])("omits absent category %s", async (categoryTag) => {
+    getSetCollectorSummaryRowMock.mockResolvedValue({
+      ...baseSummary,
+      categoryTag,
+    });
+    const { container } = render(<p>{await SetCollector({ set: "optic" })}</p>);
+    expect(container.textContent).toBe("Donruss Optic (230/299; 76.9%)");
+    expect(container.querySelector("p div, p p")).toBeNull();
+  });
+
+  it.each([
+    [0, 0, 0],
+    [25, 25, 30],
+    [50, 50, 60],
+    [75, 75, 90],
+    [100, 100, 120],
+    [0.1, 0.1, 0.12],
+    [120, 100, 120],
+    [-10, 0, 0],
+  ])(
+    "renders proportional progress for %s owned",
+    async (cardsOwned, percent, hue) => {
+      getSetCollectorSummaryRowMock.mockResolvedValue({
+        ...baseSummary,
+        totalCards: 100,
+        cardsOwned,
+        percentComplete: cardsOwned,
+      });
+      render(await SetCollector({ set: "optic" }));
+      const bar = screen.getByRole("progressbar", {
+        name: "Donruss Optic completion",
+      });
+      expect(bar).toHaveAttribute("aria-valuemin", "0");
+      expect(bar).toHaveAttribute("aria-valuemax", "100");
+      expect(bar).toHaveAttribute("aria-valuenow", String(percent));
+      expect(bar.firstElementChild).toHaveStyle({ width: `${percent}%` });
+      expect(bar.firstElementChild?.getAttribute("style")).toContain(
+        `hsl(${hue} var(--collector-progress-saturation) var(--collector-progress-lightness))`,
+      );
+    },
+  );
+
+  it.each([
+    { totalCards: 0 },
+    { totalCards: -1 },
+    { totalCards: NaN },
+    { totalCards: Infinity },
+    { cardsOwned: undefined },
+    { cardsOwned: NaN },
+    { cardsOwned: Infinity },
+    { percentComplete: undefined },
+    { percentComplete: NaN },
+  ])("omits unavailable or invalid progress %s", async (overrides) => {
+    getSetCollectorSummaryRowMock.mockResolvedValue({
+      ...baseSummary,
+      ...overrides,
+    });
+    const { container } = render(await SetCollector({ set: "optic" }));
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(container.textContent).toBe("Donruss Optic");
   });
 
   it("renders nothing when the summary lookup fails", async () => {

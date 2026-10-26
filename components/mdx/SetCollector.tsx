@@ -14,6 +14,22 @@ export type SetCollectorProps = {
   snapshotDate?: string;
 };
 
+const sportEmojis: Record<string, string> = {
+  basketball: "🏀",
+  baseball: "⚾",
+  football: "🏈",
+  "american football": "🏈",
+  hockey: "🏒",
+  "ice hockey": "🏒",
+  soccer: "⚽",
+  golf: "⛳",
+  tennis: "🎾",
+  racing: "🏎️",
+  "auto racing": "🏎️",
+  wrestling: "🤼",
+  boxing: "🥊",
+};
+
 const linkClassName = "underline hover:no-underline text-primary";
 
 function formatLatestProgress(
@@ -21,7 +37,14 @@ function formatLatestProgress(
   totalCards: number,
   percentComplete: number | undefined,
 ): string | undefined {
-  if (cardsOwned === undefined || percentComplete === undefined) {
+  if (
+    cardsOwned === undefined ||
+    percentComplete === undefined ||
+    !Number.isFinite(cardsOwned) ||
+    !Number.isFinite(totalCards) ||
+    !Number.isFinite(percentComplete) ||
+    totalCards <= 0
+  ) {
     return undefined;
   }
 
@@ -67,8 +90,27 @@ export default async function SetCollector({
     summary.percentComplete,
   );
 
+  const category = summary.categoryTag?.trim().toLowerCase();
+  const sportEmoji =
+    category && Object.hasOwn(sportEmojis, category)
+      ? sportEmojis[category]
+      : undefined;
+  const visualPercent = latestProgress
+    ? Math.min(
+        100,
+        Math.max(0, ((summary.cardsOwned ?? 0) / summary.totalCards) * 100),
+      )
+    : undefined;
+
   return (
     <>
+      {sportEmoji ? (
+        <>
+          <span role="img" aria-label={category}>
+            {sportEmoji}
+          </span>{" "}
+        </>
+      ) : null}
       <Link
         href={getSetCollectorDetailHref(summary.setSlug)}
         prefetch={false}
@@ -76,10 +118,31 @@ export default async function SetCollector({
       >
         {summary.setName}
       </Link>
-      {summary.categoryTag ? (
-        <span>{`, ${summary.categoryTag.toLowerCase()}`}</span>
+      {!sportEmoji && category ? <span>{`, ${category}`}</span> : null}
+      {latestProgress && visualPercent !== undefined ? (
+        <>
+          {" "}
+          <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 align-middle">
+            <span>{`(${latestProgress})`}</span>
+            <span
+              role="progressbar"
+              aria-label={`${summary.setName} completion`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={visualPercent}
+              className="inline-flex h-1.5 w-24 shrink-0 overflow-hidden rounded-full bg-[var(--collector-progress-track)]"
+            >
+              <span
+                className="h-full rounded-full"
+                style={{
+                  width: `${visualPercent}%`,
+                  backgroundColor: `hsl(${visualPercent * 1.2} var(--collector-progress-saturation) var(--collector-progress-lightness))`,
+                }}
+              />
+            </span>
+          </span>
+        </>
       ) : null}
-      {latestProgress ? <span>{` (${latestProgress})`}</span> : null}
     </>
   );
 }

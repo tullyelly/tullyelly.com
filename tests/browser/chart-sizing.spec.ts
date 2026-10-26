@@ -12,9 +12,23 @@ test.beforeAll(async () => {
   const result = await build({
     configFile: false,
     css: { postcss: { plugins: [tailwind()] } },
-    resolve: { alias: { "@": process.cwd() } },
+    resolve: {
+      alias: {
+        "@/lib/cn": path.resolve("app/lib/cn.ts"),
+        "@": process.cwd(),
+        "@ui": path.resolve("components/ui"),
+        "next/navigation": path.resolve(
+          "tests/browser/fixtures/category-navigation.ts",
+        ),
+      },
+    },
     esbuild: { jsx: "automatic" },
-    define: { "process.env.NODE_ENV": JSON.stringify("production") },
+    // Next client primitives reference compile-time environment flags. No env files
+    // or runtime credentials enter this isolated browser bundle.
+    define: {
+      "process.env.NODE_ENV": JSON.stringify("production"),
+      "process.env": "{}",
+    },
     build: {
       write: false,
       lib: {
@@ -56,6 +70,7 @@ async function mount(page: Page, query = "") {
   await page.goto(`http://charts.test/${query}`);
   await page.addStyleTag({ content: css });
   await page.addScriptTag({ content: script });
+  expect(errors).toEqual([]);
   return { warnings, errors };
 }
 
@@ -65,6 +80,8 @@ const charts = [
   ["persona-activity-chart", 300],
   ["homie-card-count-sparkline", 96],
   ["clan-card-count-sparkline", 96],
+  ["category-card-count-chart", 96],
+  ["category-ranking-chart", 96],
   ["homie-tag-usage-chart", 384],
   ["squad-commentary-chart", 360],
 ] as const;
@@ -101,13 +118,15 @@ async function expectSizedCharts(page: Page, rem = 16, compact = false) {
         }),
       )
       .toBe(true);
-    const expectedHeight = id.includes("sparkline")
-      ? 6 * rem
-      : id === "homie-tag-usage-chart" && compact
-        ? 320
-        : id === "tcdb-card-traffic-chart" && page.viewportSize()!.width < 768
-          ? 250
-          : reservedHeight;
+    const expectedHeight =
+      id.includes("sparkline") ||
+      ["category-card-count-chart", "category-ranking-chart"].includes(id)
+        ? 6 * rem
+        : id === "homie-tag-usage-chart" && compact
+          ? 320
+          : id === "tcdb-card-traffic-chart" && page.viewportSize()!.width < 768
+            ? 250
+            : reservedHeight;
     await expect
       .poll(() =>
         chart
@@ -140,7 +159,7 @@ test("detects the original warning with real Recharts", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("sizes all seven charts on load, remount, narrow layout and resize", async ({
+test("sizes all nine charts on load, remount, narrow layout and resize", async ({
   page,
 }) => {
   const { warnings, errors } = await mount(page);
@@ -393,5 +412,134 @@ test("archive chart preserves unknown-day gaps and verified zero values", async 
     path: test.info().outputPath("archive-traffic-320.png"),
   });
   expect(warnings).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+for (const width of [320, 390, 1280]) {
+  test(`category entry and correction are accessible at ${width}px without a database`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const { errors } = await mount(page, "?categories=1");
+    const search = page.getByRole("searchbox", { name: "Search categories" });
+    await search.fill("not-found");
+    await expect(
+      page.getByText("No categories match your search."),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Clear search" }).click();
+    await expect(
+      page.getByText("Not tracked yet", { exact: true }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+    const add = page.getByRole("button", { name: "Add Snapshot", exact: true });
+    await add.click();
+    const dialog = page.getByRole("dialog", { name: "Add Snapshot" });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).not.toBeVisible();
+    await expect(add).toBeFocused();
+    await add.click();
+    const count = page.getByLabel("Owned-card count");
+    await count.fill("0");
+    await page.getByLabel("TCDb ranking (optional)").fill("1300");
+    await page.getByLabel("Difference (optional)").fill("-25");
+    await expect(page.getByLabel("Category", { exact: true })).toHaveValue(
+      "basketball",
+    );
+    const bounds = await dialog.boundingBox();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+    let requestBody: unknown;
+    await page.route(
+      "**/api/cardattack/categories/snapshots",
+      async (route) => {
+        requestBody = route.request().postDataJSON();
+        await route.fulfill({
+          status: 409,
+          contentType: "application/json",
+          body: JSON.stringify({ error: "SNAPSHOT_ALREADY_EXISTS" }),
+        });
+      },
+    );
+    await page.getByRole("button", { name: "Save snapshot" }).click();
+    await expect(page.getByRole("alert")).toContainText(
+      "choose Correct snapshot",
+    );
+    await expect(count).toHaveValue("0");
+    expect(requestBody).toEqual({
+      category: "basketball",
+      measured_on: "2026-10-25",
+      card_count: 0,
+      ranking: 1300,
+      difference: -25,
+    });
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(add).toBeFocused();
+    const correct = page.getByRole("button", {
+      name: "Correct snapshot for 2026-10-20",
+    });
+    await correct.click();
+    await expect(page.getByLabel("Measurement date")).toHaveAttribute(
+      "readonly",
+      "",
+    );
+    await page.getByLabel("Owned-card count").fill("12060");
+    await expect(page.getByLabel("TCDb ranking (optional)")).toHaveValue(
+      "1400",
+    );
+    await page.getByLabel("TCDb ranking (optional)").fill("1350");
+    await expect(page.getByLabel("Difference (optional)")).toHaveValue("-50");
+    await page.getByLabel("Difference (optional)").fill("0");
+    await page.unroute("**/api/cardattack/categories/snapshots");
+    await page.route(
+      "**/api/cardattack/categories/snapshots",
+      async (route) => {
+        expect(route.request().method()).toBe("PATCH");
+        requestBody = route.request().postDataJSON();
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "2", status: "ok", freshness: "fresh" }),
+        });
+      },
+    );
+    await page.getByRole("button", { name: "Save snapshot" }).click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(correct).toBeFocused();
+    expect(requestBody).toEqual({
+      snapshot_id: "2",
+      card_count: 12060,
+      ranking: 1350,
+      difference: 0,
+    });
+    await page.screenshot({
+      path: test.info().outputPath(`categories-${width}.png`),
+    });
+    expect(errors).toEqual([]);
+  });
+}
+
+test("category rankings plot improvement upward and keep unrecorded gaps", async ({
+  page,
+}) => {
+  const { errors } = await mount(page);
+  const chart = page.getByTestId("category-ranking-chart");
+  await expect(chart).toHaveAttribute(
+    "aria-label",
+    /lower is better; gaps mean not recorded/,
+  );
+  await expect(chart.locator(".recharts-line-curve")).toHaveAttribute(
+    "d",
+    /M.*M/,
+  );
+  const dots = chart.locator(".recharts-line-dots circle");
+  await expect(dots).toHaveCount(9);
+  expect(Number(await dots.first().getAttribute("cy"))).toBeGreaterThan(
+    Number(await dots.last().getAttribute("cy")),
+  );
   expect(errors).toEqual([]);
 });

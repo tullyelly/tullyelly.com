@@ -42,3 +42,9 @@ dynamic; no sessions or capabilities enter this cache. Collector commits become
 visible on the next cache refresh, rather than immediate tag invalidation. Build
 reads are skipped. See [analytics rollout](analytics-rollout.md) for coverage and
 public visibility rules.
+
+Category snapshot readers share the `card-category-snapshots` cache tag with a
+60-second TTL. Successful create/correct requests expire it immediately after
+commit and invalidate category, Chronicle and Bricks layouts. A post-commit
+freshness failure returns saved with `freshness: "pending"`; it is not a failed
+mutation. See [category counts](card-category-counts.md).

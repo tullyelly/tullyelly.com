@@ -27,3 +27,11 @@ The menu tree comes from `dojo.v_menu_published` and is filtered server-side bef
 
 - Unit tests cover the capability builder and the filtering walk; add fixture updates when new meta fields are introduced.
 - Snapshot tiny persona trees whenever you tweak the filter so we keep regressions obvious.
+
+## Category counts
+
+Migration 084 adds `menu.cardattack.categories` beneath the existing Cardattack
+parent at `/cardattack/categories`, mirroring Clans menu grants. Fallback navigation
+uses the same destination; desktop, drawer, command menu and breadcrumbs consume
+the shared menu data. Manual SQL changes follow the existing five-minute menu
+cache/revalidation behavior. See [category setup](card-category-counts.md).

@@ -37,8 +37,16 @@ passes the numeric height to its container using a hydration-safe media-query
 effect that updates only at the md breakpoint. Its existing Recharts resize callback
 updates only label-capacity buckets; all daily data points remain plotted. Exact
 values use an in-flow day selector and readout, with expandable daily data. The card-count
-sparklines use Recharts' responsive LineChart measurement with 100% width and
+sparklines and category count/ranking history charts use Recharts' responsive LineChart measurement with 100% width and
 height inside their h-24 wrappers; their height follows the root font size.
 Do not guess positive initial dimensions or add a second resize observer around
 Recharts. Real chart layout and warning coverage lives in
 [chart-sizing.spec.ts](../tests/browser/chart-sizing.spec.ts).
+
+SetCollector MDX entries stay inline in paragraphs and lists. Recognized sports
+use labeled emojis before the linked set name; other categories retain text. Counts and formatted percentages
+come from the selected summary snapshot. The compact completion bar uses the raw
+owned/total ratio clamped to 0–100, with a solid HSL hue interpolated from red
+through orange, yellow and yellow-green to green. Its scale and neutral track use
+`--collector-progress-*` tokens in `app/globals.css`. Missing snapshots or invalid
+progress omit the counts and bar; only actual completion earns 💯.

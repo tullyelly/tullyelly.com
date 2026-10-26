@@ -1,5 +1,7 @@
 {
   "urls": [
+    "/images/optimus/100-percent-dundee/pooh/pooh-0.webp",
+    "/images/optimus/100-percent-dundee/pooh/pooh-1.webp",
     "/images/optimus/100/add-delete.webp",
     "/images/optimus/100/commits.webp",
     "/images/optimus/100/languages.webp",
@@ -2266,6 +2268,16 @@
     "/images/optimus/you-know-my-steez/topps.webp"
   ],
   "images": [
+    {
+      "src": "/images/optimus/100-percent-dundee/pooh/pooh-0.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/100-percent-dundee/pooh/pooh-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
     {
       "src": "/images/optimus/100/add-delete.webp",
       "width": 1356,

@@ -93,3 +93,12 @@ Chronicle archives remain archive navigation, such as links to archive comments.
 The tag directory links each tag name canonically and separately labels its
 Chronicle archive. Snapshot rank numbers, dedicated ranking actions, canonical
 metadata, and ordinary page navigation retain their purpose-specific URLs.
+
+## Category count snapshots
+
+`<CategorySnapshot category="basketball" />` displays the overall category count
+and optional TCDb ranking, signed difference and trends recorded on the Chronicle's
+exact frontmatter date.
+A missing measurement renders
+a linked category label; it never substitutes a latest count. It does not infer
+tags. See [category counts](card-category-counts.md) for the full example and setup.

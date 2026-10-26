@@ -107,11 +107,16 @@ with the user. Report browser tests as unavailable when prerequisites are absent
 ### Chart component layout
 
 `npm run test:charts` uses [playwright.charts.config.ts](../playwright.charts.config.ts)
-for database-free Chromium checks of all seven Recharts charts. It bundles the real
+for database-free Chromium checks of all nine Recharts charts. It bundles the real
 client components and site CSS into an isolated page; it does not start an app or
 dev server, load environment files, or seed data. Install the Playwright browser
 using the existing install command above. PLAYWRIGHT_CHROME_PATH can select an
 existing Chromium executable.
+
+The same database-free fixture also mounts the real category overview and snapshot
+form with a fixture router and intercepted API responses. It checks mobile bounds,
+search/empty results, preserved conflict input, count/ranking/difference correction, Escape and
+focus return. This does not verify connected database writes or Next routing.
 
 These checks reproduce the original percentage-container warning and assert
 actual positive SVG dimensions, resizing, narrow-screen scrolling, relative
