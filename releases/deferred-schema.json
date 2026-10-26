@@ -1,7 +1,7 @@
 {
   "version": 1,
   "scope": "application-only",
-  "baselineSha": "2d64c44f28b63300b9d06b059af411c42820d25e",
-  "schemaDiffSha256": "1933f8ba7b4b63c859b7e458548220d1a07397d955ba289cfa929c6f08cca3bb",
-  "rationale": "WU-1194: defer execution of migrations 078-082 and their schema mirrors. The application uses existing dojo.clan.slug and no longer selects the retired clan.tag_slug column; docs/migrations.md documents compatibility before and after migration 079. Missing-tag creation and player/Lakers/Celtics membership backfills are data maintenance and are not prerequisites for the application build or startup. Review the exact application and SQL diff at the protected production gate. This record authorizes no SQL execution, ledger reconciliation, or database-state claim."
+  "baselineSha": "ee1ee21450276885363bd388db376a0c97ab1900",
+  "schemaDiffSha256": "4e022b8e1d4e0bf73f48fba1dbd6c7241714e745a9f460c464d7ac985f49c715",
+  "rationale": "WU-1021: defer execution of migrations 083-087 and the category schema mirrors for an application-only release from production baseline ee1ee214. Category pages expose prerequisite/unavailable states when schema is absent; Chronicle CategorySnapshot retains its linked identity without a measurement when reads fail. Category data, rankings, menu provisioning and snapshot writes require separately reviewed database setup; this release does not promise their availability. Migration 087 only backfills Marquette memberships and is not required for application build or startup. Existing server authorization remains required. Review the complete SQL diff and these limitations at the protected production gate. This record authorizes no SQL execution, ledger reconciliation, or database-state claim."
 }
