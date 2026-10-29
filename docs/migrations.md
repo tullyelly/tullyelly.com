@@ -129,6 +129,18 @@ relationship metadata on reruns. No production writes were performed.
 check the pairs and college evidence metadata after an approved application;
 they have not been run against an applied database.
 
+## Homie snapshot differences
+
+[088_enforce_homie_tcdb_snapshot_difference_sign.sql](../db/migrations/088_enforce_homie_tcdb_snapshot_difference_sign.sql)
+corrects existing difference signs and adds a check constraint in one transaction.
+Ranking 1 requires a nonnegative difference; every other ranking requires a
+strictly negative difference. Incorrect signs are flipped without changing their
+magnitude; zero for a non-first ranking becomes `-1`. Audit and realtime refresh
+triggers remain active. A first-place difference of `-2147483648` cannot be
+represented positively as an integer and aborts the transaction for review.
+The migration takes an exclusive table lock. It has not been applied by local
+application validation.
+
 ## Existing Databases
 
 A database that predates this ledger has no migration history recorded, so
