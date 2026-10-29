@@ -120,6 +120,18 @@ creation. The existing pool guards remain intact.
 
 Daily refresh prioritizes the previous three completed UTC days, then catches up
 from its durable cursor. Daily invocations require at least four day slots and eight logical requests.
+After a successful daily cursor day, the same completion transaction can advance
+across up to 31 following contiguous archive days whose status is `complete`,
+`zero` or deliberately `unavailable`. A missing, incomplete or API-failed day
+stops advancement. Days within the three-day refresh window must also have been
+successfully resolved in this invocation; retained old totals cannot hide a
+truncated or failed recent refresh. This lets catch-up converge across coverage
+already established by earlier recent-day refreshes while the calendar advances.
+The bounded scan makes no additional Vercel requests and never affects the
+independent backfill cursor. Failed writes roll back the cursor and summary
+together; run failure/bounded status and the 36-hour daily freshness rule remain
+unchanged. The scan does not count skipped days as newly processed days.
+
 The request budget is divided across selected days so a truncated recent day
 does not consume the entire invocation before catch-up can run. Backfill only advances its own cursor; invoke it independently
 with a historical start date and budget. If bounds are exhausted, partial staging
@@ -314,3 +326,48 @@ not immediately invalidate this public cache; the page explains the five-minute
 lag. Production builds skip analytics DB reads. Missing configuration/schema,
 invalid snapshots and DB failures produce a generic unavailable state without
 operational errors. A Chronicle remains readable when archive reads fail.
+
+## WU-1208 owner-operated development confirmation
+
+The moving-clock interruption case is verified with mocked connections and API
+responses. No agent ran live collection, import, rollback fixtures or the
+write-producing integration suite. Existing migration files, connection strings,
+environment files and disposable-suite guards are unchanged. Shipping this change
+still depends on WU-1210's reviewed release compatibility work and the existing
+application approval process; no release is authorized here.
+
+For James's WU-1212 development checks:
+
+1. First finish the manual schema/ledger handoff and read-only postflight from
+   WU-1207. Confirm existing API scope, supported UTC reporting window and direct
+   connection compatibility without changing URLs. Start the local server yourself.
+2. Record the existing daily cursor, recent run statuses and verified/unavailable
+   dates. If an outage backlog naturally exists, note its earliest unresolved day.
+   Do not rewind cursors, alter the clock or corrupt shared development to manufacture
+   an outage; that reproduction stays mocked when no natural backlog exists.
+3. Operate **Run now** yourself and record its processed/request counts and outcome.
+   Each invocation retains four collected-day slots, eight logical requests and
+   a 35-second deadline. Read-only review must show every date crossed by a cursor
+   jump was verified/zero or deliberately unavailable; unresolved gaps must remain.
+4. Repeat bounded runs as needed. Recent refreshes remain included; repeating a
+   completed day replaces its summary rather than adding to it. Compare stored
+   counts to the same upstream day, allowing for actual upstream revisions.
+5. Observe the next normal UTC daily run when enabled by you. Confirm catch-up
+   reaches the completed-day boundary and a completed daily run, rather than a
+   backfill or partial batch, establishes daily freshness. Preserve visible failure
+   status and timestamps. Do not trigger collection on production for validation.
+
+James-operated development results and read-only postflight for this code change
+remain pending. Failure, empty/zero, unavailable, truncation, rollback, deadline
+and gap cases are mocked evidence; they are not live outage or notification proof.
+
+WU-1208 local evidence: the new moving-clock regression failed before the code
+change and passed afterward. The focused collector/operations suites passed
+40 mocked tests. The database-disabled `npm run verify:agent` baseline passed in
+124.2 seconds: 241 suites and 1,906 tests passed, with 2 suites and 6 opt-in
+PostgreSQL tests skipped. Coverage thresholds, lint, typecheck and production
+build passed. Docs, explicit changed-file formatting and the self-fetch check
+passed; the latter used Node's tsx loader after the CLI hit a sandbox pipe error.
+The punctuation check still reports existing em dashes in unchanged
+`HomieDirectory.tsx` and `FirstOffTheLineSection.tsx`. These results establish
+mocked/build validation only; the owner-operated live checks above remain pending.
