@@ -425,10 +425,12 @@ Mode `maintenance` retains credential maintenance. Neither path is invoked or
 authorized by ordinary source deployment. Sensitive operations retain their existing
 approval procedures and share the production concurrency boundary.
 
-The analytics migration release remains unready: historical SQL was executed
-manually, and production ledger reconciliation, current non-production integration,
-credential rotation and restore rehearsal remain prerequisites. Refresh catalog
-evidence before asserting current schema state. The analytics executor refuses
+The analytics migration release remains unready: the 2026-10-29 read-only
+inspection found no production analytics tables or ledger. Historical domain SQL
+has no ledger proof. Per-file reconciliation, current non-production rehearsal,
+credential readiness and recovery evidence remain prerequisites. See the
+[current observations](analytics-rollout.md#observed-on-2026-10-29); deployed
+configuration and credential rotation state were not inspected. The analytics executor refuses
 missing ledgers, ambiguous history, checksum drift and failed entries; it never
 invents a baseline or replays historical SQL as part of an ordinary release.
 
@@ -537,13 +539,27 @@ GitHub/Vercel. These are prerequisites, not authorization to release analytics.
    email and other mutation routes can still have side effects; automation must
    use read-only smoke checks, never submit comments or owner mutation forms.
 
+## Owner-operated reviewed SQL
+
+The owner may execute individually reviewed migration files in DataGrip using the
+[analytics migration procedure](analytics-neon-setup.md), including prerequisite
+checks, exact checksums, atomic ledger records and read-only postflight. This
+resolves earlier wording that classified all manual execution as historical.
+Production SQL still requires a concrete reviewed release and the existing human
+protected approval; code-only deployment approval does not authorize it. Do not
+run DataGrip and the analytics executor concurrently or execute the same scope
+through both. Ledger initialization/reconciliation is itself a reviewed write.
+No new workflow, framework or automatic deployment is introduced. Ordinary
+application releases continue through the existing App dispatcher and protected
+native-source workflow unchanged.
+
 ## Preparing the exact analytics migration release
 
 The initial analytics workflow accepts only migrations
 `076_create_analytics_archive.sql` and `077_analytics_operations.sql` in order.
 It cannot perform historical reconciliation. That plan needs per-file schema and
-data-effect evidence, exact checksums, reviewed missing changes and its own
-protected execution path. Do not use the legacy apply-all runner on production
+data-effect evidence, exact checksums and reviewed missing changes under the
+existing production approval policy and owner-operated DataGrip procedure. Do not use the legacy apply-all runner on production
 to bypass this restriction or concurrently with the new release executor.
 
 After reconciliation and rehearsal, Cipher prepares a release JSON under
@@ -554,23 +570,11 @@ fresh backup/recovery evidence. The manifest can be committed after the
 application commit; only release JSON metadata may differ between them. This
 avoids a self-referential commit hash. No placeholder manifest is releasable.
 
-Neon target discovered read-only:
-
-| Property                             | Value                                                 |
-| ------------------------------------ | ----------------------------------------------------- |
-| Project                              | rough-bush-94516855; tullyelly.com                    |
-| Production branch                    | br-withered-snow-aea0yck6; production                 |
-| Direct production host               | ep-jolly-flower-ae4bmy06 + DNS suffix below           |
-| Expected database                    | tullyelly_db / tullyelly_admin; confirmed by the user |
-| Current Vercel production deployment | dpl_Ce7A2PmQodC9nsjuNpyD3YbH9hWd                      |
-| Current deployed commit              | 3fce11932f189d940d72d0a9e3c91a8fd9943faf              |
-
-Vercel's production database host, database and role were confirmed by the user.
-The password accidentally pasted in chat must be rotated securely before analytics release;
-Cipher did not record or use it. A Neon branch named production does not prove Vercel uses
-it. Actions verifies authoritative Neon endpoint metadata and SQL database/role
-identity again after approval. The collector requires direct connections for
-session advisory locking; pooled transaction connections are refused.
+Current database observations and unverified deployed bindings are recorded in
+[analytics operations](analytics-rollout.md#observed-on-2026-10-29). Resolve exact
+live targets again for every release; October deployment IDs and branch rehearsal
+records are historical evidence only. The collector requires direct connections
+for session advisory locking; pooled transaction connections are refused.
 
 ## Analytics migration approval and execution
 
@@ -601,15 +605,17 @@ schema. Never automatically restore/reset production or run reverse migrations.
 
 ## Recovery and analytics activation
 
-Neon reports `history_retention_seconds=86400` and no scheduled snapshots for this
-project. Verify the actual restore interval, create a retained pre-release recovery
+The 2026-10-29 read-only project inspection reports
+`history_retention_seconds=86400`; snapshot schedules were not rechecked. Verify the actual restore interval, create a retained pre-release recovery
 checkpoint through the separately approved workflow, and rehearse restoration to
 an isolated branch before approving writes. Retention metadata alone is not a
 successful restore test or an indefinite backup. Record the checkpoint ID,
 timestamp, accessible restore procedure and responsible owner. Stop if it cannot
 be recovered or will expire before the release/recovery window ends.
 
-The first analytics release explicitly leaves collection disabled. Read-only
+The initial analytics workflow requires collection disabled. Its hardcoded
+“collection remains disabled” summary alone is not evidence of current runtime
+configuration; verify the exact deployment and effective settings separately. Read-only
 owner connection testing follows promotion. Enabling collection, redeployment,
 manual collection and historical import scope require a subsequent concrete
 approved plan; the initial workflow deliberately cannot enable them. Verify the

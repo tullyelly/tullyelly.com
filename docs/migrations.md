@@ -23,11 +23,14 @@ SQL file changes later, `status` and `verify` report `checksum_mismatch`, and
 
 ## Approved production releases
 
-Production apply operations use the [protected release workflow](production-releases.md)
-after human approval of exact targets, commit, migrations and recovery evidence.
+Production operations require the concrete review and human protected approval in
+[production releases](production-releases.md). The owner-operated
+[DataGrip procedure](analytics-neon-setup.md) covers individually reviewed files,
+exact checksums, atomic ledger handling and read-only postflight. It does not
+change application deployment or authorize SQL through code-only approval.
 The legacy commands below remain non-production tools; do not use apply-all or
-manual SQL to bypass the release gate or run concurrently with the release
-executor. Historical ledger reconciliation is a separate reviewed release.
+manual SQL to bypass approval or run concurrently with a release executor.
+Historical ledger reconciliation requires its own reviewed scope.
 
 ## Commands
 
