@@ -9,6 +9,37 @@ that workflow. This document authorizes no writes; the 2026-10-29 refresh was
 read-only. [Current observations](analytics-rollout.md#observed-on-2026-10-29)
 are separate from unverified deployed configuration.
 
+The focused [analytics migration-file handoff](analytics-migration-handoff.md)
+provides exact DataGrip files, checksums, independent target observations and
+existing-development-first manual instructions. It records only individually justified 076/077 execution.
+
+## Analytics database operating boundary; WU-1205 amendment
+
+James executes reviewed migration, repair, grant and migration-ledger SQL manually
+through his existing DataGrip connections: existing development first, then
+existing production after development validation and fresh production preflight.
+Cipher and every delegated agent have read-only access to both databases through
+all routes, including scripts, tests, APIs, browser actions and workflows. They
+must not trigger migration executors, seeds, cleanup, rollback fixtures,
+authentication/session writes, collection or import. Runner status/verify can
+initialize the ledger and are not read-only inspection tools.
+
+Do not create/reset/rename/delete/promote/restore Neon branches or change default
+branches, endpoints, roles, database URLs or environment files. Do not request a
+new DataGrip connection or configure `.env.analytics-test.local`. Use existing
+authorized read-only access; if unavailable, give James read-only SQL and report
+the limitation. Never retrieve or expose credentials. Preserve disposable-test
+guards; do not spoof metadata or redirect the write suite at existing development.
+Run safe mocks; label database-writing integration tests unrun. James operates
+write-producing development checks; Cipher verifies their results read-only.
+
+Normal scheduled Cron writes after James enables analytics are application
+behavior, not permission for agents to initiate collection. Existing application
+release machinery and human approvals remain in place. The legacy analytics SQL
+executor is not authorized by this policy. No new recovery environment or
+mandatory isolated restore proof is required; document actual backup coverage,
+unrun recovery checks and accepted limitations before production approval.
+
 ## Prerequisites and stop conditions
 
 1. Bind the review to an immutable checkout SHA, selected filenames in order,
@@ -19,7 +50,7 @@ are separate from unverified deployed configuration.
    executor concurrently or dispatch the analytics workflow to repeat manual work.
 2. Privately match DataGrip's Host field to current Neon endpoint metadata and
    the owner-confirmed deployed database binding. Database/role names alone do
-   not identify a branch. Use a dedicated labeled connection, direct TLS endpoint
+   not identify a branch. Use the existing target-specific DataGrip connection, verify its TLS endpoint
    and approved application role; do not copy MCP's `neondb_owner` identity or
    substitute `neondb/neondb_owner` to evade application guards. Never share URLs,
    passwords or tokens. Leave existing local environment files untouched.
@@ -31,20 +62,17 @@ are separate from unverified deployed configuration.
    [analytics-ledger.sql](../db/diagnostics/analytics-ledger.sql).
    Neither initializes the ledger. Runner status/verify are not read-only:
    `loadMigrationStatus` calls `ensureMigrationLedger`.
-4. Rehearse the exact reviewed files and ledger plan on a freshly verified
-   isolated target with representative prerequisites. The old `dev/analytics`
-   IDs and test passes are historical; no such branch was returned on 2026-10-29.
-   Creating/replacing a branch needs separate authorization. Use the existing
-   `scripts/analytics-test-preflight.ts` and
-   `__tests__/analytics-postgres.integration.test.ts` only after verifying their
-   explicit target metadata and opt-in guards. Those tests write fixtures;
-   they are not production postflight or live API proof.
-5. Confirm collection is disabled using current deployment-bound evidence before
-   writes. Review a retained recovery checkpoint, actual retention window and a
-   successful isolated restore rehearsal with an owner and expiry window. Never
-   test recovery by restoring/resetting production. Missing/expired recovery,
-   identity mismatch, partial schema, failed ledger entries or checksum drift stop
-   execution. No automatic reverse migrations or retries after uncertain commits.
+4. James runs the reviewed files on existing development first and performs
+   write-producing validation there. Cipher verifies schema, ledger, grants and
+   revision results read-only. The disposable PostgreSQL integration suite stays
+   unrun; preserve its guards. No new branch, connection or env file is requested.
+5. Before production approval, refresh production prerequisites independently,
+   verify collection is disabled from current deployment-bound evidence and
+   review actual backup coverage, retention and recovery limitations. Record
+   unrun restore checks; do not provision a recovery environment or claim restore
+   proof. Stop for identity mismatch, partial schema, failed ledger entries,
+   checksum drift or unaccepted recovery limitations. Never restore/reset
+   production or automatically retry after an uncertain commit.
 
 ## Exact files and prerequisite review
 
