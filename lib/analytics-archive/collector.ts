@@ -102,6 +102,7 @@ export async function collectAnalytics(
   let processed = 0;
   let failure: Error | undefined;
   let destroyed = false;
+  const resolvedDays = new Set<string>();
   const params = [project];
   async function transaction(work: () => Promise<void>) {
     await client.query("BEGIN");
@@ -240,6 +241,7 @@ export async function collectAnalytics(
             );
             await advance(day);
           });
+          resolvedDays.add(day);
           processed++;
           continue;
         }
@@ -325,6 +327,7 @@ export async function collectAnalytics(
           );
           await advance(day);
         });
+        resolvedDays.add(day);
         processed++;
       } catch (error) {
         if (error instanceof AnalyticsBudgetError) break;
@@ -413,6 +416,33 @@ export async function collectAnalytics(
       client.release(options.maxDurationMs ? true : undefined);
   }
   async function advance(day: string) {
+    if (options.lane === "daily") {
+      // Recent refreshes may already cover the interval beyond an old cursor.
+      // Bound the coverage scan too; gaps and unresolved recent refreshes stop it.
+      const covered = await client.query<{ day: string; status: string }>(
+        "SELECT to_char(day,'YYYY-MM-DD') AS day,status FROM dojo.analytics_day WHERE project_id=$1 AND day>$2::date AND day<=LEAST($2::date+31,$3::date) AND EXISTS (SELECT 1 FROM dojo.analytics_progress WHERE project_id=$1 AND lane='daily' AND next_day=$2::date) ORDER BY day LIMIT 31",
+        [project, day, lastDay],
+      );
+      const statuses = new Map(
+        covered.rows.map((row) => [row.day, row.status]),
+      );
+      let next = addDays(day, 1);
+      for (let scanned = 0; scanned < 31 && next <= lastDay; scanned++) {
+        if (
+          !["complete", "zero", "unavailable"].includes(
+            statuses.get(next) ?? "",
+          ) ||
+          (next >= addDays(today, -3) && !resolvedDays.has(next))
+        )
+          break;
+        next = addDays(next, 1);
+      }
+      await client.query(
+        "UPDATE dojo.analytics_progress SET next_day=$4::date WHERE project_id=$1 AND lane=$2 AND next_day=$3::date",
+        [project, options.lane, day, next],
+      );
+      return;
+    }
     await client.query(
       "UPDATE dojo.analytics_progress SET next_day=$3::date + 1 WHERE project_id=$1 AND lane=$2 AND next_day=$3::date",
       [project, options.lane, day],
