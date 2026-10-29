@@ -6,6 +6,17 @@ SQL execution and ledger handling. [Production releases](production-releases.md)
 continues to own application deployment, exact-SHA CI and the human protected gate.
 No new release workflow or migration framework is introduced.
 
+## Current analytics database policy
+
+James executes reviewed SQL manually through existing DataGrip connections,
+development first and production only after development validation and fresh
+production checks. Cipher and delegated agents stay read-only through all routes.
+No branch, connection, URL or environment-file changes are permitted. Preserve
+write-suite guards and leave database-writing tests unrun; James operates feature
+checks. See the full [operating boundary](analytics-neon-setup.md#analytics-database-operating-boundary-wu-1205-amendment).
+Application release and human approvals remain unchanged; no analytics SQL
+executor is dispatched and no mandatory new recovery environment is introduced.
+
 ## Observed on 2026-10-29
 
 Checkout inspected: `0abda1bc29631f613dfbc5b5d1f94b3827e421e6`.
@@ -27,6 +38,12 @@ Endpoint DNS suffix is `c-2.us-east-2.aws.neon.tech`. These are service metadata
 not proof of the deployed application's DATABASE_URL. SQL used catalog lookups
 and prerequisite existence checks only; no production SQL writes, deployment,
 secret retrieval or settings changes were performed.
+
+The later WU-1207 read-only comparison independently inspected both existing
+targets and found analytics schema/ledger absent on each, with matching inspected
+authorization prerequisites. See the [dated comparison and manual development
+handoff](analytics-migration-handoff.md#independent-development-and-production-assessment-2026-10-29).
+No SQL execution or development feature validation is implied.
 
 ## Unverified configuration and readiness
 

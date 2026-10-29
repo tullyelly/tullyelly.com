@@ -43,6 +43,17 @@ Pushes and merges do not deploy: Vercel Git integration remains disconnected, wi
 no replacement automatic preview workflow. Previews need separate authorization
 and verified isolated databases.
 
+## Current analytics database policy
+
+James executes reviewed SQL manually through existing DataGrip connections,
+development first and production only after development validation and fresh
+production checks. Cipher and delegated agents stay read-only through all routes.
+No branch, connection, URL or environment-file changes are permitted. Preserve
+write-suite guards and leave database-writing tests unrun; James operates feature
+checks. See the full [operating boundary](analytics-neon-setup.md#analytics-database-operating-boundary-wu-1205-amendment).
+Application release and human approvals remain unchanged; no analytics SQL
+executor is dispatched and no mandatory new recovery environment is introduced.
+
 ## Ordinary code-only deployment
 
 ### Normal operator procedure
@@ -421,14 +432,16 @@ Never automatically reverse migrations or roll back after failed health checks.
 
 Dispatcher mode `analytics` retains `analytics-release.yml`, the version-1
 migration manifest, ledger checks, backup evidence and separate credentials.
-Mode `maintenance` retains credential maintenance. Neither path is invoked or
+Mode `maintenance` retains credential maintenance. The analytics database-write
+path is not authorized under the current manual-DataGrip policy. Neither path is invoked or
 authorized by ordinary source deployment. Sensitive operations retain their existing
 approval procedures and share the production concurrency boundary.
 
 The analytics migration release remains unready: the 2026-10-29 read-only
 inspection found no production analytics tables or ledger. Historical domain SQL
-has no ledger proof. Per-file reconciliation, current non-production rehearsal,
-credential readiness and recovery evidence remain prerequisites. See the
+has no ledger proof. Individually justified bookkeeping, James-operated
+development validation, credential readiness and documented recovery limitations
+remain prerequisites. See the
 [current observations](analytics-rollout.md#observed-on-2026-10-29); deployed
 configuration and credential rotation state were not inspected. The analytics executor refuses
 missing ledgers, ambiguous history, checksum drift and failed entries; it never
@@ -547,88 +560,49 @@ checks, exact checksums, atomic ledger records and read-only postflight. This
 resolves earlier wording that classified all manual execution as historical.
 Production SQL still requires a concrete reviewed release and the existing human
 protected approval; code-only deployment approval does not authorize it. Do not
-run DataGrip and the analytics executor concurrently or execute the same scope
-through both. Ledger initialization/reconciliation is itself a reviewed write.
+run another executor concurrently; the analytics SQL executor must not be
+dispatched under this operating policy. Ledger initialization/reconciliation is itself a reviewed write.
 No new workflow, framework or automatic deployment is introduced. Ordinary
 application releases continue through the existing App dispatcher and protected
 native-source workflow unchanged.
 
-## Preparing the exact analytics migration release
+## Analytics SQL handoff and activation
 
-The initial analytics workflow accepts only migrations
-`076_create_analytics_archive.sql` and `077_analytics_operations.sql` in order.
-It cannot perform historical reconciliation. That plan needs per-file schema and
-data-effect evidence, exact checksums and reviewed missing changes under the
-existing production approval policy and owner-operated DataGrip procedure. Do not use the legacy apply-all runner on production
-to bypass this restriction or concurrently with the new release executor.
+Analytics SQL is owner-operated in existing DataGrip: James executes reviewed
+files on existing development, Cipher verifies read-only, then production is
+compared independently before James's manual execution and read-only postflight.
+Use the [exact SQL handoff](analytics-migration-handoff.md) for filenames,
+checksums, ledger handling, stop conditions and the pending manual steps.
+No agent or workflow applies analytics SQL under this policy. Existing
+`analytics-release.yml` and its version-1 executor remain in the checkout as
+legacy implementation; do not dispatch them for SQL or use their hardcoded
+“collection remains disabled” text as runtime proof. Narrow compatibility and
+read-only readiness/reporting work belongs to WU-1210; no release machinery is
+rebuilt by this amendment. Ordinary App-dispatched application release and human
+approval gates stay unchanged.
 
-After reconciliation and rehearsal, Cipher prepares a release JSON under
-`releases/<name>.json` on reviewed `main`. Bind it to the exact 40-character
-application commit, exact migration SHA-256 values, Neon target, current Vercel
-production deployment, reviewed build settings, verified preview isolation and
-fresh backup/recovery evidence. The manifest can be committed after the
-application commit; only release JSON metadata may differ between them. This
-avoids a self-referential commit hash. No placeholder manifest is releasable.
+The 2026-10-29 project inspection reported history retention of 86400 seconds;
+this is dated metadata, not indefinite backup coverage. Before production
+approval, document the current retained recovery coverage, responsible owner,
+expiry and accepted limitations, including restore checks not performed. Do not
+require or provision a new Neon recovery environment, restore/reset production
+or claim an isolated rehearsal passed. Stop for unresolved or unaccepted risk.
 
-Current database observations and unverified deployed bindings are recorded in
-[analytics operations](analytics-rollout.md#observed-on-2026-10-29). Resolve exact
-live targets again for every release; October deployment IDs and branch rehearsal
-records are historical evidence only. The collector requires direct connections
-for session advisory locking; pooled transaction connections are refused.
+Collection activation, analytics configuration and James-operated manual
+collection/import require their own reviewed scope. Cipher never triggers them.
+After James enables collection, normal Cron writes are expected; observe an
+actual scheduled run read-only. The source schedule is 09:17 UTC, but source or
+release logs do not prove effective runtime settings or scheduler operation.
+Reconcile completed-day sitewide totals and exact paths separately from public
+allowlist totals; report supported history and unavailable gaps honestly.
 
-## Analytics migration approval and execution
-
-Cipher presents the exact commit/PR, manifest digest, migrations, targets,
-verification, configuration changes, stop points and recovery evidence before
-dispatch. The human's routine action is:
-
-**GitHub > Actions > Approved analytics release (explicit only) > the prepared run > Review
-deployments > select production-release > Approve and deploy.**
-
-Do not approve a run with missing or materially changed evidence. Cipher must
-present a revised release if the plan changes. No release is dispatched now.
-
-The workflow prepares a database-free validated build without production
-credentials, then waits at the environment gate. After approval it checks refs,
-manifest, targets, settings, environment isolation and deployment drift; obtains
-the database release lock; applies only approved SQL with atomic ledger writes;
-verifies schema; stages the prebuilt production artifact with collection disabled;
-checks read-only routes and disabled cron; rechecks drift; promotes; and verifies
-the production domain. No migration runs during builds or application startup.
-
-Migration failure stops deployment. A schema-plus-ledger transaction rolls back
-that file; previously completed forward migrations remain. Reruns verify exact
-hashes and resume without reapplying completed files. A deployment failure leaves
-the old production alias in place until promotion. After promotion, application
-rollback means assigning the previously reviewed deployment; it does not undo
-schema. Never automatically restore/reset production or run reverse migrations.
-
-## Recovery and analytics activation
-
-The 2026-10-29 read-only project inspection reports
-`history_retention_seconds=86400`; snapshot schedules were not rechecked. Verify the actual restore interval, create a retained pre-release recovery
-checkpoint through the separately approved workflow, and rehearse restoration to
-an isolated branch before approving writes. Retention metadata alone is not a
-successful restore test or an indefinite backup. Record the checkpoint ID,
-timestamp, accessible restore procedure and responsible owner. Stop if it cannot
-be recovered or will expire before the release/recovery window ends.
-
-The initial analytics workflow requires collection disabled. Its hardcoded
-“collection remains disabled” summary alone is not evidence of current runtime
-configuration; verify the exact deployment and effective settings separately. Read-only
-owner connection testing follows promotion. Enabling collection, redeployment,
-manual collection and historical import scope require a subsequent concrete
-approved plan; the initial workflow deliberately cannot enable them. Verify the
-first scheduled run at 09:17 UTC, reconcile a completed day's separately queried
-sitewide total with exact-path views, and check public totals only against their
-public allowlist. Import one bounded batch per request, resume saved progress and
-keep backfill gaps separate from daily freshness. See the
-[analytics record](analytics-rollout.md) for dates and count semantics.
-
-Disable collection by approving `ANALYTICS_SYNC_ENABLED=false` and redeploying;
-archived data remains intact. The account owner is responsible for least-privilege
-token expiration/rotation and retained database backups. The owner stale indicator
-is not an external missing-run alert; no such notification has been configured.
+James can disable collection through the existing approved analytics setting and
+application release process while retaining archived data. Leave database URLs
+unchanged. The current collector refuses pooled URLs because its project lock is
+session-scoped; if non-secret connection metadata shows a conflict, propose a
+focused code compatibility solution and its tests before activation. Do not alter
+connection strings. Current effective deployment binding/connection mode remains
+unverified until non-secret evidence establishes it.
 
 Dedicated App setup and the harmless approval test: [release App setup](release-app-setup.md).
 

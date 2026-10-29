@@ -1,4 +1,4 @@
--- Run this read-only script in the confirmed dev/analytics DataGrip console.
+-- Run this read-only script in the confirmed existing development or production DataGrip console.
 -- Query results contain schema metadata, not application rows.
 -- query: begin
 BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;
