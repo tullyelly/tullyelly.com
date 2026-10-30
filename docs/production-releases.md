@@ -583,7 +583,7 @@ native-source workflow unchanged.
 ## Native analytics maintenance and intentional activation; WU-1210
 
 `releases/analytics-state.json` is the non-secret intended state in the immutable
-application commit. Its prepared default is:
+application commit. An off-intent maintenance record is:
 
 ```json
 { "version": 1, "collectionEnabled": false }
@@ -611,7 +611,10 @@ reviewed maintenance without requiring analytics tables. Intent on adds the
 | `stagedCollectionAcknowledged`                   | Literal true; the reviewer acknowledges enabled runtime on the staged production deployment too                                              |
 
 Do not populate this record from ticket status, old tests, guessed timestamps or
-unexecuted SQL. The current off record contains no fabricated readiness evidence.
+unexecuted SQL. The WU-1213 prepared record requests on for a future reviewed
+release; its real postflight times, manual confirmations, production fingerprint
+and pending release prerequisites are documented in the
+[production handoff](analytics-production-handoff.md). It does not change live state.
 The same existing human production gate reviews intent, source/intent digests,
 manual references, target fingerprint, compatibility risks and staging semantics.
 Every enabled-intent release requires this reviewed evidence, even if it is
