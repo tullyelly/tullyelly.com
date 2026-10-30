@@ -1,0 +1,194 @@
+{
+  "version": 4,
+  "kind": "native-source",
+  "operation": "deploy",
+  "commit": "75b07fdf5d414f24d797dfe1fe5678ae870c9dc0",
+  "collectionEnabled": true,
+  "analyticsIntentSha256": "778cd070a1fa385d23bbb51e4e654c48daf16b8b3d1c7cfd966082dbe15bb559",
+  "analyticsReadiness": {
+    "development": {
+      "checkedAt": "2026-10-30T03:59:28.926Z",
+      "reference": "WU-1212"
+    },
+    "production": {
+      "checkedAt": "2026-10-30T03:59:43.778Z",
+      "reference": "WU-1213"
+    },
+    "targetSha256": "911585abc1a11bc8b40cd57e28b5a1391e6262345f11a15db7d5a83a499b01c9",
+    "migrations": [
+      {
+        "filename": "076_create_analytics_archive.sql",
+        "checksum": "0d83dc262d5291906d037d0d625cdd245a182c90a924faefb146852d7a635553"
+      },
+      {
+        "filename": "077_analytics_operations.sql",
+        "checksum": "88584aa867075149dc0b7d1b984262443462493c0e446fb8c00122446128f694"
+      }
+    ],
+    "stagedCollectionAcknowledged": true
+  },
+  "workflow": {
+    "sha": "75b07fdf5d414f24d797dfe1fe5678ae870c9dc0",
+    "runId": "41013688230",
+    "runAttempt": "1"
+  },
+  "source": {
+    "sha256": "1a3dea064852a66b2137a95ffd17625d9a7c5e0ecae19fdbdbdddc9362992ce3"
+  },
+  "ci": {
+    "runId": "41013123817",
+    "runAttempt": "1",
+    "sha": "75b07fdf5d414f24d797dfe1fe5678ae870c9dc0",
+    "workflowSha": "75b07fdf5d414f24d797dfe1fe5678ae870c9dc0",
+    "workflowPath": ".github/workflows/ci.yml",
+    "workflowId": "182231037",
+    "checkRunIds": [
+      "123923259811",
+      "123924421877"
+    ]
+  },
+  "vercel": {
+    "teamId": "team_pB5TcLa7apLtPAiVrRbcjBG3",
+    "projectId": "prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU",
+    "productionDeploymentId": "dpl_5kXM8TLD21DfraQPSPohSZVH7RHb",
+    "productionHost": "tullyelly.com",
+    "settings": {
+      "framework": "nextjs",
+      "nodeVersion": "22.x",
+      "buildCommand": null,
+      "installCommand": null,
+      "outputDirectory": null,
+      "rootDirectory": null
+    },
+    "settingsSha256": "49230b4fcf0fe3bde7c4236cf32f6219c726257f7531aef63638f5e140627c92"
+  },
+  "baseline": {
+    "applicationSha": "819966fde2630f8b86f19c5897e2701ab824a157"
+  },
+  "config": {
+    "protectionSha256": "7941d2d403441438e7916658a4e6198f1091b2b8703e698f1f8b66b4fe20c358",
+    "environmentMetadataSha256": "6da52ddfd2278baca053cb12d36cfcc012883f1d51ff0a9ba72195a01b0d19d3"
+  },
+  "compatibility": {
+    "changedPaths": [
+      "AGENTS.md",
+      "__tests__/analytics-admin.test.tsx",
+      "__tests__/analytics-archive.test.ts",
+      "__tests__/analytics-authorization.test.ts",
+      "__tests__/analytics-cron.test.ts",
+      "__tests__/analytics-monitoring.test.ts",
+      "__tests__/analytics-readiness.test.ts",
+      "__tests__/analytics-report-ui.test.tsx",
+      "__tests__/analytics-report.test.ts",
+      "__tests__/analytics-traffic-chart.test.tsx",
+      "__tests__/jest-git-environment.test.ts",
+      "__tests__/release/analytics-intent.test.ts",
+      "__tests__/release/code-cli.test.ts",
+      "__tests__/release/native-code-release.test.ts",
+      "__tests__/release/native-evidence.test.ts",
+      "__tests__/release/public-verification.test.ts",
+      "__tests__/release/release-summary.test.ts",
+      "app/api/cron/analytics/route.ts",
+      "app/api/health/analytics/route.ts",
+      "app/mark2/admin/analytics/Report.tsx",
+      "app/mark2/admin/analytics/page.tsx",
+      "components/analytics/TrafficChart.tsx",
+      "content/chronicles/vercel.mdx",
+      "db/diagnostics/analytics-schema.sql",
+      "db/diagnostics/analytics-validation.sql",
+      "db/migrations/088_enforce_homie_tcdb_snapshot_difference_sign.sql",
+      "db/operations/analytics/00_read_only_preflight.sql",
+      "db/operations/analytics/01_initialize_ledger.sql",
+      "db/operations/analytics/076_apply_with_ledger.sql",
+      "db/operations/analytics/077_apply_with_ledger.sql",
+      "db/operations/analytics/90_read_only_postflight.sql",
+      "db/operations/analytics/SHA256SUMS",
+      "db/schema/tables/homie_tcdb_snapshot.sql",
+      "docs/README.md",
+      "docs/analytics-migration-handoff.md",
+      "docs/analytics-monitoring.md",
+      "docs/analytics-neon-setup.md",
+      "docs/analytics-production-handoff.md",
+      "docs/analytics-rollout.md",
+      "docs/analytics-validation.md",
+      "docs/archive/analytics-october-recovery.md",
+      "docs/archive/analytics-october-setup.md",
+      "docs/caching.md",
+      "docs/migrations.md",
+      "docs/production-releases.md",
+      "docs/schema-compatibility-review.md",
+      "docs/validation.md",
+      "jest.config.cjs",
+      "lib/analytics-archive/collector.ts",
+      "lib/analytics-archive/monitoring.ts",
+      "lib/analytics-archive/readiness-contract.ts",
+      "lib/analytics-archive/readiness.ts",
+      "lib/analytics-archive/report.ts",
+      "lib/images/optimus-images-manifest.json",
+      "public/images/optimus/vercel/fern.webp",
+      "public/images/optimus/vercel/freak.webp",
+      "public/images/optimus/vercel/gully.webp",
+      "releases/analytics-state.json",
+      "releases/deferred-schema.json",
+      "scripts/production-release.ts",
+      "scripts/release/analytics-intent.ts",
+      "scripts/release/application-health.ts",
+      "scripts/release/check-cli.mjs",
+      "scripts/release/code-cli.ts",
+      "scripts/release/code-invariants.mjs",
+      "scripts/release/code-release.ts",
+      "scripts/release/code-report.ts",
+      "scripts/release/native-evidence.ts",
+      "scripts/release/prepare-evidence.ts",
+      "scripts/release/public-verification.ts",
+      "scripts/release/release-summary.mjs"
+    ],
+    "risks": [
+      "analytics-activation",
+      "analytics-maintenance",
+      "database-query-contract",
+      "database-schema",
+      "runtime-configuration"
+    ],
+    "schemaDeferral": {
+      "version": 1,
+      "scope": "application-only",
+      "baselineSha": "819966fde2630f8b86f19c5897e2701ab824a157",
+      "schemaDiffSha256": "82883fa5f4fe1e4d412495e02e0ea01444b37b70f108ac7ba257c938d8400570",
+      "rationale": "WU-1213: application-only compatibility review against production 819966fd; full guarded database diff contains only migration 088 and db/schema/tables/homie_tcdb_snapshot.sql. Read-only inspection on 2026-10-30 found the exact validated homie snapshot sign constraint in production and development, with zero invalid rows (349/341 total). Snapshot columns, ownership, production application-role privileges and audit/refresh triggers remain compatible; homie snapshot application consumers are unchanged from production. Defer execution of 088; its effective schema is already present, but no 088 ledger entry exists and exact migration execution is not attested. Do not replay the non-idempotent ADD CONSTRAINT or fabricate ledger history. Migrations 083-087 and category mirrors are unchanged from this production baseline and are outside this diff. Analytics 076/077 have exact applied ledger checksums; production analytics columns/constraints match the runtime contract. Analytics activation retains its separate intent/readiness and protected checks. See docs/schema-compatibility-review.md for evidence, limitations and read-only DataGrip verification. This record authorizes no SQL, ledger reconciliation, settings change or release dispatch; fresh exact-SHA CI and human production-release approval remain required."
+    }
+  },
+  "publication": {
+    "archive": {
+      "path": "/shaolin/vercel",
+      "title": "vercel"
+    },
+    "chronicles": [
+      {
+        "path": "/shaolin/vercel",
+        "title": "vercel",
+        "date": "2026-10-29",
+        "text": [
+          "I hope this is enough content",
+          "I also stopped by to see and help",
+          "again today. Forgot to snap the shot though.",
+          "Soon you will be able to see how often people visit the site and the individual posts within."
+        ]
+      }
+    ],
+    "assets": [
+      {
+        "path": "/images/optimus/vercel/fern.webp",
+        "sha256": "a2660b938f3eb021ed4f8a68bc58aa0b8cbac3a981142fa267743aaec1decbcb"
+      },
+      {
+        "path": "/images/optimus/vercel/freak.webp",
+        "sha256": "71b2400b8e5d35af929a2f42cb37cd0eaea418d52b9ffe0fe28fdab5e257d2c0"
+      },
+      {
+        "path": "/images/optimus/vercel/gully.webp",
+        "sha256": "00ccf6fb32a06b624864007cee027c51489ba530bee4880a2543f8314990907c"
+      }
+    ]
+  }
+}

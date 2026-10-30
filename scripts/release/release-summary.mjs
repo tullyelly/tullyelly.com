@@ -133,6 +133,8 @@ const phaseLabels = new Map([
   ["remote-build", "Remote build (READY required)"],
   ["staged-verification", "Staged verification"],
   ["promotion", "Exact-deployment promotion"],
+  ["promotion-attempt", "Promotion call (one attempt)"],
+  ["domain-assignment", "Domain assignment confirmation"],
   ["public-verification", "Public verification"],
 ]);
 const phaseOutcomes = new Set(["started", "success", "failure", "pending"]);
@@ -152,6 +154,13 @@ export function diagnosticSummary(d) {
     categories.has(d.category) ? d.category : "unknown",
   ];
   if (operations.has(d.operation)) parts.push(`operation=${d.operation}`);
+  if (
+    d.operation === "vercel.alias" &&
+    Number.isInteger(d.aliasReadAttempts) &&
+    d.aliasReadAttempts >= 1 &&
+    d.aliasReadAttempts <= 3
+  )
+    parts.push(`aliasReadAttempts=${d.aliasReadAttempts}`);
   const provider = safeProviderDiagnostic(d.provider);
   if (provider)
     for (const [key, value] of Object.entries(provider))
@@ -323,6 +332,18 @@ export function renderReleaseSummary(events, results = {}) {
       : []),
     `Previous deployment: ${identity(context.previousDeployment)}`,
     `Deployment identity: ${identity(deployment.deploymentId)}`,
+    ...[
+      ["deployment-creation", "Deployment creation"],
+      ["remote-build", "Build readiness"],
+      ["staged-verification", "Staged verification"],
+      ["promotion-attempt", "Promotion call"],
+      ["domain-assignment", "Domain assignment"],
+      ["public-verification", "Public verification"],
+    ].map(([phase, label]) => {
+      const index = lastPhase(phase);
+      const outcome = index >= 0 ? events[index].outcome : "unobserved";
+      return `${label}: ${outcome}.`;
+    }),
     ...(!(context.evidenceSha256 || results.evidenceSha256)
       ? [`Rollback target: ${identity(context.rollbackDeployment)}`]
       : []),

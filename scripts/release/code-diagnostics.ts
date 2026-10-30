@@ -146,6 +146,7 @@ export type Diagnostic = {
   health?: HealthObservation;
   publication?: PublicationObservation;
   networkCauseCodes?: string[];
+  aliasReadAttempts?: number;
   invariant?: string;
   fields?: { path: string; code: string }[];
 };
@@ -342,6 +343,13 @@ function sanitizeDiagnostic(
         [...knownMessages.values()].includes(d.invariant))
     )
       safe.invariant = d.invariant;
+    if (
+      d.operation === "vercel.alias" &&
+      Number.isInteger(d.aliasReadAttempts) &&
+      d.aliasReadAttempts! >= 1 &&
+      d.aliasReadAttempts! <= 3
+    )
+      safe.aliasReadAttempts = d.aliasReadAttempts;
     if (d.networkCauseCodes)
       safe.networkCauseCodes = safeNetworkCauseCodes({
         errors: d.networkCauseCodes.slice(0, 16).map((code) => ({ code })),
@@ -403,10 +411,11 @@ export function apiOperation(url: string): Operation {
   }
   return "unknown";
 }
-export async function codeMetadataRequest(
+async function metadataAttempt(
   url: string,
   token: string | undefined,
-  fetcher: typeof fetch = fetch,
+  fetcher: typeof fetch,
+  timeoutMs: number,
 ): Promise<unknown> {
   const operation = apiOperation(url);
   let response: Response;
@@ -418,7 +427,7 @@ export async function codeMetadataRequest(
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         Accept: "application/json",
       },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(timeoutMs),
       redirect: "error",
     });
   } catch (error) {
@@ -468,11 +477,83 @@ export async function codeMetadataRequest(
   }
   try {
     return await response.json();
-  } catch {
+  } catch (error) {
+    const codes = safeNetworkCauseCodes(error);
     throw new CodeDiagnosticError({
       guard: "api.request",
       operation,
-      category: "json",
+      category: codes.length ? "transport" : "json",
+      ...(codes.length ? { networkCauseCodes: codes } : {}),
     });
+  }
+}
+
+/** Alias GETs only: three attempts within 45 seconds, including response reads.
+ * Never replay a provider mutation or retry schema/identity validation.
+ */
+export const aliasReadLimits = {
+  attempts: 3,
+  totalMs: 45000,
+  attemptMs: 15000,
+} as const;
+export async function codeMetadataRequest(
+  url: string,
+  token: string | undefined,
+  fetcher: typeof fetch = fetch,
+): Promise<unknown> {
+  if (apiOperation(url) !== "vercel.alias")
+    return metadataAttempt(url, token, fetcher, 15000);
+  const started = Date.now();
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await metadataAttempt(
+        url,
+        token,
+        fetcher,
+        Math.max(
+          1,
+          Math.min(
+            aliasReadLimits.attemptMs,
+            aliasReadLimits.totalMs - (Date.now() - started),
+          ),
+        ),
+      );
+    } catch (error) {
+      const diagnostic = classifyCodeFailure("api.request", error);
+      const codes = diagnostic.networkCauseCodes ?? [];
+      const retryable =
+        (diagnostic.category === "transport" &&
+          codes.length > 0 &&
+          codes.every((code) =>
+            [
+              "TimeoutError",
+              "ETIMEDOUT",
+              "ECONNRESET",
+              "EAI_AGAIN",
+              "UND_ERR_SOCKET",
+              "UND_ERR_CONNECT_TIMEOUT",
+              "UND_ERR_HEADERS_TIMEOUT",
+              "UND_ERR_BODY_TIMEOUT",
+            ].includes(code),
+          )) ||
+        (diagnostic.category === "http" &&
+          [429, 502, 503, 504].includes(diagnostic.status ?? 0));
+      const delay = attempt === 1 ? 250 : 750;
+      if (
+        !retryable ||
+        attempt >= aliasReadLimits.attempts ||
+        Date.now() - started + delay >= aliasReadLimits.totalMs
+      )
+        throw new CodeDiagnosticError({
+          ...diagnostic,
+          aliasReadAttempts: attempt,
+        });
+      await new Promise<void>((resolve) => setTimeout(resolve, delay));
+      if (Date.now() - started >= aliasReadLimits.totalMs)
+        throw new CodeDiagnosticError({
+          ...diagnostic,
+          aliasReadAttempts: attempt,
+        });
+    }
   }
 }
