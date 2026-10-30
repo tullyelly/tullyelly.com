@@ -156,8 +156,13 @@ strictly negative difference. Incorrect signs are flipped without changing their
 magnitude; zero for a non-first ranking becomes `-1`. Audit and realtime refresh
 triggers remain active. A first-place difference of `-2147483648` cannot be
 represented positively as an integer and aborts the transaction for review.
-The migration takes an exclusive table lock. It has not been applied by local
-application validation.
+The migration takes an exclusive table lock. Local application validation does
+not execute it. Read-only inspection on October 30, 2026 found its exact validated
+constraint and zero violating rows in existing development and production, but
+no 088 ledger row. This establishes effective schema compatibility, not execution
+of the exact migration file. Do not replay 088 or insert an applied ledger row
+based solely on this observation. See the
+[compatibility review and DataGrip checks](schema-compatibility-review.md).
 
 ## Existing Databases
 
