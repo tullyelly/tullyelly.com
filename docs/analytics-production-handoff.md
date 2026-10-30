@@ -81,6 +81,14 @@ observed. James independently confirmed the Vercel Production dashboard for
 Chicago midnight (05:00 UTC through 04:59:59 UTC the next day); those windows
 are different. Do not treat an unadjusted local calendar date as UTC evidence.
 
+After James approved the existing Vercel connector's team access, independent
+read-only connector API requests for that exact production UTC day returned
+15 pageviews, 7 visitors and nine requestPath buckets with no Others bucket.
+All nine per-path pageview and visitor values match the development archive.
+This supplements the owner's dashboard confirmation. Connector authentication
+is distinct from the configured collector credential; the actual James-operated
+development connection test/import establishes that collector transport evidence.
+
 A separate daily run completed at 03:30:49.715Z, three days/six queries, with the
 daily cursor at October 30; October 27 through 29 have daily provenance and
 reconciled totals. Backfill did not clear daily staleness or alter its cursor.
@@ -110,12 +118,15 @@ that deployment. It does not edit dashboard settings or database URLs. Thus the
 saved dashboard false value is preparation state, not proof of a future on-intent
 deployment's effective value. Inspect the runtime endpoint for actual state.
 
-Vercel's connected metadata API still returned **403 team-scope access denied**
-when listing this project's production deployments. Do not substitute a personal
+The original metadata attempt returned **403 team-scope access denied**. James
+subsequently approved the existing connector's team consent. A fresh read now
+confirms READY production deployment `dpl_5kXM8TLD21DfraQPSPohSZVH7RHb`,
+SHA `819966fde2630f8b86f19c5897e2701ab824a157`, and both public aliases
+`tullyelly.com` / `www.tullyelly.com` pointing to that deployment in the expected
+project. Team consent is metadata access, not deployment approval. Do not substitute a personal
 CLI login, retrieve credentials, pull/decrypt environment variables, or bypass
-existing checks. Resolve the existing connector's team consent or provide current
-non-secret metadata through the existing authorized release process before
-claiming readiness. Production credential transport and effective deployed state
+existing checks. Keep current non-secret metadata bound to the exact release through the existing
+authorized process; recheck it if production changes. Production credential transport and effective deployed state
 remain unverified until read-only runtime/owner checks after the approved release.
 
 Recent GitHub workflow metadata reports a successful native production run
@@ -134,13 +145,17 @@ establish whether a password was changed outside this workflow or a run deleted.
 Current password rotation/consumer status still needs non-secret operation evidence;
 do not reset or rotate passwords as part of analytics preparation.
 
-The working branch contains earlier analytics commits and pre-existing
+The original working branch `cipher/2026-10-29-homie-snapshot-difference` contains
+earlier analytics commits and pre-existing
 `0abda1bc` (WU-1217). Compared with main `819966fd`, it includes migration
 `088_enforce_homie_tcdb_snapshot_difference_sign.sql` and the homie snapshot
 schema mirror. **Do not release that entire branch as an analytics-only package.**
-No PR was returned for it during the check. Preserve the WU-1217 work and prepare
-an analytics-only publication branch through the existing PR process before
-selecting the release SHA; do not execute 088 or silently include it in analytics.
+No PR was returned for it during the check. The isolated publication branch
+`cipher/2026-10-29-analytics-activation` now copies only analytics commits onto
+main `819966fd`; it excludes 088 and the homie schema mirror. The original branch
+and WU-1217 work remain intact. Neither original migration nor schema mirrors
+differ from main on the publication branch. Do not execute 088 or include it in
+this analytics release.
 The existing schema-deferral record binds a different production baseline and SQL
 diff; it does not waive these changes. Preparation must validate compatibility
 against current metadata, not silently rebind or waive it because analytics 076/077
@@ -163,12 +178,12 @@ until an actual 09:17 UTC invocation and corresponding run/check-ins are observe
 
 ## Numbered continuation; human actions remain explicit
 
-1. Resolve Vercel metadata access, confirm the current production baseline and
-   outstanding public-verification/credential evidence, and refresh stale checks.
+1. Vercel metadata access and current alias baseline are confirmed. Resolve
+   outstanding public-verification/credential evidence and refresh stale checks.
    Stop for unresolved identity/configuration drift or unaccepted recovery limits.
-2. Prepare the analytics-only publication branch excluding WU-1217 SQL/schema
-   changes while preserving the current branch's completed work. Review the exact
-   activation intent and complete source diff. Use the existing
+2. Review the prepared analytics-only publication branch, its exact activation
+   intent and complete source diff; WU-1217 is excluded and preserved separately.
+   Use the existing
    PR/main process and trusted exact-SHA CI. Source/configuration changes invalidate
    earlier release evidence. Do not dispatch a database executor or direct Vercel
    Redeploy; do not weaken compatibility, SHA, configuration or approval checks.
@@ -206,5 +221,9 @@ checkout's complete `verify:agent` baseline passed: 246 Jest suites, 1,980 tests
 thresholded coverage and Next production build; six database-writing tests were
 skipped with their guards intact. Documentation, changed-file formatting and
 diff checks passed. These are preparation results, not trusted merged-SHA CI or
-proof for the future analytics-only publication branch. No live deployment,
+proof of trusted merged-SHA CI. The isolated publication checkout also passed
+workflow/lint/type/Prisma checks and all 1,980 tests with six guarded skips.
+Its first build hit Turbopack's outside-workspace dependency restriction; after
+making installed dependencies local to that checkout, `build:validated` passed
+without repeating successful source stages or changing application code. No live deployment,
 collection, SQL write, secret retrieval or settings change was performed by Cipher.
