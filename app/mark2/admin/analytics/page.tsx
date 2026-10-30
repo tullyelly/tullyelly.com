@@ -139,9 +139,11 @@ export default async function AnalyticsAdminPage({
         )}
         {status.error && <p role="alert">{status.error}</p>}
         <p className="text-sm text-muted-foreground">
-          Execution failures use the configured error reporter. Missing-run
-          notifications are not configured; this stale indicator does not send
-          an external alert.
+          Scheduled production runs send Sentry check-ins when collection is
+          enabled. Missing-run notifications require the owner-configured
+          analytics-daily monitor and alert rule; delivery is unverified until
+          tested. This page does not send alerts. Manual imports do not send
+          scheduled check-ins.
         </p>
       </section>
       <section className="space-y-3">

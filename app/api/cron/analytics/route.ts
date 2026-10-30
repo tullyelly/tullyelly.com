@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { runAnalyticsOperation } from "@/lib/analytics-archive/operations";
+import { runScheduledAnalytics } from "@/lib/analytics-archive/monitoring";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   const actual = Buffer.from(header);
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected))
     return json({ status: "unauthorized" }, 401);
-  const result = await runAnalyticsOperation({ kind: "daily" });
+  const result = await runScheduledAnalytics();
   return json(
     result,
     result.status === "failure" ? 500 : result.status === "partial" ? 202 : 200,

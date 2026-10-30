@@ -277,10 +277,12 @@ and credentials are not supplied to the reporter. Reporting depends on the
 existing DSN/disable settings and delivery is not guaranteed. Configured external
 Sentry transport was not exercised in this workspace.
 
-**Missing-run notifications do not exist in phase 2.** Neither the stale badge nor
-run records send an external alert when cron never runs. An external heartbeat /
-Sentry Cron Monitor or equivalent alert policy is an optional operational
-follow-up; do not mistake execution error reporting for missing-run detection.
+Scheduled production collection now sends paired Sentry check-ins; failed execution
+and stale yesterday coverage end in error. Missing invocation/timeout detection
+requires James to configure the existing-account `analytics-daily` monitor and
+notification rule. Delivery remains unverified; the owner badge and run records
+do not themselves send alerts. Follow the [monitoring and recovery handoff](analytics-monitoring.md)
+for exact settings, pause/recovery steps and refreshed 24-hour history limitations.
 
 ## Native release state; WU-1210
 

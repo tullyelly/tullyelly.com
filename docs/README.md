@@ -14,6 +14,7 @@
 | Cache freshness                                               | [Caching](caching.md), [TCDB refresh](tcdb-refresh-strategy.md)                     |
 | Analytics SQL operations                                      | [Reviewed DataGrip execution and ledger reconciliation](analytics-neon-setup.md)    |
 | Analytics archive                                             | [Rollout and collection contract](analytics-rollout.md)                             |
+| Analytics monitoring                                          | [Owner setup, notification checks and recovery limits](analytics-monitoring.md)     |
 | Category owned-card counts                                    | [Category snapshots and manual setup](card-category-counts.md)                      |
 | Tag graph                                                     | [Tag relationships](tag-relationships-view.md)                                      |
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                 |
