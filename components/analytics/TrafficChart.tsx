@@ -10,8 +10,10 @@ import {
 } from "recharts";
 export function TrafficChart({
   rows,
+  scope = "public",
 }: {
   rows: { day: string; views: string | null }[];
+  scope?: "public" | "sitewide";
 }) {
   if (!rows.length)
     return <p role="status">No archived daily values available.</p>;
@@ -26,6 +28,7 @@ export function TrafficChart({
     (row) =>
       row.views !== null && BigInt(row.views) > BigInt(Number.MAX_SAFE_INTEGER),
   );
+  const label = `Daily archived ${scope === "sitewide" ? "whole-site" : "public"} page views`;
   return (
     <>
       {hasUnplottableCounts && (
@@ -40,8 +43,8 @@ export function TrafficChart({
         role="img"
         aria-label={
           hasUnplottableCounts
-            ? "Daily archived public page views; gaps represent unverified days or counts exceeding chart precision"
-            : "Daily archived public page views; gaps represent unverified days"
+            ? `${label}; gaps represent unverified days or counts exceeding chart precision`
+            : `${label}; gaps represent unverified days`
         }
       >
         <ResponsiveContainer width="100%" height={300}>

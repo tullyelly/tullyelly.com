@@ -4,6 +4,10 @@ SQL migrations live in `db/migrations` and run through a small ledger-backed
 runner. The runner keeps the repo as the source of truth without switching the
 app to Prisma migrations.
 
+The focused [analytics migration-file handoff](analytics-migration-handoff.md)
+provides exact DataGrip files, checksums, independent target observations and
+existing-development-first manual instructions. It records only individually justified 076/077 execution.
+
 ## Ledger
 
 The runner creates `dojo.schema_migration` automatically before it reads or
@@ -23,11 +27,25 @@ SQL file changes later, `status` and `verify` report `checksum_mismatch`, and
 
 ## Approved production releases
 
-Production apply operations use the [protected release workflow](production-releases.md)
-after human approval of exact targets, commit, migrations and recovery evidence.
+Production operations require the concrete review and human protected approval in
+[production releases](production-releases.md). The owner-operated
+[DataGrip procedure](analytics-neon-setup.md) covers individually reviewed files,
+exact checksums, atomic ledger handling and read-only postflight. It does not
+change application deployment or authorize SQL through code-only approval.
 The legacy commands below remain non-production tools; do not use apply-all or
-manual SQL to bypass the release gate or run concurrently with the release
-executor. Historical ledger reconciliation is a separate reviewed release.
+manual SQL to bypass approval or run concurrently with a release executor.
+Historical ledger reconciliation requires its own reviewed scope.
+
+## Current analytics database policy
+
+James executes reviewed SQL manually through existing DataGrip connections,
+development first and production only after development validation and fresh
+production checks. Cipher and delegated agents stay read-only through all routes.
+No branch, connection, URL or environment-file changes are permitted. Preserve
+write-suite guards and leave database-writing tests unrun; James operates feature
+checks. See the full [operating boundary](analytics-neon-setup.md#analytics-database-operating-boundary-wu-1205-amendment).
+Application release and human approvals remain unchanged; no analytics SQL
+executor is dispatched and no mandatory new recovery environment is introduced.
 
 ## Commands
 
@@ -133,7 +151,8 @@ they have not been run against an applied database.
 
 A database that predates this ledger has no migration history recorded, so
 `status` will show repo migrations as pending until that database is brought
-under ledger control. Check this first on a disposable branch or restored copy.
+under ledger control. Use read-only assessment first; for analytics James validates reviewed SQL
+manually on existing development under the operating policy above.
 For production or any long-lived shared database, verify the schema state before
 choosing whether to apply pending files or backfill ledger rows manually.
 

@@ -1,6 +1,6 @@
 /** @jest-environment node */
-jest.mock("@/lib/analytics-archive/operations", () => ({
-  runAnalyticsOperation: jest.fn(),
+jest.mock("@/lib/analytics-archive/monitoring", () => ({
+  runScheduledAnalytics: jest.fn(),
 }));
 import {
   GET,
@@ -8,7 +8,7 @@ import {
   runtime,
   maxDuration,
 } from "@/app/api/cron/analytics/route";
-import { runAnalyticsOperation } from "@/lib/analytics-archive/operations";
+import { runScheduledAnalytics } from "@/lib/analytics-archive/monitoring";
 import proxy from "@/proxy";
 import { NextRequest } from "next/server";
 import { readFileSync } from "node:fs";
@@ -28,7 +28,7 @@ test.each([null, "Bearer incorrect", "fixture-cron-secret", "Bearer "])(
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(response.headers.get("vercel-cdn-cache-control")).toBe("no-store");
     expect(response.headers.get("location")).toBeNull();
-    expect(runAnalyticsOperation).not.toHaveBeenCalled();
+    expect(runScheduledAnalytics).not.toHaveBeenCalled();
   },
 );
 test("missing server secret denies even a supplied bearer", async () => {
@@ -42,7 +42,7 @@ test("missing server secret denies even a supplied bearer", async () => {
       )
     ).status,
   ).toBe(401);
-  expect(runAnalyticsOperation).not.toHaveBeenCalled();
+  expect(runScheduledAnalytics).not.toHaveBeenCalled();
 });
 test.each([
   ["disabled", 200],
@@ -53,7 +53,7 @@ test.each([
   "authenticated %s returns explicit uncached HTTP %d",
   async (status, code) => {
     jest
-      .mocked(runAnalyticsOperation)
+      .mocked(runScheduledAnalytics)
       .mockResolvedValueOnce({ status, message: "Fixture result" });
     const response = await GET(
       new Request("https://tullyelly.com/api/cron/analytics", {
@@ -64,7 +64,7 @@ test.each([
     expect((await response.json()).status).toBe(status);
     expect(response.headers.get("cdn-cache-control")).toBe("no-store");
     expect(response.headers.get("cache-control")).toContain("no-store");
-    expect(runAnalyticsOperation).toHaveBeenCalledWith({ kind: "daily" });
+    expect(runScheduledAnalytics).toHaveBeenCalledWith();
   },
 );
 test("cron bypasses proxy sign-in handling and has exactly one UTC schedule", () => {

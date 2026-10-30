@@ -28,6 +28,19 @@ import {
   classifyCodeFailure,
 } from "../../scripts/release/code-diagnostics";
 
+function observedOff() {
+  return {
+    version: 1 as const,
+    commitSha: "a".repeat(40),
+    collectionEnabled: false,
+    connection: "missing" as const,
+    targetSha256: null,
+    configured: false,
+    readinessChecked: false,
+    schemaReady: false,
+    ledgerReady: false,
+  };
+}
 function evidence(): NativeCodeEvidence {
   const settings = {
     framework: "nextjs" as const,
@@ -38,11 +51,12 @@ function evidence(): NativeCodeEvidence {
     rootDirectory: null,
   };
   return {
-    version: 3,
+    version: 4,
     kind: "native-source",
     operation: "deploy",
     commit: "a".repeat(40),
     collectionEnabled: false,
+    analyticsIntentSha256: "e".repeat(64),
     workflow: { sha: "a".repeat(40), runId: "123", runAttempt: "1" },
     source: { sha256: "b".repeat(64) },
     ci: {
@@ -91,7 +105,7 @@ function fixture() {
       releaseSourceSha256: m.source.sha256,
       releaseRunId: m.workflow.runId,
       releaseRunAttempt: m.workflow.runAttempt,
-      collectionDisabled: "true",
+      analyticsCollectionEnabled: "false",
     },
   };
   const p: CodeProviders = {
@@ -107,7 +121,17 @@ function fixture() {
       current = id;
     }),
     rollback: jest.fn(async () => {}),
-    health: jest.fn(async () => {}),
+    health: jest.fn(async () => ({
+      version: 1 as const,
+      commitSha: m.commit,
+      collectionEnabled: m.collectionEnabled,
+      connection: "missing" as const,
+      targetSha256: null,
+      configured: false,
+      readinessChecked: false,
+      schemaReady: false,
+      ledgerReady: false,
+    })),
   };
   return {
     m,
@@ -232,6 +256,7 @@ test("failed native staged checks and production drift block promotion", async (
     p.health = jest.fn(async () => {
       if (drift) setCurrent("dpl_drift");
       else throw new Error("health");
+      return observedOff();
     });
     await expect(run()).rejects.toThrow();
     expect(p.promote).not.toHaveBeenCalled();
@@ -334,6 +359,7 @@ test.each(["build", "staged", "promotion", "public"])(
       p.health = jest.fn(async (_d, publicDomain) => {
         if (publicDomain === (boundary === "public"))
           throw new Error("health failed");
+        return observedOff();
       });
     if (boundary === "promotion")
       p.promote = jest.fn(async () => {
@@ -552,6 +578,7 @@ test("confirmed public Cloudflare challenge records pending only after fresh exa
   p.reportPhase = (e) => phases.push(e);
   p.health = jest.fn(async (_, publicDomain) => {
     if (publicDomain) throw cloudflareError();
+    return observedOff();
   });
   const result = await run();
   expect(result).toMatchObject({
@@ -654,6 +681,7 @@ test.each([
   if (assertions[kind]) failure = new Error(assertions[kind]);
   p.health = jest.fn(async (_, publicDomain) => {
     if (publicDomain) throw failure;
+    return observedOff();
   });
   await expect(run()).rejects.toThrow();
   expect(p.rollback).not.toHaveBeenCalled();
@@ -663,7 +691,7 @@ test.each(["target", "alias", "revision", "deployment-id", "readiness"])(
   async (kind) => {
     const { p, d, run, setCurrent } = fixture();
     p.health = jest.fn(async (_, publicDomain) => {
-      if (!publicDomain) return;
+      if (!publicDomain) return observedOff();
       if (kind === "target") setCurrent("dpl_drift");
       if (kind === "alias")
         p.guard = jest.fn(async () => {
@@ -704,6 +732,7 @@ test.each(["www", "apex-to-www"])(
     }
     p.health = jest.fn(async (_, publicDomain) => {
       if (publicDomain) throw error;
+      return observedOff();
     });
     await expect(run()).resolves.toMatchObject({ public_verified: false });
   },
@@ -714,7 +743,78 @@ test("pending requires confirmed promotion even when the candidate unexpectedly 
   setCurrent(d.id);
   p.health = jest.fn(async (_, publicDomain) => {
     if (publicDomain) throw cloudflareError();
+    return observedOff();
   });
+  await expect(run()).rejects.toThrow();
+  expect(p.promote).not.toHaveBeenCalled();
+});
+
+test("maintenance cannot promote when runtime collection disagrees with approved off intent", async () => {
+  const { p, run } = fixture();
+  p.health = jest.fn(async () => ({
+    ...observedOff(),
+    collectionEnabled: true,
+  }));
+  await expect(run()).rejects.toThrow();
+  expect(p.promote).not.toHaveBeenCalled();
+});
+test("activation can promote only with observed direct schema/ledger readiness matching reviewed target", async () => {
+  const { m, p, run } = fixture();
+  m.collectionEnabled = true;
+  m.compatibility.risks = ["analytics-activation"];
+  m.analyticsReadiness = {
+    development: { checkedAt: "2026-10-01T09:00:00Z", reference: "WU-1212" },
+    production: { checkedAt: "2026-10-02T09:00:00Z", reference: "WU-1213" },
+    targetSha256: "b".repeat(64),
+    migrations: [
+      {
+        filename: "076_create_analytics_archive.sql",
+        checksum:
+          "0d83dc262d5291906d037d0d625cdd245a182c90a924faefb146852d7a635553",
+      },
+      {
+        filename: "077_analytics_operations.sql",
+        checksum:
+          "88584aa867075149dc0b7d1b984262443462493c0e446fb8c00122446128f694",
+      },
+    ],
+    stagedCollectionAcknowledged: true,
+  };
+  const original = p.deployment;
+  p.deployment = jest.fn(async (id) => {
+    const d = await original(id);
+    return { ...d, meta: { ...d.meta, analyticsCollectionEnabled: "true" } };
+  });
+  const originalStage = p.stage;
+  p.stage = jest.fn(async () => {
+    const d = await originalStage();
+    return { ...d, meta: { ...d.meta, analyticsCollectionEnabled: "true" } };
+  });
+  p.health = jest.fn(async () => ({
+    ...observedOff(),
+    collectionEnabled: true,
+    connection: "direct" as const,
+    configured: true,
+    readinessChecked: true,
+    schemaReady: true,
+    ledgerReady: true,
+    targetSha256: m.analyticsReadiness!.targetSha256,
+  }));
+  const result = await run();
+  expect(p.stage).toHaveBeenCalledTimes(1);
+  expect(p.promote).toHaveBeenCalledTimes(1);
+  expect(result.analytics).toEqual({
+    intendedEnabled: true,
+    stagedObserved: true,
+    publicObserved: true,
+  });
+  expect(nativeReleaseMessage(result)).toContain(
+    "analytics intended on; staged observed on; public observed on",
+  );
+});
+test("metadata is not runtime proof even when every identity tag matches", async () => {
+  const { p, run } = fixture();
+  p.health = jest.fn(async () => {});
   await expect(run()).rejects.toThrow();
   expect(p.promote).not.toHaveBeenCalled();
 });

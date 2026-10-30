@@ -1,5 +1,6 @@
 /** @jest-environment node */
 jest.mock("server-only", () => ({}));
+jest.mock("@/lib/db", () => ({ queryRows: jest.fn() }));
 jest.mock("@/auth", () => ({ authOptions: {} }));
 jest.mock("next-auth/next", () => ({ getServerSession: jest.fn() }));
 jest.mock("@/lib/authz", () => ({ must: jest.fn() }));
@@ -101,4 +102,21 @@ test("same-origin forwarded host works; valid test action uses read-only control
   form.set("operation", "test");
   expect((await analyticsAction(null, form)).status).toBe("success");
   expect(runAnalyticsOperation).not.toHaveBeenCalled();
+});
+
+// Exercise the real private-report authorization boundary, not just a hidden UI.
+import { getOwnerAnalyticsReport } from "@/lib/analytics-archive/report";
+import { queryRows } from "@/lib/db";
+test.each([null, { user: { id: "fixture-user", role: "admin" } }])(
+  "private report rejects anonymous/non-owner before SQL",
+  async (session) => {
+    jest.mocked(getServerSession).mockResolvedValue(session);
+    await expect(getOwnerAnalyticsReport()).rejects.toThrow();
+    expect(queryRows).not.toHaveBeenCalled();
+  },
+);
+test("private report rejects an owner with stale/denied capability before SQL", async () => {
+  jest.mocked(must).mockRejectedValueOnce(new Error("stale capability"));
+  await expect(getOwnerAnalyticsReport()).rejects.toThrow("stale capability");
+  expect(queryRows).not.toHaveBeenCalled();
 });

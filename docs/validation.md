@@ -1,5 +1,26 @@
 # Validation and CI
 
+## Analytics validation ownership
+
+Under the current WU-1205 policy, database access by Cipher and delegated agents
+is read-only on existing development and production through every route. James
+runs reviewed SQL and write-producing development checks in his existing
+connections/app; agents read the results. No new Neon branch, connection,
+database URL or environment file is part of this workflow. Preserve the
+`dev/analytics` disposable-suite guard and leave that database-writing suite
+unrun; do not spoof metadata or redirect it at existing development. Use genuinely
+read-only preflight/postflight instead of migration runner status/verify, which
+can initialize the ledger. Do not run seeds, rollback fixtures, cleanup,
+collection/import or authentication/session writes against connected databases.
+
+Safe mocked/unit checks run with database access disabled and live-write opt-ins
+unset. Report mocked passes, human-run development checks, read-only observations,
+skipped/unrun database integration and recovery limitations separately. Previous
+suite counts or a guarded skip never establish live SQL validation. No mandatory
+new recovery environment or isolated restore test is introduced. See the
+[manual handoff](analytics-migration-handoff.md) and
+[operating boundary](analytics-neon-setup.md#analytics-database-operating-boundary-wu-1205-amendment).
+
 ## Required baseline
 
 `npm run verify:agent` is the canonical pre-review/pre-commit baseline.
@@ -93,6 +114,18 @@ script; use test:smoke for quick feedback, then full coverage for the gate.
 files in base..HEAD when a base is found; it can miss uncommitted and untracked
 edits. For a working-tree review explicitly run `npx prettier --check <files>`.
 FORMAT_CHECK_BASE overrides the base; it does not change this limitation.
+
+### Native analytics release checks
+
+The WU-1210 runtime/readiness and release suites use mocked database/provider
+responses. Run the existing pinned CLI contract using Node from `.nvmrc` and
+Vercel CLI 63.1.2: `node scripts/release/check-cli.mjs`. Its API server and
+credentials are synthetic and loopback-only; it checks the non-secret runtime
+collection override, source upload, polling, provenance and exact-ID promotion
+without a real deployment. A different local Node version must not bypass its
+pin. Mocked success is not live Vercel, scheduler, API-token or manual SQL proof.
+The full repository baseline does not enable the disposable database-writing
+integration suites; their guards remain intact.
 
 ## Browser prerequisites
 

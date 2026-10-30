@@ -102,8 +102,10 @@ function fixture(
   locked = true,
   failCompletion = false,
   firstDay = "2026-10-09",
+  failAdvance = false,
 ) {
   let next = firstDay;
+  let days = new Map<string, string>();
   let saved = {
     start: null as string | null,
     end: null as string | null,
@@ -118,15 +120,22 @@ function fixture(
         stage: typeof stage;
         archive: typeof archive;
         status: string;
+        days: Map<string, string>;
       }
     | undefined;
   const queries: string[] = [];
   const query = jest.fn(async (sql: string, values: unknown[] = []) => {
     queries.push(sql);
     if (sql === "BEGIN")
-      snapshot = { next, stage: [...stage], archive: [...archive], status };
+      snapshot = {
+        next,
+        stage: [...stage],
+        archive: [...archive],
+        status,
+        days: new Map(days),
+      };
     if (sql === "ROLLBACK" && snapshot)
-      ({ next, stage, archive, status } = snapshot);
+      ({ next, stage, archive, status, days } = snapshot);
     if (failCompletion && sql.includes("SET status=$3,pageviews"))
       throw new Error("fixture database fault with sensitive details");
     if (sql.includes("pg_try_advisory")) return { rows: [{ locked }] };
@@ -142,6 +151,32 @@ function fixture(
       next = String(values[1]);
     }
     if (sql.includes("to_char(next_day")) return { rows: [{ day: next }] };
+    if (sql.includes("AS day,status FROM dojo.analytics_day")) {
+      const from = String(values[1]);
+      const through = String(values[2]);
+      return {
+        rows:
+          from === next
+            ? [...days.entries()]
+                .filter(
+                  ([day]) =>
+                    day > from && day <= addDays(from, 31) && day <= through,
+                )
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([day, status]) => ({ day, status }))
+            : [],
+      };
+    }
+    if (
+      sql.startsWith("INSERT INTO dojo.analytics_day") &&
+      !days.has(String(values[1]))
+    )
+      days.set(String(values[1]), "incomplete");
+    if (
+      sql.includes("SET status='unavailable'") &&
+      !["complete", "zero"].includes(days.get(String(values[1])) ?? "")
+    )
+      days.set(String(values[1]), "unavailable");
     if (sql.startsWith("SELECT request_path"))
       return { rows: stage.map((p) => ({ request_path: p.requestPath })) };
     if (sql.includes("sum(pageviews)"))
@@ -161,15 +196,26 @@ function fixture(
     if (sql.startsWith("DELETE FROM dojo.analytics_page_day")) archive = [];
     if (sql.startsWith("INSERT INTO dojo.analytics_page_day"))
       archive = [...stage];
-    if (sql.includes("SET status=$3,pageviews")) status = String(values[2]);
-    if (sql.includes("SET next_day") && values[2] === next)
-      next = addDays(next, 1);
+    if (sql.includes("SET status=$3,pageviews")) {
+      status = String(values[2]);
+      days.set(String(values[1]), status);
+    } else if (
+      sql.includes("SET status=$3 WHERE project_id") &&
+      !["complete", "zero"].includes(days.get(String(values[1])) ?? "")
+    ) {
+      days.set(String(values[1]), String(values[2]));
+    }
+    if (sql.includes("SET next_day") && values[2] === next) {
+      next = values[3] ? String(values[3]) : addDays(next, 1);
+      if (failAdvance) throw new Error("fixture cursor write failed");
+    }
     return { rows: [] };
   });
   return {
     client: { query, release: jest.fn() } as unknown as PoolClient,
     queries,
-    state: () => ({ next, stage, archive, status, saved }),
+    state: () => ({ next, stage, archive, status, saved, days: new Map(days) }),
+    seedDay: (day: string, status: string) => days.set(day, status),
   };
 }
 const options = {
@@ -458,4 +504,142 @@ test("phase 2 migration preserves existing data and scopes the capability with r
   expect(sql).toContain("dojo.authz_bump_revision(affected)");
   expect(sql).toContain("pg_notify('authz_changed'");
   expect(sql).not.toMatch(/DROP TABLE|INSERT INTO dojo.authz_user_app_role/i);
+});
+
+// Empty pages with explicit totals model verified zero, never ambiguous missing data.
+test("daily catch-up converges after a week-long interruption while the clock advances", async () => {
+  const db = fixture(true, false, "2026-10-01");
+  const api = {
+    pages: jest.fn().mockResolvedValue({ pages: [], others: false }),
+    total: jest.fn().mockResolvedValue({ pageviews: 0, visitors: 0 }),
+  };
+  let caughtUp = false;
+  for (let run = 0; run < 12; run++) {
+    const today = addDays("2026-10-09", run);
+    const result = await collectAnalytics(
+      {
+        ...options,
+        lane: "daily",
+        startDay: addDays(today, -3),
+        now: new Date(today + "T09:17:00Z"),
+        maxDays: 4,
+        maxRequests: 8,
+      },
+      api,
+      db.client,
+    );
+    expect(result.requests).toBeLessThanOrEqual(8);
+    expect(result.processed).toBeLessThanOrEqual(4);
+    for (let day = "2026-10-01"; day < db.state().next; day = addDays(day, 1))
+      expect(db.state().days.get(day)).toBe("zero");
+    if (result.status === "complete") {
+      expect(db.state().next).toBe(today);
+      caughtUp = true;
+      break;
+    }
+  }
+  expect(caughtUp).toBe(true);
+});
+
+const dailyOptions = {
+  ...options,
+  lane: "daily" as const,
+  startDay: "2026-10-07",
+  maxDays: 4,
+  maxRequests: 8,
+};
+function zeroApi() {
+  return {
+    pages: jest.fn().mockResolvedValue({ pages: [], others: false }),
+    total: jest.fn().mockResolvedValue({ pageviews: 0, visitors: 0 }),
+  };
+}
+test.each([undefined, "incomplete", "api_failure"])(
+  "daily cursor stops at an unresolved %s gap beyond covered days",
+  async (gapStatus) => {
+    const db = fixture(true, false, "2026-10-01");
+    db.seedDay("2026-10-02", "complete");
+    if (gapStatus) db.seedDay("2026-10-03", gapStatus);
+    db.seedDay("2026-10-04", "zero");
+    const result = await collectAnalytics(dailyOptions, zeroApi(), db.client);
+    expect(result.status).toBe("bounded");
+    expect(db.state().next).toBe("2026-10-03");
+    expect(db.state().days.get("2026-10-03")).toBe(gapStatus);
+    expect(db.state().days.get("2026-10-04")).toBe("zero");
+  },
+);
+test("daily cursor can cross complete, zero and deliberately unavailable history", async () => {
+  const db = fixture(true, false, "2026-10-01");
+  db.seedDay("2026-10-02", "complete");
+  db.seedDay("2026-10-03", "zero");
+  db.seedDay("2026-10-04", "unavailable");
+  const result = await collectAnalytics(dailyOptions, zeroApi(), db.client);
+  expect(result.status).toBe("bounded");
+  expect(db.state().next).toBe("2026-10-05");
+  expect(db.state().days.get("2026-10-04")).toBe("unavailable");
+});
+test("old verified counts cannot hide a truncated recent refresh or establish daily success", async () => {
+  const db = fixture(true, false, "2026-10-01");
+  for (let day = "2026-10-02"; day <= "2026-10-07"; day = addDays(day, 1))
+    db.seedDay(day, "complete");
+  const api = zeroApi();
+  api.pages.mockImplementation(async (day: string) => ({
+    pages: [],
+    others: day === "2026-10-07",
+  }));
+  const result = await collectAnalytics(dailyOptions, api, db.client);
+  expect(result.status).toBe("bounded");
+  expect(result.requests).toBeLessThanOrEqual(8);
+  expect(db.state().next).toBe("2026-10-07");
+  expect(db.state().days.get("2026-10-07")).toBe("complete");
+});
+test("a failed recent refresh remains failed even with existing verified counts", async () => {
+  const db = fixture(true, false, "2026-10-01");
+  db.seedDay("2026-10-07", "zero");
+  const api = zeroApi();
+  api.total.mockRejectedValue(
+    new AnalyticsApiError("api_failure", "safe failure"),
+  );
+  const result = await collectAnalytics(dailyOptions, api, db.client);
+  expect(result.status).toBe("failed");
+  expect(db.state().next).toBe("2026-10-01");
+  expect(db.state().days.get("2026-10-07")).toBe("zero");
+  expect(result.error).toBe("safe failure");
+});
+test("covered-day cursor scanning stays bounded even for a long verified archive", async () => {
+  const db = fixture(true, false, "2026-08-01");
+  for (let day = "2026-08-02"; day < "2026-10-07"; day = addDays(day, 1))
+    db.seedDay(day, "zero");
+  const result = await collectAnalytics(
+    { ...dailyOptions, availableFrom: "2026-08-01" },
+    zeroApi(),
+    db.client,
+  );
+  expect(result.status).toBe("bounded");
+  expect(result.requests).toBe(8);
+  expect(db.state().next).toBe(addDays("2026-08-01", 32));
+});
+test("backfill cursor does not consume daily terminal-day shortcuts", async () => {
+  const db = fixture(true, false, "2026-10-01");
+  db.seedDay("2026-10-02", "zero");
+  const result = await collectAnalytics(
+    { ...options, startDay: "2026-10-01", maxDays: 1 },
+    zeroApi(),
+    db.client,
+  );
+  expect(result.status).toBe("bounded");
+  expect(db.state().next).toBe("2026-10-02");
+});
+
+test("daily cursor shortcut and summary roll back together without losing earlier refreshes", async () => {
+  const db = fixture(true, false, "2026-10-01", true);
+  db.seedDay("2026-10-02", "zero");
+  const result = await collectAnalytics(dailyOptions, zeroApi(), db.client);
+  expect(result.status).toBe("failed");
+  expect(db.state().next).toBe("2026-10-01");
+  expect(db.state().days.get("2026-10-01")).toBe("api_failure");
+  expect(db.state().days.get("2026-10-07")).toBe("zero");
+  expect(db.state().days.get("2026-10-08")).toBe("zero");
+  expect(db.state().days.get("2026-10-09")).toBe("zero");
+  expect(db.queries).toContain("ROLLBACK");
 });

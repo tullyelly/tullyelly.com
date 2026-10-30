@@ -11,6 +11,11 @@ import {
 import { RELEASE_REPOSITORY, RELEASE_REPOSITORY_ID, type Api } from "./app";
 import { readSchemaDeferral, schemaDeferralSchema } from "./schema-deferral";
 
+import {
+  readAnalyticsIntent,
+  analyticsReadinessSchema,
+} from "./analytics-intent";
+
 const sha = z.string().regex(/^[a-f0-9]{40}$/);
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
 const decimal = z.string().regex(/^[1-9][0-9]*$/);
@@ -25,6 +30,7 @@ export const compatibilityRiskSchema = z.enum([
   "authentication-policy",
   "runtime-configuration",
   "analytics-activation",
+  "analytics-maintenance",
 ]);
 export const nativeSettingsSchema = settingsSchema
   .extend({
@@ -37,11 +43,13 @@ export const nativeSettingsSchema = settingsSchema
   .strict();
 export const nativeEvidenceSchema = z
   .object({
-    version: z.literal(3),
+    version: z.literal(4),
     kind: z.literal("native-source"),
     operation: z.literal("deploy"),
     commit: sha,
-    collectionEnabled: z.literal(false),
+    collectionEnabled: z.boolean(),
+    analyticsIntentSha256: digest,
+    analyticsReadiness: analyticsReadinessSchema.optional(),
     workflow: z.object({ sha, runId: decimal, runAttempt: decimal }).strict(),
     source: z.object({ sha256: digest }).strict(),
     ci: z
@@ -69,7 +77,7 @@ export const nativeEvidenceSchema = z
     compatibility: z
       .object({
         changedPaths: z.array(path).max(5000),
-        risks: z.array(compatibilityRiskSchema).max(5),
+        risks: z.array(compatibilityRiskSchema).max(6),
         schemaDeferral: schemaDeferralSchema.optional(),
       })
       .strict(),
@@ -121,11 +129,21 @@ export function validateNativeEvidence(value: unknown): NativeCodeEvidence {
     settingsDigest(evidence.vercel.settings) !== evidence.vercel.settingsSha256
   )
     throw new Error("code.settings-digest");
+  if (
+    evidence.collectionEnabled &&
+    (!evidence.analyticsReadiness ||
+      !evidence.compatibility.risks.includes("analytics-activation"))
+  )
+    throw new Error("code.analytics-readiness-review");
   const deferral = evidence.compatibility.schemaDeferral;
   if (deferral && deferral.baselineSha !== evidence.baseline.applicationSha)
     throw new Error("code.sensitive-compatibility-review");
   if (
-    blockingCompatibilityRisks(evidence.compatibility.risks, !!deferral).length
+    blockingCompatibilityRisks(
+      evidence.compatibility.risks,
+      !!deferral,
+      evidence.collectionEnabled && !!evidence.analyticsReadiness,
+    ).length
   )
     throw new Error("code.sensitive-compatibility-review");
   return evidence;
@@ -141,6 +159,14 @@ export function loadNativeEvidence(
   const bytes = readFileSync(file);
   if (sha256(bytes) !== expectedDigest) throw new Error("code.evidence-digest");
   const evidence = validateNativeEvidence(JSON.parse(bytes.toString("utf8")));
+  const reviewedAnalytics = readAnalyticsIntent(commit);
+  if (
+    reviewedAnalytics.sha256 !== evidence.analyticsIntentSha256 ||
+    reviewedAnalytics.intent.collectionEnabled !== evidence.collectionEnabled ||
+    JSON.stringify(reviewedAnalytics.intent.manualReadiness) !==
+      JSON.stringify(evidence.analyticsReadiness)
+  )
+    throw new Error("code.analytics-intent-binding");
   if (evidence.compatibility.schemaDeferral) {
     const reviewed = readSchemaDeferral(
       evidence.baseline.applicationSha,
@@ -216,11 +242,12 @@ export function configurationEvidence(project: unknown, environment: unknown) {
 export function blockingCompatibilityRisks(
   risks: readonly z.infer<typeof compatibilityRiskSchema>[],
   schemaDeferred = false,
+  analyticsReviewed = false,
 ) {
   return risks.filter(
     (risk) =>
       (risk === "database-schema" && !schemaDeferred) ||
-      risk === "analytics-activation",
+      (risk === "analytics-activation" && !analyticsReviewed),
   );
 }
 export function compatibilityRisks(
@@ -253,11 +280,11 @@ export function compatibilityRisks(
       if (!buildOnly) risks.add("authentication-policy");
     }
     if (
-      /^(lib\/analytics-archive\/(collector|operations|authorization)|lib\/analytics\/config)/.test(
+      /^(lib\/analytics-archive\/|lib\/analytics\/config|app\/api\/(cron|health)\/analytics\/|app\/mark2\/admin\/analytics\/|components\/analytics\/)/.test(
         file,
       )
     )
-      risks.add("analytics-activation");
+      risks.add("analytics-maintenance");
     if (/^(app|lib|db)\/.*\.(ts|tsx|sql)$/.test(file)) {
       const added = changedText(file)
         .split("\n")
@@ -276,6 +303,8 @@ export function compatibilityRisks(
       )
         risks.add("runtime-configuration");
     }
+    if (file === "releases/analytics-state.json")
+      risks.add("runtime-configuration");
     if (file === "vercel.json") {
       const changed = changedText(file)
         .split("\n")

@@ -34,6 +34,7 @@ export function nativeSourceDeployArguments(binding: {
   sourceDigest: string;
   workflowRunId: string;
   workflowRunAttempt: string;
+  collectionEnabled: boolean;
 }) {
   return [
     "deploy",
@@ -56,7 +57,9 @@ export function nativeSourceDeployArguments(binding: {
     "--meta",
     `releaseRunAttempt=${binding.workflowRunAttempt}`,
     "--meta",
-    "collectionDisabled=true",
+    `analyticsCollectionEnabled=${binding.collectionEnabled}`,
+    "--env",
+    `ANALYTICS_SYNC_ENABLED=${binding.collectionEnabled}`,
   ];
 }
 

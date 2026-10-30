@@ -36,6 +36,33 @@ Orientation: [README](README.md). Workflow: [CONTRIBUTING](CONTRIBUTING.md).
 - Use FlowersInline for section acknowledgments; at most one Flowers call per
   section, with matching items surfaced on `/credits`.
 
+## Analytics database operating boundary; WU-1205 amendment
+
+James executes reviewed migration, repair, grant and migration-ledger SQL manually
+through his existing DataGrip connections: existing development first, then
+existing production after development validation and fresh production preflight.
+Cipher and every delegated agent have read-only access to both databases through
+all routes, including scripts, tests, APIs, browser actions and workflows. They
+must not trigger migration executors, seeds, cleanup, rollback fixtures,
+authentication/session writes, collection or import. Runner status/verify can
+initialize the ledger and are not read-only inspection tools.
+
+Do not create/reset/rename/delete/promote/restore Neon branches or change default
+branches, endpoints, roles, database URLs or environment files. Do not request a
+new DataGrip connection or configure `.env.analytics-test.local`. Use existing
+authorized read-only access; if unavailable, give James read-only SQL and report
+the limitation. Never retrieve or expose credentials. Preserve disposable-test
+guards; do not spoof metadata or redirect the write suite at existing development.
+Run safe mocks; label database-writing integration tests unrun. James operates
+write-producing development checks; Cipher verifies their results read-only.
+
+Normal scheduled Cron writes after James enables analytics are application
+behavior, not permission for agents to initiate collection. Existing application
+release machinery and human approvals remain in place. The legacy analytics SQL
+executor is not authorized by this policy. No new recovery environment or
+mandatory isolated restore proof is required; document actual backup coverage,
+unrun recovery checks and accepted limitations before production approval.
+
 ## Validation
 
 Run `npm run verify:agent` before review; it prepares once, lints, typechecks,

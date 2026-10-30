@@ -1,4 +1,11 @@
 /** @jest-environment node */
+jest.mock("../../scripts/release/analytics-intent", () => ({
+  ...jest.requireActual("../../scripts/release/analytics-intent"),
+  readAnalyticsIntent: jest.fn(() => ({
+    intent: { version: 1, collectionEnabled: false },
+    sha256: "f".repeat(64),
+  })),
+}));
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -43,11 +50,12 @@ test("native settings permit the reviewed build wrapper and reject arbitrary pro
 });
 function evidence() {
   return {
-    version: 3,
+    version: 4,
     kind: "native-source",
     operation: "deploy",
     commit: sha,
     collectionEnabled: false,
+    analyticsIntentSha256: "f".repeat(64),
     workflow: { sha, runId: "100", runAttempt: "1" },
     source: { sha256: "b".repeat(64) },
     ci: {
@@ -422,4 +430,31 @@ test("only a successful trusted push-main CI run and GitHub Actions checks for t
     await expect(
       trustedRequiredCi(sha, "TOKEN", ciApi({}, changed)),
     ).rejects.toThrow("code.required-ci-unavailable");
+});
+
+test("collector maintenance with intent off is reviewable without activation or fabricated ledger proof", () => {
+  const risks = compatibilityRisks(
+    ["lib/analytics-archive/collector.ts"],
+    () => "+SELECT day FROM dojo.analytics_day",
+  );
+  expect(risks).toEqual(["analytics-maintenance", "database-query-contract"]);
+  expect(
+    validateNativeEvidence({
+      ...evidence(),
+      compatibility: {
+        changedPaths: ["lib/analytics-archive/collector.ts"],
+        risks,
+      },
+    }).collectionEnabled,
+  ).toBe(false);
+  expect(blockingCompatibilityRisks(risks)).toEqual([]);
+});
+test("an enabled flag alone cannot bypass the human-readable manual readiness requirement", () => {
+  expect(() =>
+    validateNativeEvidence({
+      ...evidence(),
+      collectionEnabled: true,
+      compatibility: { changedPaths: [], risks: ["analytics-activation"] },
+    }),
+  ).toThrow("code.analytics-readiness-review");
 });

@@ -30,6 +30,7 @@ const binding = {
   sourceDigest: "c".repeat(64),
   workflowRunId: "1234",
   workflowRunAttempt: "1",
+  collectionEnabled: false,
 };
 const receipt = JSON.stringify({
   commit: binding.commit,
@@ -373,7 +374,7 @@ try {
   assert.equal(posted.project, projectId);
   assert.equal(posted.target, "production");
   assert.equal(posted.autoAssignCustomDomains, false);
-  assert.deepEqual(posted.env ?? {}, {});
+  assert.deepEqual(posted.env, { ANALYTICS_SYNC_ENABLED: "false" });
   assert.deepEqual(posted.build?.env ?? {}, {});
   assert.equal(posted.meta.releaseSha, binding.commit);
   assert.equal(posted.meta.releaseEvidence, binding.evidenceDigest);

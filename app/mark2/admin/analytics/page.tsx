@@ -18,6 +18,11 @@ import {
   SHARED_TWITTER_FIELDS,
 } from "@/lib/seo/constants";
 import AnalyticsControls from "./Controls";
+import AnalyticsReport from "./Report";
+import {
+  getOwnerAnalyticsReport,
+  type ReportParams,
+} from "@/lib/analytics-archive/report";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,7 +50,9 @@ function runLabel(run: RunStatus | null) {
     ? `${fmtDateTime(run.finished_at ?? run.started_at)}; ${run.lane ?? "legacy lane unknown"}; ${run.status}; ${run.processed_days} days committed`
     : "None recorded";
 }
-export default async function AnalyticsAdminPage() {
+export default async function AnalyticsAdminPage({
+  searchParams,
+}: { searchParams?: Promise<ReportParams> } = {}) {
   try {
     await requireAnalyticsOwner();
   } catch (error) {
@@ -54,7 +61,11 @@ export default async function AnalyticsAdminPage() {
     if (error instanceof AuthzForbiddenError) notFound();
     throw error;
   }
-  const status = await getAnalyticsStatus();
+  const params = (await searchParams) ?? {};
+  const [status, report] = await Promise.all([
+    getAnalyticsStatus(),
+    getOwnerAnalyticsReport(params),
+  ]);
   const history = status.history;
   const dailyPending =
     status.dailyNext && status.range
@@ -78,6 +89,7 @@ export default async function AnalyticsAdminPage() {
           days use UTC.
         </p>
       </header>
+      <AnalyticsReport report={report} />
       <section className="space-y-3">
         <SectionHeader title="Daily collection" />
         <p
@@ -127,9 +139,11 @@ export default async function AnalyticsAdminPage() {
         )}
         {status.error && <p role="alert">{status.error}</p>}
         <p className="text-sm text-muted-foreground">
-          Execution failures use the configured error reporter. Missing-run
-          notifications are not configured; this stale indicator does not send
-          an external alert.
+          Scheduled production runs send Sentry check-ins when collection is
+          enabled. Missing-run notifications require the owner-configured
+          analytics-daily monitor and alert rule; delivery is unverified until
+          tested. This page does not send alerts. Manual imports do not send
+          scheduled check-ins.
         </p>
       </section>
       <section className="space-y-3">
