@@ -5,8 +5,9 @@ protected GitHub workflow. The operator selects the reviewed merged main SHA;
 tooling prepares non-secret evidence, the human approves the existing environment
 gate, and the workflow stages, verifies and conditionally promotes that exact
 deployment. There is no separate ordinary release-manifest PR or chat attestation.
-Database migrations, credential maintenance, analytics activation and other
-sensitive operations retain their separate concrete approvals and procedures.
+Database migrations, credential maintenance and other sensitive operations retain
+their concrete approvals and procedures. Intentional analytics activation uses
+the explicit reviewed readiness/state record at this same application release gate.
 
 Changed-source evidence and approval reports accept Next.js route brackets,
 including `[slug]`, `[...slug]` and `[[...slug]]`, within the existing bounded
@@ -20,8 +21,9 @@ complete binary Git diff for `db/migrations`, `db/schema` and `prisma/schema*`.
 Preparation reads the record from the immutable release commit; the protected
 executor rechecks it before deployment. Missing records retain the schema block;
 baseline or SQL changes invalidate an existing record. The existing human gate
-shows the deferral digest and all compatibility risks. Analytics activation
-remains blocked. This record permits application deployment only; it neither
+shows the deferral digest and all compatibility risks. Schema deferral never
+authorizes analytics activation; the explicit analytics intent/readiness below
+is independently required. This record permits application deployment only; it neither
 applies SQL nor claims that migrations have run. A separately reviewed migration
 release remains necessary for database writes.
 
@@ -147,9 +149,11 @@ them.
 
 Production database, auth and runtime secrets stay on Vercel. This path never
 pulls environments, reads decrypted values, applies runtime-secret overrides,
-connects to Neon or runs SQL, migrations, seeding or collectors. No
-`RELEASE_DATABASE_URL` or `NEON_RELEASE_API_KEY` is needed for ordinary releases.
-Keep the reviewed analytics state disabled; do not use this change to activate it.
+connects to Neon from the executor or runs migrations, seeding or collectors.
+The only runtime override is the reviewed non-secret `ANALYTICS_SYNC_ENABLED`
+intent. Enabled application readiness reads catalogs/selected ledger rows inside
+an explicit read-only transaction. No `RELEASE_DATABASE_URL` or
+`NEON_RELEASE_API_KEY` is needed by the native release executor.
 
 ### Native source production path
 
@@ -215,7 +219,9 @@ read. The original CLI failure remains the primary diagnostic. These reads do no
 retry authentication, stage a deployment or add another approval gate.
 
 Staged and public probes check `/api/__version`, `/api/health`, owner/non-owner
-route denial and the disabled collection cron contract. Representative existing
+anonymous owner-route denial and cron authorization. The anonymous cron 401
+proves authorization only; the separate `/api/health/analytics` read must match
+intended collection state. It never sends CRON_SECRET or invokes collection. Representative existing
 Chronicle coverage includes Appleton East's original date/text, ten raw image
 hashes, six rendered image sources and three carousel references. Publication
 readiness also selects changed chronicles and their assets; an ordinary release
@@ -264,7 +270,9 @@ do not change the checks or retry failed requests. Older reports that contain on
 A staged production deployment has production runtime credentials. Automated
 verification uses read-only GETs, with no login, forms, collection or owner mutation
 flows. Normal user traffic may still write data. Provider-triggered collection
-must remain disabled by the reviewed configuration.
+follows the reviewed analytics intent: off for disabled maintenance, or explicitly
+on with manual readiness and staging acknowledgment. `--skip-domain` does not
+supply a runtime kill switch.
 
 Owner-admin denial can be an HTTP redirect or Next.js's exact streamed
 `__next-page-redirect` refresh marker inside a 200 document. The reader accepts
@@ -548,7 +556,9 @@ GitHub/Vercel. These are prerequisites, not authorization to release analytics.
 6. Verify preview `DATABASE_URL` and any `TEST_DATABASE_URL` point to confirmed
    non-production branches. Require `ANALYTICS_SYNC_ENABLED=false` in previews.
    Staged production deployments still receive production credentials; their
-   collection switch must be immutably overridden to false. Existing comment
+   collection switch is bound to the reviewed non-secret runtime override; on
+   requires explicit manual readiness and acknowledgment of enabled staging.
+   Existing comment
    email and other mutation routes can still have side effects; automation must
    use read-only smoke checks, never submit comments or owner mutation forms.
 
@@ -566,6 +576,116 @@ No new workflow, framework or automatic deployment is introduced. Ordinary
 application releases continue through the existing App dispatcher and protected
 native-source workflow unchanged.
 
+## Native analytics maintenance and intentional activation; WU-1210
+
+`releases/analytics-state.json` is the non-secret intended state in the immutable
+application commit. Its prepared default is:
+
+```json
+{ "version": 1, "collectionEnabled": false }
+```
+
+This changes no live setting by itself. Native evidence version 4 binds its exact
+SHA-256 and intended flag into the existing evidence artifact and human approval
+report. The executor rereads the record from the exact release commit and checks
+it matches the evidence. It also verifies original 076/077 file checksums; SQL is
+never executed. No separate manifest PR, workflow, dispatcher, bot or approval
+gate is added. Trusted CI, source/configuration digests, main/approval checks,
+one clean source deployment and exact-ID promotion remain unchanged.
+
+Collector/report/authorization source edits are `analytics-maintenance` review
+risks, not evidence that collection is being activated. Intent off permits
+reviewed maintenance without requiring analytics tables. Intent on adds the
+`analytics-activation` risk and requires a real `manualReadiness` record:
+
+| Field                                            | Required evidence                                                                                                                            |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `development.checkedAt`, `development.reference` | UTC postflight time and Jira reference for James's actual existing-development execution and validation                                      |
+| `production.checkedAt`, `production.reference`   | Later UTC postflight time and Jira reference for James's actual existing-production execution; future/out-of-order timestamps are rejected   |
+| `targetSha256`                                   | SHA-256 of JSON `[direct hostname, database, role]`, using independently confirmed production metadata; no URL/password is recorded          |
+| `migrations`                                     | Exactly original 076 then 077, with the original filename/checksum pairs from the [manual handoff](analytics-migration-handoff.md#checksums) |
+| `stagedCollectionAcknowledged`                   | Literal true; the reviewer acknowledges enabled runtime on the staged production deployment too                                              |
+
+Do not populate this record from ticket status, old tests, guessed timestamps or
+unexecuted SQL. The current off record contains no fabricated readiness evidence.
+The same existing human production gate reviews intent, source/intent digests,
+manual references, target fingerprint, compatibility risks and staging semantics.
+Every enabled-intent release requires this reviewed evidence, even if it is
+maintaining an already enabled installation; disabled intent does not authorize
+turning collection on. Schema deferral cannot substitute for analytics readiness.
+
+The existing CLI receives exactly one non-secret runtime override:
+`--env ANALYTICS_SYNC_ENABLED=false` or `true`, bound to the evidence. It receives
+no database/auth URL or credential overrides. Deployment metadata now records
+`analyticsCollectionEnabled` as intended state, rather than a hardcoded disabled
+assertion. Metadata remains an identity tag, not runtime proof. The pinned CLI
+loopback contract checks the actual outgoing runtime override and preserves
+`--prod --skip-domain`, one source upload and exact-ID promotion.
+
+### Side-effect-free runtime acceptance
+
+`GET /api/health/analytics` is an uncached, dynamic Node route with no session,
+authentication flow, collector, import, API client call or migration runner. It
+returns only version/commit, effective collection boolean, connection class,
+non-secret target fingerprint, configuration-presence result and readiness bits.
+`readinessChecked=false` explicitly distinguishes skipped checks from a verified
+schema result. Credentials, URLs, user IDs and traffic records are never returned.
+
+Off intent makes no database connection and requires only matching effective off
+state and exact application revision. On intent requires configured collection,
+a direct connection and matching reviewed target, plus read-only readiness:
+
+- Dedicated `REPEATABLE READ READ ONLY` transaction and confirmed database/role.
+- Exact expected archive columns/owners and validated constraints from the
+  existing release schema snapshot, plus enabled admin analytics capability/grant.
+- Existing ledger presence and applied SHA-256 rows for only original 076/077,
+  with non-null application timestamps and no stored error. No ledger is created,
+  no historical files are replayed and unrelated history is not invented.
+
+The read-only transaction is closed with ROLLBACK; a failed rollback destroys the
+connection. It is not a rollback fixture or data repair. Presence checks do not
+prove collector-token API access, retention bounds, scheduler invocation or
+notification delivery; James's separately recorded development checks remain
+necessary. No release probe triggers collect/import or supplies CRON_SECRET.
+
+Staged and public health must report the exact approved revision/collection state;
+mismatch or missing readiness stops acceptance. Public-verification completion
+uses the same state check. Logs/receipts distinguish intended, staged observed
+and public observed state. A Cloudflare-blocked public check does not turn staged
+observations into public proof; public state stays unverified when not observed.
+An anonymous cron 401 never establishes that collection is disabled.
+
+### Staging, Cron and connection limitations
+
+`--skip-domain` only postpones custom-domain assignment. Production credentials
+and the selected runtime flag already belong to that deployment. Promotion of
+the same production deployment does not change its environment values. This
+follows the documented [CLI runtime/skip-domain flags](https://vercel.com/docs/cli/deploy#env)
+and [deployment-specific environment behavior](https://vercel.com/docs/environment-variables).
+An enabled staged deployment can accept authorized writes; do not assume it is
+disabled until promotion. Vercel describes Cron requests to the project's
+[production deployment URL](https://vercel.com/docs/cron-jobs#how-cron-jobs-work).
+Effective scheduling and the actual 09:17 UTC run still require observation after
+James's activation; no live staging/Cron experiment was run for this change.
+
+Read-only Neon endpoint metadata in this refresh reports pooler_enabled=false on
+both existing development and production and publishes their direct endpoints.
+That is not proof of the hostname used by a deployed DATABASE_URL. No connection
+URL or secret was retrieved. The state probe can classify its own runtime URL
+without returning it. Pooled, invalid or unverified connection modes block enabled
+readiness; disabled maintenance can still ship. Unsupported URL options also fail
+closed rather than claiming a target fingerprint for an overridden connection.
+
+If an existing connection is pooled, retain its value and the collector's direct
+session-lock guard. A future focused compatibility change could use a durable,
+renewable project lease with fenced writes across staging commits; it must prove
+overlap exclusion, crash recovery and resume semantics before activation. Simply
+replacing the session lock with a transaction lock would lose exclusion between
+batch commits. No such change, schema alteration, new endpoint, new Neon branch,
+role change or URL rewrite is performed here. Until compatibility is proven,
+collection stays off. James's approved off-intent release disables collection
+while retaining archived rows; no automatic recovery is attempted.
+
 ## Analytics SQL handoff and activation
 
 Analytics SQL is owner-operated in existing DataGrip: James executes reviewed
@@ -577,8 +697,8 @@ No agent or workflow applies analytics SQL under this policy. Existing
 `analytics-release.yml` and its version-1 executor remain in the checkout as
 legacy implementation; do not dispatch them for SQL or use their hardcoded
 “collection remains disabled” text as runtime proof. Narrow compatibility and
-read-only readiness/reporting work belongs to WU-1210; no release machinery is
-rebuilt by this amendment. Ordinary App-dispatched application release and human
+read-only readiness/reporting is implemented within the existing native path;
+no release machinery is rebuilt. Ordinary App-dispatched application release and human
 approval gates stay unchanged.
 
 The 2026-10-29 project inspection reported history retention of 86400 seconds;

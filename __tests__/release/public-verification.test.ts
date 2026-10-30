@@ -37,12 +37,7 @@ function fixture(
     wrongAsset?: boolean;
     wrongPublication?: boolean;
     archive?:
-      | "empty"
-      | "stale"
-      | "wrong-title"
-      | "outside"
-      | "script"
-      | "comment";
+      "empty" | "stale" | "wrong-title" | "outside" | "script" | "comment";
   } = {},
 ) {
   const settings = {
@@ -54,11 +49,12 @@ function fixture(
     rootDirectory: null,
   };
   const evidence: NativeCodeEvidence = {
-    version: 3,
+    version: 4,
     kind: "native-source",
     operation: "deploy",
     commit: sha,
     collectionEnabled: false,
+    analyticsIntentSha256: "f".repeat(64),
     workflow: { sha, runId: "123", runAttempt: "2" },
     source: { sha256: "b".repeat(64) },
     ci: {
@@ -113,7 +109,7 @@ function fixture(
       releaseSourceSha256: evidence.source.sha256,
       releaseRunId: "123",
       releaseRunAttempt: "2",
-      collectionDisabled: "true",
+      analyticsCollectionEnabled: "false",
       ...change.meta,
     },
   };
@@ -211,6 +207,18 @@ function fixture(
         });
       if (url.pathname === "/api/__version")
         return Response.json({ commitSha: change.revision ?? sha });
+      if (url.pathname === "/api/health/analytics")
+        return Response.json({
+          version: 1,
+          commitSha: sha,
+          collectionEnabled: false,
+          connection: "missing",
+          configured: false,
+          readinessChecked: false,
+          schemaReady: false,
+          ledgerReady: false,
+          targetSha256: null,
+        });
       if (url.pathname === "/api/health") return Response.json({ ok: true });
       if (url.pathname === "/api/cron/analytics")
         return new Response(null, { status: change.cron ?? 401 });
@@ -303,6 +311,7 @@ test("portable completion runs the complete shared acceptance and rechecks ident
       "/shaolin",
       "/api/__version",
       "/api/health",
+      "/api/health/analytics",
       "/api/cron/analytics",
       "/mark2/admin/analytics",
       `/shaolin/${probe.slug}`,

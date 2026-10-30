@@ -1100,6 +1100,37 @@ test("schema deferral is explicit at the existing gate and never permits analyti
   ).toContain("ordinary release blocked");
 });
 
+test("analytics approval separates reviewed intent from observed state without inventing disabled proof", () => {
+  const event = {
+    ...context,
+    evidenceSha256: "d".repeat(64),
+    analyticsIntendedEnabled: true,
+    analyticsIntentSha256: "e".repeat(64),
+    analyticsTargetSha256: "f".repeat(64),
+    analyticsDevelopmentReference: "WU-1212",
+    analyticsProductionReference: "WU-1213",
+    compatibilityRisks: ["analytics-maintenance", "analytics-activation"],
+    changedPaths: ["lib/analytics-archive/collector.ts"],
+  };
+  const rendered = summary([event], {
+    prepare: "success",
+    production: "pending",
+  });
+  expect(rendered).toContain("Analytics intended collection: on");
+  expect(rendered).toContain("development WU-1212; production WU-1213");
+  expect(rendered).toContain(
+    "promotion does not change its immutable environment",
+  );
+  expect(rendered).not.toContain("ordinary release blocked");
+  expect(rendered).not.toContain("analytics remains disabled");
+  expect(
+    summary([{ ...event, analyticsProductionReference: undefined }], {}),
+  ).toContain("ordinary release blocked");
+  expect(
+    summary([{ ...context, evidenceSha256: "d".repeat(64) }], {}),
+  ).toContain("no disabled-state proof is inferred");
+});
+
 test("green deployment retains serialized pending reason and never reports public success", () => {
   const root = mkdtempSync(join(tmpdir(), "pending-release-"));
   const previous = process.env.RELEASE_REPORT_PATH;

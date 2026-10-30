@@ -282,6 +282,25 @@ run records send an external alert when cron never runs. An external heartbeat /
 Sentry Cron Monitor or equivalent alert policy is an optional operational
 follow-up; do not mistake execution error reporting for missing-run detection.
 
+## Native release state; WU-1210
+
+Reviewed analytics code maintenance is distinct from activation. The existing
+native release reads `releases/analytics-state.json` from the immutable commit,
+binds its flag/digest and real manual-readiness references into the existing
+human approval, and supplies only that non-secret runtime switch to its one
+source deployment. The prepared record is off; no live state is changed by this
+implementation. See the [native analytics release procedure](production-releases.md#native-analytics-maintenance-and-intentional-activation-wu-1210).
+
+The uncached `/api/health/analytics` route reports effective state without auth,
+collection or API calls. Off state skips database checks explicitly. On state
+reads catalogs and only selected 076/077 ledger rows in a dedicated read-only
+transaction; it never initializes the ledger or applies SQL. Runtime mismatch,
+missing schema/ledger proof or pooled/unknown connection compatibility blocks
+acceptance. Metadata and anonymous cron 401 responses are not disabled-state
+proof. Enabled staged deployments already have their runtime flag; promotion
+cannot be relied on to flip it. Real Cron execution, collector API scope and
+manual owner checks remain separately unverified until observed.
+
 ## Private whole-site reporting; WU-1209
 
 The existing `/mark2/admin/analytics` owner console includes a read-only GET form

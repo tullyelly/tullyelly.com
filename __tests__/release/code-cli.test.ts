@@ -262,7 +262,7 @@ test.each([
   );
 });
 
-test("native source arguments bind one production candidate without environment overrides", () => {
+test("native source arguments bind one production candidate with only reviewed non-secret collection intent", () => {
   const binding = {
     projectId: "prj_fixture",
     commit: "a".repeat(40),
@@ -270,8 +270,14 @@ test("native source arguments bind one production candidate without environment 
     sourceDigest: "c".repeat(64),
     workflowRunId: "1234",
     workflowRunAttempt: "2",
+    collectionEnabled: false,
   };
   const args = nativeSourceDeployArguments(binding);
+  expect(args.slice(args.indexOf("--env"), args.indexOf("--env") + 2)).toEqual([
+    "--env",
+    "ANALYTICS_SYNC_ENABLED=false",
+  ]);
+  expect(args).toContain("analyticsCollectionEnabled=false");
   expect(args.slice(0, 7)).toEqual([
     "deploy",
     "--prod",
@@ -291,13 +297,7 @@ test("native source arguments bind one production candidate without environment 
       `releaseRunAttempt=${binding.workflowRunAttempt}`,
     ]),
   );
-  for (const forbidden of [
-    "--prebuilt",
-    "--env",
-    "--build-env",
-    "--token",
-    "--force",
-  ]) {
+  for (const forbidden of ["--prebuilt", "--build-env", "--token", "--force"]) {
     expect(args).not.toContain(forbidden);
   }
   const run = runner({});
