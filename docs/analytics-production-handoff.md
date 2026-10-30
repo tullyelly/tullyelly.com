@@ -216,14 +216,33 @@ WU-1213 and WU-1205 remain open until the actual production evidence is recorded
 
 ## Preparation validation
 
-The activation JSON validates against the existing intent schema. The current
-checkout's complete `verify:agent` baseline passed: 246 Jest suites, 1,980 tests,
-thresholded coverage and Next production build; six database-writing tests were
-skipped with their guards intact. Documentation, changed-file formatting and
-diff checks passed. These are preparation results, not trusted merged-SHA CI or
-proof of trusted merged-SHA CI. The isolated publication checkout also passed
-workflow/lint/type/Prisma checks and all 1,980 tests with six guarded skips.
-Its first build hit Turbopack's outside-workspace dependency restriction; after
-making installed dependencies local to that checkout, `build:validated` passed
-without repeating successful source stages or changing application code. No live deployment,
-collection, SQL write, secret retrieval or settings change was performed by Cipher.
+The first owner-run App publication attempt stopped in the required smoke hook;
+remote verification then lost its connection and reported unknown publication.
+Independent GitHub ref inspection confirmed the review branch was absent, and
+the owner-run publisher reported its scoped token revoked. Do not blindly retry
+an unknown result. Git-backed test fixtures had inherited the hook's `GIT_DIR`
+and inline Git configuration, causing fixture initialization/commits to affect
+the unpublished review branch and the shared bare setting. The known review
+commit/index and normal bare setting were restored without changing working
+files or the original branch. Jest now removes that repository-local/auth
+configuration in its child process before loading tests; the parent push retains
+its scoped transport authentication and all smoke/coverage hooks remain enabled.
+A disposable Git-only regression verifies HEAD/index/config isolation. Publication
+must use the corrected exact commit after hook-context validation; the original
+attempt's SHA is not the retry target.
+
+The activation JSON validates against the existing intent schema. Before the
+hook repair, the activation checkout passed the full 1,980-test baseline. The
+isolated checkout's first build hit Turbopack's outside-workspace dependency
+restriction; localizing installed dependencies resolved that without an
+application-code or live-configuration change.
+
+For the hook repair, a disposable Git-only regression passed and a reproduced
+hook-shaped smoke run passed 24 suites / 550 tests, with three guarded skips.
+The full `verify:agent` baseline then passed in that same hook-shaped environment:
+247 suites / 1,981 tests, thresholded coverage and Next production build; six
+database-writing integration tests stayed skipped. Review HEAD/index, main refs,
+remote and normal bare setting stayed intact. Documentation, formatting and diff
+checks passed. These are preparation results, not trusted merged-SHA CI or live
+acceptance. No deployment, collection, SQL write, secret retrieval or live settings
+change was performed by Cipher.

@@ -1,3 +1,15 @@
+// A Git hook exports its repository context. Fixtures must discover their own
+// repositories by cwd, not reinitialize the checkout that launched the hook.
+// This changes only the Jest child; the parent push keeps its scoped auth.
+for (const key of Object.keys(process.env)) {
+  if (
+    /^GIT_(?:DIR|COMMON_DIR|WORK_TREE|IMPLICIT_WORK_TREE|INDEX_FILE|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|GRAFT_FILE|NO_REPLACE_OBJECTS|REPLACE_REF_BASE|PREFIX|INTERNAL_SUPER_PREFIX|SHALLOW_FILE|NAMESPACE|CONFIG|CONFIG_PARAMETERS|CONFIG_COUNT|CONFIG_(?:KEY|VALUE)_\d+)$/.test(
+      key,
+    )
+  )
+    delete process.env[key];
+}
+
 const nextJest = require("next/jest.js");
 
 const createJestConfig = nextJest({ dir: "./" });
