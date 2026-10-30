@@ -2179,6 +2179,9 @@
     "/images/optimus/varsity/meff/meff-2.webp",
     "/images/optimus/varsity/meff/meff-3.webp",
     "/images/optimus/vee-two-dot-five/obsidian.webp",
+    "/images/optimus/vercel/fern.webp",
+    "/images/optimus/vercel/freak.webp",
+    "/images/optimus/vercel/gully.webp",
     "/images/optimus/vomitspit/fern.webp",
     "/images/optimus/vomitspit/shaolin.webp",
     "/images/optimus/vomitspit/today.webp",
@@ -13177,6 +13180,21 @@
       "src": "/images/optimus/vee-two-dot-five/obsidian.webp",
       "width": 480,
       "height": 320
+    },
+    {
+      "src": "/images/optimus/vercel/fern.webp",
+      "width": 960,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/vercel/freak.webp",
+      "width": 964,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/vercel/gully.webp",
+      "width": 480,
+      "height": 853
     },
     {
       "src": "/images/optimus/vomitspit/fern.webp",

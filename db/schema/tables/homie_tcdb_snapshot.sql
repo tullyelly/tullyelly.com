@@ -15,7 +15,10 @@ CREATE TABLE IF NOT EXISTS homie_tcdb_snapshot
     CONSTRAINT homie_tcdb_snapshot_card_count_check
         CHECK (card_count >= 0),
     CONSTRAINT homie_tcdb_snapshot_ranking_check
-        CHECK (ranking >= 0)
+        CHECK (ranking >= 0),
+    CONSTRAINT homie_tcdb_snapshot_difference_sign_check
+        CHECK ((ranking = 1 AND difference >= 0)
+            OR (ranking <> 1 AND difference < 0))
 );
 
 ALTER TABLE homie_tcdb_snapshot
