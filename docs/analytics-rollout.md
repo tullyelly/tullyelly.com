@@ -282,6 +282,80 @@ run records send an external alert when cron never runs. An external heartbeat /
 Sentry Cron Monitor or equivalent alert policy is an optional operational
 follow-up; do not mistake execution error reporting for missing-run detection.
 
+## Private whole-site reporting; WU-1209
+
+The existing `/mark2/admin/analytics` owner console includes a read-only GET form
+for inclusive UTC periods: default 30 completed days, maximum 366, ending no later
+than yesterday. Invalid, reversed, duplicate or oversized inputs produce guidance
+without a report query. Existing collection/import controls remain separate for
+James to operate. The report does not require collection to be enabled to read
+an existing archive.
+
+Both the page and `getOwnerAnalyticsReport` enforce `requireAnalyticsOwner` before
+private reads: the existing session owner role plus strict
+`admin.analytics.manage` capability. The report is dynamic and uncached; no private
+snapshot enters the public cache, and rendering calls no Vercel API. A single
+parameterized SELECT provides a consistent period snapshot from the archive.
+Builds skip private report queries. Missing configuration/schema, malformed
+snapshots and database failures produce sanitized unavailable guidance.
+
+Totals come from sitewide `analytics_day` values on complete/zero days, including
+routes outside the public allowlist. Calendar coverage separately shows verified,
+unavailable, incomplete, API-failed and unattempted days; gaps are not zero. The
+last update is the latest verification within the selected period, distinct from
+the existing 36-hour daily-run freshness indicator. Stored verified counts can
+remain available after a failed refresh; review the last attempted run below.
+
+The daily trend reuses the existing chart, with whole-site labels and exact daily
+values beneath it. BIGINT totals and per-page counts stay decimal strings and
+format through BigInt. Values above safe chart precision are omitted from the
+line with exact-table guidance. Daily visitors appear only by day; their sum is
+never presented as distinct period visitors. No raw visitor identifiers exist in
+the report.
+
+Rankings show at most 50 paths, ordered numerically by aggregated views with a
+stable path tie-break, from verified days only. The report states the full path
+count; the whole-site total is independent of this truncated ranking. Archived
+paths render as escaped text rather than trusted links. Public `/stats`, footer
+and Chronicle counters retain their existing allowlist and five-minute cache.
+No schema migration, SQL execution or environment/connection change is needed
+for this read-only application feature.
+
+For James's WU-1212 browser confirmation on existing development:
+
+1. Finish the owner-operated migration handoff first; start the server and sign in
+   yourself. As an authorized owner, select a completed-day period and compare
+   sitewide totals, exact daily counts, path rankings and coverage with read-only
+   archive results. Test invalid/reversed/current-day and over-366-day selections.
+2. Confirm the GET form only changes the report, collection remains disabled when
+   configured so, and existing collection/import controls remain available for
+   you to operate within their approved scope. No collection is needed to render
+   the report. Do not seed or alter shared records merely to exercise empty cases.
+3. Verify daily values/table scrolling and date controls at narrow and desktop
+   widths. Inspect exact-count guidance for any naturally present large counts;
+   oversized, missing/zero and malformed-data cases otherwise remain mocked.
+4. Sign out and use a non-owner identity yourself; confirm report access is denied.
+   Existing owner-role/capability checks remain required even for a copied report
+   URL. Anonymous/non-owner sessions must not receive private paths or totals.
+5. Check public `/stats` and a Chronicle: no private paths, whole-site expansion or
+   changed allowlist. Their totals may legitimately differ from the owner report.
+
+Agent browser/authentication, SQL write, seed, collection/import and PostgreSQL
+integration checks were not run. Real browser and live archive comparisons remain
+pending James's actions. Shipping remains dependent on WU-1210 and the existing
+application release/human approvals.
+
+WU-1209 local validation: six focused suites passed **54 mocked tests**, including
+private query bounds, authorization, exact-count rendering, unavailable/zero
+states and public-scope regressions. After fixing the new SSR formatter lint
+violation, the database-disabled `npm run verify:agent` baseline passed in
+112.7 seconds: 243 suites and 1,933 tests passed; 2 suites and 6 opt-in PostgreSQL
+tests were skipped. Lint, typecheck, coverage thresholds and production build
+passed. Documentation, changed-file formatting, diff and self-fetch checks passed.
+The punctuation check still reports existing violations in unchanged
+`HomieDirectory.tsx` and `FirstOffTheLineSection.tsx`. No real browser, SQL write,
+seed, authentication or collection action was used for this validation.
+
 ## Phase 3 public display
 
 Public statistics: **https://tullyelly.com/stats** (local `/stats`). The shared footer and Chronicle counters link to it using existing link
