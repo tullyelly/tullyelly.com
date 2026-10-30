@@ -141,6 +141,6 @@ test("authorized page separates stale daily collection and backfill gaps without
   ).toBeInTheDocument();
   expect(screen.getByText(/6 days pending verification/)).toBeInTheDocument();
   expect(
-    screen.getByText(/does not send an external alert/),
+    screen.getByText(/delivery is unverified until tested/),
   ).toBeInTheDocument();
 });
