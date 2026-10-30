@@ -1,5 +1,13 @@
 // Fixed invariant names shared by diagnostics and the credential-free summary.
 export const codeInvariants = [
+  "code.analytics-readiness-review",
+  "code.analytics-intent-binding",
+  "code.analytics-intent-revision",
+  "code.analytics-runtime-mismatch",
+  "code.analytics-readiness",
+  "code.analytics-runtime-response",
+  "code.analytics-migration-drift",
+
   "code.health-security-challenge",
   "code.public-verification-binding",
   "code.public-verification-run",
@@ -102,6 +110,17 @@ export const codeInvariants = [
 ];
 
 export const codeDiagnosticFields = [
+  "analyticsIntentSha256",
+  "analyticsReadiness",
+  "manualReadiness",
+  "development",
+  "production",
+  "reference",
+  "targetSha256",
+  "stagedCollectionAcknowledged",
+  "migrations",
+  "filename",
+  "checksum",
   "workflow",
   "runId",
   "runAttempt",

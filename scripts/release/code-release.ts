@@ -10,6 +10,9 @@ import {
   type Diagnostic,
 } from "./code-diagnostics";
 
+import { verifyAnalyticsRuntime } from "./analytics-intent";
+import type { AnalyticsRuntimeState } from "../../lib/analytics-archive/readiness-contract";
+
 export type CodeDeployment = {
   id: string;
   url: string;
@@ -45,7 +48,10 @@ export interface CodeProviders {
   stage(): Promise<CodeDeployment>;
   promote(id: string): Promise<void>;
   rollback(id: string): Promise<void>;
-  health(d: CodeDeployment, publicDomain: boolean): Promise<void>;
+  health(
+    d: CodeDeployment,
+    publicDomain: boolean,
+  ): Promise<void | AnalyticsRuntimeState>;
 }
 async function observePhase<T>(
   p: CodeProviders,
@@ -75,6 +81,11 @@ async function observePhase<T>(
 export type CodeReleaseResult = {
   deploymentId: string;
   deployment_succeeded: true;
+  analytics?: {
+    intendedEnabled: boolean;
+    stagedObserved: boolean;
+    publicObserved: boolean | null;
+  };
 } & (
   | { public_verified: true; publicVerification: "public verification passed" }
   | {
@@ -92,9 +103,13 @@ function verifiedResult(deploymentId: string): CodeReleaseResult {
   };
 }
 export function nativeReleaseMessage(result: CodeReleaseResult) {
+  const observed = result.analytics;
+  const state = observed
+    ? `analytics intended ${observed.intendedEnabled ? "on" : "off"}; staged observed ${observed.stagedObserved ? "on" : "off"}; public ${observed.publicObserved === null ? "unverified" : `observed ${observed.publicObserved ? "on" : "off"}`}`
+    : "analytics state unverified";
   return result.public_verified
-    ? `Verified native source deploy: ${result.deploymentId}; analytics remains disabled`
-    : `Native source deployment succeeded: ${result.deploymentId}; public verification pending; public_verified=false; analytics remains disabled`;
+    ? `Verified native source deploy: ${result.deploymentId}; ${state}`
+    : `Native source deployment succeeded: ${result.deploymentId}; public verification pending; public_verified=false; ${state}`;
 }
 
 export async function executeCodeRelease(
@@ -225,8 +240,26 @@ export async function executeCodeRelease(
   // --skip-domain is a required staging property, verified independently of
   // CLI success. An unexpected assignment must stop before promotion.
   await p.guard([m.vercel.productionDeploymentId]);
+  let analytics: CodeReleaseResult["analytics"];
+  async function healthWithAnalytics(publicDomain: boolean) {
+    const observed = await p.health(target, publicDomain);
+    if (m.kind === "native-source") {
+      const state = verifyAnalyticsRuntime(observed, {
+        commit: m.commit,
+        collectionEnabled: m.collectionEnabled,
+        targetSha256: m.analyticsReadiness?.targetSha256,
+      });
+      if (!publicDomain)
+        analytics = {
+          intendedEnabled: m.collectionEnabled,
+          stagedObserved: state.collectionEnabled,
+          publicObserved: null,
+        };
+      else if (analytics) analytics.publicObserved = state.collectionEnabled;
+    }
+  }
   await observePhase(p, "staged-verification", () =>
-    codeGuard("health.staged", () => p.health(target, false)),
+    codeGuard("health.staged", () => healthWithAnalytics(false)),
   );
   let promotionConfirmed = false;
   const current = await p.guard([m.vercel.productionDeploymentId]);
@@ -259,7 +292,7 @@ export async function executeCodeRelease(
   p.reportPhase?.({ phase: "public-verification", outcome: "started" });
   try {
     try {
-      await codeGuard("health.public", () => p.health(target, true));
+      await codeGuard("health.public", () => healthWithAnalytics(true));
     } catch (error) {
       const reason = classifyCodeFailure("health.public", error);
       if (
@@ -292,6 +325,7 @@ export async function executeCodeRelease(
         public_verified: false,
         publicVerification: "public verification pending",
         reason,
+        ...(analytics ? { analytics } : {}),
       } satisfies CodeReleaseResult;
     }
     p.reportPhase?.({
@@ -299,7 +333,10 @@ export async function executeCodeRelease(
       outcome: "success",
       durationMs: Date.now() - startedAt,
     });
-    return verifiedResult(target.id);
+    return {
+      ...verifiedResult(target.id),
+      ...(analytics ? { analytics } : {}),
+    };
   } catch (error) {
     p.reportPhase?.({
       phase: "public-verification",
@@ -326,7 +363,7 @@ export function verifyNativeDeploymentIdentity(
     d.meta?.releaseSourceSha256 !== m.source.sha256 ||
     d.meta?.releaseRunId !== m.workflow.runId ||
     d.meta?.releaseRunAttempt !== m.workflow.runAttempt ||
-    d.meta?.collectionDisabled !== "true"
+    d.meta?.analyticsCollectionEnabled !== String(m.collectionEnabled)
   )
     throw new Error("code.native-deployment-identity");
 }

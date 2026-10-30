@@ -21,6 +21,8 @@ import {
   trustedRequiredCi,
 } from "./native-evidence";
 
+import { readAnalyticsIntent } from "./analytics-intent";
+
 const required = (key: string) => {
   const value = process.env[key];
   if (!value) throw missingConfiguration(key);
@@ -126,12 +128,19 @@ async function main() {
       throw new Error("code.domain-drift");
   }
   const compatibility = changedCompatibility(applicationSha, commit);
+  const analytics = readAnalyticsIntent(commit);
+  if (analytics.intent.collectionEnabled)
+    compatibility.risks = [
+      ...new Set([...compatibility.risks, "analytics-activation" as const]),
+    ].sort();
   const evidence = nativeEvidenceSchema.parse({
-    version: 3,
+    version: 4,
     kind: "native-source",
     operation: "deploy",
     commit,
-    collectionEnabled: false,
+    collectionEnabled: analytics.intent.collectionEnabled,
+    analyticsIntentSha256: analytics.sha256,
+    analyticsReadiness: analytics.intent.manualReadiness,
     workflow: {
       sha: required("GITHUB_SHA"),
       runId: required("GITHUB_RUN_ID"),
@@ -165,6 +174,13 @@ async function main() {
     workflowRunId: evidence.workflow.runId,
     workflowRunAttempt: evidence.workflow.runAttempt,
     workflowRevision: evidence.workflow.sha,
+    analyticsIntendedEnabled: evidence.collectionEnabled,
+    analyticsIntentSha256: evidence.analyticsIntentSha256,
+    analyticsDevelopmentReference:
+      evidence.analyticsReadiness?.development.reference,
+    analyticsProductionReference:
+      evidence.analyticsReadiness?.production.reference,
+    analyticsTargetSha256: evidence.analyticsReadiness?.targetSha256,
     compatibilityRisks: compatibility.risks,
     changedPaths: compatibility.changedPaths,
     schemaDeferralSha256: compatibility.schemaDeferral
@@ -183,6 +199,7 @@ async function main() {
     blockingCompatibilityRisks(
       compatibility.risks,
       !!compatibility.schemaDeferral,
+      evidence.collectionEnabled && !!evidence.analyticsReadiness,
     ).length
   )
     throw new Error("code.sensitive-compatibility-review");

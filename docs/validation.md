@@ -115,6 +115,18 @@ files in base..HEAD when a base is found; it can miss uncommitted and untracked
 edits. For a working-tree review explicitly run `npx prettier --check <files>`.
 FORMAT_CHECK_BASE overrides the base; it does not change this limitation.
 
+### Native analytics release checks
+
+The WU-1210 runtime/readiness and release suites use mocked database/provider
+responses. Run the existing pinned CLI contract using Node from `.nvmrc` and
+Vercel CLI 63.1.2: `node scripts/release/check-cli.mjs`. Its API server and
+credentials are synthetic and loopback-only; it checks the non-secret runtime
+collection override, source upload, polling, provenance and exact-ID promotion
+without a real deployment. A different local Node version must not bypass its
+pin. Mocked success is not live Vercel, scheduler, API-token or manual SQL proof.
+The full repository baseline does not enable the disposable database-writing
+integration suites; their guards remain intact.
+
 ## Browser prerequisites
 
 [playwright.config.ts](../playwright.config.ts) loads .env.test and requires

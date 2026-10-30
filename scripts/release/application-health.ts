@@ -7,6 +7,8 @@ import {
   checkChangedPublicationHealth,
 } from "./code-publication-health";
 
+import { verifyAnalyticsRuntime } from "./analytics-intent";
+
 export async function checkApplicationHealth(options: {
   deployment: CodeDeployment;
   projectId: string;
@@ -15,6 +17,7 @@ export async function checkApplicationHealth(options: {
   publication: PublicationPlan;
   bypassSecret?: string;
   fetcher?: typeof fetch;
+  analytics?: { collectionEnabled: boolean; targetSha256?: string };
 }) {
   await checkCodeHealth({ ...options, operation: "deploy" });
   const read = (path: string) =>
@@ -37,4 +40,13 @@ export async function checkApplicationHealth(options: {
     options.publication.archive,
   );
   await checkChangedPublicationHealth(read, options.publication);
+  if (options.analytics) {
+    const response = await read("/api/health/analytics");
+    if (response.status !== 200)
+      throw new Error("code.analytics-runtime-response");
+    return verifyAnalyticsRuntime(await response.json(), {
+      commit: options.commit,
+      ...options.analytics,
+    });
+  }
 }

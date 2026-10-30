@@ -5,6 +5,7 @@ import { sha256 } from "./manifest";
 import { validateNativeEvidence } from "./native-evidence";
 import { verifyNativeDeploymentIdentity } from "./code-release";
 import { verifyHealthDomainAliases } from "./code-health";
+import { verifyAnalyticsRuntime } from "./analytics-intent";
 import { checkApplicationHealth } from "./application-health";
 import { classifyCodeFailure, codeMetadataRequest } from "./code-diagnostics";
 
@@ -131,18 +132,31 @@ export async function verifyPublicRelease(
       return deployment;
     };
     const deployment = await identity();
-    await checkApplicationHealth({
+    const observed = await checkApplicationHealth({
       deployment,
       projectId: evidence.vercel.projectId,
       publicDomain: true,
       commit: input.sha,
       publication: evidence.publication,
+      analytics: {
+        collectionEnabled: evidence.collectionEnabled,
+        targetSha256: evidence.analyticsReadiness?.targetSha256,
+      },
       fetcher: options.fetcher,
+    });
+    const analytics = verifyAnalyticsRuntime(observed, {
+      commit: input.sha,
+      collectionEnabled: evidence.collectionEnabled,
+      targetSha256: evidence.analyticsReadiness?.targetSha256,
     });
     await identity();
     return {
       ...binding,
       evidenceSha256: evidenceDigest,
+      analytics: {
+        intendedEnabled: evidence.collectionEnabled,
+        publicObserved: analytics.collectionEnabled,
+      },
       state: "public verification passed" as const,
       completedAt: new Date().toISOString(),
     };

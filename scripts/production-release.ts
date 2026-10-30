@@ -233,12 +233,16 @@ async function health(
   d: z.infer<typeof deploymentSchema>,
   publicDomain: boolean,
 ) {
-  await checkApplicationHealth({
+  return checkApplicationHealth({
     deployment: d,
     projectId: manifest.vercel.projectId,
     publicDomain,
     commit: manifest.commit,
     publication: manifest.publication,
+    analytics: {
+      collectionEnabled: manifest.collectionEnabled,
+      targetSha256: manifest.analyticsReadiness?.targetSha256,
+    },
     bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
   });
 }
@@ -260,6 +264,13 @@ async function main() {
     workflowRunId: manifest.workflow.runId,
     workflowRunAttempt: manifest.workflow.runAttempt,
     workflowRevision: manifest.workflow.sha,
+    analyticsIntendedEnabled: manifest.collectionEnabled,
+    analyticsIntentSha256: manifest.analyticsIntentSha256,
+    analyticsDevelopmentReference:
+      manifest.analyticsReadiness?.development.reference,
+    analyticsProductionReference:
+      manifest.analyticsReadiness?.production.reference,
+    analyticsTargetSha256: manifest.analyticsReadiness?.targetSha256,
     compatibilityRisks: manifest.compatibility.risks,
     changedPaths: manifest.compatibility.changedPaths,
     schemaDeferralSha256: manifest.compatibility.schemaDeferral
@@ -355,6 +366,7 @@ async function main() {
             sourceDigest: manifest.source.sha256,
             workflowRunId: manifest.workflow.runId,
             workflowRunAttempt: manifest.workflow.runAttempt,
+            collectionEnabled: manifest.collectionEnabled,
           }),
           manifest.vercel.teamId,
           required("VERCEL_TOKEN"),

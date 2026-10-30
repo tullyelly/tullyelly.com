@@ -281,6 +281,13 @@ export function renderReleaseSummary(events, results = {}) {
     ...(releaseResult
       ? [
           `Deployment succeeded: true; public_verified=${releaseResult.public_verified === true ? "true" : "false"}.`,
+          ...(releaseResult.analytics &&
+          typeof releaseResult.analytics.intendedEnabled === "boolean" &&
+          typeof releaseResult.analytics.stagedObserved === "boolean"
+            ? [
+                `Analytics intended: ${releaseResult.analytics.intendedEnabled ? "on" : "off"}; staged observed: ${releaseResult.analytics.stagedObserved ? "on" : "off"}; public observed: ${typeof releaseResult.analytics.publicObserved === "boolean" ? (releaseResult.analytics.publicObserved ? "on" : "off") : "unverified"}.`,
+              ]
+            : ["Analytics runtime state unverified."]),
           ...(releaseResult.public_verified === false
             ? [
                 "Green protected operation means deployment succeeded; public verification pending is not full public acceptance.",
@@ -357,6 +364,7 @@ export function renderReleaseSummary(events, results = {}) {
       "authentication-policy",
       "runtime-configuration",
       "analytics-activation",
+      "analytics-maintenance",
     ]);
     const risks = Array.isArray(context.compatibilityRisks)
       ? context.compatibilityRisks.filter((risk) => allowedRisks.has(risk))
@@ -373,9 +381,14 @@ export function renderReleaseSummary(events, results = {}) {
     const schemaDeferred =
       typeof context.schemaDeferralSha256 === "string" &&
       /^[a-f0-9]{64}$/.test(context.schemaDeferralSha256);
+    const analyticsReviewed =
+      context.analyticsIntendedEnabled === true &&
+      /^WU-[1-9][0-9]*$/.test(context.analyticsDevelopmentReference ?? "") &&
+      /^WU-[1-9][0-9]*$/.test(context.analyticsProductionReference ?? "") &&
+      /^[a-f0-9]{64}$/.test(context.analyticsTargetSha256 ?? "");
     const blocked = risks.some(
       (risk) =>
-        risk === "analytics-activation" ||
+        (risk === "analytics-activation" && !analyticsReviewed) ||
         (risk === "database-schema" && !schemaDeferred),
     );
     lines.splice(
@@ -388,6 +401,18 @@ export function renderReleaseSummary(events, results = {}) {
             `Schema deferral SHA-256: ${context.schemaDeferralSha256}`,
           ]
         : []),
+      ...(typeof context.analyticsIntendedEnabled === "boolean"
+        ? [
+            `Analytics intended collection: ${context.analyticsIntendedEnabled ? "on" : "off"}.`,
+            `Analytics intent SHA-256: ${hex(context.analyticsIntentSha256, 64)}`,
+            context.analyticsIntendedEnabled
+              ? `Manual DataGrip readiness: development ${/^WU-[1-9][0-9]*$/.test(context.analyticsDevelopmentReference ?? "") ? context.analyticsDevelopmentReference : "unavailable"}; production ${/^WU-[1-9][0-9]*$/.test(context.analyticsProductionReference ?? "") ? context.analyticsProductionReference : "unavailable"}; database target SHA-256 ${hex(context.analyticsTargetSha256, 64)}.`
+              : "Disabled maintenance does not require or initialize analytics schema.",
+            "Runtime collection intent applies to the staged production deployment too; promotion does not change its immutable environment. Metadata alone is not verification. Read-only runtime/catalog checks must match before promotion; no SQL or collect/import action is executed.",
+          ]
+        : [
+            "Analytics intended/runtime state unavailable; no disabled-state proof is inferred.",
+          ]),
       `Changed source paths: ${paths.length}`,
       ...(risks.length ? paths.map((path) => `- ${path}`) : []),
       "",
@@ -493,7 +518,7 @@ export function renderReleaseSummary(events, results = {}) {
     );
   lines.push(
     "",
-    "This release does not authorize collection activation. No automatic retry, rollback, database restore or credential recovery is authorized.",
+    "Only the checksum-bound analytics intent is approved through the existing human gate. No migration, manual collection/import, automatic retry, rollback, database restore or credential recovery is authorized.",
     "",
   );
   return lines.join("\n");
