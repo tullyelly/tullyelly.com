@@ -61,6 +61,16 @@ spawn failures report only a fixed diagnostic code. Existing console timings and
 optional RELEASE_REPORT_PATH stage records cover all three entry points. The
 existing Jest suite exercises these contracts; no duplicate tooling suite is added.
 
+### Git-backed fixtures under hooks
+
+Jest removes repository-local Git variables inherited from a Git hook before
+loading tests, including the publishing repository/index/object paths and inline
+Git configuration/auth headers. Temporary Git fixtures therefore operate on their
+own repositories. The cleanup occurs only in the Jest child process; it does not
+remove the parent push's scoped authentication or skip smoke/coverage hooks.
+A real temporary-repository regression checks that a hook-shaped environment
+cannot change the publishing repository's HEAD, index or bare setting.
+
 ## GitHub Actions workflow validation
 
 `npm run workflows:check` runs pinned **actionlint 1.7.12** against every YAML file
