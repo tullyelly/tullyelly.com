@@ -304,8 +304,10 @@ Reviewed analytics code maintenance is distinct from activation. The existing
 native release reads `releases/analytics-state.json` from the immutable commit,
 binds its flag/digest and real manual-readiness references into the existing
 human approval, and supplies only that non-secret runtime switch to its one
-source deployment. The prepared record is off; no live state is changed by this
-implementation. See the [native analytics release procedure](production-releases.md#native-analytics-maintenance-and-intentional-activation-wu-1210).
+source deployment. The WU-1213 prepared record now requests on for a future
+reviewed activation release; it changes no live state. Fresh evidence and remaining
+release prerequisites are in the [production handoff](analytics-production-handoff.md).
+See the [native analytics release procedure](production-releases.md#native-analytics-maintenance-and-intentional-activation-wu-1210).
 
 The uncached `/api/health/analytics` route reports effective state without auth,
 collection or API calls. Off state skips database checks explicitly. On state

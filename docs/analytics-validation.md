@@ -3,10 +3,12 @@
 This checklist validates the existing implementation. James operates DataGrip,
 local app startup, login, collection and import. Cipher inspects results read-only.
 No new branch, connection, environment file, credential retrieval, fixture or
-migration executor is used. WU-1212 remains open until the manual evidence exists;
-WU-1213 production launch depends on that evidence.
+migration executor is used. WU-1212 is now Done after James's manual checks and
+read-only verification; the original numbered checklist remains below for reference.
+See the [current production handoff](analytics-production-handoff.md) for measured
+results, fresh production evidence and remaining WU-1213 launch steps.
 
-## Current evidence, not launch approval
+## Earlier preparation snapshot, not launch approval
 
 Read-only checks at **2026-10-30 01:20-01:24 UTC (October 29 local)** independently
 inspected both existing branches in Neon project `rough-bush-94516855`:
@@ -32,7 +34,7 @@ the earlier absent-schema assessment. **Do not rerun ledger initialization or
 session, revision deltas or notification delivery. Retain his COMMIT/postflight
 results separately; no execution provenance is invented from catalog presence.
 
-The agent process has no analytics token/project/team/availability configuration
+At that earlier preparation snapshot, the agent process had no analytics token/project/team/availability configuration
 available; no secrets or environment files were read or changed. Collector-token
 transport, actual source project/team, earliest fully available day, local runtime
 configuration, browser behavior, notification delivery and scheduled invocation
@@ -154,10 +156,12 @@ execute highlighted fragments or replace unknown API totals with zero.
     WU-1212. Six disposable database-writing integration tests remain unrun;
     guarded skips, mocks and manual bounded checks are distinct evidence.
 
-## Production continuation; held for WU-1213
+## Production continuation; WU-1213
 
-This is a planning sequence, not permission to activate or completed production
-validation. After development evidence is accepted:
+Development evidence has been accepted; this planning sequence still does not
+authorize deployment or claim completed production validation. The
+[dated production handoff](analytics-production-handoff.md) owns current observations
+and pending checks. Continue through the existing release process:
 
 1. Refresh existing production identity, full catalog/selected ledger state and
    actual recovery coverage independently. The current package is already applied;
@@ -174,8 +178,9 @@ validation. After development evidence is accepted:
 3. Review the exact source SHA, manual dev/prod readiness references and original
    hashes in `releases/analytics-state.json`, including the production target
    fingerprint and acknowledgement that an enabled staged deployment has the
-   enabled runtime value already. The prepared record remains off until a real
-   owner-reviewed activation change. Follow the existing exact-SHA trusted CI,
+   enabled runtime value already. The WU-1213 activation record is prepared for
+   review; live production settings remain owner-reported off and no release
+   has been executed for it. Follow the existing exact-SHA trusted CI,
    dispatcher and human `production-release` approval; no second workflow/gate
    or agent migration executor. No production dispatch is authorized by this plan.
 4. After James's approved configuration/release, require read-only staged/public
