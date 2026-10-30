@@ -27,16 +27,18 @@ is independently required. This record permits application deployment only; it n
 applies SQL nor claims that migrations have run. A separately reviewed migration
 release remains necessary for database writes.
 
-The WU-1021 record defers migrations 083-087 and the category schema mirrors
-from production application baseline `ee1ee21450276885363bd388db376a0c97ab1900`.
-Category pages expose prerequisite/unavailable states if their schema is absent;
-Chronicle category references retain their links without measurements when reads
-fail. Category data, rankings, menu provisioning and snapshot writes still need
-separately reviewed database setup. Migration 087 is a Marquette membership
-backfill and is not required for application build or startup. This record makes
-no claim about live migration state. See [category prerequisites](card-category-counts.md)
-and [membership migrations](migrations.md#player-and-clan-memberships).
-Review these limitations when approving the record and again at the production gate.
+The current WU-1213 record binds production application baseline
+`819966fde2630f8b86f19c5897e2701ab824a157`. Its complete guarded database diff
+contains only migration 088 and the homie snapshot schema mirror. Read-only
+inspection found the exact validated sign constraint already present in both
+existing databases, with zero violating rows, but no 088 migration ledger entry.
+Execution of 088 remains deferred; do not replay its non-idempotent constraint or
+invent migration history. Migrations 083-087 and category mirrors are unchanged
+from this production application baseline; the older WU-1021 review is superseded.
+The [compatibility review](schema-compatibility-review.md) records the full diff,
+application contracts, live observations, limitations and manual read-only checks.
+Analytics activation still requires its independent reviewed intent/readiness and
+the protected workflow. Review current evidence at the human production gate.
 
 Implementation and policy changes do not authorize a live release. Only the
 coordinating agent initiates an authorized release. Never approve the environment
