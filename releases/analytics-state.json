@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "collectionEnabled": true,
+  "manualReadiness": {
+    "development": {
+      "checkedAt": "2026-10-30T03:59:28.926Z",
+      "reference": "WU-1212"
+    },
+    "production": {
+      "checkedAt": "2026-10-30T03:59:43.778Z",
+      "reference": "WU-1213"
+    },
+    "targetSha256": "911585abc1a11bc8b40cd57e28b5a1391e6262345f11a15db7d5a83a499b01c9",
+    "migrations": [
+      {
+        "filename": "076_create_analytics_archive.sql",
+        "checksum": "0d83dc262d5291906d037d0d625cdd245a182c90a924faefb146852d7a635553"
+      },
+      {
+        "filename": "077_analytics_operations.sql",
+        "checksum": "88584aa867075149dc0b7d1b984262443462493c0e446fb8c00122446128f694"
+      }
+    ],
+    "stagedCollectionAcknowledged": true
+  }
+}

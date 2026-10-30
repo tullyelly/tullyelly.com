@@ -36,3 +36,18 @@ test("ordinary verified zero and missing days retain the ordinary gap explanatio
     "Daily archived public page views; gaps represent unverified days",
   );
 });
+
+test("private chart labels whole-site scope while preserving exact-count guidance", () => {
+  render(
+    <TrafficChart
+      scope="sitewide"
+      rows={[{ day: "2026-10-01", views: "9007199254740993" }]}
+    />,
+  );
+  expect(screen.getByRole("img")).toHaveAccessibleName(
+    /Daily archived whole-site page views/,
+  );
+  expect(screen.getByRole("status")).toHaveTextContent(
+    "exceed chart precision",
+  );
+});

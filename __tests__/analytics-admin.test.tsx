@@ -8,6 +8,9 @@ jest.mock("@/lib/analytics-archive/status", () => ({
   getAnalyticsStatus: jest.fn(),
   analyticsErrorLabels: {},
 }));
+jest.mock("@/lib/analytics-archive/report", () => ({
+  getOwnerAnalyticsReport: jest.fn(),
+}));
 jest.mock("@/app/mark2/admin/analytics/actions", () => ({
   analyticsAction: jest.fn(),
 }));
@@ -32,7 +35,16 @@ import {
   AuthzForbiddenError,
   AuthzUnauthenticatedError,
 } from "@/lib/authz/types";
-beforeEach(() => jest.clearAllMocks());
+import { getOwnerAnalyticsReport } from "@/lib/analytics-archive/report";
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.mocked(getOwnerAnalyticsReport).mockResolvedValue({
+    range: { from: "2026-10-01", through: "2026-10-09" },
+    maxDay: "2026-10-09",
+    snapshot: null,
+    error: null,
+  });
+});
 test("disabled UI leaves read-only connection test available and prevents collection submissions", () => {
   render(
     <AnalyticsControls
@@ -80,6 +92,7 @@ test.each([new AuthzUnauthenticatedError(), new AuthzForbiddenError()])(
     jest.mocked(requireAnalyticsOwner).mockRejectedValueOnce(error);
     await expect(AnalyticsAdminPage()).rejects.toThrow();
     expect(getAnalyticsStatus).not.toHaveBeenCalled();
+    expect(getOwnerAnalyticsReport).not.toHaveBeenCalled();
   },
 );
 test("authorized page separates stale daily collection and backfill gaps without showing secrets", async () => {
@@ -106,7 +119,18 @@ test("authorized page separates stale daily collection and backfill gaps without
       recorded: 5,
     },
   });
-  render(await AnalyticsAdminPage());
+  render(
+    await AnalyticsAdminPage({
+      searchParams: Promise.resolve({
+        from: "2026-10-01",
+        through: "2026-10-09",
+      }),
+    }),
+  );
+  expect(getOwnerAnalyticsReport).toHaveBeenCalledWith({
+    from: "2026-10-01",
+    through: "2026-10-09",
+  });
   expect(
     screen.getByText(/no successful daily collection in the last 36 hours/),
   ).toBeInTheDocument();
@@ -117,6 +141,6 @@ test("authorized page separates stale daily collection and backfill gaps without
   ).toBeInTheDocument();
   expect(screen.getByText(/6 days pending verification/)).toBeInTheDocument();
   expect(
-    screen.getByText(/does not send an external alert/),
+    screen.getByText(/delivery is unverified until tested/),
   ).toBeInTheDocument();
 });

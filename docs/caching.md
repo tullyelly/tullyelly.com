@@ -48,3 +48,9 @@ Category snapshot readers share the `card-category-snapshots` cache tag with a
 commit and invalidate category, Chronicle and Bricks layouts. A post-commit
 freshness failure returns saved with `freshness: "pending"`; it is not a failed
 mutation. See [category counts](card-category-counts.md).
+
+The private whole-site report on `/mark2/admin/analytics` is a separate uncached
+server read. Its helper rechecks the owner and strict capability before private queries;
+only the resulting chart's day/views pairs cross to its client component. It does
+not call the public cached reader or Vercel API. See
+[private analytics reporting](analytics-rollout.md#private-whole-site-reporting-wu-1209).

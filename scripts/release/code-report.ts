@@ -47,6 +47,22 @@ export function reportCodeEvent(event: Record<string, unknown>) {
         /^[1-9][0-9]*$/.test(event.workflowRunAttempt)
           ? event.workflowRunAttempt
           : undefined,
+      analyticsIntendedEnabled:
+        typeof event.analyticsIntendedEnabled === "boolean"
+          ? event.analyticsIntendedEnabled
+          : undefined,
+      analyticsIntentSha256: hex(event.analyticsIntentSha256, 64),
+      analyticsTargetSha256: hex(event.analyticsTargetSha256, 64),
+      analyticsDevelopmentReference:
+        typeof event.analyticsDevelopmentReference === "string" &&
+        /^WU-[1-9][0-9]*$/.test(event.analyticsDevelopmentReference)
+          ? event.analyticsDevelopmentReference
+          : undefined,
+      analyticsProductionReference:
+        typeof event.analyticsProductionReference === "string" &&
+        /^WU-[1-9][0-9]*$/.test(event.analyticsProductionReference)
+          ? event.analyticsProductionReference
+          : undefined,
       compatibilityRisks: Array.isArray(event.compatibilityRisks)
         ? event.compatibilityRisks.filter((risk) =>
             [
@@ -55,6 +71,7 @@ export function reportCodeEvent(event: Record<string, unknown>) {
               "authentication-policy",
               "runtime-configuration",
               "analytics-activation",
+              "analytics-maintenance",
             ].includes(String(risk)),
           )
         : undefined,
@@ -113,6 +130,23 @@ export function reportCodeEvent(event: Record<string, unknown>) {
         ? "public verification passed"
         : "public verification pending",
       ...(reason ? { reason } : {}),
+      ...(event.analytics &&
+      typeof event.analytics === "object" &&
+      "intendedEnabled" in event.analytics &&
+      typeof event.analytics.intendedEnabled === "boolean" &&
+      "stagedObserved" in event.analytics &&
+      typeof event.analytics.stagedObserved === "boolean" &&
+      "publicObserved" in event.analytics &&
+      (typeof event.analytics.publicObserved === "boolean" ||
+        event.analytics.publicObserved === null)
+        ? {
+            analytics: {
+              intendedEnabled: event.analytics.intendedEnabled,
+              stagedObserved: event.analytics.stagedObserved,
+              publicObserved: event.analytics.publicObserved,
+            },
+          }
+        : {}),
     };
   } else if (event.event === "auth") {
     const keys = [
