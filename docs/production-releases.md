@@ -445,12 +445,16 @@ path is not authorized under the current manual-DataGrip policy. Neither path is
 authorized by ordinary source deployment. Sensitive operations retain their existing
 approval procedures and share the production concurrency boundary.
 
-The analytics migration release remains unready: the 2026-10-29 read-only
-inspection found no production analytics tables or ledger. Historical domain SQL
-has no ledger proof. Individually justified bookkeeping, James-operated
-development validation, credential readiness and documented recovery limitations
-remain prerequisites. See the
-[current observations](analytics-rollout.md#observed-on-2026-10-29); deployed
+The earlier 2026-10-29 absent-schema inspection has been superseded: the latest
+[read-only postflight](analytics-validation.md#current-evidence-not-launch-approval)
+confirms expected analytics schema and selected applied 076/077 ledger records in
+both existing targets. Do not replay the package. Feature validation and deliberate
+activation remain pending; this does not establish launch readiness. No unrelated
+historical migration records were assessed in this refresh; any further
+bookkeeping requires individual justification. James-operated development
+validation, credential readiness and documented recovery limitations remain
+prerequisites. See the
+[current observations](analytics-rollout.md#latest-read-only-postflight-wu-1212); deployed
 configuration and credential rotation state were not inspected. The analytics executor refuses
 missing ledgers, ambiguous history, checksum drift and failed entries; it never
 invents a baseline or replays historical SQL as part of an ordinary release.

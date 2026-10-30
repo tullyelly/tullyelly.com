@@ -9,6 +9,16 @@ production writes, application deployment or collection activation; preserve the
 existing [production approval policy](production-releases.md) and
 [DataGrip procedure](analytics-neon-setup.md).
 
+## Latest state; do not replay the applied package
+
+The 2026-10-30 UTC refresh independently confirms both existing databases match
+expected analytics columns/owners and validated constraints, exact applied 076/077
+ledger hashes and enabled admin grant. See [current validation evidence](analytics-validation.md#current-evidence-not-launch-approval)
+for timestamps and limits. The absent-state assessment and write order below
+remain the reviewed historical handoff, not a request to rerun those files.
+No write SQL is currently selected. James's feature validation is still pending;
+Cipher has made no database writes.
+
 ## Current analytics database policy
 
 James executes reviewed SQL manually through existing DataGrip connections,
