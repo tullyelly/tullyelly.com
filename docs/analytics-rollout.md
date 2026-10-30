@@ -17,6 +17,21 @@ checks. See the full [operating boundary](analytics-neon-setup.md#analytics-data
 Application release and human approvals remain unchanged; no analytics SQL
 executor is dispatched and no mandatory new recovery environment is introduced.
 
+## Latest read-only postflight; WU-1212
+
+The **2026-10-30 01:20-01:24 UTC (October 29 local)** refresh supersedes the earlier
+absent-schema observation below. Both existing databases now match expected
+analytics columns/owners and validated constraints, contain exact applied original
+076/077 SHA-256 ledger rows, and have the enabled admin analytics allow grant.
+Each currently has zero runs, days, page-days and cursors. Do not replay SQL.
+Read-only MCP access used `neondb_owner`; application-role identity, actual owner
+execution/revision effects, collector-token transport and feature validation still
+need separate evidence. See the [numbered owner validation checklist](analytics-validation.md)
+for dated applied timestamps, pending checks and the held production continuation.
+
+The following older observation remains a historical snapshot, not current
+migration state or instructions to recreate existing objects.
+
 ## Observed on 2026-10-29
 
 Checkout inspected: `0abda1bc29631f613dfbc5b5d1f94b3827e421e6`.
@@ -64,9 +79,8 @@ Do not trigger collection merely to obtain read-only evidence.
 Old October fixtures, integration passes and branch IDs are preserved in the
 [historical recovery record](archive/analytics-october-recovery.md) and
 [historical setup](archive/analytics-october-setup.md). They do not establish
-current rehearsal, SQL application or production readiness. With the observed
-missing schema/ledger, analytics migration preparation and per-file historical
-reconciliation remain necessary before activation.
+current rehearsal, SQL application or production readiness. The earlier missing-schema assessment is superseded by the latest postflight
+above; manual feature validation remains necessary before activation.
 
 ## Upstream coverage contract
 
