@@ -650,6 +650,9 @@
     "/images/optimus/fishscale/second.webp",
     "/images/optimus/fit-check-part-deux/new-emma.webp",
     "/images/optimus/fit-check/fit-check.webp",
+    "/images/optimus/flat/fern/fern-0.webp",
+    "/images/optimus/flat/fern/fern-1.webp",
+    "/images/optimus/flat/fern/fern-2.webp",
     "/images/optimus/found-it/authentic.webp",
     "/images/optimus/found-it/keepers/keepers-0.webp",
     "/images/optimus/found-it/keepers/keepers-1.webp",
@@ -5535,6 +5538,21 @@
       "src": "/images/optimus/fit-check/fit-check.webp",
       "width": 964,
       "height": 1280
+    },
+    {
+      "src": "/images/optimus/flat/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/flat/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/flat/fern/fern-2.webp",
+      "width": 1920,
+      "height": 1440
     },
     {
       "src": "/images/optimus/found-it/authentic.webp",
