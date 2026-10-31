@@ -287,6 +287,10 @@ test("phase reporting observes one opaque CLI call and confirms build completion
     "staged-verification:started",
     "staged-verification:success",
     "promotion:started",
+    "promotion-attempt:started",
+    "promotion-attempt:success",
+    "domain-assignment:started",
+    "domain-assignment:success",
     "promotion:success",
     "public-verification:started",
     "public-verification:success",
@@ -818,3 +822,57 @@ test("metadata is not runtime proof even when every identity tag matches", async
   await expect(run()).rejects.toThrow();
   expect(p.promote).not.toHaveBeenCalled();
 });
+
+test.each([false, true])(
+  "alias timeout after promotion (public=%s) never replays writes",
+  async (publicFailure) => {
+    const { p, d, run } = fixture();
+    const phases: CodePhaseEvent[] = [];
+    p.reportPhase = (event) => phases.push(event);
+    const guard = p.guard;
+    p.guard = jest.fn(async (allowed) => {
+      if (!publicFailure && allowed.includes(d.id))
+        throw new DOMException("fixture", "TimeoutError");
+      return guard(allowed);
+    });
+    if (publicFailure)
+      p.health = jest.fn(async (_d, publicDomain) => {
+        if (publicDomain) throw new DOMException("fixture", "TimeoutError");
+        return observedOff();
+      });
+    await expect(run()).rejects.toThrow();
+    expect(p.stage).toHaveBeenCalledTimes(1);
+    expect(p.promote).toHaveBeenCalledTimes(1);
+    expect(p.rollback).not.toHaveBeenCalled();
+    expect(phases).toContainEqual(
+      expect.objectContaining({
+        phase: "promotion-attempt",
+        outcome: "success",
+      }),
+    );
+    expect(phases).toContainEqual(
+      expect.objectContaining({
+        phase: publicFailure ? "public-verification" : "domain-assignment",
+        outcome: "failure",
+      }),
+    );
+  },
+);
+
+test.each([2, 3])(
+  "pre-promotion metadata failure at guard %s blocks writes",
+  async (checkpoint) => {
+    const { p, run } = fixture();
+    const guard = p.guard;
+    let reads = 0;
+    p.guard = jest.fn(async (allowed) => {
+      if (++reads === checkpoint)
+        throw new DOMException("fixture", "TimeoutError");
+      return guard(allowed);
+    });
+    await expect(run()).rejects.toThrow();
+    expect(p.stage).toHaveBeenCalledTimes(1);
+    expect(p.promote).not.toHaveBeenCalled();
+    expect(p.rollback).not.toHaveBeenCalled();
+  },
+);

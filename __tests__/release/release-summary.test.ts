@@ -1227,3 +1227,25 @@ test("green deployment retains serialized pending reason and never reports publi
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("post-promotion metadata failure reports separate confirmed and unresolved checkpoints", () => {
+  const events = [
+    { event: "deployment", deploymentId: "dpl_fixture" },
+    ...[
+      "deployment-creation",
+      "remote-build",
+      "staged-verification",
+      "promotion-attempt",
+    ].map((phase) => ({ event: "phase", phase, outcome: "success" })),
+    { event: "phase", phase: "domain-assignment", outcome: "failure" },
+    { event: "phase", phase: "promotion", outcome: "failure" },
+  ];
+  const output = summary(events, { production: "failure" });
+  expect(output).toContain("Deployment creation: success.");
+  expect(output).toContain("Build readiness: success.");
+  expect(output).toContain("Promotion call: success.");
+  expect(output).toContain("Domain assignment: failure.");
+  expect(output).toContain("Public verification: unobserved.");
+  expect(output).not.toContain("Deployment succeeded: true");
+  expect(output).not.toContain("Production promoted;");
+});

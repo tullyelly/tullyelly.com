@@ -340,6 +340,21 @@ Cloudflare challenge.
 
 ### Portable completion of public verification
 
+Alias metadata GETs tolerate only classified transient transport failures and HTTP
+429/502/503/504: at most three attempts, 15 seconds per attempt and 45 seconds
+total, including response reads, with 250/750 ms backoff inside that budget.
+Other metadata operations retain one attempt. Authorization, malformed JSON,
+identity/assignment mismatch and drift remain blocking; exhausted reads remain
+fatal. Diagnostics retain only the fixed operation, safe category/status/cause
+codes and bounded alias attempt count. No deployment or promotion is retried.
+
+Phase reports distinguish deployment creation, READY, staged verification,
+the single promotion call, domain assignment confirmation and public verification.
+A successful promotion call alone does not confirm assignment. A failed follow-up
+read leaves that checkpoint unresolved and the operation failed; reconcile the
+existing deployment read-only before considering any separately approved write.
+Older reports retain their original phase vocabulary and conclusions.
+
 Use a reviewed checkout with npm dependencies installed and the original
 `release-evidence.json` from `release-evidence-<run>-<attempt>`. The evidence is
 non-secret. Do not reconstruct it from current main or substitute an empty

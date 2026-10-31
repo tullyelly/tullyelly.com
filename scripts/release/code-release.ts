@@ -27,6 +27,8 @@ export type CodeReleasePhase =
   | "deployment-creation"
   | "remote-build"
   | "staged-verification"
+  | "promotion-attempt"
+  | "domain-assignment"
   | "promotion"
   | "public-verification";
 export type CodePhaseEvent = {
@@ -267,19 +269,27 @@ export async function executeCodeRelease(
     await observePhase(p, "promotion", async () => {
       let failure: Diagnostic | undefined;
       try {
-        await codeGuard("vercel.promote", () => p.promote(target.id));
+        await observePhase(p, "promotion-attempt", () =>
+          codeGuard("vercel.promote", () => p.promote(target.id)),
+        );
       } catch (error) {
         failure = classifyCodeFailure("vercel.promote", error);
       }
-      const after = await p.guard([m.vercel.productionDeploymentId, target.id]);
-      if (after !== target.id)
-        throw outcomeError(
-          "vercel.promote",
-          failure
-            ? "code.promote-outcome-unresolved"
-            : "code.promote-not-assigned",
-          failure,
-        );
+      await observePhase(p, "domain-assignment", async () => {
+        const assigned = await p.guard([
+          m.vercel.productionDeploymentId,
+          target.id,
+        ]);
+        if (assigned !== target.id)
+          throw outcomeError(
+            "vercel.promote",
+            failure
+              ? "code.promote-outcome-unresolved"
+              : "code.promote-not-assigned",
+            failure,
+          );
+        return assigned;
+      });
       if (failure)
         p.reportReconciliation?.({
           outcome: "found",

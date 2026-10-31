@@ -542,3 +542,21 @@ test("portable CLI rejects unsafe arguments and emits only bounded pending outpu
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("a completed failed run can pass only with the original evidence binding", async () => {
+  const original = fixture({ run: { conclusion: "failure" } });
+  expect(await original.verify()).toMatchObject({
+    state: "public verification passed",
+  });
+  for (const [target, options] of original.fetcher.mock.calls) {
+    expect(options?.method).toBe("GET");
+    expect(String(target)).not.toContain("/promote");
+  }
+  const changed = fixture({
+    run: { conclusion: "failure" },
+    meta: { releaseEvidence: "0".repeat(64) },
+  });
+  expect(await changed.verify()).toMatchObject({
+    state: "public verification pending",
+  });
+});

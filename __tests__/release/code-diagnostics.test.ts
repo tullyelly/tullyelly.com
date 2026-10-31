@@ -441,3 +441,129 @@ test("forged process and nested reconciliation diagnostics are bounded and redac
   expect(safe.exitStatus).toBeUndefined();
   expect(safe.originalFailure?.originalFailure).toBeUndefined();
 });
+
+describe("bounded alias GET retries", () => {
+  const url = "https://api.vercel.com/v4/aliases/tullyelly.com";
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+  test("timeout then success preserves GET and recovers once", async () => {
+    const fetcher = jest
+      .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+      .mockRejectedValueOnce(new DOMException(sensitive, "TimeoutError"))
+      .mockResolvedValue(Response.json({ alias: "tullyelly.com" }));
+    const result = codeMetadataRequest(url, sensitive, fetcher);
+    await jest.runAllTimersAsync();
+    await expect(result).resolves.toEqual({ alias: "tullyelly.com" });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    for (const [, options] of fetcher.mock.calls)
+      expect(options).toMatchObject({
+        method: "GET",
+        redirect: "error",
+        credentials: "omit",
+      });
+  });
+  test("persistent timeouts stop at three attempts and remain blocking", async () => {
+    const fetcher = jest
+      .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+      .mockRejectedValue(new DOMException(sensitive, "TimeoutError"));
+    const result = codeMetadataRequest(url, sensitive, fetcher).catch(
+      (error) => error,
+    );
+    await jest.runAllTimersAsync();
+    expect(classifyCodeFailure("api.request", await result)).toEqual({
+      guard: "api.request",
+      operation: "vercel.alias",
+      category: "transport",
+      networkCauseCodes: ["TimeoutError"],
+      aliasReadAttempts: 3,
+    });
+    expect(fetcher).toHaveBeenCalledTimes(3);
+  });
+  test("real attempt deadlines share a 45 second total budget", async () => {
+    const started = Date.now();
+    const fetcher = jest
+      .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+      .mockImplementation(
+        (_url, options) =>
+          new Promise((_resolve, reject) => {
+            // Fixture models fetch respecting the deadline; fake timers cannot drive native AbortSignal.timeout.
+            const remaining = Math.min(15000, 45000 - (Date.now() - started));
+            expect(options?.signal).toBeDefined();
+            setTimeout(
+              () => reject(new DOMException("fixture", "TimeoutError")),
+              remaining,
+            );
+          }),
+      );
+    const result = codeMetadataRequest(url, undefined, fetcher).catch(
+      (error) => error,
+    );
+    await jest.runAllTimersAsync();
+    expect(await result).toBeInstanceOf(CodeDiagnosticError);
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(Date.now() - started).toBe(45000);
+  });
+  test.each([401, 403, 400, 404, 500])(
+    "HTTP %s is never retried",
+    async (status) => {
+      const fetcher = jest
+        .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+        .mockResolvedValue(new Response(null, { status }));
+      await expect(
+        codeMetadataRequest(url, undefined, fetcher),
+      ).rejects.toBeInstanceOf(CodeDiagnosticError);
+      expect(fetcher).toHaveBeenCalledTimes(1);
+    },
+  );
+  test("malformed JSON and unknown transport errors are not retried", async () => {
+    jest.useRealTimers();
+    for (const response of [new Response("bad json"), new Error(sensitive)]) {
+      const fetcher = jest
+        .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+        .mockImplementation(async () => {
+          if (response instanceof Error) throw response;
+          return response;
+        });
+      await expect(
+        codeMetadataRequest(url, undefined, fetcher),
+      ).rejects.toBeInstanceOf(CodeDiagnosticError);
+      expect(fetcher).toHaveBeenCalledTimes(1);
+    }
+  });
+  test("other metadata operations retain a single attempt", async () => {
+    const fetcher = jest
+      .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+      .mockRejectedValue(new DOMException("fixture", "TimeoutError"));
+    await expect(
+      codeMetadataRequest(
+        "https://api.vercel.com/v9/projects/fixture",
+        undefined,
+        fetcher,
+      ),
+    ).rejects.toThrow();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+});
+
+test.each([429, 502, 503, 504])(
+  "transient alias HTTP %s recovers with bounded GET retry",
+  async (status) => {
+    jest.useFakeTimers();
+    try {
+      const fetcher = jest
+        .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+        .mockResolvedValueOnce(new Response(null, { status }))
+        .mockResolvedValueOnce(Response.json({ alias: "tullyelly.com" }));
+      const result = codeMetadataRequest(
+        "https://api.vercel.com/v4/aliases/tullyelly.com",
+        undefined,
+        fetcher,
+      );
+      await jest.runAllTimersAsync();
+      await expect(result).resolves.toEqual({ alias: "tullyelly.com" });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  },
+);

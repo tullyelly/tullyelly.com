@@ -189,6 +189,8 @@ export function reportCodeEvent(event: Record<string, unknown>) {
         "remote-build",
         "staged-verification",
         "promotion",
+        "promotion-attempt",
+        "domain-assignment",
         "public-verification",
       ].includes(event.phase) ||
       !["started", "success", "failure", "pending"].includes(event.outcome) ||
