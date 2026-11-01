@@ -147,6 +147,14 @@ relationship metadata on reruns. No production writes were performed.
 check the pairs and college evidence metadata after an approved application;
 they have not been run against an applied database.
 
+[089_add_raptors_player_memberships.sql](../db/migrations/089_add_raptors_player_memberships.sql)
+adds 16 reviewed Toronto Raptors playing-career memberships to `raptors`.
+The [Raptors evidence and manual handoff](raptors-membership-backfill.md) records
+all pairs, read-only endpoint checks and exclusions. Existing tags and relationship
+metadata are preserved. James reports successful execution in development and
+production; read-only postflight passed in both. The same handoff documents the
+missing 089 ledger rows and guarded manual reconciliation; Cipher performed no writes.
+
 ## Homie snapshot differences
 
 [088_enforce_homie_tcdb_snapshot_difference_sign.sql](../db/migrations/088_enforce_homie_tcdb_snapshot_difference_sign.sql)

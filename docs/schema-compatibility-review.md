@@ -197,3 +197,21 @@ review branch's guarded database tree matches the failed release exactly. No
 migration, collector, database-writing test or release was run. Full application
 validation was not repeated for these record/documentation-only edits; the future
 merged review SHA still requires its own mandatory GitHub CI.
+
+## WU-1226 compatibility refresh; October 31, 2026
+
+The active [compatibility record](../releases/deferred-schema.json) now binds to
+READY production deployment `dpl_GTdhe4WWiRxxwAowbCMGW9xjVxL7`, resolved from
+`tullyelly.com`, application SHA `b02bf5c659c0dec985f36e7157d07f0dae2d8280`.
+The complete guarded diff from that baseline contains only migration 089; its
+exact diff SHA-256 is
+`a93e05acca4b730c3e75a7348627260e9648a9065d2535cfd65a600e8ebceea3`.
+The earlier WU-1213 observations above remain historical evidence.
+
+James reports successful execution of 089 in existing development and production.
+Read-only membership postflight assertions subsequently passed on both branches.
+This is an additive data backfill, with no schema or application-contract change.
+Both 089 ledger rows remain absent; application compatibility does not establish
+ledger verification. The [Raptors record](raptors-membership-backfill.md#applied-execution-and-ledger-reconciliation)
+provides the exact file hash, verified effects and James-only ledger handoff.
+No migration, ledger write or deployment was executed by Cipher.
