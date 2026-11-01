@@ -1586,6 +1586,14 @@
     "/images/optimus/rip-biggie-smalls/starter-kit/starter-kit-5.webp",
     "/images/optimus/roadwork rappin.webp",
     "/images/optimus/run-the-jewels/rtj.webp",
+    "/images/optimus/runner-up/67.webp",
+    "/images/optimus/runner-up/chrew.webp",
+    "/images/optimus/runner-up/face.webp",
+    "/images/optimus/runner-up/fern/fern-0.webp",
+    "/images/optimus/runner-up/fern/fern-1.webp",
+    "/images/optimus/runner-up/fern/fern-2.webp",
+    "/images/optimus/runner-up/jeff.webp",
+    "/images/optimus/runner-up/meff.webp",
     "/images/optimus/rye/faith/faith-0.webp",
     "/images/optimus/rye/faith/faith-1.webp",
     "/images/optimus/rye/faith/faith-2.webp",
@@ -10218,6 +10226,46 @@
       "src": "/images/optimus/run-the-jewels/rtj.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/runner-up/67.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/runner-up/chrew.webp",
+      "width": 480,
+      "height": 853
+    },
+    {
+      "src": "/images/optimus/runner-up/face.webp",
+      "width": 480,
+      "height": 853
+    },
+    {
+      "src": "/images/optimus/runner-up/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/runner-up/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/runner-up/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/runner-up/jeff.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/runner-up/meff.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/rye/faith/faith-0.webp",
