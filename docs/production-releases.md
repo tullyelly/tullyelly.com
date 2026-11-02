@@ -27,17 +27,15 @@ is independently required. This record permits application deployment only; it n
 applies SQL nor claims that migrations have run. A separately reviewed migration
 release remains necessary for database writes.
 
-The current WU-1213 record binds production application baseline
-`819966fde2630f8b86f19c5897e2701ab824a157`. Its complete guarded database diff
-contains only migration 088 and the homie snapshot schema mirror. Read-only
-inspection found the exact validated sign constraint already present in both
-existing databases, with zero violating rows, but no 088 migration ledger entry.
-Execution of 088 remains deferred; do not replay its non-idempotent constraint or
-invent migration history. Migrations 083-087 and category mirrors are unchanged
-from this production application baseline; the older WU-1021 review is superseded.
-The [compatibility review](schema-compatibility-review.md) records the full diff,
-application contracts, live observations, limitations and manual read-only checks.
-Analytics activation still requires its independent reviewed intent/readiness and
+The current WU-1242 compatibility record binds production application baseline
+`a7706088e12bd9c38abfe3f6386a3ae502f1c472`. Its complete guarded database diff
+contains only data migrations 090-096; no permanent schema or Prisma changes.
+Fresh read-only inspection found exact applied ledger checksums and matching
+installed effects in both existing databases. No SQL replay is needed for this
+application-only release. Other historical ledger gaps remain separate. The
+[compatibility review](schema-compatibility-review.md) records the failed run,
+provider baseline, full diff digest, application contracts and read-only evidence.
+Analytics activation retains its independent intent/readiness requirements and
 the protected workflow. Review current evidence at the human production gate.
 
 Implementation and policy changes do not authorize a live release. Only the

@@ -1,6 +1,111 @@
-# WU-1213 application compatibility review
+# Application compatibility review
 
-## Decision and failed release
+## Current WU-1242 review; November 1, 2026
+
+[Production run 41382584230](https://github.com/tullyelly/tullyelly.com/actions/runs/41382584230)
+for merged candidate `6dc57341093e127c0f5cce7ffeef5527e032eeab` failed at
+`code.sensitive-compatibility-review`, before the protected production job or
+human approval gate. Exact-SHA CI had passed. The guard worked correctly: the
+WU-1226 record still named baseline `b02bf5c659c0dec985f36e7157d07f0dae2d8280`
+and a diff containing only migration 089. Both bindings were stale.
+
+Read-only Vercel inspection resolved both `tullyelly.com` and `www.tullyelly.com`
+to READY production deployment `dpl_7NhokZgVao9mgcRwfLnXQxMK115L`, project
+`prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU`, team
+`team_pB5TcLa7apLtPAiVrRbcjBG3`. Its application SHA is
+`a7706088e12bd9c38abfe3f6386a3ae502f1c472`. Alias destinations and provider Git metadata
+identify the production baseline; migration ledgers cannot establish it.
+
+The complete guarded diff from that baseline to the candidate consists of seven
+added data migrations, 090 through 096. There are no changes under `db/schema` or
+`prisma/schema*`, and migration 089 is already in the production application
+baseline. The exact binary diff digest is:
+`81f6f9894cff38d49745af05af4a97936ea3c497e6a140f92acb684b32476bc6`.
+
+| Migration                                                                    | Reviewed effect                                                               | Original SHA-256                                                   |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [090](../db/migrations/090_restore_homie_alias_memberships.sql)              | Restore 12 current-alias homie/clan relations, preserving legacy evidence     | `ebc4ef13882e91d3f2872a7158502474539b4d843dbc5d49beef177a74280113` |
+| [091](../db/migrations/091_complete_homie_clan_memberships.sql)              | Add 18 reviewed professional homie/clan relations                             | `0ea3f65bb3212087460f36d6c33c946d5bceb20684e1331213dd37b036adff7f` |
+| [092](../db/migrations/092_add_michigan_and_restore_traylor_memberships.sql) | Add seven Michigan college relations and one current-alias Bucks relation     | `312e55bdb833c3174ce37fcf9b5d9cace32c81addc5b79d2288edea76573d508` |
+| [093](../db/migrations/093_add_jazz_player_memberships.sql)                  | Add 12 Utah Jazz professional relations                                       | `393c2679932ff59f302115e9aef6e58b3f393d1e4633c581cd096c9851215569` |
+| [094](../db/migrations/094_complete_public_menu_coverage.sql)                | Add 15 public destinations and clear eight public browse menu gates           | `f667053fcf6bf53f5ab25c2661c63052d1fefc22932de8f6818f0372a2bb7e0b` |
+| [095](../db/migrations/095_restrict_admin_menu_requirements.sql)             | Merge two explicit Admin requirements while retaining attribution             | `e8952aaa34b9c4dbe00cfd6d594d439a17ab79890d67c7cd6d2a0bdd3870f490` |
+| [096](../db/migrations/096_lowercase_visible_menu_labels.sql)                | Lowercase published, non-hidden menu labels with no unnecessary audit changes | `01dd48d552bcb84193297aab0c283ba60734f099bb5d2d59b72b67167d756ce8` |
+
+The rest of the complete `db/` diff was reviewed too: 16 operations files
+(ledger/atomic bundles and read-only preflight/postflight) plus one 090/091
+check file are outside the guarded roots. None runs during application builds,
+startup or the ordinary production workflow. They are not authorized for execution
+by this record. The full diff contains 24 added database files: seven migrations
+and 17 handoff/check files.
+
+### Fresh read-only evidence
+
+Both existing `tullyelly_db` targets in project `rough-bush-94516855` were checked
+independently: development `br-crimson-fog-ae22ws22` and production
+`br-withered-snow-aea0yck6`. Each check used an explicit repeatable-read READ ONLY
+transaction and confirmed `transaction_read_only=on`.
+
+- Both ledgers contain exact original-file SHA-256 applied entries for 089-096,
+  with non-null applied timestamps and no errors. These observations supersede
+  historical missing-ledger notes for those files; other historical gaps remain
+  unresolved and outside this review. No entry was inserted or rewritten.
+- The installed-effect DO assertions from the first, read-only block of
+  `090_record_applied.sql` through `093_record_applied.sql` all passed. Only those
+  effect blocks were run, without their write-producing ledger blocks or locks.
+- The 094 public-menu postflight assertion block passed after its addition-label
+  comparison was normalized with `lower()` to honor already-applied 096. All
+  duplicate/identity, root, public-state, order and requirements checks remained.
+  The applied 094 file itself was not changed or replayed.
+- Exact 095 and 096 postflight DO assertions passed. Both menus have 48 rows and
+  zero mixed-case published, non-hidden labels. Admin retains
+  `menu.mark2.admin` with `admin.app.view` and `admin.membership.manage` in
+  `meta.requires`; capability existence, enabled scopes and the legacy no-grants
+  assumption were checked by 095's assertions.
+
+### Application compatibility and release boundary
+
+090-093 are additive domain relationship data in existing tables. Their temporary
+seed tables exist only during manual SQL execution; they introduce no persistent
+schema or runtime contract. 094-096 change navigation data in the existing menu
+schema, with no role grants, feature enablement, user memberships or server-side
+mutation authorization changes.
+
+The candidate's shared resolver enforces every normalized explicit requirement,
+falls back to the existing feature key and preserves attribution. Old application
+code with installed 095 still checks its ungranted legacy Admin key and denies;
+new code enforces both real landing requirements. The Analytics link reuses owner
+identity and strict capability enforcement inside the existing Admin layout;
+no owner decision enters the shared capability cache. Existing mutation checks
+remain in place. Lowercase labels and membership additions need no SQL replay for
+this application to run. Menu revalidation remains 300 seconds.
+
+This change updates the existing application-only compatibility record and owning
+documentation. It changes no guard code, immutable migration, checksum in a
+ledger, analytics intent or readiness configuration. It does not claim a new
+release has passed or authorize migration execution. The fix must be reviewed and
+merged; then its new exact main SHA needs successful trusted CI before a fresh
+protected dispatch. The failed immutable run cannot use an unmerged record.
+Human `production-release` approval remains mandatory. Do not automatically merge,
+approve, retry deployment or restore production. Actual backup coverage and
+unrun recovery checks are unchanged from the existing handoffs.
+
+Use the validator's exact complete diff command to verify the record:
+
+```bash
+git diff --no-ext-diff --no-textconv --binary --full-index --no-color \
+  --unified=3 --diff-algorithm=myers --no-indent-heuristic \
+  --src-prefix=a/ --dst-prefix=b/ --no-renames \
+  a7706088e12bd9c38abfe3f6386a3ae502f1c472 \
+  <reviewed-candidate-sha> -- db/migrations db/schema 'prisma/schema*' | sha256sum
+```
+
+Record/documentation-only commits preserve that database diff. A changed baseline
+or any new guarded SQL still invalidates the binding and requires fresh review.
+
+## Historical WU-1213 review
+
+### Decision and failed release
 
 The candidate application is compatible with the inspected database. No database
 write is required to resolve this compatibility block. The compatibility record
@@ -200,7 +305,7 @@ merged review SHA still requires its own mandatory GitHub CI.
 
 ## WU-1226 compatibility refresh; October 31, 2026
 
-The active [compatibility record](../releases/deferred-schema.json) now binds to
+The historical WU-1226 [compatibility record](../releases/deferred-schema.json) bound to
 READY production deployment `dpl_GTdhe4WWiRxxwAowbCMGW9xjVxL7`, resolved from
 `tullyelly.com`, application SHA `b02bf5c659c0dec985f36e7157d07f0dae2d8280`.
 The complete guarded diff from that baseline contains only migration 089; its
