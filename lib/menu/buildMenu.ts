@@ -1,3 +1,4 @@
+import { resolveMenuRequirements } from "@/lib/menu/requirements";
 import type { MenuNodeRow } from "@/lib/menu/dbTypes";
 import {
   PERSONA_KEYS,
@@ -45,26 +46,27 @@ export async function filterRowsByAccess(
   for (const row of rows) {
     if (!row.published || row.hidden) continue;
 
-    const feature = row.feature_key;
-    if (!feature) {
-      allowed.push(row);
-      continue;
-    }
-
-    let decision = featureCache.get(feature);
-    if (decision === undefined) {
-      let check = pending.get(feature);
-      if (!check) {
-        check = Promise.resolve(can(feature)).catch(() => false);
-        pending.set(feature, check);
+    let allowedRow = true;
+    for (const feature of resolveMenuRequirements(row)) {
+      let decision = featureCache.get(feature);
+      if (decision === undefined) {
+        let check = pending.get(feature);
+        if (!check) {
+          check = Promise.resolve()
+            .then(() => can(feature))
+            .then(Boolean)
+            .catch(() => false);
+          pending.set(feature, check);
+        }
+        decision = await check;
+        featureCache.set(feature, decision);
       }
-      decision = await check;
-      featureCache.set(feature, decision);
+      if (!decision) {
+        allowedRow = false;
+        break;
+      }
     }
-
-    if (decision) {
-      allowed.push(row);
-    }
+    if (allowedRow) allowed.push(row);
   }
 
   return allowed;

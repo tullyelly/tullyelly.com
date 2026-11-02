@@ -32,7 +32,8 @@ export function createFeatureGate(
       return allowed;
     }
 
-    const decision = Promise.resolve(fallback(feature))
+    const decision = Promise.resolve()
+      .then(() => fallback(feature))
       .then(Boolean)
       .catch(() => false);
     cache.set(feature, decision);

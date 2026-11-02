@@ -1,5 +1,7 @@
 "use server";
 
+import { resolveMenuRequirements } from "@/lib/menu/requirements";
+
 import "server-only";
 
 import { unstable_cache } from "next/cache";
@@ -27,12 +29,7 @@ import {
   isMenuBypassEnabled,
   isTestMenuModeEnabled,
 } from "@/lib/escape-hatches";
-import {
-  isCapabilityKeyArray,
-  type Badge,
-  type CapabilityKey,
-  type NavItem,
-} from "@/types/nav";
+import { type Badge, type NavItem } from "@/types/nav";
 import { isNextBuild } from "@/lib/env";
 
 function capsHash(caps: Set<string>) {
@@ -102,7 +99,6 @@ type DbMenuRow = MenuNodeRow & {
 type MetaPayload = {
   badge?: Badge;
   hotkey?: string;
-  requires?: CapabilityKey[];
   featured?: true;
   segmentLabel?: string;
   keywords?: string[];
@@ -111,23 +107,10 @@ type MetaPayload = {
 type RawMeta = {
   badge?: unknown;
   hotkey?: unknown;
-  requires?: unknown;
   featured?: unknown;
   segmentLabel?: unknown;
   keywords?: unknown;
 };
-
-function normalizeCapabilityList(value: unknown): CapabilityKey[] | undefined {
-  if (!Array.isArray(value)) return undefined;
-  const result: CapabilityKey[] = [];
-  for (const entry of value) {
-    if (typeof entry !== "string") continue;
-    const normalized = entry.trim();
-    if (!normalized) continue;
-    result.push(normalized);
-  }
-  return result.length ? result : undefined;
-}
 
 function extractMeta(meta: MenuNodeRow["meta"]): MetaPayload {
   if (!meta || typeof meta !== "object") return {};
@@ -142,11 +125,6 @@ function extractMeta(meta: MenuNodeRow["meta"]): MetaPayload {
   const hotkey = payload.hotkey;
   if (typeof hotkey === "string" && hotkey.trim().length > 0) {
     parsed.hotkey = hotkey.trim();
-  }
-
-  const requires = normalizeCapabilityList(payload.requires);
-  if (isCapabilityKeyArray(requires)) {
-    parsed.requires = requires;
   }
 
   if (payload.featured === true) {
@@ -172,22 +150,6 @@ function extractMeta(meta: MenuNodeRow["meta"]): MetaPayload {
   }
 
   return parsed;
-}
-
-function resolveRequirements(
-  row: MenuNodeRow,
-  meta: MetaPayload,
-): CapabilityKey[] | undefined {
-  if (isCapabilityKeyArray(meta.requires)) {
-    return meta.requires;
-  }
-  if (
-    typeof row.feature_key === "string" &&
-    row.feature_key.trim().length > 0
-  ) {
-    return [row.feature_key.trim()];
-  }
-  return undefined;
 }
 
 // Legacy test-tree escape hatch: ignored in production runtime, including FORCE_TEST_MENU.
@@ -374,7 +336,7 @@ function toNavItem(
   lookup: Map<number | null, MenuNodeRow[]>,
 ): NavItem {
   const meta = extractMeta(row.meta);
-  const requires = resolveRequirements(row, meta);
+  const requires = resolveMenuRequirements(row);
   const base = {
     id: String(row.id),
     label: row.label,
