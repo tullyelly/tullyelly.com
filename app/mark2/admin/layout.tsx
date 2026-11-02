@@ -1,3 +1,4 @@
+import AnalyticsNavigation from "./AnalyticsNavigation";
 import AuthzGate from "@/components/auth/AuthzGate";
 import { headers } from "next/headers";
 
@@ -10,6 +11,7 @@ export default async function AdminLayout({
   const path = hdrs.get("next-url") ?? "/mark2/admin";
   return (
     <AuthzGate feature="admin.app.view" callbackUrl={path}>
+      <AnalyticsNavigation />
       {children}
     </AuthzGate>
   );

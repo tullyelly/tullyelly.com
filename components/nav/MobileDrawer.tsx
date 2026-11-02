@@ -88,8 +88,7 @@ function Icon({
 }): React.ReactNode {
   if (!name) return null;
   const IconComponent = Lucide[name as keyof typeof Lucide] as
-    | LucideIcon
-    | undefined;
+    LucideIcon | undefined;
   if (!IconComponent) return null;
   return <IconComponent className={className} aria-hidden="true" />;
 }
@@ -584,7 +583,7 @@ export default function MobileDrawer({
                   (entry) => entry.key === "shaolin",
                 );
                 if (!shaolinEntry?.item?.href) return null;
-                const buttonId = `mobile-drawer-root-${shaolinEntry.item.id}`;
+                const buttonId = `mobile-drawer-quick-${shaolinEntry.item.id}`;
                 return (
                   <DrawerItem className="mx-1 mb-3">
                     <button
@@ -613,10 +612,18 @@ export default function MobileDrawer({
                 </p>
                 <div className="space-y-2 px-1">
                   {personaEntries
-                    .filter(({ key }) => key !== "shaolin")
+                    .filter(
+                      ({ key }) =>
+                        key !== "shaolin" ||
+                        (childrenMap[key] ?? []).some(
+                          (link) => link.href && link.href !== "/shaolin",
+                        ),
+                    )
                     .map(({ key, item, label }) => {
                       const personaLinks = (childrenMap[key] ?? []).filter(
-                        (link) => Boolean(link.href),
+                        (link) =>
+                          Boolean(link.href) &&
+                          (key !== "shaolin" || link.href !== "/shaolin"),
                       );
                       const isExpanded = expandedPersona === key;
                       const buttonId = `mobile-drawer-root-${item.id}`;
