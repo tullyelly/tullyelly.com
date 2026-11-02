@@ -200,3 +200,34 @@ using category counts, optional TCDb rankings, signed differences and full trend
 085/086 extend the already delivered schema; 083/084/085 remain unchanged. [Category setup](card-category-counts.md) owns prerequisites,
 read-only preflight/postflight SQL, rollback-only manual fixtures and recovery.
 These migrations have not been applied by application validation.
+
+## Homie/clan identity reconciliation
+
+[090_restore_homie_alias_memberships.sql](../db/migrations/090_restore_homie_alias_memberships.sql)
+restores twelve reviewed memberships on six current homie aliases while keeping
+old tags, relationships and evidence. Then
+[091_complete_homie_clan_memberships.sql](../db/migrations/091_complete_homie_clan_memberships.sql)
+adds eighteen verified career memberships, including nine Memphis/Vancouver pairs.
+The [read-only comparison and manual handoff](homie-clan-reconciliation.md)
+records production findings, exclusions and development-first execution.
+All reviewed tags already exist; these files only insert missing relationships.
+James reports both migrations installed in development and production; Cipher
+verified all 30 pairs and evidence read-only. Exact-checksum ledger handoffs are
+[090_record_applied.sql](../db/operations/090_record_applied.sql) and
+[091_record_applied.sql](../db/operations/091_record_applied.sql); James executes
+them manually. Other historical ledger gaps remain separate.
+
+[092_add_michigan_and_restore_traylor_memberships.sql](../db/migrations/092_add_michigan_and_restore_traylor_memberships.sql)
+adds seven reviewed Michigan college playing memberships to `fab-five` and
+restores the Bucks membership on Tractor Traylor's current `tractor` alias.
+Run its [ledger handoff](../db/operations/092_record_applied.sql) only after
+successful application. The [Michigan follow-up](homie-clan-reconciliation.md#michigan-follow-up-migration-092)
+records all eight pairs, sources, checksums and read-only postflight. Cipher has
+not applied either file.
+
+[093_add_jazz_player_memberships.sql](../db/migrations/093_add_jazz_player_memberships.sql)
+adds twelve reviewed professional playing-career memberships to the Utah Jazz
+clan `jazz`. Its [evidence and manual handoff](jazz-membership-backfill.md)
+records both databases' read-only preflight, exclusions and postflight queries.
+Run [093_record_applied.sql](../db/operations/093_record_applied.sql) only after
+successful migration application; Cipher has executed neither file.

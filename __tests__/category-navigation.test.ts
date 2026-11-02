@@ -9,9 +9,11 @@ it("adds Categories to the shared fallback used by all navigation consumers", ()
   ).toEqual([
     expect.objectContaining({
       label: "Categories",
-      feature: "menu.cardattack.categories",
     }),
   ]);
+  expect(
+    items.find((item) => item.href === "/cardattack/categories")?.feature,
+  ).toBeUndefined();
   expect(items.some((item) => item.href === "/cardattack/homies")).toBe(true);
   expect(items.some((item) => item.href === "/cardattack/clans")).toBe(true);
 });
