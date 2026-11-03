@@ -242,6 +242,8 @@ not edit their provider-bound bytes or substitute current-main content.
 Publication text checks decode rendered HTML entities once after excluding comments
 and script, style and textarea content. Heading, content and listing comparisons
 preserve literal entity-looking source text and visible escaped angle brackets.
+Changed Chronicle heading dates use the page formatter's two-digit day, including
+single-digit dates such as `Nov 01, 2026`.
 Publication failures retain their existing invariant plus a validated relative
 Chronicle/listing route or trusted image path, a fixed failed-condition label, an
 optional zero-based text-sample index (0 through 3), and HTTP status when available.

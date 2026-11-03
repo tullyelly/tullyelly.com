@@ -112,7 +112,8 @@ export async function checkChangedPublicationHealth(
       );
     const expectedDate = date.toLocaleDateString("en-US", {
       month: "short",
-      day: "numeric",
+      // Chronicle PageIntro uses fmtDate's two-digit day preset.
+      day: "2-digit",
       year: "numeric",
       timeZone: "UTC",
     });

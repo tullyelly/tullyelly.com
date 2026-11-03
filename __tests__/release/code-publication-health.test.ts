@@ -7,6 +7,7 @@ import ChronicleListClient, {
   type ChronicleListRow,
 } from "../../app/shaolin/_components/ChronicleListClient";
 import { ALTER_EGO_OPTIONS } from "../../lib/alterEgo";
+import { fmtDate } from "../../lib/datetime";
 import {
   checkChangedPublicationHealth,
   checkPublicationHealth,
@@ -311,6 +312,28 @@ function reactPage(source: string[], title = "under pressure") {
     ),
   );
 }
+test.each([1, 2, 9, 10, 30])(
+  "candidate heading matches the Chronicle formatter on November %i",
+  async (day) => {
+    const date = `2026-11-${String(day).padStart(2, "0")}`;
+    // Contentlayer supplies Central midnight to the Chronicle page.
+    const postDate = `${date}T${day === 1 ? "05" : "06"}:00:00.000Z`;
+    const page = renderToStaticMarkup(
+      createElement("h1", null, `${fmtDate(postDate)}: data dump`),
+    );
+    await expect(
+      candidatePage([], page, "data dump", date).check(),
+    ).resolves.toBeUndefined();
+    await expect(
+      candidatePage(
+        [],
+        page.replace("data dump", "old title"),
+        "data dump",
+        date,
+      ).check(),
+    ).rejects.toMatchObject({ publication: { condition: "heading-mismatch" } });
+  },
+);
 test("accepts the exact under pressure publication rendered by React", async () => {
   const page = reactPage([apostropheSentence]);
   expect(page).toContain("<h1>Oct 18, 2026: under pressure</h1>");
