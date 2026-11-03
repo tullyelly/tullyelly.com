@@ -942,6 +942,7 @@
     "/images/optimus/is-this-the-party/selfie/selfie-1.webp",
     "/images/optimus/is-this-the-party/selfie/selfie-2.webp",
     "/images/optimus/is-this-the-party/selfie/selfie-3.webp",
+    "/images/optimus/it-is-november/george.webp",
     "/images/optimus/jeff-meff-block.webp",
     "/images/optimus/jeff-meff-celebration.webp",
     "/images/optimus/jeff-meff-serve1.webp",
@@ -7005,6 +7006,11 @@
     },
     {
       "src": "/images/optimus/is-this-the-party/selfie/selfie-3.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/it-is-november/george.webp",
       "width": 1920,
       "height": 2560
     },
