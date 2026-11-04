@@ -585,6 +585,7 @@
     "/images/optimus/el-paso-chihuahuas/chihuahuas.webp",
     "/images/optimus/el-paso-chihuahuas/newbie.webp",
     "/images/optimus/el-paso-chihuahuas/tickets.webp",
+    "/images/optimus/election-night/george.webp",
     "/images/optimus/emma-car.webp",
     "/images/optimus/empty/apologies.webp",
     "/images/optimus/empty/canada.webp",
@@ -5223,6 +5224,11 @@
       "src": "/images/optimus/el-paso-chihuahuas/tickets.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/election-night/george.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/emma-car.webp",
