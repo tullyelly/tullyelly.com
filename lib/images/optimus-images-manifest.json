@@ -2007,6 +2007,10 @@
     "/images/optimus/the-rain/puzzle/puzzle-0.webp",
     "/images/optimus/the-rain/puzzle/puzzle-1.webp",
     "/images/optimus/the-rain/stairs.webp",
+    "/images/optimus/the-roots/george.webp",
+    "/images/optimus/the-roots/roots/roots-0.webp",
+    "/images/optimus/the-roots/roots/roots-1.webp",
+    "/images/optimus/the-roots/roots/roots-2.webp",
     "/images/optimus/the-spot/1005812/1005812-0.webp",
     "/images/optimus/the-spot/1005812/1005812-1.webp",
     "/images/optimus/the-spot/1005812/1005812-2.webp",
@@ -12334,6 +12338,26 @@
       "src": "/images/optimus/the-rain/stairs.webp",
       "width": 1920,
       "height": 2560
+    },
+    {
+      "src": "/images/optimus/the-roots/george.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/the-roots/roots/roots-0.webp",
+      "width": 806,
+      "height": 295
+    },
+    {
+      "src": "/images/optimus/the-roots/roots/roots-1.webp",
+      "width": 806,
+      "height": 308
+    },
+    {
+      "src": "/images/optimus/the-roots/roots/roots-2.webp",
+      "width": 750,
+      "height": 1333
     },
     {
       "src": "/images/optimus/the-spot/1005812/1005812-0.webp",
