@@ -398,6 +398,13 @@
     "/images/optimus/bucks-n-six/record-scratch.webp",
     "/images/optimus/bucks-n-six/robbed.webp",
     "/images/optimus/bucks-n-six/rookies.webp",
+    "/images/optimus/business/fern/fern-0.webp",
+    "/images/optimus/business/fern/fern-1.webp",
+    "/images/optimus/business/fern/fern-2.webp",
+    "/images/optimus/business/fern/fern-3.webp",
+    "/images/optimus/business/fern/fern-4.webp",
+    "/images/optimus/business/fern/fern-5.webp",
+    "/images/optimus/business/george.webp",
     "/images/optimus/call-a-save-point/call-a-save-point.webp",
     "/images/optimus/call-a-save-point/mewgenics.webp",
     "/images/optimus/calm/1039524.webp",
@@ -4293,6 +4300,41 @@
       "src": "/images/optimus/bucks-n-six/rookies.webp",
       "width": 847,
       "height": 1066
+    },
+    {
+      "src": "/images/optimus/business/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/business/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/business/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/business/fern/fern-3.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/business/fern/fern-4.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/business/fern/fern-5.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/business/george.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/call-a-save-point/call-a-save-point.webp",
