@@ -731,6 +731,14 @@
     "/images/optimus/giannis-chase/deion.webp",
     "/images/optimus/giannis-chase/giannis-funko.webp",
     "/images/optimus/giannis-chase/sterling.webp",
+    "/images/optimus/giannis-four-lyfe/button/button-0.webp",
+    "/images/optimus/giannis-four-lyfe/button/button-1.webp",
+    "/images/optimus/giannis-four-lyfe/button/button-2.webp",
+    "/images/optimus/giannis-four-lyfe/doll/doll-0.webp",
+    "/images/optimus/giannis-four-lyfe/doll/doll-1.webp",
+    "/images/optimus/giannis-four-lyfe/giannis/giannis-0.webp",
+    "/images/optimus/giannis-four-lyfe/giannis/giannis-1.webp",
+    "/images/optimus/giannis-four-lyfe/junk.webp",
     "/images/optimus/giannis-lovefest/aubrey/aubrey-0.webp",
     "/images/optimus/giannis-lovefest/aubrey/aubrey-1.webp",
     "/images/optimus/giannis-lovefest/basketball/PXL_20261016_220013536.webp",
@@ -5965,6 +5973,46 @@
       "src": "/images/optimus/giannis-chase/sterling.webp",
       "width": 1176,
       "height": 1562
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/button/button-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/button/button-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/button/button-2.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/doll/doll-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/doll/doll-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/giannis/giannis-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/giannis/giannis-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/giannis-four-lyfe/junk.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/giannis-lovefest/aubrey/aubrey-0.webp",
