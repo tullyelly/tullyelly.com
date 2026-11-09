@@ -155,6 +155,20 @@ metadata are preserved. James reports successful execution in development and
 production; read-only postflight passed in both. The same handoff documents the
 missing 089 ledger rows and guarded manual reconciliation; Cipher performed no writes.
 
+[097_add_spurs_player_memberships.sql](../db/migrations/097_add_spurs_player_memberships.sql)
+adds 21 reviewed professional playing-career memberships to San Antonio Spurs
+clan `the-monastery`, including Tracy McGrady's playoff appearances.
+The [Spurs evidence and manual handoff](spurs-membership-backfill.md) records
+both databases' read-only preflight and the development-first execution steps.
+The migration preserves existing identities and relationship metadata.
+Run [097_record_applied.sql](../db/operations/097_record_applied.sql) only after
+successful application and read-only postflight. James confirmed application of
+the edited `moses` alias version in both databases; all 21 relationships passed
+read-only postflight. James also executed the guarded
+[checksum repair](../db/operations/097_repair_recorded_checksum.sql); read-only
+inspection confirmed both applied ledgers now match the executed file.
+Cipher has performed no database writes.
+
 ## Homie snapshot differences
 
 [088_enforce_homie_tcdb_snapshot_difference_sign.sql](../db/migrations/088_enforce_homie_tcdb_snapshot_difference_sign.sql)
