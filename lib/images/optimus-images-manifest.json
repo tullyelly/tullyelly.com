@@ -500,6 +500,10 @@
     "/images/optimus/delta/nikkigirl.webp",
     "/images/optimus/delta/toilet-room.webp",
     "/images/optimus/deltron-3030/james-auto.webp",
+    "/images/optimus/depression-cherry/f1.webp",
+    "/images/optimus/depression-cherry/fern/fern-0.webp",
+    "/images/optimus/depression-cherry/fern/fern-1.webp",
+    "/images/optimus/depression-cherry/fern/fern-2.webp",
     "/images/optimus/derek/giannis.webp",
     "/images/optimus/derek/home/carnage.webp",
     "/images/optimus/derek/home/derek-2.webp",
@@ -822,6 +826,8 @@
     "/images/optimus/hotfix/oh-no.webp",
     "/images/optimus/hug-ball/hug-ball.webp",
     "/images/optimus/hug-ball/jean-grae.webp",
+    "/images/optimus/huh/f1.webp",
+    "/images/optimus/huh/sun.webp",
     "/images/optimus/hunter/fern.webp",
     "/images/optimus/hunter/freak.webp",
     "/images/optimus/hunter/groot/groot-0.webp",
@@ -4820,6 +4826,26 @@
       "height": 2550
     },
     {
+      "src": "/images/optimus/depression-cherry/f1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/depression-cherry/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/depression-cherry/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/depression-cherry/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
       "src": "/images/optimus/derek/giannis.webp",
       "width": 1920,
       "height": 2550
@@ -6428,6 +6454,16 @@
       "src": "/images/optimus/hug-ball/jean-grae.webp",
       "width": 643,
       "height": 630
+    },
+    {
+      "src": "/images/optimus/huh/f1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/huh/sun.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/hunter/fern.webp",
