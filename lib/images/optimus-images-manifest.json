@@ -2275,6 +2275,8 @@
     "/images/optimus/wolverine/fern.webp",
     "/images/optimus/wolverine/non-sport.webp",
     "/images/optimus/wolverine/pooh.webp",
+    "/images/optimus/words-escape-me/basket.webp",
+    "/images/optimus/words-escape-me/george.webp",
     "/images/optimus/workshop/1034691.webp",
     "/images/optimus/workshop/1037608.webp",
     "/images/optimus/workshop/lambeau.webp",
@@ -13699,6 +13701,16 @@
       "src": "/images/optimus/wolverine/pooh.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/words-escape-me/basket.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/words-escape-me/george.webp",
+      "width": 960,
+      "height": 1280
     },
     {
       "src": "/images/optimus/workshop/1034691.webp",
