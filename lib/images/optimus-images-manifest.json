@@ -807,6 +807,8 @@
     "/images/optimus/hockey-szn/fleer.webp",
     "/images/optimus/hockey-szn/hockey.webp",
     "/images/optimus/hockey-szn/no-dot.webp",
+    "/images/optimus/holding-on/george.webp",
+    "/images/optimus/holding-on/trade.webp",
     "/images/optimus/holiday-checkout/james-ai.webp",
     "/images/optimus/holiday-checkout/james-hr.webp",
     "/images/optimus/holy-grail/box.webp",
@@ -6365,6 +6367,16 @@
       "src": "/images/optimus/hockey-szn/no-dot.webp",
       "width": 939,
       "height": 1247
+    },
+    {
+      "src": "/images/optimus/holding-on/george.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/holding-on/trade.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/holiday-checkout/james-ai.webp",
