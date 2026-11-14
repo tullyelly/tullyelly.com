@@ -1027,6 +1027,14 @@
     "/images/optimus/kaukauna/terrors/terrors-4.webp",
     "/images/optimus/kaukauna/victory.webp",
     "/images/optimus/ketchup/outside.webp",
+    "/images/optimus/kind-words/fern/fern-0.webp",
+    "/images/optimus/kind-words/fern/fern-1.webp",
+    "/images/optimus/kind-words/fern/fern-2.webp",
+    "/images/optimus/kind-words/fern/fern-3.webp",
+    "/images/optimus/kind-words/fern/fern-5.webp",
+    "/images/optimus/kind-words/ice/ice-0.webp",
+    "/images/optimus/kind-words/ice/ice1.webp",
+    "/images/optimus/kind-words/jalen.webp",
     "/images/optimus/labor-day/1085367.webp",
     "/images/optimus/labor-day/1088776.webp",
     "/images/optimus/labor-day/1091025.webp",
@@ -7467,6 +7475,46 @@
       "src": "/images/optimus/ketchup/outside.webp",
       "width": 1920,
       "height": 2560
+    },
+    {
+      "src": "/images/optimus/kind-words/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kind-words/fern/fern-1.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/kind-words/fern/fern-2.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/kind-words/fern/fern-3.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/kind-words/fern/fern-5.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/kind-words/ice/ice-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kind-words/ice/ice1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kind-words/jalen.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/labor-day/1085367.webp",
