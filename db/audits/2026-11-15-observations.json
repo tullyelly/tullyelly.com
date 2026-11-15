@@ -1,0 +1,63 @@
+{
+  "issue": "WU-1272",
+  "targets": [
+    {
+      "target": "development",
+      "branch": "br-crimson-fog-ae22ws22",
+      "observedAt": "2026-11-15T20:29:59.605708+00:00"
+    },
+    {
+      "target": "production",
+      "branch": "br-withered-snow-aea0yck6",
+      "observedAt": "2026-11-15T20:30:02.719858+00:00"
+    }
+  ],
+  "database": "tullyelly_db",
+  "counts": {
+    "homies": 1223,
+    "named": 241,
+    "clans": 30,
+    "tags": 462,
+    "storedEdges": 438
+  },
+  "relevantInventoriesIdentical": true,
+  "missingReviewedDirectPairs": 24,
+  "endpointEvidenceProblems": 0,
+  "migration098": {
+    "status": "applied",
+    "checksum": "c7aae080b61d34d5a6e25ac861e3304153dbeb091401ec60c0f38dd46d13722d"
+  },
+  "migration099": "prepared; not executed by Cipher",
+  "unassigned": [
+    {
+      "id": 82,
+      "name": "Tiger Woods",
+      "slug": null
+    },
+    {
+      "id": 808,
+      "name": "Peter Warrick",
+      "slug": null
+    }
+  ],
+  "familyMembershipEdgeIds": [14, 17],
+  "decisions": [
+    {
+      "homieId": 501,
+      "slug": "lamelo",
+      "edgeIds": [65],
+      "clans": ["t-wolves"],
+      "reason": "Playing evidence missing; do not delete automatically"
+    },
+    {
+      "homieId": 403,
+      "slug": "danny",
+      "edgeIds": [135, 281, 417],
+      "clans": ["bucks-n-six", "suns", "jazz"],
+      "reason": "Current racing driver identity; historical seeds name Danny Manning, now homie 415/danny-manning. Exact ownership and intended reassignment need review."
+    }
+  ],
+  "coverage": "All named identities/clans inspected structurally; seven fresh official career pairs and seventeen reviewed former-slug copies. Other possible careers and existing positive evidence not exhaustively researched.",
+  "databaseWritingTests": "unrun",
+  "postApplicationVerification": "pending"
+}

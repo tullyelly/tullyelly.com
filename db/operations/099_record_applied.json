@@ -1,0 +1,9 @@
+{
+  "canonicalPath": "db/migrations/099_audit_homie_clan_memberships.sql",
+  "canonicalSha256": "040399b06e521719e6438ce7d2064269d416bf9798063ab214662069a56d9623",
+  "assertionsPath": "db/audits/099_membership_assertions.sql",
+  "assertionsSha256": "051de75ac751537dc358e8c5732f73a0579da032d7fdabbdbfe3a8e3470f3948",
+  "ledgerPath": "db/operations/099_record_applied.sql",
+  "ledgerSha256": "c91d9558010278049e6331a0ec62e80e5f2ad69415d033f5697a5e6ad01e9907",
+  "mode": "record-after-success"
+}

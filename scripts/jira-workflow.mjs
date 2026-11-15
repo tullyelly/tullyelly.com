@@ -60,10 +60,21 @@ export function validate({ active, context, branch, message, paths, day }) {
   for (const item of context.items) {
     if (!keyPattern.test(item.key) || !["work", "content"].includes(item.kind))
       throw new Error("Invalid selected work item.");
+    // This records explicit user authorization; it never changes Jira hierarchy.
+    const exception = item.branchException;
+    const authorizedDate = new Date(exception?.authorizedAt ?? "");
+    const authorizedException =
+      exception?.epic === active.epic &&
+      exception?.branch === active.branch &&
+      Number.isFinite(authorizedDate.getTime()) &&
+      chicagoDay(authorizedDate) === active.day &&
+      typeof exception?.reason === "string" &&
+      exception.reason.trim().length > 0;
     if (
       item.kind === "work" &&
       item.parent !== active.epic &&
-      item.key !== active.epic
+      item.key !== active.epic &&
+      !authorizedException
     )
       throw new Error(`${item.key} does not belong to ${active.epic}.`);
     if (

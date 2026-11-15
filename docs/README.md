@@ -21,6 +21,8 @@
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                                        |
 | Acknowledgments                                               | [Flowers naming](naming.md)                                                                                |
 
+[Homie/clan audits](homie-clan-audit-2026-11-15.md) records the reusable skill, initial research coverage and prepared repairs.
+
 [Production release policy](production-releases.md) owns the protected approval
 gate, exact release binding and recovery procedure.
 [Credential maintenance](credential-maintenance.md) owns the separate protected

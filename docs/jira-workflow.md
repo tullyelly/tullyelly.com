@@ -26,6 +26,11 @@ Store per-session context outside the index, at a path returned by
 After live Jira verification write JSON with the same epic/branch/day/timezone,
 `items` (key, parent, kind), and `verifiedAt`. `kind` is `work` or `content`.
 Record only verified Jira facts; this local cache is not an offline Jira lookup.
+When James explicitly authorizes outside-epic engineering work on this branch,
+retain its real parent and record `branchException` on that session item with
+`epic`, `branch`, `authorizedAt` and `reason` quoting his authorization. The guard
+requires the exact selected epic/branch and same Chicago day. Never infer this
+exception or use it to reparent Jira work; ordinary outside-epic work still fails.
 On resume refresh scope/status and dependencies; if unavailable, explicitly report
 cached verification and stop on unknown selection. Never overwrite another
 session's context. Explicit instructions replace stale attribution after fresh

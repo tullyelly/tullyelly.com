@@ -178,3 +178,50 @@ test("branch discovery deduplicates local/remote refs, retains legacy names and 
   ])
     assert.throws(() => selectBranch([{ ...c, ...update }], active), /stale/);
 });
+
+test("explicit outside-epic authorization preserves the real parent and binds to branch and day", () => {
+  const item = { key: "WU-1272", parent: "WU-1251", kind: "work" };
+  const state = {
+    ...base,
+    message: "[WU-1272] Audit",
+    context: { ...context, items: [item] },
+  };
+  assert.throws(() => validate(state), /does not belong/);
+  const branchException = {
+    epic: active.epic,
+    branch: active.branch,
+    authorizedAt: "2026-11-15T20:45:00Z",
+    reason: "Keep current branch as exception",
+  };
+  const approved = {
+    ...state,
+    context: { ...context, items: [{ ...item, branchException }] },
+  };
+  assert.deepEqual(validate(approved), ["WU-1272"]);
+  assert.equal(approved.context.items[0].parent, "WU-1251");
+  for (const update of [
+    { epic: "WU-1245" },
+    { branch: "other" },
+    { authorizedAt: "2026-11-14T20:45:00Z" },
+    { authorizedAt: "invalid" },
+    { reason: " " },
+  ]) {
+    assert.throws(
+      () =>
+        validate({
+          ...state,
+          context: {
+            ...context,
+            items: [
+              { ...item, branchException: { ...branchException, ...update } },
+            ],
+          },
+        }),
+      /does not belong/,
+    );
+  }
+  assert.throws(
+    () => validate({ ...approved, context: { ...context, items: [item] } }),
+    /does not belong/,
+  );
+});
