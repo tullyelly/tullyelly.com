@@ -1,17 +1,18 @@
 # WU-1260 migration handoff
 
-## Current checkpoint; WU-1264
+## Current checkpoint; WU-1265
 
 WU-1261 cleanup and WU-1262 decisions are Done. Fresh independent read-only
 inspection on November 15 confirms 098 and 099 applied/recorded in both existing
 targets with matching canonical checksums. Preserve both applied files. WU-1263
 has installed/recorded migration 100 in both targets with matching checksum.
-WU-1264 is In Progress; its consumer code and migration 101 are prepared.
+WU-1264 has matching applied 101 ledgers/effects in both targets, verified
+read-only. WU-1265 adds [direct motivation readers](collection-motivations.md)
+and maintenance examples; it needs no new migration.
 [The typed relationship contract](typed-tag-relationships.md) records the
 completed 100 installation and its remaining behavioral evidence.
-[WU-1264's current handoff](tag-alias-resolution.md) owns migration 101 then its
-separate ledger in existing development. WU-1265 through WU-1268 wait at this
-manual execution boundary.
+The 101 manual boundary is cleared. The authorized sequence continues to
+WU-1266 page sections, then WU-1267 reviewed seeds and WU-1268 integration evidence.
 No merge, deployment or later-story completion is claimed.
 
 ## Historical 098 preparation and execution corrections

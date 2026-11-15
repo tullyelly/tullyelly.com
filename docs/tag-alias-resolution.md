@@ -3,7 +3,9 @@
 WU-1262's accepted decisions and [the typed contract](typed-tag-relationships.md)
 remain authoritative. Both existing databases now have migration 100 recorded
 with canonical checksum `717fb826e5787a92e24351854cfa4572c4545afbc3c46d3f17726a4dd9333b31`.
-Migration 101 and these application changes are prepared, not deployed. No real
+Migration 101 is installed/recorded in both targets; its function definitions,
+preparation trigger and current invariants were verified read-only on November 15.
+These application changes are committed locally, not deployed. No real
 aliases or motivations have been seeded; WU-1267 owns reviewed mappings.
 
 ## Runtime resolution and consumers
@@ -144,3 +146,9 @@ Parsing, mocked consumers and source checks do not establish live trigger,
 concurrency, browser or deployment behavior. No dev server, write suite, seed,
 agent database writes, branch push, PR, merge or deployment occurred. WU-1264
 remains In Progress at the manual migration boundary; WU-1265+ have not begun.
+
+After James's execution, matching 101 ledger records and normalized installed
+function bodies were verified independently in both targets. The manual 101
+boundary is cleared; live write/concurrency probes remain unrun. Earlier pending
+application statements are dated preparation records. WU-1265's
+[motivation readers and maintenance](collection-motivations.md) need no new SQL.
