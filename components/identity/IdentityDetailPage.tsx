@@ -1,3 +1,4 @@
+import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import Link from "next/link";
 import { normalizeTagSlug } from "@/lib/tags";
 import { notFound, redirect } from "next/navigation";
@@ -100,6 +101,13 @@ export default async function IdentityDetailPage({
           </p>
         </Card>
       ) : null}
+      <CollectionRelationships
+        slug={identity.slug}
+        displayName={identity.displayName}
+        mode={
+          context === "unclejimmy" && kind === "person" ? "person" : "subject"
+        }
+      />
       <SquadMemberPosts
         tag={identity.slug}
         posts={posts}

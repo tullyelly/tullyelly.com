@@ -1,3 +1,4 @@
+import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -123,6 +124,11 @@ export default async function UncleJimmySquadJeffMeffPage() {
         />
       </section>
       <SectionDivider className="my-6" />
+      <CollectionRelationships
+        slug="jeff-meff"
+        displayName="jeff meff"
+        mode="person"
+      />
       <SquadMemberPosts tag="jeff-meff" posts={taggedPosts} />
     </div>
   );

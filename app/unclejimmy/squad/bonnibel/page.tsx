@@ -1,3 +1,4 @@
+import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import Link from "next/link";
 
 import { SectionDivider } from "@/components/SectionDivider";
@@ -104,6 +105,11 @@ export default async function UncleJimmySquadBonnibelPage() {
         </p>
       </section>
       <SectionDivider className="my-6" />
+      <CollectionRelationships
+        slug="bonnibel"
+        displayName="bonnibel"
+        mode="person"
+      />
       <SquadMemberPosts tag="bonnibel" posts={taggedPosts} />
     </div>
   );

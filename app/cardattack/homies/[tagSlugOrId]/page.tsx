@@ -1,3 +1,4 @@
+import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import {
   getTagAliasSnapshot,
   resolveCanonicalTagSlug,
@@ -203,6 +204,13 @@ export default async function Page({ params }: PageProps) {
         },
       ]}
     >
+      {chronicleTagMetadata ? (
+        <CollectionRelationships
+          slug={chronicleTagMetadata.slug}
+          displayName={chronicleTagMetadata.displayName}
+          mode="subject"
+        />
+      ) : null}
       <TradePartnerRelations partners={tradePartners} />
       <RelatedIdentities
         title="Clans"

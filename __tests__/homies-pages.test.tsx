@@ -1,3 +1,9 @@
+jest.mock("@/components/identity/CollectionRelationships", () => ({
+  __esModule: true,
+  default: ({ slug }: { slug: string }) => (
+    <div data-testid="collection-relationships">{slug}</div>
+  ),
+}));
 const mockTagAliases = jest.fn().mockResolvedValue(new Map());
 jest.mock("@/lib/tag-aliases-server", () => ({
   getTagAliasSnapshot: () => mockTagAliases(),
