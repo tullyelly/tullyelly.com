@@ -1,0 +1,12 @@
+{
+  "canonicalPath": "db/migrations/102_seed_tag_relationship_examples.sql",
+  "canonicalSha256": "a43c0b79b07766cfae67a0d821d2ee4fecabd7ee42f865af9aa969d3004235de",
+  "ledgerPath": "db/operations/102_record_applied.sql",
+  "ledgerSha256": "99a8bb429a6135e090f38365360b5d77f67841622d1e23631d65729b596a1af7",
+  "assertionsSha256": "728dd72a4cd7d33f1a98a674322c49aaae66b67951dafa4323751393317e9914",
+  "reviewPath": "docs/evidence/wu-1267-reviewed-seeds.json",
+  "reviewSha256": "66f6f23ea4d5b7f000942fee32634c1727ff1169be38e7814c04e74a8a9c8b86",
+  "baselinePath": "docs/evidence/wu-1267-readonly-seed-baseline.json",
+  "baselineSha256": "502610d19a874178a279e88a50a99271e2692ca1d5a18ef9a9ac209aab13a59b",
+  "mode": "record-after-success"
+}

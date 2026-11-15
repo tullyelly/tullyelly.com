@@ -1,6 +1,6 @@
 # WU-1260 migration handoff
 
-## Current checkpoint; WU-1266
+## Current checkpoint; WU-1267
 
 WU-1261 cleanup and WU-1262 decisions are Done. Fresh independent read-only
 inspection on November 15 confirms 098 and 099 applied/recorded in both existing
@@ -13,8 +13,11 @@ and maintenance examples; it needs no new migration.
 completed 100 installation and its remaining behavioral evidence.
 The 101 manual boundary is cleared. WU-1266 adds the
 [separate page sections](collection-relationship-sections.md), with individual
-counts and unchanged Chronicle inheritance. It needs no SQL; the sequence
-continues to WU-1267 reviewed seeds and WU-1268 integration evidence.
+counts and unchanged Chronicle inheritance. WU-1265/1266 are committed and safely
+validated; neither needs SQL. [WU-1267's reviewed seed package](reviewed-relationship-seeds.md)
+is prepared and unapplied: existing development runs canonical migration 102,
+then its separate ledger only on success. That manual execution is the current
+boundary; WU-1268 waits for the reported results.
 No merge, deployment or later-story completion is claimed.
 
 ## Historical 098 preparation and execution corrections
