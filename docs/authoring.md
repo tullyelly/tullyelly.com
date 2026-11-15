@@ -102,3 +102,7 @@ exact frontmatter date.
 A missing measurement renders
 a linked category label; it never substitutes a latest count. It does not infer
 tags. See [category counts](card-category-counts.md) for the full example and setup.
+
+For Jira context, shared epic branches and supplied-key Chronicle commits, follow
+[the Jira workflow](jira-workflow.md). Read newly written skills directly in the
+current session; discovery does not require restarting to follow instructions.

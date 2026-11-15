@@ -88,8 +88,10 @@ executor is dispatched and no mandatory new recovery environment is introduced.
 
 ### Coordination across coding agents
 
-Local and cloud coding agents use isolated checkouts/worktrees and separate working
-branches. Existing CI validates their proposed changes. One release coordinator
+James and coding agents share the active daily epic branch under the
+[Jira workflow](jira-workflow.md). Serialize index and Git mutations; separate
+checkouts must reconcile remote advancement without creating personal branches.
+Existing CI validates their proposed changes. One release coordinator
 initiates production through the existing App dispatcher; the protected GitHub
 workflow owns production credentials, human approval, the native source deployment,
 staged acceptance, exact-deployment promotion and alias verification. No coding
@@ -99,7 +101,7 @@ Keep **main stable for the entire GitHub production run**, from dispatcher selec
 through preparation, the human gate, staging, promotion and final checks. Current
 guards repeatedly compare live main to the dispatched SHA, including after promotion;
 a merge during the run can stop it after production has changed. Agents may keep
-working, committing and opening PRs on their own branches; coordinate merges to
+working and committing on the shared epic branch and opening its PR; coordinate merges to
 main until the run finishes. This documents the current guard, not a new approval
 gate or a change to CI.
 

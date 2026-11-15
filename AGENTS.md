@@ -13,6 +13,15 @@ behavior. Historical proposals and generated dumps are not current contracts.
 Update the owning documentation when behavior, commands, or procedures change.
 Orientation: [README](README.md). Workflow: [CONTRIBUTING](CONTRIBUTING.md).
 
+## Jira work and commits
+
+Follow [.agents/skills/jira-workflow/SKILL.md](.agents/skills/jira-workflow/SKILL.md)
+and [the Jira workflow](docs/jira-workflow.md) on start/resume and before commits.
+Use one shared daily epic branch for James and Cipher, including supplied-key
+Chronicles. Attribute each commit to its actual verified child item; preserve
+session-specific context and serialize Git/index mutations. No separate story,
+author or agent branches. Jira attribution does not authorize release or SQL.
+
 ## Universal rules
 
 - Use npm. Do not start the dev server; the user handles it locally.
