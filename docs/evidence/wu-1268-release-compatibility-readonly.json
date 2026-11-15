@@ -1,0 +1,427 @@
+{
+  "observedAt": "2026-11-15T23:11:09.203Z",
+  "teamId": "team_pB5TcLa7apLtPAiVrRbcjBG3",
+  "projectId": "prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU",
+  "domains": ["tullyelly.com", "www.tullyelly.com"],
+  "deploymentId": "dpl_BEkXwNCoYvtKt42iDehTgppmCrdg",
+  "state": "READY",
+  "baselineSha": "a5389c17c02360e45e4a3e60e891fd9a6f03339c",
+  "reviewedCandidate": "33f5810b4eb5159c86e91ca3236b1541c561dc84",
+  "schemaDiffSha256": "6c84cbb31512aef1e630a419b43c35c499cd2969a5a56d7fbec6e03fb47526ad",
+  "targets": {
+    "br-crimson-fog-ae22ws22": {
+      "functions": [
+        {
+          "proname": "assert_homie_tag_exclusivity",
+          "body_hash": "f7a278d0b52d938c719d80aaaf5dffea"
+        },
+        {
+          "proname": "assert_typed_tag_relationships",
+          "body_hash": "b2420bcbf363f839a2b2fa6284c5223c"
+        },
+        {
+          "proname": "canonical_tag_id",
+          "body_hash": "4417c7f748647547809d87c67411e1cc"
+        },
+        {
+          "proname": "check_homie_tag_exclusivity",
+          "body_hash": "0def4410ddbaee07dc66fcf025aca183"
+        },
+        {
+          "proname": "check_typed_tag_relationships",
+          "body_hash": "2ec2825570975d3d9fa7e607b03d13a5"
+        },
+        {
+          "proname": "homie_identity_write_lock",
+          "body_hash": "f43f82285630975f2a1b6b71f6ff6a21"
+        },
+        {
+          "proname": "homie_tag_reserved_reason",
+          "body_hash": "4b983fc69896fca7add5ced6a0f3dff8"
+        },
+        {
+          "proname": "prepare_homie_alias_rename",
+          "body_hash": "16959c2860a4c603f282502826da3856"
+        },
+        {
+          "proname": "retire_homie_tag",
+          "body_hash": "2cfe6ec1f81e0787c4ff1535e6cea255"
+        },
+        {
+          "proname": "sync_homie_tag_identity",
+          "body_hash": "7aee15861f451f69524c206d17ff4767"
+        },
+        {
+          "proname": "sync_homie_tag_identity_from_row",
+          "body_hash": "95367f325cd6be90f29ff85d42ce6e21"
+        },
+        {
+          "proname": "tag_known_owner",
+          "body_hash": "50a36699b09edd5e050658df6f4bdcf1"
+        },
+        {
+          "proname": "valid_collection_reasons",
+          "body_hash": "2d0f9227f4881e7ea62fe40176082106"
+        }
+      ],
+      "ledgers": [
+        {
+          "status": "applied",
+          "checksum": "c7aae080b61d34d5a6e25ac861e3304153dbeb091401ec60c0f38dd46d13722d",
+          "filename": "098_protect_homie_tag_identity.sql",
+          "applied_at": "2026-11-15T19:52:33.55601+00:00",
+          "attempted_at": "2026-11-15T19:52:33.55601+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "040399b06e521719e6438ce7d2064269d416bf9798063ab214662069a56d9623",
+          "filename": "099_audit_homie_clan_memberships.sql",
+          "applied_at": "2026-11-15T20:43:01.654975+00:00",
+          "attempted_at": "2026-11-15T20:43:01.654975+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "717fb826e5787a92e24351854cfa4572c4545afbc3c46d3f17726a4dd9333b31",
+          "filename": "100_validate_typed_tag_relationships.sql",
+          "applied_at": "2026-11-15T21:41:47.033649+00:00",
+          "attempted_at": "2026-11-15T21:41:47.033649+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "24541ff0961e7f3e9a5d452984bbd7a8c32cf2f07778d328c2b2ec527b640470",
+          "filename": "101_retarget_homie_alias_references.sql",
+          "applied_at": "2026-11-15T22:22:51.968261+00:00",
+          "attempted_at": "2026-11-15T22:22:51.968261+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "a43c0b79b07766cfae67a0d821d2ee4fecabd7ee42f865af9aa969d3004235de",
+          "filename": "102_seed_tag_relationship_examples.sql",
+          "applied_at": "2026-11-15T22:58:17.004868+00:00",
+          "attempted_at": "2026-11-15T22:58:17.004868+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "trg_sync_homie_tag_identity",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_sync_homie_tag_identity AFTER INSERT OR UPDATE OF name, tag_slug ON dojo.homie FOR EACH ROW EXECUTE FUNCTION dojo.sync_homie_tag_identity_from_row()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.homie FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.homie FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.tags",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.tags FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.tags",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tags FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.tag_relation",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.tag_relation FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.tag_relation",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tag_relation FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.unclejimmy_squad_item",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.unclejimmy_squad_item FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.unclejimmy_squad_item",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.unclejimmy_squad_item FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.homie FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.tags",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tags FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.tag_relation",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tag_relation FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.unclejimmy_squad_item",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.unclejimmy_squad_item FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.clan",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.clan FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.clan",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.clan FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_01_prepare_homie_alias_rename",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_01_prepare_homie_alias_rename BEFORE UPDATE OF tag_slug ON dojo.homie FOR EACH ROW EXECUTE FUNCTION dojo.prepare_homie_alias_rename()"
+        }
+      ],
+      "invariants": ["", ""]
+    },
+    "br-withered-snow-aea0yck6": {
+      "functions": [
+        {
+          "proname": "assert_homie_tag_exclusivity",
+          "body_hash": "f7a278d0b52d938c719d80aaaf5dffea"
+        },
+        {
+          "proname": "assert_typed_tag_relationships",
+          "body_hash": "b2420bcbf363f839a2b2fa6284c5223c"
+        },
+        {
+          "proname": "canonical_tag_id",
+          "body_hash": "4417c7f748647547809d87c67411e1cc"
+        },
+        {
+          "proname": "check_homie_tag_exclusivity",
+          "body_hash": "0def4410ddbaee07dc66fcf025aca183"
+        },
+        {
+          "proname": "check_typed_tag_relationships",
+          "body_hash": "2ec2825570975d3d9fa7e607b03d13a5"
+        },
+        {
+          "proname": "homie_identity_write_lock",
+          "body_hash": "f43f82285630975f2a1b6b71f6ff6a21"
+        },
+        {
+          "proname": "homie_tag_reserved_reason",
+          "body_hash": "4b983fc69896fca7add5ced6a0f3dff8"
+        },
+        {
+          "proname": "prepare_homie_alias_rename",
+          "body_hash": "16959c2860a4c603f282502826da3856"
+        },
+        {
+          "proname": "retire_homie_tag",
+          "body_hash": "2cfe6ec1f81e0787c4ff1535e6cea255"
+        },
+        {
+          "proname": "sync_homie_tag_identity",
+          "body_hash": "7aee15861f451f69524c206d17ff4767"
+        },
+        {
+          "proname": "sync_homie_tag_identity_from_row",
+          "body_hash": "95367f325cd6be90f29ff85d42ce6e21"
+        },
+        {
+          "proname": "tag_known_owner",
+          "body_hash": "50a36699b09edd5e050658df6f4bdcf1"
+        },
+        {
+          "proname": "valid_collection_reasons",
+          "body_hash": "2d0f9227f4881e7ea62fe40176082106"
+        }
+      ],
+      "ledgers": [
+        {
+          "status": "applied",
+          "checksum": "c7aae080b61d34d5a6e25ac861e3304153dbeb091401ec60c0f38dd46d13722d",
+          "filename": "098_protect_homie_tag_identity.sql",
+          "applied_at": "2026-11-15T19:52:33.55601+00:00",
+          "attempted_at": "2026-11-15T19:52:33.55601+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "040399b06e521719e6438ce7d2064269d416bf9798063ab214662069a56d9623",
+          "filename": "099_audit_homie_clan_memberships.sql",
+          "applied_at": "2026-11-15T20:43:01.654975+00:00",
+          "attempted_at": "2026-11-15T20:43:01.654975+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "717fb826e5787a92e24351854cfa4572c4545afbc3c46d3f17726a4dd9333b31",
+          "filename": "100_validate_typed_tag_relationships.sql",
+          "applied_at": "2026-11-15T21:41:47.033649+00:00",
+          "attempted_at": "2026-11-15T21:41:47.033649+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "24541ff0961e7f3e9a5d452984bbd7a8c32cf2f07778d328c2b2ec527b640470",
+          "filename": "101_retarget_homie_alias_references.sql",
+          "applied_at": "2026-11-15T22:22:51.968261+00:00",
+          "attempted_at": "2026-11-15T22:22:51.968261+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        },
+        {
+          "status": "applied",
+          "checksum": "a43c0b79b07766cfae67a0d821d2ee4fecabd7ee42f865af9aa969d3004235de",
+          "filename": "102_seed_tag_relationship_examples.sql",
+          "applied_at": "2026-11-15T22:58:17.004868+00:00",
+          "attempted_at": "2026-11-15T22:58:17.004868+00:00",
+          "execution_ms": null,
+          "error_message": null,
+          "checksum_algorithm": "sha256"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "trg_sync_homie_tag_identity",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_sync_homie_tag_identity AFTER INSERT OR UPDATE OF name, tag_slug ON dojo.homie FOR EACH ROW EXECUTE FUNCTION dojo.sync_homie_tag_identity_from_row()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.homie FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.homie FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.tags",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.tags FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.tags",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tags FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.tag_relation",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.tag_relation FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.tag_relation",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tag_relation FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.unclejimmy_squad_item",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.unclejimmy_squad_item FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zz_homie_identity_check",
+          "table": "dojo.unclejimmy_squad_item",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zz_homie_identity_check AFTER INSERT OR DELETE OR UPDATE ON dojo.unclejimmy_squad_item FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_homie_tag_exclusivity()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.homie FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.tags",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tags FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.tag_relation",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.tag_relation FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.unclejimmy_squad_item",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.unclejimmy_squad_item FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_00_homie_identity_lock",
+          "table": "dojo.clan",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_00_homie_identity_lock BEFORE INSERT OR DELETE OR UPDATE ON dojo.clan FOR EACH STATEMENT EXECUTE FUNCTION dojo.homie_identity_write_lock()"
+        },
+        {
+          "name": "trg_zy_typed_relationship_check",
+          "table": "dojo.clan",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_zy_typed_relationship_check AFTER INSERT OR DELETE OR UPDATE ON dojo.clan FOR EACH STATEMENT EXECUTE FUNCTION dojo.check_typed_tag_relationships()"
+        },
+        {
+          "name": "trg_01_prepare_homie_alias_rename",
+          "table": "dojo.homie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_01_prepare_homie_alias_rename BEFORE UPDATE OF tag_slug ON dojo.homie FOR EACH ROW EXECUTE FUNCTION dojo.prepare_homie_alias_rename()"
+        }
+      ],
+      "invariants": ["", ""]
+    }
+  }
+}
