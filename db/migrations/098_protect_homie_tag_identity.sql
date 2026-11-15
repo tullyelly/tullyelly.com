@@ -368,11 +368,11 @@ BEGIN
   IF EXISTS (SELECT 1 FROM wu1261_family_before b JOIN dojo.tags t USING(id)
       WHERE (t.slug,t.name,t.href,t.is_clickable) IS DISTINCT FROM (b.slug,b.name,b.href,b.is_clickable)
         OR (t.meta #- '{identity}') IS DISTINCT FROM (b.meta #- '{identity}')
-        OR (t.meta#>'{identity}' - 'kind' - 'contexts') IS DISTINCT FROM (b.meta#>'{identity}' - 'kind' - 'contexts')
+        OR ((t.meta#>'{identity}') - 'kind' - 'contexts') IS DISTINCT FROM ((b.meta#>'{identity}') - 'kind' - 'contexts')
         OR (coalesce(t.meta#>'{identity,contexts,unclejimmy}','{}'::jsonb) - 'role' - 'href') IS DISTINCT FROM
            (coalesce(b.meta#>'{identity,contexts,unclejimmy}','{}'::jsonb) - 'role' - 'href')
-        OR (t.meta#>'{identity,contexts}' - 'cardattack' - 'unclejimmy') IS DISTINCT FROM
-           (b.meta#>'{identity,contexts}' - 'cardattack' - 'unclejimmy')) THEN
+        OR ((t.meta#>'{identity,contexts}') - 'cardattack' - 'unclejimmy') IS DISTINCT FROM
+           ((b.meta#>'{identity,contexts}') - 'cardattack' - 'unclejimmy')) THEN
     RAISE EXCEPTION '098: unrelated family state changed';
   END IF;
   IF EXISTS ((SELECT * FROM wu1261_family_edges_before EXCEPT SELECT * FROM dojo.tag_relation)

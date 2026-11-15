@@ -84,3 +84,9 @@ test("trigger fingerprint guard has a transaction-local canonical search path be
   );
   assert.ok(source.indexOf("md5(pg_get_triggerdef") > path);
 });
+
+test("JSON extraction is grouped before removing preservation keys", () => {
+  assert.ok(!/\.meta#>'[^']+'\s*-/.test(source));
+  assert.ok(source.includes("(t.meta#>'{identity}') - 'kind'"));
+  assert.ok(source.includes("(b.meta#>'{identity,contexts}') - 'cardattack'"));
+});

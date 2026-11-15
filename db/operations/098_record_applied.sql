@@ -1,5 +1,5 @@
 -- Generated offline. James runs this complete file ONLY after the canonical migration succeeds.
--- Canonical: db/migrations/098_protect_homie_tag_identity.sql; SHA-256: 06b31cda06f6b1b86e4d0788ca665a06e2fa28f6838056fd2aff70710aaab6a1
+-- Canonical: db/migrations/098_protect_homie_tag_identity.sql; SHA-256: c7aae080b61d34d5a6e25ac861e3304153dbeb091401ec60c0f38dd46d13722d
 -- This file verifies effects and records history; it never replays the migration.
 BEGIN;
 SET LOCAL lock_timeout='5s';
@@ -12,7 +12,7 @@ BEGIN
     RAISE EXCEPTION '098: migration number occupied';
   END IF;
   IF EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename='098_protect_homie_tag_identity.sql' AND
-    (checksum IS DISTINCT FROM '06b31cda06f6b1b86e4d0788ca665a06e2fa28f6838056fd2aff70710aaab6a1' OR checksum_algorithm IS DISTINCT FROM 'sha256' OR
+    (checksum IS DISTINCT FROM 'c7aae080b61d34d5a6e25ac861e3304153dbeb091401ec60c0f38dd46d13722d' OR checksum_algorithm IS DISTINCT FROM 'sha256' OR
      status IS DISTINCT FROM 'applied' OR applied_at IS NULL OR error_message IS NOT NULL)) THEN
     RAISE EXCEPTION '098: conflicting or failed ledger history; stop for review';
   END IF;
@@ -84,6 +84,6 @@ END;
 $definitions$;
 INSERT INTO dojo.schema_migration
   (filename,checksum,checksum_algorithm,status,applied_at,attempted_at,execution_ms,error_message)
-SELECT '098_protect_homie_tag_identity.sql','06b31cda06f6b1b86e4d0788ca665a06e2fa28f6838056fd2aff70710aaab6a1','sha256','applied',now(),now(),NULL,NULL
+SELECT '098_protect_homie_tag_identity.sql','c7aae080b61d34d5a6e25ac861e3304153dbeb091401ec60c0f38dd46d13722d','sha256','applied',now(),now(),NULL,NULL
 WHERE NOT EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename='098_protect_homie_tag_identity.sql');
 COMMIT;

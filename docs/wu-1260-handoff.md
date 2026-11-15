@@ -62,3 +62,12 @@ setting ends with the transaction; schema-qualified feature behavior is unchange
 Cipher reproduced the mismatch and canonical-path correction read-only, then
 regenerated the separate ledger checksum. After ROLLBACK of the failed console,
 James uses the current complete migration, then the current ledger only on success.
+
+The next development attempt reached the final preservation assertion and failed
+because JSON extraction was not parenthesized before key subtraction. The fix
+groups each `#>` extraction before `-`; it does not remove preservation checks.
+Cipher ran the exact corrected preservation block read-only with CTE snapshots
+and simulated intended cleanup in both databases, including a negative case that
+must reject unrelated JSON drift. Nine safe tests passed; the separate ledger
+checksum was regenerated. No committed 098 functions or ledger rows were observed.
+James must roll back the failed console before retrying the current complete files.
