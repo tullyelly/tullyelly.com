@@ -1,7 +1,7 @@
 # Homie slug synchronization; WU-1261
 
 Migration 098 is prepared, not applied. [The task handoff](wu-1260-handoff.md)
-owns exact files/order, checksums, observations and outstanding human work.
+owns the two executable files and engineering evidence.
 
 `dojo.homie.tag_slug` remains authoritative. No name-derived slug, alias resolver,
 redirect, new relationship type, collection motivation or UI behavior is added.
@@ -70,9 +70,8 @@ transactions promptly. Lock/deadlock/timeout errors require rollback and review,
 not an automatic retry or disabled guard. Cooperative application roles must not
 disable triggers or edit ownership metadata to bypass this contract.
 
-The checked-in tests cover expected insert, managed/legacy/authored name updates,
+The engineering tests cover expected insert, managed/legacy/authored name updates,
 no-op writes, repeated/null renames, evidence-preserving deduplication, ambiguous
-clan edges, forward/reverse/indirect collisions and a two-console roster-vs-homie
-race. They are James-operated development tests and remain unrun. Static package
-checks prove file/ledger consistency and guard coverage; they do not prove live
-trigger execution, locking, runtime cost or migration application.
+clan edges, forward/reverse/indirect collisions and concurrent writes. They remain
+optional engineering tools and are not James's normal migration instructions.
+Agent-run static checks do not prove live behavior or migration application.

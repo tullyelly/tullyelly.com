@@ -2,26 +2,25 @@ import { test } from "@jest/globals";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { derived098, prepare098 } from "./prepare-homie-identity-package.mjs";
-import { bundle, hash, prepare } from "./manual-migration.mjs";
+import { hash } from "./manual-migration.mjs";
 const read = (path) => readFileSync(path, "utf8");
 const canonicalPath = "db/migrations/098_protect_homie_tag_identity.sql";
-const assertionsPath = "db/operations/098_identity_assertions.sql";
-const operationPath = "db/operations/098_apply_with_ledger.sql";
-const source = read(canonicalPath),
-  assertions = read(assertionsPath);
-test("098 atomic package matches finalized canonical source, assertions, manifest and postflight identity", () => {
-  prepare(canonicalPath, assertionsPath, operationPath, { check: true });
-  const expected = bundle({
-    filename: "098_protect_homie_tag_identity.sql",
-    source,
-    assertions,
-  });
-  assert.equal(read(operationPath), expected.sql);
+const ledgerPath = "db/operations/098_record_applied.sql";
+const source = read(canonicalPath);
+test("two-file package binds canonical checksum and checks effects before recording without replay", () => {
+  const expected = prepare098(true);
+  assert.equal(read(ledgerPath), expected.sql);
+  assert.ok(read(ledgerPath).includes(hash(source)));
+  assert.ok(!read(ledgerPath).includes("CREATE OR REPLACE FUNCTION"));
+  assert.ok(!read(ledgerPath).includes("UPDATE dojo.homie"));
   assert.ok(
-    read("db/operations/098_identity_postflight.sql").includes(hash(source)),
+    read(ledgerPath).indexOf("DO $effects$") <
+      read(ledgerPath).indexOf("INSERT INTO dojo.schema_migration"),
   );
   assert.ok(
-    read("db/operations/098_identity_preflight.sql").includes(hash(source)),
+    source.includes(
+      "IF EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename LIKE '098%')",
+    ),
   );
   const definitions = source.match(
     /CREATE OR REPLACE FUNCTION[\s\S]*?\n\$fn\$;/g,
@@ -33,21 +32,6 @@ test("098 atomic package matches finalized canonical source, assertions, manifes
       .join("\n"),
     definitions.join("\n\n") + "\n",
   );
-});
-test("read-only pre/postflight contain no DDL/DML or write-producing runner calls", () => {
-  for (const path of [
-    "db/operations/098_identity_preflight.sql",
-    "db/operations/098_identity_postflight.sql",
-  ]) {
-    const sql = read(path).replace(/--[^\n]*/g, "");
-    assert.ok(sql.includes("BEGIN READ ONLY;"));
-    assert.ok(
-      !/\b(?:INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE)\b/i.test(
-        sql,
-      ),
-    );
-    assert.ok(!sql.includes("db:migrate:"));
-  }
 });
 test("write-path coverage preserves existing inference and keeps deterministic statement serialization", () => {
   assert.ok(
@@ -79,26 +63,16 @@ test("write-path coverage preserves existing inference and keeps deterministic s
   assert.ok(source.includes("jsonb_build_array(to_jsonb(edge))"));
 });
 
-test("unapplied source changes regenerate every task checksum and schema reference", () => {
-  prepare098(true);
+test("unapplied source and effect changes invalidate ledger hashes and generated checks", () => {
   const changed = source.replace(
-    "'cipher:homie-tag-identity'",
-    "'cipher:fixture-change'",
+    "RAISE EXCEPTION '098: athlete identity/slug mismatch'",
+    "RAISE EXCEPTION '098: changed assertion'",
   );
-  const derived = derived098(
-    changed,
-    read("db/operations/098_identity_preflight.sql"),
-    read("db/operations/098_identity_postflight.sql"),
-  );
-  assert.ok(
-    derived["db/operations/098_identity_preflight.sql"].includes(hash(changed)),
-  );
-  assert.ok(
-    derived["db/operations/098_identity_postflight.sql"].includes(
-      hash(changed),
-    ),
-  );
-  assert.ok(
-    !derived["db/operations/098_identity_preflight.sql"].includes(hash(source)),
+  const derived = derived098(changed);
+  assert.ok(derived.artifacts[ledgerPath].includes(hash(changed)));
+  assert.ok(derived.artifacts[ledgerPath].includes("changed assertion"));
+  assert.notEqual(
+    derived.result.ledgerChecksum,
+    derived098(source).result.ledgerChecksum,
   );
 });

@@ -1,7 +1,31 @@
--- READ ONLY. Effects plus exact canonical ledger record, not deployment proof.
-BEGIN READ ONLY;
-SET LOCAL statement_timeout='30s';
--- Transaction-free assertions; embedded in the canonical/atomic package.
+-- Generated offline. James runs this complete file ONLY after the canonical migration succeeds.
+-- Canonical: db/migrations/098_protect_homie_tag_identity.sql; SHA-256: 0644f3e1b53c318ad4d02bf89445aa2f2b7dedf0bba6ce25b5516e904ed0352d
+-- This file verifies effects and records history; it never replays the migration.
+BEGIN;
+SET LOCAL lock_timeout='5s';
+SET LOCAL statement_timeout='60s';
+SELECT pg_advisory_xact_lock(hashtextextended('cipher:schema-migrations',0));
+LOCK TABLE dojo.schema_migration IN SHARE ROW EXCLUSIVE MODE;
+DO $ledger_guard$
+BEGIN
+  IF EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename LIKE '098%' AND filename<>'098_protect_homie_tag_identity.sql') THEN
+    RAISE EXCEPTION '098: migration number occupied';
+  END IF;
+  IF EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename='098_protect_homie_tag_identity.sql' AND
+    (checksum IS DISTINCT FROM '0644f3e1b53c318ad4d02bf89445aa2f2b7dedf0bba6ce25b5516e904ed0352d' OR checksum_algorithm IS DISTINCT FROM 'sha256' OR
+     status IS DISTINCT FROM 'applied' OR applied_at IS NULL OR error_message IS NOT NULL)) THEN
+    RAISE EXCEPTION '098: conflicting or failed ledger history; stop for review';
+  END IF;
+END;
+$ledger_guard$;
+-- Required effect checks run before any history is recorded, including on reruns.
+DO $target$
+BEGIN
+  IF current_database()<>'tullyelly_db' THEN RAISE EXCEPTION '098: wrong database'; END IF;
+  IF current_setting('transaction_isolation')<>'read committed' THEN RAISE EXCEPTION '098: use READ COMMITTED'; END IF;
+END;
+$target$;
+SELECT pg_advisory_xact_lock(hashtextextended('cipher:homie-tag-identity',0));
 DO $effects$
 BEGIN
   PERFORM dojo.assert_homie_tag_exclusivity();
@@ -30,26 +54,19 @@ BEGIN
   END IF;
   IF (SELECT count(*) FROM pg_trigger WHERE tgrelid IN ('dojo.homie'::regclass,'dojo.tags'::regclass,
       'dojo.tag_relation'::regclass,'dojo.unclejimmy_squad_item'::regclass)
-      AND tgname IN ('trg_00_homie_identity_lock','trg_zz_homie_identity_check') AND tgenabled='O')<>8 THEN
+      AND ((tgname='trg_00_homie_identity_lock' AND tgfoid='dojo.homie_identity_write_lock()'::regprocedure AND tgtype=30)
+        OR (tgname='trg_zz_homie_identity_check' AND tgfoid='dojo.check_homie_tag_exclusivity()'::regprocedure AND tgtype=28)) AND tgenabled='O')<>8 THEN
     RAISE EXCEPTION '098: enabled statement guards missing';
+  END IF;
+  IF NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='dojo.homie'::regclass AND tgname='trg_sync_homie_tag_identity'
+      AND tgfoid='dojo.sync_homie_tag_identity_from_row()'::regprocedure AND tgtype=21 AND tgqual IS NULL AND tgenabled='O') THEN
+    RAISE EXCEPTION '098: null-capable row synchronization trigger missing/changed';
   END IF;
   IF NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='dojo.tags'::regclass AND tgname='trg_infer_tag_identity_from_canonical_route' AND tgenabled='O') THEN
     RAISE EXCEPTION '098: existing inference trigger missing/disabled';
   END IF;
 END;
 $effects$;
-
-DO $ledger$
-BEGIN
-  IF NOT EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename='098_protect_homie_tag_identity.sql'
-    AND checksum='ffbf357dcc0fa1e6d12cfc33818a5df2918219e742c1b678f31945a5eb9ea02f' AND checksum_algorithm='sha256' AND status='applied' AND applied_at IS NOT NULL AND error_message IS NULL)
-    OR EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename LIKE '098%' AND filename<>'098_protect_homie_tag_identity.sql') THEN
-    RAISE EXCEPTION '098: exact canonical ledger record missing/conflicting';
-  END IF;
-END;
-$ledger$;
-SELECT filename,checksum,checksum_algorithm,status,applied_at,attempted_at,error_message FROM dojo.schema_migration WHERE filename LIKE '098%';
--- BEGIN GENERATED DEFINITION CHECKS
 DO $definitions$
 BEGIN
   IF EXISTS(SELECT 1 FROM (VALUES ('homie_identity_write_lock','f43f82285630975f2a1b6b71f6ff6a21'),
@@ -61,9 +78,12 @@ BEGIN
 ('sync_homie_tag_identity_from_row','2e89e490bfccbff959f5904a0bfe2eae'),('infer_tag_identity_from_canonical_route','44172b71b333653f7fd9d398b7a4e05d')) expected(name,body_hash)
     LEFT JOIN pg_proc p ON p.pronamespace='dojo'::regnamespace AND p.proname=expected.name
     WHERE p.oid IS NULL OR md5(replace(p.prosrc,E'\r',''))<>expected.body_hash) THEN
-    RAISE EXCEPTION '098: installed function body differs from reviewed source';
+    RAISE EXCEPTION '098: installed function differs from reviewed migration';
   END IF;
 END;
 $definitions$;
--- END GENERATED DEFINITION CHECKS
+INSERT INTO dojo.schema_migration
+  (filename,checksum,checksum_algorithm,status,applied_at,attempted_at,execution_ms,error_message)
+SELECT '098_protect_homie_tag_identity.sql','0644f3e1b53c318ad4d02bf89445aa2f2b7dedf0bba6ce25b5516e904ed0352d','sha256','applied',now(),now(),NULL,NULL
+WHERE NOT EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename='098_protect_homie_tag_identity.sql');
 COMMIT;

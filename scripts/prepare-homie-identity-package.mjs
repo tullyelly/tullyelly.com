@@ -1,84 +1,67 @@
-// Offline regeneration for unapplied WU-1261 files. Never use to edit applied history.
+// Offline generation for unapplied 098 only; never edit applied migration history.
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { hash, prepare } from "./manual-migration.mjs";
-export function derived098(source, preflight, postflight) {
-  const checksum = hash(source);
+import { bundle } from "./manual-migration.mjs";
+export function derived098(source) {
   const functions = source.match(
     /CREATE OR REPLACE FUNCTION[\s\S]*?\n\$fn\$;/g,
   );
-  if (!functions?.length) throw new Error("098 function definitions missing");
+  const effects = /DO \$effects\$[\s\S]*?\$effects\$;/.exec(source)?.[0];
+  if (!functions?.length || !effects)
+    throw new Error("098 definitions/effect assertions missing");
   const values = functions
-    .map((definition) => {
-      const name = /FUNCTION dojo\.(\w+)/.exec(definition)[1];
-      const body = definition.split("$fn$")[1];
-      return `('${name}','${createHash("md5").update(body.replaceAll("\r", "")).digest("hex")}')`;
-    })
+    .map(
+      (definition) =>
+        `('${/FUNCTION dojo\.(\w+)/.exec(definition)[1]}','${createHash("md5").update(definition.split("$fn$")[1].replaceAll("\r", "")).digest("hex")}')`,
+    )
     .join(",\n");
-  const known = /DO \$known\$([\s\S]*?)\$known\$;/
-    .exec(source)?.[1]
-    ?.trim()
-    .replace(/^BEGIN/, "")
-    .replace(/END;$/, "");
-  if (!known) throw new Error("098 prerequisite guards missing");
-  const prerequisiteBlock = `DO $preflight$
+  const assertions = `DO $target$
 BEGIN
-IF NOT EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename='098_protect_homie_tag_identity.sql') THEN
-${known}
-END IF;
+  IF current_database()<>'tullyelly_db' THEN RAISE EXCEPTION '098: wrong database'; END IF;
+  IF current_setting('transaction_isolation')<>'read committed' THEN RAISE EXCEPTION '098: use READ COMMITTED'; END IF;
 END;
-$preflight$;`;
-  const checkedPreflight = preflight.replace(
-    /DO \$preflight\$[\s\S]*?\$preflight\$;/,
-    prerequisiteBlock,
-  );
-  const definitions = `-- BEGIN GENERATED DEFINITION CHECKS
+$target$;
+SELECT pg_advisory_xact_lock(hashtextextended('cipher:homie-tag-identity',0));
+${effects}
 DO $definitions$
 BEGIN
   IF EXISTS(SELECT 1 FROM (VALUES ${values},('infer_tag_identity_from_canonical_route','44172b71b333653f7fd9d398b7a4e05d')) expected(name,body_hash)
     LEFT JOIN pg_proc p ON p.pronamespace='dojo'::regnamespace AND p.proname=expected.name
     WHERE p.oid IS NULL OR md5(replace(p.prosrc,E'\\r',''))<>expected.body_hash) THEN
-    RAISE EXCEPTION '098: installed function body differs from reviewed source';
+    RAISE EXCEPTION '098: installed function differs from reviewed migration';
   END IF;
 END;
-$definitions$;
--- END GENERATED DEFINITION CHECKS`;
-  const withoutDefinitions = postflight.replace(
-    /-- BEGIN GENERATED DEFINITION CHECKS[\s\S]*?-- END GENERATED DEFINITION CHECKS\n?/,
-    "",
-  );
-  const checkedPostflight = withoutDefinitions.replace(
-    /COMMIT;\s*$/,
-    definitions + "\nCOMMIT;\n",
-  );
+$definitions$;`;
+  const result = bundle({
+    filename: "098_protect_homie_tag_identity.sql",
+    source,
+    assertions,
+  });
+  const manifest = {
+    canonicalPath: "db/migrations/098_protect_homie_tag_identity.sql",
+    canonicalSha256: result.checksum,
+    ledgerPath: "db/operations/098_record_applied.sql",
+    ledgerSha256: result.ledgerChecksum,
+    assertionsSha256: result.assertionsChecksum,
+    mode: "record-after-success",
+  };
   return {
-    "db/operations/098_identity_preflight.sql": checkedPreflight.replace(
-      /checksum<>'[a-f0-9]{64}'/,
-      `checksum<>'${checksum}'`,
-    ),
-    "db/operations/098_identity_postflight.sql": checkedPostflight.replace(
-      /checksum='[a-f0-9]{64}'/,
-      `checksum='${checksum}'`,
-    ),
-    "db/schema/functions/homie_tag_identity.sql":
-      "-- Current definitions prepared in migration 098; review-only schema reference.\n" +
-      functions.join("\n\n") +
-      "\n",
+    result,
+    artifacts: {
+      "db/operations/098_record_applied.sql": result.sql,
+      "db/operations/098_record_applied.json":
+        JSON.stringify(manifest, null, 2) + "\n",
+      "db/schema/functions/homie_tag_identity.sql":
+        "-- Current definitions prepared in migration 098; review-only schema reference.\n" +
+        functions.join("\n\n") +
+        "\n",
+    },
   };
 }
 export function prepare098(check = false) {
-  const canonical = "db/migrations/098_protect_homie_tag_identity.sql";
-  const assertions = "db/operations/098_identity_assertions.sql";
-  const source = readFileSync(canonical, "utf8");
-  if (!source.includes(readFileSync(assertions, "utf8").trim()))
-    throw new Error(
-      "Update the canonical effect assertions to match the reviewed assertion file first.",
-    );
-  const artifacts = derived098(
-    source,
-    readFileSync("db/operations/098_identity_preflight.sql", "utf8"),
-    readFileSync("db/operations/098_identity_postflight.sql", "utf8"),
+  const { result, artifacts } = derived098(
+    readFileSync("db/migrations/098_protect_homie_tag_identity.sql", "utf8"),
   );
   for (const [path, content] of Object.entries(artifacts)) {
     if (check) {
@@ -86,12 +69,7 @@ export function prepare098(check = false) {
         throw new Error(`Stale derived artifact: ${path}`);
     } else writeFileSync(path, content);
   }
-  return prepare(
-    canonical,
-    assertions,
-    "db/operations/098_apply_with_ledger.sql",
-    { check },
-  );
+  return result;
 }
 if (
   process.argv[1] &&
@@ -99,12 +77,10 @@ if (
 ) {
   try {
     if (!["generate", "check"].includes(process.argv[2]))
-      throw new Error(
-        "Use generate or check; only regenerate unapplied, reviewed files.",
-      );
-    const result = prepare098(process.argv[2] === "check");
+      throw new Error("Use generate or check for unapplied 098.");
+    const r = prepare098(process.argv[2] === "check");
     console.log(
-      `canonical sha256 ${result.checksum}\noperation sha256 ${result.wrapperChecksum}`,
+      `canonical sha256 ${r.checksum}\nledger sha256 ${r.ledgerChecksum}`,
     );
   } catch (error) {
     console.error(error.message);

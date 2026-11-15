@@ -251,10 +251,9 @@ successful migration application; Cipher has executed neither file.
 ## Homie identity protection; prepared migration 098
 
 [098_protect_homie_tag_identity.sql](../db/migrations/098_protect_homie_tag_identity.sql)
-is prepared for James-operated development-first validation. The
-[behavior contract](homie-tag-synchronization.md) explains managed fields,
-retirement and collision protection. The
-[WU-1260 handoff](wu-1260-handoff.md) supplies exact execution files/order, hashes,
-human tests and outstanding release evidence. The atomic operation includes the
-canonical ledger record; do not execute the canonical file separately. No agent
-has applied the migration or run write-producing database tests.
+is the directly executable transaction. After success, James runs
+[098_record_applied.sql](../db/operations/098_record_applied.sql), which verifies
+required effects and records the canonical ledger checksum. Repeat development
+then approved production. [The short handoff](wu-1260-handoff.md) records failure
+handling and engineering evidence; [the feature contract](homie-tag-synchronization.md)
+explains unchanged cleanup/synchronization behavior. No agent has applied 098.

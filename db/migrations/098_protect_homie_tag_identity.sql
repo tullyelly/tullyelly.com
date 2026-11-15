@@ -2,6 +2,18 @@
 BEGIN;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
+-- Run this complete migration first. Only after success run 098_record_applied.sql.
+SELECT pg_advisory_xact_lock(hashtextextended('cipher:schema-migrations',0));
+DO $target_history$
+BEGIN
+  IF current_database()<>'tullyelly_db' THEN RAISE EXCEPTION '098: wrong database'; END IF;
+  IF to_regclass('dojo.schema_migration') IS NULL THEN RAISE EXCEPTION '098: expected existing migration ledger missing'; END IF;
+  LOCK TABLE dojo.schema_migration IN SHARE MODE;
+  IF EXISTS(SELECT 1 FROM dojo.schema_migration WHERE filename LIKE '098%') THEN
+    RAISE EXCEPTION '098: existing history; do not replay the migration, inspect read-only';
+  END IF;
+END;
+$target_history$;
 SELECT pg_advisory_xact_lock(hashtextextended('cipher:homie-tag-identity', 0));
 LOCK TABLE dojo.homie, dojo.tags, dojo.tag_relation, dojo.unclejimmy_squad_item IN SHARE ROW EXCLUSIVE MODE;
 
@@ -307,7 +319,7 @@ BEGIN
   END LOOP;
 END;
 $triggers$;
--- Transaction-free assertions; embedded in the canonical/atomic package.
+-- Necessary effect assertions remain inside the canonical transaction.
 DO $effects$
 BEGIN
   PERFORM dojo.assert_homie_tag_exclusivity();

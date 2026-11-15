@@ -1,9 +1,0 @@
-{
-  "canonicalPath": "db/migrations/098_protect_homie_tag_identity.sql",
-  "canonicalSha256": "ffbf357dcc0fa1e6d12cfc33818a5df2918219e742c1b678f31945a5eb9ea02f",
-  "assertionsPath": "db/operations/098_identity_assertions.sql",
-  "assertionsSha256": "512ee60cd7adf836ce9ccc76f59fbb2c27ac9895ba8a04ec83a57ce539c07969",
-  "operationPath": "db/operations/098_apply_with_ledger.sql",
-  "operationSha256": "0ef1f3f50b36bc3d47d0a58bc8d53fb11bebdc05fda495e396a37c67d73377cb",
-  "mode": "apply"
-}
