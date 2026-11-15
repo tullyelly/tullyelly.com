@@ -5,8 +5,8 @@ remain authoritative. Both existing databases now have migration 100 recorded
 with canonical checksum `717fb826e5787a92e24351854cfa4572c4545afbc3c46d3f17726a4dd9333b31`.
 Migration 101 is installed/recorded in both targets; its function definitions,
 preparation trigger and current invariants were verified read-only on November 15.
-These application changes are committed locally, not deployed. No real
-aliases or motivations have been seeded; WU-1267 owns reviewed mappings.
+These application changes are committed locally, not deployed. Reviewed aliases and the LeBron/Lulu motivation are now seeded in both configured
+targets; see [current execution evidence](wu-1260-handoff.md).
 
 ## Runtime resolution and consumers
 
