@@ -76,3 +76,11 @@ test("unapplied source and effect changes invalidate ledger hashes and generated
     derived098(source).result.ledgerChecksum,
   );
 });
+
+test("trigger fingerprint guard has a transaction-local canonical search path before catalog rendering", () => {
+  const path = source.indexOf("SET LOCAL search_path = pg_catalog;");
+  assert.ok(
+    path > source.indexOf("BEGIN;") && path < source.indexOf("DO $known$"),
+  );
+  assert.ok(source.indexOf("md5(pg_get_triggerdef") > path);
+});

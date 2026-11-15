@@ -50,3 +50,15 @@ evidence remain necessary before refreshing release compatibility. No stale
 baseline, applied status or release approval is invented.
 
 WU-1262 remains the next planning checkpoint; no decisions or later stories began.
+
+## Development execution correction
+
+James reported the original trigger-definition guard failing before cleanup.
+Read-only inspection confirmed no 098 ledger/functions in either environment.
+The same live trigger renders differently when dojo is visible on search_path;
+this caused a false fingerprint mismatch in DataGrip. Migration 098 now sets
+transaction-local search_path to pg_catalog before catalog comparisons. The
+setting ends with the transaction; schema-qualified feature behavior is unchanged.
+Cipher reproduced the mismatch and canonical-path correction read-only, then
+regenerated the separate ledger checksum. After ROLLBACK of the failed console,
+James uses the current complete migration, then the current ledger only on success.

@@ -1,5 +1,7 @@
 -- WU-1261: James-operated cleanup and narrowly scoped synchronization protection.
 BEGIN;
+-- Keep catalog-rendered trigger fingerprints independent of the DataGrip schema selection.
+SET LOCAL search_path = pg_catalog;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
 -- Run this complete migration first. Only after success run 098_record_applied.sql.

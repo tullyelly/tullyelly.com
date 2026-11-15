@@ -1,8 +1,8 @@
 {
   "canonicalPath": "db/migrations/098_protect_homie_tag_identity.sql",
-  "canonicalSha256": "0644f3e1b53c318ad4d02bf89445aa2f2b7dedf0bba6ce25b5516e904ed0352d",
+  "canonicalSha256": "06b31cda06f6b1b86e4d0788ca665a06e2fa28f6838056fd2aff70710aaab6a1",
   "ledgerPath": "db/operations/098_record_applied.sql",
-  "ledgerSha256": "2a47233176aff6af26cfc78db7ee7ac2016a70daf7fb3b6abec72b32d8356207",
+  "ledgerSha256": "fbcb862d045dd5b70bb937246dd2588845a9e141589ac12cc7461986aebc080a",
   "assertionsSha256": "9049f9933a21a39d9d0a563d0009e1c50f70c3a15c4418ee52904ff57f789225",
   "mode": "record-after-success"
 }
