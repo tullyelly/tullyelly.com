@@ -763,6 +763,9 @@
     "/images/optimus/gloomy/gloomy.webp",
     "/images/optimus/gloomy/glove.webp",
     "/images/optimus/gloomy/meff.webp",
+    "/images/optimus/good-morning/box.webp",
+    "/images/optimus/good-morning/fern.webp",
+    "/images/optimus/good-morning/trade.webp",
     "/images/optimus/graduation-day/emma.webp",
     "/images/optimus/graduation-day/post-office.webp",
     "/images/optimus/graduation-day/squad/squad-0.webp",
@@ -6153,6 +6156,21 @@
     },
     {
       "src": "/images/optimus/gloomy/meff.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/good-morning/box.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/good-morning/fern.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/good-morning/trade.webp",
       "width": 1920,
       "height": 2550
     },
