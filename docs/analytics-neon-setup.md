@@ -101,7 +101,7 @@ and emits authz notifications for affected users. Review those effects explicitl
 
 Future database changes follow [the owning manual procedure](manual-migrations.md).
 The 076/077 bundle guidance below is historical/task-specific; it does not replace
-the generated atomic operation and concrete task handoff required for new work.
+the canonical migration followed by its separate ledger file required for new work.
 Installed effects alone never authorize recording exact-file execution.
 
 ## Existing history and ledger handling

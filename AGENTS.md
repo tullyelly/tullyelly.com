@@ -49,7 +49,8 @@ author or agent branches. Jira attribution does not authorize release or SQL.
 
 James executes reviewed migration, repair, grant and migration-ledger SQL manually
 through his existing DataGrip connections: existing development first, then
-existing production after development validation and fresh production preflight.
+existing production after development validation and fresh checks embedded in
+the production execution files.
 Cipher and every delegated agent have read-only access to both databases through
 all routes, including scripts, tests, APIs, browser actions and workflows. They
 must not trigger migration executors, seeds, cleanup, rollback fixtures,
