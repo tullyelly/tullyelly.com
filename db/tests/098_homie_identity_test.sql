@@ -41,7 +41,7 @@ BEGIN
 
   INSERT INTO dojo.tag_relation(source_tag_id,target_tag_id,relation_type) VALUES(source_id,clan_id,'member_of');
   BEGIN UPDATE dojo.homie SET tag_slug='wu-1261-fixture-unproven' WHERE id=homie_id; RAISE EXCEPTION 'unproven clan edge accepted';
-  EXCEPTION WHEN raise_exception THEN IF SQLERRM='unproven clan edge accepted' THEN RAISE; END IF; END;
+  EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%lacks athlete evidence%' THEN RAISE; END IF; END;
   IF (SELECT tag_slug FROM dojo.homie WHERE id=homie_id)<>'wu-1261-fixture'
     OR EXISTS(SELECT 1 FROM dojo.tags WHERE slug='wu-1261-fixture-unproven') THEN RAISE EXCEPTION 'ambiguous rename was not atomic'; END IF;
   DELETE FROM dojo.tag_relation WHERE source_tag_id=source_id AND target_tag_id=clan_id AND relation_type='member_of';
@@ -59,29 +59,29 @@ BEGIN
 
   -- Forward collisions and preexisting format/uniqueness constraints are atomic.
     BEGIN UPDATE dojo.homie SET tag_slug='cal' WHERE id=homie_id; RAISE EXCEPTION 'expected collision not rejected';
-    EXCEPTION WHEN raise_exception THEN IF SQLERRM='expected collision not rejected' THEN RAISE; END IF; END;
+    EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
     BEGIN UPDATE dojo.homie SET tag_slug='the-lazer' WHERE id=homie_id; RAISE EXCEPTION 'expected collision not rejected';
-    EXCEPTION WHEN raise_exception THEN IF SQLERRM='expected collision not rejected' THEN RAISE; END IF; END;
+    EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
     BEGIN UPDATE dojo.homie SET tag_slug='g-league' WHERE id=homie_id; RAISE EXCEPTION 'expected collision not rejected';
-    EXCEPTION WHEN raise_exception THEN IF SQLERRM='expected collision not rejected' THEN RAISE; END IF; END;
+    EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
     BEGIN UPDATE dojo.homie SET tag_slug='BAD SLUG' WHERE id=homie_id; RAISE EXCEPTION 'format guard missing'; EXCEPTION WHEN check_violation THEN NULL; END;
     BEGIN UPDATE dojo.homie SET tag_slug='eldrid' WHERE id=homie_id; RAISE EXCEPTION 'uniqueness guard missing'; EXCEPTION WHEN unique_violation THEN NULL; END;
   IF (SELECT tag_slug FROM dojo.homie WHERE id=homie_id)<>'wu-1261-fixture-next' THEN RAISE EXCEPTION 'collision changed athlete'; END IF;
 
   BEGIN UPDATE dojo.tags SET href='/unclejimmy/fam/fixture',href_kind='squad' WHERE id=destination_id; RAISE EXCEPTION 'reverse route guard missing';
-  EXCEPTION WHEN raise_exception THEN IF SQLERRM='reverse route guard missing' THEN RAISE; END IF; END;
+  EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
   BEGIN UPDATE dojo.tags SET meta=jsonb_set(meta,'{identity,contexts,unclejimmy}','{"role":"fam"}'::jsonb) WHERE id=destination_id; RAISE EXCEPTION 'reverse context guard missing';
-  EXCEPTION WHEN raise_exception THEN IF SQLERRM='reverse context guard missing' THEN RAISE; END IF; END;
+  EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
   BEGIN INSERT INTO dojo.tag_relation(source_tag_id,target_tag_id,relation_type) SELECT destination_id,id,'member_of' FROM dojo.tags WHERE slug='g-league'; RAISE EXCEPTION 'reverse membership guard missing';
-  EXCEPTION WHEN raise_exception THEN IF SQLERRM='reverse membership guard missing' THEN RAISE; END IF; END;
+  EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
   BEGIN INSERT INTO dojo.unclejimmy_squad_item(section_key,slug,label,kind) VALUES('nuclear-reactor','wu-1261-fixture-next','fixture','person'); RAISE EXCEPTION 'reverse roster guard missing';
-  EXCEPTION WHEN raise_exception THEN IF SQLERRM='reverse roster guard missing' THEN RAISE; END IF; END;
+  EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
 
   -- Multi-hop reverse membership cannot reserve an already claimed athlete.
   INSERT INTO dojo.tags(slug,name) VALUES('wu-1261-fixture-middle','fixture middle');
   INSERT INTO dojo.tag_relation(source_tag_id,target_tag_id,relation_type) SELECT destination_id,id,'member_of' FROM dojo.tags WHERE slug='wu-1261-fixture-middle';
   BEGIN INSERT INTO dojo.tag_relation(source_tag_id,target_tag_id,relation_type) SELECT s.id,t.id,'member_of' FROM dojo.tags s,dojo.tags t WHERE s.slug='wu-1261-fixture-middle' AND t.slug='g-league'; RAISE EXCEPTION 'indirect guard missing';
-  EXCEPTION WHEN raise_exception THEN IF SQLERRM='indirect guard missing' THEN RAISE; END IF; END;
+  EXCEPTION WHEN raise_exception THEN IF SQLERRM NOT LIKE '%reserved%' THEN RAISE; END IF; END;
 
   UPDATE dojo.homie SET tag_slug=NULL WHERE id=homie_id;
   IF NOT EXISTS(SELECT 1 FROM dojo.homie WHERE id=homie_id AND tag_slug IS NULL)

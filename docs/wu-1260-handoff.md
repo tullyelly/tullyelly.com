@@ -5,17 +5,18 @@ Timezone/day: America/Chicago, 2026-11-15. Repository preparation only; no SQL
 application, merge or production deployment occurred. Jira items remain In
 Progress with evidence comments; committing does not establish delivery.
 
-| Issue   | Commit / revision                                | Repository status                                                 | Remaining work                                                                       |
-| ------- | ------------------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| WU-1271 | `149040b8`                                       | Workflow implemented, validated and used immediately              | Review; remote Jira Development ingestion unverified                                 |
-| WU-1270 | `dc7bbdc4`                                       | Manual migration workflow implemented, validated and used for 098 | Review; no manual SQL required for the chore itself                                  |
-| WU-1261 | Commit containing migration 098 and this handoff | SQL/protection/tests prepared and statically validated            | James applies/tests development, then approved production; Cipher verifies read-only |
-| WU-1262 | No implementation commit                         | Next planning checkpoint, not started                             | Resolve D1-D6 with James                                                             |
+| Issue   | Commit / revision                                                                        | Repository status                                                 | Remaining work                                                                       |
+| ------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| WU-1271 | `149040b8`                                                                               | Workflow implemented, validated and used immediately              | Review; remote Jira Development ingestion unverified                                 |
+| WU-1270 | `dc7bbdc4`                                                                               | Manual migration workflow implemented, validated and used for 098 | Review; no manual SQL required for the chore itself                                  |
+| WU-1261 | `7671723312fd1ac55295f9b00e9099147cf240e3` (SQL package); follow-up handoff/test receipt | SQL/protection/tests prepared and statically validated            | James applies/tests development, then approved production; Cipher verifies read-only |
+| WU-1262 | No implementation commit                                                                 | Next planning checkpoint, not started                             | Resolve D1-D6 with James                                                             |
 
-The WU-1261 preparation baseline is `dc7bbdc4`. Resolve the exact reviewed SQL
-revision with `git log -1 --format=%H -- db/migrations/098_protect_homie_tag_identity.sql`
-on this shared branch; the final response records that commit. Review those bytes
-and the hashes below before execution. Do not execute from an unreviewed worktree.
+The WU-1261 preparation baseline is `dc7bbdc4`. The reviewed SQL package revision
+is `7671723312fd1ac55295f9b00e9099147cf240e3`. The following handoff/test receipt
+changes no canonical, assertion or operation SQL bytes. Verify with
+`git log -1 --format=%H -- db/migrations/098_protect_homie_tag_identity.sql` and
+the hashes below before execution. Do not execute from an unreviewed worktree.
 No branch push or PR creation is part of this handoff.
 
 ## Implemented and validated
@@ -49,8 +50,8 @@ checks, content preparation, lint, typecheck, Prisma generation, 249 Jest suites
 2,016 tests, thresholded coverage (88.63% statements, 81.90% branches, 86.79%
 functions, 90.06% lines) and Next build. Two suites/six tests were skipped. The
 initial test-runner registration failure was corrected before that pass. Later
-changes received focused safe tests, ESLint, format/docs and generated-package
-checks; the successful full baseline was not redundantly repeated. No database
+changes received focused safe tests (six final suites / 36 tests), ESLint,
+format/docs and generated-package checks; the successful full baseline was not redundantly repeated. No database
 write suite, human SQL test or post-application postflight has run.
 
 ## Independent database observations
