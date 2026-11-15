@@ -77,9 +77,13 @@ unrun recovery checks and accepted limitations before production approval.
 For every database mutation or ledger change, follow the existing
 [database-migrations skill](.agents/skills/database-migrations/SKILL.md) and
 [manual procedure](docs/manual-migrations.md). Cipher prepares; James executes.
-Supply exact ordered DataGrip files, canonical and operation checksums, atomic
-ledger handling, read-only pre/postflight, human checks and deployment timing in
-the task handoff and final response. Never leave ledger recording implicit.
+Use two complete DataGrip files: canonical migration first, separate ledger SQL
+only after success; development then approved production. Embed essential checks
+inside those files. Stop on failure; never automatically replay a successful
+migration to fix ledger recording. Cipher handles safe validation/read-only checks
+and release compatibility preparation. Extra diagnostics/tests are engineering
+work, not James's normal checklist. Keep the final handoff brief with the two
+exact paths and actual blockers; never imply prepared SQL is applied.
 
 ## Validation
 

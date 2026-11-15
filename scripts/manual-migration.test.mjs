@@ -17,19 +17,18 @@ const input = {
   assertions:
     "DO $$ BEGIN IF 1 <> 1 THEN RAISE EXCEPTION 'fixture'; END IF; END $$;",
 };
-test("canonical bytes, filename and source are bound to atomic ledger recording", () => {
+test("canonical bytes, filename and source are bound to separate ledger recording", () => {
   const r = bundle(input);
   assert.equal(r.checksum, hash(input.source));
-  assert.notEqual(r.checksum, r.wrapperChecksum);
+  assert.notEqual(r.checksum, r.ledgerChecksum);
+  assert.ok(!r.sql.includes("SELECT 1;"));
+  assert.ok(!r.sql.includes("canonical_body"));
   assert.ok(
-    r.sql.includes("EXECUTE $canonical_body$SELECT 1;$canonical_body$"),
-  );
-  assert.ok(
-    r.sql.indexOf("EXECUTE $effect_assertions$") <
+    r.sql.indexOf(input.assertions) <
       r.sql.indexOf("INSERT INTO dojo.schema_migration"),
   );
   assert.ok(!r.sql.includes("ON CONFLICT"));
-  assert.ok(r.sql.includes("filename = '999_fixture.sql'"));
+  assert.ok(r.sql.includes("filename='999_fixture.sql'"));
   assert.notEqual(
     bundle({ ...input, source: input.source.replace("SELECT 1", "SELECT 2") })
       .sql,
@@ -38,11 +37,11 @@ test("canonical bytes, filename and source are bound to atomic ledger recording"
   assert.notEqual(bundle({ ...input, filename: "999_other.sql" }).sql, r.sql);
   assert.notEqual(
     bundle({ ...input, assertions: input.assertions + "\nSELECT 2;" })
-      .wrapperChecksum,
-    r.wrapperChecksum,
+      .ledgerChecksum,
+    r.ledgerChecksum,
   );
 });
-test("unsupported transaction shapes and empty or ambiguous reconciliation evidence fail", () => {
+test("unsupported transaction shapes fail without offering migration replay", () => {
   for (const source of [
     "SELECT 1;",
     "BEGIN;\nCOMMIT;\nSELECT 1;\nCOMMIT;",
@@ -50,14 +49,7 @@ test("unsupported transaction shapes and empty or ambiguous reconciliation evide
     "BEGIN;\nCREATE INDEX CONCURRENTLY x ON t(a);\nCOMMIT;",
   ])
     assert.throws(() => migrationBody(source));
-  assert.throws(() => bundle({ ...input, executionReference: "" }), /evidence/);
-  const r = bundle({
-    ...input,
-    executionReference:
-      "fixture exact-file receipt and postflight, no live execution",
-  });
-  assert.ok(!r.sql.includes("EXECUTE $canonical_body$"));
-  assert.ok(r.sql.includes("EXECUTE $effect_assertions$"));
+  assert.ok(!bundle(input).sql.includes("EXECUTE"));
 });
 test("complete guarded diff or live baseline changes invalidate release compatibility evidence", () => {
   const baseline = "a".repeat(40),
@@ -85,14 +77,14 @@ test("validator detects edited body, stale canonical bytes and changed ledger id
     mkdirSync("db/operations");
     const canonical = "db/migrations/999_fixture.sql",
       assertions = "db/operations/999_assertions.sql",
-      operation = "db/operations/999_apply_with_ledger.sql";
+      operation = "db/operations/999_record_applied.sql";
     writeFileSync(canonical, input.source);
     writeFileSync(assertions, input.assertions);
     prepare(canonical, assertions, operation);
     prepare(canonical, assertions, operation, { check: true });
     const correct = readFileSync(operation, "utf8");
     for (const mutation of [
-      correct.replace("SELECT 1;", "SELECT 2;"),
+      correct.replace("Required effect checks", "Drifted checks"),
       correct.replaceAll("999_fixture.sql", "999_wrong.sql"),
       correct.replaceAll(hash(input.source), "0".repeat(64)),
     ]) {

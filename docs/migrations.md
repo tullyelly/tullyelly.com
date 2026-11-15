@@ -30,7 +30,7 @@ SQL file changes later, `status` and `verify` report `checksum_mismatch`, and
 Production operations require the concrete review and human protected approval in
 [production releases](production-releases.md). The owner-operated
 [DataGrip procedure](analytics-neon-setup.md) covers individually reviewed files,
-exact checksums, atomic ledger handling and read-only postflight. It does not
+historical analytics execution details; new changes use the two-file procedure. It does not
 change application deployment or authorize SQL through code-only approval.
 The legacy commands below remain non-production tools; do not use apply-all or
 manual SQL to bypass approval or run concurrently with a release executor.
@@ -72,8 +72,8 @@ prod-looking URLs outside `NODE_ENV=production`, and keeps the production
 ## Daily workflow
 
 Follow [manual preparation and execution](manual-migrations.md) for every new
-change. Cipher prepares and inspects read-only; James applies the reviewed atomic
-operation with ledger recording, development first. Runner status/verify/apply
+change. Cipher prepares and inspects read-only; James runs the complete canonical
+migration, then its separate ledger file only after success, development first. Runner status/verify/apply
 are legacy write-producing tools and are not agent inspection commands. The
 commands above describe implementation, not authorization to execute them.
 
@@ -109,7 +109,7 @@ The matching application changes remove clan reads of the retired column and use
 before and after migration 079, so the application can be released first.
 Homie `tag_slug` fields and aliases representing `dojo.tags.slug` remain valid.
 Historical 079 ledger reconciliation requires separate exact-execution evidence;
-future changes use the atomic handoff in [manual migrations](manual-migrations.md).
+future changes use the two-file handoff in [manual migrations](manual-migrations.md).
 
 [079_clan_slug_test.sql](../db/tests/079_clan_slug_test.sql) supplies rollback-only
 SQL assertions for a non-production database after applying the migration. It
