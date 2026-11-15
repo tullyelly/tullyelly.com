@@ -6,6 +6,7 @@ jest.mock("@/lib/db", () => ({
 }));
 
 import {
+  listTypedIdentityRelations,
   getIdentityBySlug,
   getIdentityHref,
   listGroupMembers,
@@ -172,5 +173,54 @@ describe("identity server helpers", () => {
     expect(query).toContain("WITH RECURSIVE descendant_ids");
     expect(query).toContain("relation.target_tag_id");
     expect(mockSql.mock.calls[0]?.[1]).toEqual(["wu-tang-clan"]);
+  });
+});
+
+describe("typed direct relationship queries", () => {
+  beforeEach(() => mockSql.mockReset());
+  test.each(["outgoing", "incoming"] as const)(
+    "reads %s motivations without traversal",
+    async (direction) => {
+      mockSql.mockResolvedValue([
+        {
+          ...relationRow,
+          relation_type: "collected_because_of",
+          meta: {
+            reasons: [
+              {
+                code: "favorite_player",
+                explanation: "He was her favorite player.",
+              },
+            ],
+          },
+        },
+      ]);
+      const result = await listTypedIdentityRelations(
+        "rza",
+        direction,
+        "collected_because_of",
+      );
+      expect(result[0]?.type).toBe("collected_because_of");
+      expect(mockSql.mock.calls[0][0].join("?")).not.toContain("RECURSIVE");
+      expect(mockSql.mock.calls[0][1]).toContain("collected_because_of");
+    },
+  );
+  test("rejects malformed stored motivations and mismatched types", async () => {
+    mockSql.mockResolvedValue([
+      { ...relationRow, relation_type: "collected_because_of", meta: {} },
+    ]);
+    await expect(
+      listTypedIdentityRelations("rza", "incoming", "collected_because_of"),
+    ).rejects.toThrow("meta.reasons");
+    mockSql.mockResolvedValue([relationRow]);
+    await expect(
+      listTypedIdentityRelations("rza", "outgoing", "alias_of"),
+    ).rejects.toThrow("Unexpected relationship type");
+  });
+  test("returns direct aliases without introducing motivation metadata", async () => {
+    mockSql.mockResolvedValue([{ ...relationRow, relation_type: "alias_of" }]);
+    await expect(
+      listTypedIdentityRelations("rza", "outgoing", "alias_of"),
+    ).resolves.toMatchObject([{ type: "alias_of", meta: { since: 1992 } }]);
   });
 });

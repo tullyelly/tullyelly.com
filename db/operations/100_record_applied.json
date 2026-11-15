@@ -1,0 +1,8 @@
+{
+  "canonicalPath": "db/migrations/100_validate_typed_tag_relationships.sql",
+  "canonicalSha256": "717fb826e5787a92e24351854cfa4572c4545afbc3c46d3f17726a4dd9333b31",
+  "ledgerPath": "db/operations/100_record_applied.sql",
+  "ledgerSha256": "d953dfd083b6968d1fc39785a4d0071e9817486757837b3ca6bf4b664031d80a",
+  "assertionsSha256": "a202265f23d7be52bd434955c02b29614ebc7636e086a86ee9a974a0e281c233",
+  "mode": "record-after-success"
+}

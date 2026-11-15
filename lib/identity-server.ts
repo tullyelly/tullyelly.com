@@ -7,6 +7,10 @@ import {
   type IdentityContext,
   type IdentityMetadata,
 } from "@/lib/identity";
+import {
+  type RelationshipType,
+  readCollectionReasons,
+} from "@/lib/tag-relationships";
 import { normalizeTagSlug } from "@/lib/tags";
 
 type IdentityRow = {
@@ -276,4 +280,19 @@ export async function listIdentityDescendants(
 export async function listGroupMembers(slug: string): Promise<Identity[]> {
   const relations = await listIncomingIdentityRelations(slug, "member_of");
   return relations.map((relation) => relation.source);
+}
+
+/** Typed direct edges only; unknown legacy types remain available via existing helpers. */
+export async function listTypedIdentityRelations(
+  slug: string,
+  direction: "outgoing" | "incoming",
+  type: RelationshipType,
+): Promise<(IdentityRelation & { type: RelationshipType })[]> {
+  const relations = await listRelations(slug, direction, type);
+  return relations.map((relation) => {
+    if (relation.type !== type)
+      throw new Error("Unexpected relationship type returned");
+    if (type === "collected_because_of") readCollectionReasons(relation.meta);
+    return { ...relation, type };
+  });
 }

@@ -1,5 +1,21 @@
 # WU-1260 migration handoff
 
+## Current checkpoint; WU-1263
+
+WU-1261 cleanup and WU-1262 decisions are Done. Fresh independent read-only
+inspection on November 15 confirms 098 and 099 applied/recorded in both existing
+targets with matching canonical checksums. Preserve both applied files. WU-1263
+is In Progress; migration 100 and its separate ledger are prepared, unapplied.
+[The typed relationship contract and current handoff](typed-tag-relationships.md)
+own the exact development-first files, expected result and remaining evidence.
+WU-1264 through WU-1268 wait at James's manual database execution boundary.
+No merge, deployment or later-story completion is claimed.
+
+## Historical 098 preparation and execution corrections
+
+The dated records below predate reported execution and the current checkpoint.
+Do not rerun 098 or reopen the accepted WU-1262 decisions from these older notes.
+
 Shared branch: `epic/WU-1260-tag-relationships`. WU-1270 now uses the two-file
 procedure in [manual migrations](manual-migrations.md). The previous wrapper and
 13-step checklist are retired. No database writes or production deployment occurred.
@@ -49,7 +65,7 @@ returned scope 403; authorized baseline verification and actual execution
 evidence remain necessary before refreshing release compatibility. No stale
 baseline, applied status or release approval is invented.
 
-WU-1262 remains the next planning checkpoint; no decisions or later stories began.
+At that earlier checkpoint WU-1262 had not begun; its decisions are now accepted.
 
 ## Development execution correction
 

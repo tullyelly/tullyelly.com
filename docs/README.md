@@ -17,7 +17,7 @@
 | Analytics monitoring                                          | [Owner setup, notification checks and recovery limits](analytics-monitoring.md)                            |
 | Analytics validation                                          | [Owner development checks](analytics-validation.md), [production handoff](analytics-production-handoff.md) |
 | Category owned-card counts                                    | [Category snapshots and manual setup](card-category-counts.md)                                             |
-| Tag graph                                                     | [Tag relationships](tag-relationships-view.md)                                                             |
+| Tag graph                                                     | [Tag relationships](tag-relationships-view.md), [typed edge contract](typed-tag-relationships.md)          |
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                                        |
 | Acknowledgments                                               | [Flowers naming](naming.md)                                                                                |
 

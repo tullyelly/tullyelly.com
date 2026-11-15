@@ -1,7 +1,8 @@
 # Homie slug synchronization; WU-1261
 
-Migration 098 is prepared, not applied. [The task handoff](wu-1260-handoff.md)
-owns the two executable files and engineering evidence.
+Migration 098 is applied and recorded in both existing targets, confirmed read-only
+on November 15, 2026. [The task handoff](wu-1260-handoff.md)
+owns current status and the historical execution evidence.
 
 `dojo.homie.tag_slug` remains authoritative. No name-derived slug, alias resolver,
 redirect, new relationship type, collection motivation or UI behavior is added.
@@ -46,8 +47,9 @@ An ambiguous legacy mixed tag stops instead of guessing ownership.
 Historical direct `/cardattack/homies/old-slug` URLs are not redirected. Authored
 old tag references continue to identify their retained tag/archive; chronicles do
 not automatically move to the new athlete feed. Older retained identities and
-unrelated relationship meanings are outside this narrow repair. WU-1262 must
-settle broader alias lookup, route, feed and count behavior before later stories.
+unrelated relationship meanings are outside this narrow repair. WU-1262 has accepted the broader alias model; WU-1264 owns lookup, route, feed
+and count integration. [WU-1263](typed-tag-relationships.md) adds the validation
+foundation without changing this applied synchronization implementation.
 
 ## Collision and concurrent writes
 
