@@ -13,7 +13,7 @@ import {
   SHARED_OPEN_GRAPH_FIELDS,
   SHARED_TWITTER_FIELDS,
 } from "@/lib/seo/constants";
-import { getTaggedPosts } from "@/lib/blog";
+import { getIdentityTaggedPosts } from "@/lib/identity-chronicles";
 import { fmtDate, fmtDateTime } from "@/lib/datetime";
 
 type Params = { member: string };
@@ -76,7 +76,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   }
 
   const cartoon = await getCartoonByTagId(member.tagId);
-  const taggedPosts = getTaggedPosts(member.tagSlug);
+  const taggedPosts = await getIdentityTaggedPosts([member.tagSlug]);
   const spotlightPosts = taggedPosts.slice(0, 7);
   const comments = await getCommentsByUserId(member.userId);
   const showCartoon =

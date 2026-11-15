@@ -5,7 +5,7 @@ import { SectionDivider } from "@/components/SectionDivider";
 import RedditEmbed from "@/components/unclejimmy/RedditEmbed";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
 import VolleyballTournamentDirectory from "@/components/unclejimmy/VolleyballTournamentDirectory";
-import { getTaggedPosts } from "@/lib/blog";
+import { getIdentityTaggedPosts } from "@/lib/identity-chronicles";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
   SHARED_OPEN_GRAPH_FIELDS,
@@ -37,8 +37,8 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function UncleJimmySquadJeffMeffPage() {
-  const taggedPosts = getTaggedPosts("jeff-meff");
+export default async function UncleJimmySquadJeffMeffPage() {
+  const taggedPosts = await getIdentityTaggedPosts(["jeff-meff"]);
 
   return (
     <div className="space-y-10">

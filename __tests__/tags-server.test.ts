@@ -1,4 +1,28 @@
 /** @jest-environment node */
+const mockTagAliases = jest.fn().mockResolvedValue(new Map());
+jest.mock("@/lib/tag-aliases-server", () => ({
+  getTagAliasSnapshot: () => mockTagAliases(),
+  resolveCanonicalTagSlug: async (tag: string) => {
+    const slug = tag.trim().toLowerCase().replace(/\s+/g, "-");
+    return (await mockTagAliases()).get(slug) ?? slug;
+  },
+  listEquivalentTagSlugs: async (tags: string[]) => {
+    const aliases: Map<string, string> = await mockTagAliases();
+    return [
+      ...new Set(
+        tags.flatMap((tag) => {
+          const canonical = aliases.get(tag) ?? tag;
+          return [
+            canonical,
+            ...[...aliases]
+              .filter(([, target]) => target === canonical)
+              .map(([source]) => source),
+          ];
+        }),
+      ),
+    ];
+  },
+}));
 const sqlMock = jest.fn();
 jest.mock("server-only", () => ({}));
 jest.mock("@/lib/db", () => ({
@@ -22,6 +46,7 @@ const row = (
 
 describe("canonical server tag metadata", () => {
   beforeEach(() => {
+    mockTagAliases.mockResolvedValue(new Map());
     sqlMock.mockReset();
     delete process.env.NEXT_PHASE;
   });
@@ -113,4 +138,32 @@ describe("canonical server tag metadata", () => {
     );
     expect(sqlMock).not.toHaveBeenCalled();
   });
+});
+
+it.each([true, false])(
+  "aliases use the canonical route but retain source disabling (%s) and label",
+  async (enabled) => {
+    mockTagAliases.mockResolvedValue(new Map([["lebron-james", "king-james"]]));
+    sqlMock.mockResolvedValue([
+      row("lebron-james", "/old", "homie", enabled),
+      row("king-james", "/cardattack/homies/king-james", "homie"),
+    ]);
+    const result = await getTagMetadataBatch(["lebron-james"]);
+    expect(result.get("lebron-james")).toMatchObject({
+      displayName: "Stored label",
+      isClickable: enabled,
+      href: enabled ? "/cardattack/homies/king-james" : null,
+    });
+  },
+);
+it("a disabled canonical destination stays disabled through an enabled alias", async () => {
+  mockTagAliases.mockResolvedValue(new Map([["lebron-james", "king-james"]]));
+  sqlMock.mockResolvedValue([
+    row("lebron-james", "/old", "homie"),
+    row("king-james", "/new", "none"),
+  ]);
+  expect(
+    (await getTagMetadataBatch(["lebron-james"])).get("lebron-james")
+      ?.isClickable,
+  ).toBe(false);
 });

@@ -1,4 +1,28 @@
 /** @jest-environment node */
+const mockTagAliases = jest.fn().mockResolvedValue(new Map());
+jest.mock("@/lib/tag-aliases-server", () => ({
+  getTagAliasSnapshot: () => mockTagAliases(),
+  resolveCanonicalTagSlug: async (tag: string) => {
+    const slug = tag.trim().toLowerCase().replace(/\s+/g, "-");
+    return (await mockTagAliases()).get(slug) ?? slug;
+  },
+  listEquivalentTagSlugs: async (tags: string[]) => {
+    const aliases: Map<string, string> = await mockTagAliases();
+    return [
+      ...new Set(
+        tags.flatMap((tag) => {
+          const canonical = aliases.get(tag) ?? tag;
+          return [
+            canonical,
+            ...[...aliases]
+              .filter(([, target]) => target === canonical)
+              .map(([source]) => source),
+          ];
+        }),
+      ),
+    ];
+  },
+}));
 
 const queryOneMock = jest.fn();
 
@@ -14,6 +38,7 @@ import { getTcdbSnapshotForTagOnDate } from "@/lib/data/tcdb-snapshot";
 
 describe("tcdb snapshot data helper", () => {
   beforeEach(() => {
+    mockTagAliases.mockResolvedValue(new Map());
     queryOneMock.mockReset();
   });
 

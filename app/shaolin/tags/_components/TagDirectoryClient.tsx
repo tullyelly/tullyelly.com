@@ -25,6 +25,7 @@ import TableSearch, { useTableSearch } from "@/components/ui/TableSearch";
 
 export type TagDirectoryRow = {
   slug: string;
+  searchTerms?: string[];
   metadata?: TagLinkMetadata;
   canonicalDisplayName: string;
   chronicleCount: number;
@@ -51,6 +52,7 @@ export default function TagDirectoryClient({
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
   const searchedRows = useTableSearch(rows, query, (row) => [
     row.slug,
+    ...(row.searchTerms ?? []),
     row.canonicalDisplayName,
     row.alias?.label ?? "",
     row.alias?.href ?? "",

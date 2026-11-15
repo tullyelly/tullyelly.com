@@ -31,7 +31,11 @@ describe("PATCH /api/homies/[id] cache consistency", () => {
   it("expires every homie read cache immediately after commit", async () => {
     const release = jest.fn();
     const query = jest.fn((sql: string) => {
-      if (sql === "BEGIN" || sql === "COMMIT") {
+      if (
+        sql === "BEGIN" ||
+        sql === "COMMIT" ||
+        sql.includes("pg_advisory_xact_lock")
+      ) {
         return Promise.resolve({ rows: [] });
       }
       if (sql.includes("SELECT id, name, tag_slug")) {
@@ -83,6 +87,14 @@ describe("PATCH /api/homies/[id] cache consistency", () => {
 
     expect(response.status).toBe(200);
     expect(query).toHaveBeenCalledWith("COMMIT");
+    const statements = query.mock.calls.map(([statement]) => statement);
+    expect(
+      statements.findIndex((statement) =>
+        statement.includes("pg_advisory_xact_lock"),
+      ),
+    ).toBeLessThan(
+      statements.findIndex((statement) => statement.includes("FOR UPDATE")),
+    );
     expect(mockRevalidateTag).toHaveBeenCalledWith("homies", { expire: 0 });
     expect(mockRevalidateTag).toHaveBeenCalledWith("homie-options", {
       expire: 0,

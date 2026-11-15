@@ -9,7 +9,8 @@ import { getPublishedPosts } from "@/lib/blog";
 import { fmtDate } from "@/lib/datetime";
 import { buildMetadata } from "@/lib/seo/builders";
 import { canonicalFor } from "@/lib/seo/url";
-import { normalizeTagSlug } from "@/lib/tags";
+import { getTagAliasSnapshot } from "@/lib/tag-aliases-server";
+import { canonicalTagSlugs, equivalentTagSlugs } from "@/lib/tag-aliases";
 import ChronicleListClient, {
   type ChronicleListRow,
 } from "./_components/ChronicleListClient";
@@ -43,6 +44,7 @@ export default async function Page({
     ? requestedAlterEgo
     : "";
   const posts = getPublishedPosts();
+  const aliases = await getTagAliasSnapshot();
   const rows: ChronicleListRow[] = posts.map((post) => ({
     slug: post.slug,
     url: post.url,
@@ -50,7 +52,10 @@ export default async function Page({
     summary: post.summary,
     date: post.date,
     alterEgo: post.resolvedAlterEgo as AlterEgo,
-    tags: Array.from(new Set((post.tags ?? []).map(normalizeTagSlug))),
+    tags: canonicalTagSlugs(post.tags ?? [], aliases),
+    searchTerms: (post.tags ?? []).flatMap((tag) =>
+      equivalentTagSlugs(tag, aliases),
+    ),
     infinityStone: post.infinityStone,
   }));
   const tags = Array.from(new Set(rows.flatMap((row) => row.tags))).sort(

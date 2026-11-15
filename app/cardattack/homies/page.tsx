@@ -1,3 +1,5 @@
+import { equivalentTagSlugs } from "@/lib/tag-aliases";
+import { getTagAliasSnapshot } from "@/lib/tag-aliases-server";
 import { makeListGenerateMetadata } from "@/lib/seo/factories";
 import { unstable_cache } from "next/cache";
 import DataPageShell from "@/components/layout/DataPageShell";
@@ -37,19 +39,22 @@ const readHomies = unstable_cache(listHomieDirectory, ["homie-directory"], {
 export default async function Page(_props?: {
   searchParams?: Promise<Record<string, string | undefined> | undefined>;
 }) {
-  const [rows, canCreate, canUpdate, homieOptions, currentDate] =
+  const [rows, canCreate, canUpdate, homieOptions, currentDate, aliases] =
     await Promise.all([
       readHomies(),
       canCurrentUser("tcdb.snapshot.create"),
       canCurrentUser("tcdb.homie.update"),
       getHomieOptions(),
       getCurrentDateIso(),
+      getTagAliasSnapshot(),
     ]);
   const homiesByTag = new Map(
     rows.flatMap((row) => (row.tag_slug ? [[row.tag_slug, row] as const] : [])),
   );
   const tagUsage = listChroniclePersonTagCounts(
     Array.from(homiesByTag.keys()),
+    10,
+    aliases,
   ).flatMap((usage) => {
     const homie = homiesByTag.get(usage.tag);
     return homie
@@ -82,7 +87,15 @@ export default async function Page(_props?: {
       />
       <HomieTagUsageSummary rows={tagUsage} />
       <section aria-labelledby="homie-directory-heading">
-        <HomieDirectory initialRows={rows} canUpdate={canUpdate} />
+        <HomieDirectory
+          initialRows={rows.map((row) => ({
+            ...row,
+            searchTerms: row.tag_slug
+              ? equivalentTagSlugs(row.tag_slug, aliases)
+              : [],
+          }))}
+          canUpdate={canUpdate}
+        />
       </section>
     </DataPageShell>
   );

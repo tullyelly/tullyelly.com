@@ -1,4 +1,6 @@
 import "server-only";
+import { getTagAliasSnapshot } from "@/lib/tag-aliases-server";
+import { equivalentTagSlugs, type TagAliasIndex } from "@/lib/tag-aliases";
 
 import type { Post } from "contentlayer/generated";
 import { getPublishedPosts } from "@/lib/blog";
@@ -56,6 +58,7 @@ function scoreDocument(document: SiteSearchDocument, query: string): number {
 
 function buildPageDocuments(
   tree: Awaited<ReturnType<typeof getMenu>>["tree"],
+  aliases: TagAliasIndex,
 ): SiteSearchDocument[] {
   return flattenLinks(tree).map((link) => {
     const context = link.pathLabels.slice(0, -1).join(" / ");
@@ -64,7 +67,11 @@ function buildPageDocuments(
       title: link.label,
       href: link.href,
       description: context,
-      keywords: link.keywords,
+      keywords: [
+        ...new Set(
+          link.keywords.flatMap((tag) => equivalentTagSlugs(tag, aliases)),
+        ),
+      ],
       category: context || undefined,
       persona: link.persona?.label,
       external: link.kind === "external",
@@ -73,7 +80,10 @@ function buildPageDocuments(
   });
 }
 
-function buildChronicleDocuments(posts: readonly Post[]): SiteSearchDocument[] {
+function buildChronicleDocuments(
+  posts: readonly Post[],
+  aliases: TagAliasIndex,
+): SiteSearchDocument[] {
   return posts
     .filter((post) => !post.draft)
     .map((post) => ({
@@ -81,7 +91,11 @@ function buildChronicleDocuments(posts: readonly Post[]): SiteSearchDocument[] {
       title: post.title,
       href: post.url,
       description: post.summary,
-      keywords: post.tags ?? [],
+      keywords: [
+        ...new Set(
+          (post.tags ?? []).flatMap((tag) => equivalentTagSlugs(tag, aliases)),
+        ),
+      ],
       category: "Chronicle",
       persona: post.resolvedAlterEgo,
     }));
@@ -123,12 +137,16 @@ export async function searchSite(
 ): Promise<SiteSearchResult[]> {
   if (!normalize(query)) return [];
 
-  const [{ tree }, posts] = await Promise.all([
+  const [{ tree }, posts, aliases] = await Promise.all([
     getMenu(),
     Promise.resolve(getPublishedPosts()),
+    getTagAliasSnapshot(),
   ]);
   return rankSiteSearchDocuments(
-    [...buildPageDocuments(tree), ...buildChronicleDocuments(posts)],
+    [
+      ...buildPageDocuments(tree, aliases),
+      ...buildChronicleDocuments(posts, aliases),
+    ],
     query,
     limit,
   );

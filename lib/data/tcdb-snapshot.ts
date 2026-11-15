@@ -4,6 +4,7 @@ import { asDateString } from "@/lib/dates";
 import { queryOne } from "@/lib/db";
 import { withDbRetry } from "@/lib/db/retry";
 import { normalizeTagSlug } from "@/lib/tags";
+import { resolveCanonicalTagSlug } from "@/lib/tag-aliases-server";
 
 export type TcdbSnapshotTrend = "up" | "down" | "flat";
 
@@ -67,7 +68,6 @@ function toOptionalInteger(
   return toInteger(value);
 }
 
-
 export async function getTcdbSnapshotForTagOnDate(
   tag: string,
   snapshotDate: string,
@@ -75,10 +75,15 @@ export async function getTcdbSnapshotForTagOnDate(
   const normalizedDate = asDateString(snapshotDate);
   const normalizedTag = normalizeTagSlug(tag);
 
-  if (!normalizedTag || !normalizedDate || !/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate)) {
+  if (
+    !normalizedTag ||
+    !normalizedDate ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate)
+  ) {
     return null;
   }
 
+  const canonicalTag = await resolveCanonicalTagSlug(normalizedTag);
   const row = await withDbRetry(() =>
     queryOne<DbTcdbSnapshotRow>(
       `
@@ -88,8 +93,6 @@ export async function getTcdbSnapshotForTagOnDate(
             COALESCE(NULLIF(btrim(h.tag_slug), ''), h.id::text) AS route_slug
           FROM dojo.homie AS h
           WHERE h.tag_slug = $2
-          ORDER BY h.id ASC
-          LIMIT 1
         )
         SELECT
           s.homie_id::text AS homie_id,
@@ -114,7 +117,7 @@ export async function getTcdbSnapshotForTagOnDate(
         WHERE s.ranking_at = $1::date
         LIMIT 1
       `,
-      [normalizedDate, normalizedTag],
+      [normalizedDate, canonicalTag],
     ),
   );
 
@@ -125,7 +128,9 @@ export async function getTcdbSnapshotForTagOnDate(
   const rankingAt = asDateString(row.ranking_at);
 
   if (!rankingAt) {
-    throw new Error("Invalid ranking_at value returned from TCDB snapshot query");
+    throw new Error(
+      "Invalid ranking_at value returned from TCDB snapshot query",
+    );
   }
 
   const prevCardCount = toOptionalInteger(row.prev_card_count);

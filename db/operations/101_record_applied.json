@@ -1,0 +1,8 @@
+{
+  "canonicalPath": "db/migrations/101_retarget_homie_alias_references.sql",
+  "canonicalSha256": "24541ff0961e7f3e9a5d452984bbd7a8c32cf2f07778d328c2b2ec527b640470",
+  "ledgerPath": "db/operations/101_record_applied.sql",
+  "ledgerSha256": "f54556cbe1ffe599a831b54b878e41c655c3e84466f4b0d2b85040e6a5e7ce7f",
+  "assertionsSha256": "4f54ca84077c4a6a0e64f2b7dcca5151bd0e552a9752ef45e0b0b5b50e5d99d6",
+  "mode": "record-after-success"
+}

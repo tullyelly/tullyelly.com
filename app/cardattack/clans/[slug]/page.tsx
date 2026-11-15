@@ -10,7 +10,7 @@ import RankingDetailPage, {
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
-import { getTaggedPostsForTags } from "@/lib/blog";
+import { getIdentityTaggedPosts } from "@/lib/identity-chronicles";
 import type { ChronicleTagDisplayName } from "@/lib/chronicle-person-tags";
 import { listChronicleTagDisplayNames } from "@/lib/chronicle-person-tags";
 import {
@@ -177,7 +177,10 @@ export default async function Page({ params }: PageProps) {
     .filter((descendant) => descendant.metadata.kind === "person")
     .map((descendant) => descendant.slug);
   const taggedChronicles = chronicleTagMetadata
-    ? getTaggedPostsForTags([chronicleTagMetadata.slug, ...inheritedHomieTags])
+    ? await getIdentityTaggedPosts([
+        chronicleTagMetadata.slug,
+        ...inheritedHomieTags,
+      ])
     : [];
   const rankSnapshotsBySport = new Map<string, typeof rankSnapshots>();
   for (const snapshot of rankSnapshots) {

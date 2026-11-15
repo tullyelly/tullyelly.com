@@ -21,6 +21,9 @@
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                                        |
 | Acknowledgments                                               | [Flowers naming](naming.md)                                                                                |
 
+[Same-person alias resolution](tag-alias-resolution.md) covers runtime consumers,
+cache freshness and the prepared rename migration.
+
 [Homie/clan audits](homie-clan-audit-2026-11-15.md) records the reusable skill, initial research coverage and prepared repairs.
 
 [Production release policy](production-releases.md) owns the protected approval

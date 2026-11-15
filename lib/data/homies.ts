@@ -6,6 +6,7 @@ import { withDbRetry } from "@/lib/db/retry";
 import type { Trend } from "@/lib/data/tcdb";
 
 export type HomieDirectoryRow = {
+  searchTerms?: string[];
   id: number;
   name: string;
   tag_slug: string | null;

@@ -1,9 +1,9 @@
 # Typed tag relationships; WU-1263
 
 WU-1262's accepted decisions govern this contract. Migration 100's effects are
-installed in both existing targets; ledger recording is pending the correction
-documented below. Migration 098's
-cleanup and synchronization stay intact. No real aliases or reasons are seeded.
+installed and recorded with the canonical checksum in both existing targets,
+confirmed independently read-only after the ledger correction documented below.
+Migration 098's cleanup and synchronization stay intact. No real aliases or reasons are seeded.
 
 ## Shared contract
 
@@ -176,3 +176,13 @@ matching applied ledger entry per target. Report success or the first exact
 error/SQLSTATE and COMMIT status. Cipher will verify read-only and resume the epic
 sequence. No agent database writes occurred; ledger recording and live write/
 concurrency behavior remain unverified until further evidence is received.
+
+## Recorded 100; next implementation checkpoint
+
+Fresh read-only inspection after James's ledger correction confirms matching
+applied 100 entries in development and production, SHA-256
+`717fb826e5787a92e24351854cfa4572c4545afbc3c46d3f17726a4dd9333b31`,
+with non-null applied-at and no errors. Earlier pending-recording notes are dated.
+[WU-1264's alias resolution and migration 101](tag-alias-resolution.md) now own the
+next prepared handoff. Write/concurrency probes and deployment remain distinct;
+no automatic Done transition is inferred from the ledger.

@@ -1,4 +1,9 @@
 import "server-only";
+import {
+  resolveCanonicalTagSlug,
+  getTagAliasSnapshot,
+} from "@/lib/tag-aliases-server";
+import { canonicalTagSlug } from "@/lib/tag-aliases";
 import { asDateString } from "@/lib/dates";
 import { queryOne, queryRows } from "@/lib/db";
 import { withDbRetry } from "@/lib/db/retry";
@@ -95,9 +100,7 @@ function normalizeRankingRow(row: DbRankingRow): RankingRow {
   return { ...row, ranking_at };
 }
 
-function normalizeSnapshotRow(
-  row: HomieTcdbSnapshotRow,
-): HomieTcdbSnapshotRow {
+function normalizeSnapshotRow(row: HomieTcdbSnapshotRow): HomieTcdbSnapshotRow {
   const ranking_at = asDateString(row.ranking_at);
   if (!ranking_at) {
     throw new Error("Invalid ranking_at value from TCDB snapshot history");
@@ -122,8 +125,10 @@ export async function listTcdbRankings(opts: {
   let i = 1;
 
   if (q) {
-    where.push(`name ILIKE $${i++}`);
-    params.push(`%${q}%`);
+    const aliases = await getTagAliasSnapshot();
+    const canonical = canonicalTagSlug(q, aliases);
+    where.push(`(name ILIKE $${i++} OR tag_slug = $${i++})`);
+    params.push(`%${q}%`, canonical);
   }
   if (trend) {
     where.push(`trend_overall = $${i++}`);
@@ -181,10 +186,10 @@ export async function getHomieTcdbRankingByRouteKey(
   if (!routeKey) return null;
 
   const isNumericId = /^\d+$/.test(routeKey);
-  const whereSql = isNumericId
-    ? "homie_id = $1::bigint"
-    : "tag_slug = $1";
-  const param = isNumericId ? routeKey : routeKey.toLowerCase();
+  const whereSql = isNumericId ? "homie_id = $1::bigint" : "tag_slug = $1";
+  const param = isNumericId
+    ? routeKey
+    : await resolveCanonicalTagSlug(routeKey);
 
   const row = await withDbRetry(() =>
     queryOne<DbRankingRow>(

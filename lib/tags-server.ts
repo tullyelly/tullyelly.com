@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { getTagAliasSnapshot } from "@/lib/tag-aliases-server";
 import { isNextBuild } from "@/lib/env";
 import { sql } from "@/lib/db";
 import {
@@ -193,12 +194,26 @@ export const getTagMetadataSnapshot = cache(
       SELECT slug, display_name, href, href_kind, is_clickable, meta
       FROM dojo.tags
     `;
-      return new Map(
+      const metadata = new Map(
         rows.map((row) => {
           const slug = normalizeTagSlug(row.slug);
           return [slug, resolveTagMetadata(slug, row)];
         }),
       );
+      const aliases = await getTagAliasSnapshot();
+      for (const [source, target] of aliases) {
+        const alternate = metadata.get(source);
+        const canonical = metadata.get(target);
+        if (!alternate || !canonical) continue;
+        const clickable = alternate.isClickable && canonical.isClickable;
+        metadata.set(source, {
+          ...alternate,
+          href: clickable ? canonical.href : null,
+          hrefKind: clickable ? canonical.hrefKind : "none",
+          isClickable: clickable,
+        });
+      }
+      return metadata;
     } catch (error) {
       console.warn("[tags] Failed to resolve tag metadata", error);
       return new Map();

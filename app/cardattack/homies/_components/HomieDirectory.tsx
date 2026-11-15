@@ -25,6 +25,7 @@ const PAGE_SIZES = [25, 50, 100];
 const getHomieSearchValues = (row: HomieDirectoryRow) => [
   row.name,
   row.tag_slug,
+  ...(row.searchTerms ?? []),
   row.drafted,
   row.id,
 ];

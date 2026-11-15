@@ -1,15 +1,17 @@
 # WU-1260 migration handoff
 
-## Current checkpoint; WU-1263
+## Current checkpoint; WU-1264
 
 WU-1261 cleanup and WU-1262 decisions are Done. Fresh independent read-only
 inspection on November 15 confirms 098 and 099 applied/recorded in both existing
 targets with matching canonical checksums. Preserve both applied files. WU-1263
-is In Progress; migration 100 effects are installed in both targets, with ledger
-recording pending the CRLF correction at the end of this handoff.
-[The typed relationship contract and current handoff](typed-tag-relationships.md)
-own the exact development-first files, expected result and remaining evidence.
-WU-1264 through WU-1268 wait at James's manual database execution boundary.
+has installed/recorded migration 100 in both targets with matching checksum.
+WU-1264 is In Progress; its consumer code and migration 101 are prepared.
+[The typed relationship contract](typed-tag-relationships.md) records the
+completed 100 installation and its remaining behavioral evidence.
+[WU-1264's current handoff](tag-alias-resolution.md) owns migration 101 then its
+separate ledger in existing development. WU-1265 through WU-1268 wait at this
+manual execution boundary.
 No merge, deployment or later-story completion is claimed.
 
 ## Historical 098 preparation and execution corrections
@@ -100,3 +102,7 @@ Roll back the failed ledger transaction and run **only** the updated
 the established process. Do not replay migration 100. The
 [correction evidence](typed-tag-relationships.md#ledger-correction-after-datagrip-execution)
 owns current recovery status; earlier prepared/unapplied statements above are dated.
+
+The 100 ledger recovery above is now complete in both targets, verified read-only.
+The current boundary is the [101 two-file handoff](tag-alias-resolution.md#jamess-two-file-handoff).
+Do not replay 098/099/100. No later-story completion or deployment is implied.
