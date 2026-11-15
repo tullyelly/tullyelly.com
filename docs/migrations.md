@@ -69,17 +69,18 @@ The runner reads `DATABASE_URL` first, then `TEST_DATABASE_URL`. It honors
 prod-looking URLs outside `NODE_ENV=production`, and keeps the production
 `neondb_owner/neondb` guard.
 
-## Daily Workflow
+## Daily workflow
 
-1. Add a new numbered SQL file under `db/migrations`.
-2. Run `npm run db:migrate:status` to see pending work.
-3. Run `npm run db:migrate:apply` to apply pending migrations in filename
-   order.
-4. Run `npm run db:migrate:verify` before shipping. It fails if anything is
-   pending, failed, missing from the repo, or checksum-mismatched.
+Follow [manual preparation and execution](manual-migrations.md) for every new
+change. Cipher prepares and inspects read-only; James applies the reviewed atomic
+operation with ledger recording, development first. Runner status/verify/apply
+are legacy write-producing tools and are not agent inspection commands. The
+commands above describe implementation, not authorization to execute them.
 
-Do not edit a migration after it has been applied to a shared database. Add a
-new numbered migration instead.
+The domain-specific sections below preserve historical execution records and
+legacy handoffs; they are not the default procedure for future changes. Never
+replay them or reconcile their ledgers without separately reviewed exact-file
+execution evidence. Preserve applied files and checksums.
 
 ## Clan slug and tag creation
 
@@ -107,7 +108,8 @@ The matching application changes remove clan reads of the retired column and use
 `slug` for ranking metadata, snapshots and trade-partner tag links. They work
 before and after migration 079, so the application can be released first.
 Homie `tag_slug` fields and aliases representing `dojo.tags.slug` remain valid.
-Review and reconcile the ledger separately after manually applying SQL.
+Historical 079 ledger reconciliation requires separate exact-execution evidence;
+future changes use the atomic handoff in [manual migrations](manual-migrations.md).
 
 [079_clan_slug_test.sql](../db/tests/079_clan_slug_test.sql) supplies rollback-only
 SQL assertions for a non-production database after applying the migration. It

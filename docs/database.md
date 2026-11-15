@@ -21,9 +21,8 @@ short session statement/lock timeouts on dedicated connections and destroy those
 connections on release. Runtime fallback behavior must not hide unauthorized
 writes or build-time queries.
 
-[Migrations](migrations.md) owns the ledger procedure. Confirm the intended
-non-production target before running scripts; even status/verify initialize the
-ledger. Static tests do not prove a migration was applied to any database.
+[Migrations](migrations.md) owns the ledger procedure. Follow [manual preparation](manual-migrations.md); James executes writes.
+Cipher must not run status/verify/apply; even status/verify initialize the ledger. Static tests do not prove a migration was applied to any database.
 
 ## Audit events
 

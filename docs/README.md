@@ -26,6 +26,10 @@ gate, exact release binding and recovery procedure.
 [Credential maintenance](credential-maintenance.md) owns the separate protected
 password replacement path; it does not execute analytics migrations.
 
+The [Jira workflow](jira-workflow.md) owns shared daily epic branches and commit
+attribution. [Manual migrations](manual-migrations.md) owns new DataGrip packages
+and the [handoff template](templates/manual-migration-handoff.md).
+
 ## Historical decisions and proposals
 
 [Static-page v2](archive/static-page-template-v2.md) preserves targets and an

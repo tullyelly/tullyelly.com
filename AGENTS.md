@@ -72,6 +72,15 @@ executor is not authorized by this policy. No new recovery environment or
 mandatory isolated restore proof is required; document actual backup coverage,
 unrun recovery checks and accepted limitations before production approval.
 
+## Mandatory database preparation handoff
+
+For every database mutation or ledger change, follow the existing
+[database-migrations skill](.agents/skills/database-migrations/SKILL.md) and
+[manual procedure](docs/manual-migrations.md). Cipher prepares; James executes.
+Supply exact ordered DataGrip files, canonical and operation checksums, atomic
+ledger handling, read-only pre/postflight, human checks and deployment timing in
+the task handoff and final response. Never leave ledger recording implicit.
+
 ## Validation
 
 Run `npm run verify:agent` before review; it prepares once, lints, typechecks,
