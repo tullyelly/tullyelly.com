@@ -5,7 +5,8 @@
 WU-1261 cleanup and WU-1262 decisions are Done. Fresh independent read-only
 inspection on November 15 confirms 098 and 099 applied/recorded in both existing
 targets with matching canonical checksums. Preserve both applied files. WU-1263
-is In Progress; migration 100 and its separate ledger are prepared, unapplied.
+is In Progress; migration 100 effects are installed in both targets, with ledger
+recording pending the CRLF correction at the end of this handoff.
 [The typed relationship contract and current handoff](typed-tag-relationships.md)
 own the exact development-first files, expected result and remaining evidence.
 WU-1264 through WU-1268 wait at James's manual database execution boundary.
@@ -87,3 +88,15 @@ and simulated intended cleanup in both databases, including a negative case that
 must reject unrelated JSON drift. Nine safe tests passed; the separate ledger
 checksum was regenerated. No committed 098 functions or ledger rows were observed.
 James must roll back the failed console before retrying the current complete files.
+
+## Current 100 ledger recovery
+
+James's DataGrip execution installed 100's effects in both existing targets, but
+recording stopped on a CRLF-sensitive function fingerprint. Read-only comparison
+confirmed all five bodies match after line-ending normalization and both ledgers
+lack 100. The generator/ledger correction preserves the canonical file/checksum.
+Roll back the failed ledger transaction and run **only** the updated
+`db/operations/100_record_applied.sql`, development first, then production through
+the established process. Do not replay migration 100. The
+[correction evidence](typed-tag-relationships.md#ledger-correction-after-datagrip-execution)
+owns current recovery status; earlier prepared/unapplied statements above are dated.

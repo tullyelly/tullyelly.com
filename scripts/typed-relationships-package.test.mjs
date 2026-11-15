@@ -54,3 +54,24 @@ test("guards preserve shared serialization, unrelated rows and member-only trave
   assert.ok(!view.includes("alias_of"));
   assert.ok(!view.includes("collected_because_of"));
 });
+
+test("DataGrip CRLF function bodies match without accepting a changed definition", () => {
+  const lf = derived100(source).result;
+  const crlf = derived100(source.replaceAll("\n", "\r\n")).result;
+  const fingerprints = (sql) =>
+    sql.match(
+      /\('(?:valid_collection_reasons|canonical_tag_id|tag_known_owner|assert_typed_tag_relationships|check_typed_tag_relationships)','[a-f0-9]{32}'\)/g,
+    );
+  assert.deepEqual(fingerprints(crlf.sql), fingerprints(lf.sql));
+  assert.notEqual(crlf.checksum, lf.checksum); // Canonical file bytes remain exact.
+  assert.ok(lf.sql.includes("md5(replace(p.prosrc,E'\\r\\n',E'\\n'))<>e.hash"));
+  const changed = derived100(
+    source.replace("nonblank explanations", "different explanation contract"),
+  ).result;
+  assert.notDeepEqual(fingerprints(changed.sql), fingerprints(lf.sql));
+  // A standalone CR is not a CRLF line ending and must still change the fingerprint.
+  const standalone = derived100(
+    source.replace("DECLARE reason jsonb;", "DECLARE reason jsonb;\r"),
+  ).result;
+  assert.notDeepEqual(fingerprints(standalone.sql), fingerprints(lf.sql));
+});

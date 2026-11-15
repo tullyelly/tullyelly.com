@@ -16,7 +16,7 @@ export function derived100(source) {
     .map((definition) => {
       const name = /FUNCTION dojo\.(\w+)/.exec(definition)[1];
       const hash = createHash("md5")
-        .update(definition.split("$fn$")[1])
+        .update(definition.split("$fn$")[1].replaceAll("\r\n", "\n"))
         .digest("hex");
       return `('${name}','${hash}')`;
     })
@@ -33,7 +33,7 @@ DO $definitions$
 BEGIN
   IF EXISTS(SELECT 1 FROM (VALUES ${values}) e(name,hash)
     LEFT JOIN pg_proc p ON p.pronamespace='dojo'::regnamespace AND p.proname=e.name
-    WHERE p.oid IS NULL OR md5(p.prosrc)<>e.hash) THEN
+    WHERE p.oid IS NULL OR md5(replace(p.prosrc,E'\\r\\n',E'\\n'))<>e.hash) THEN
     RAISE EXCEPTION '100: installed definitions differ; stop for review';
   END IF;
 END;

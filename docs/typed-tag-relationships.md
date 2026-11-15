@@ -1,7 +1,8 @@
 # Typed tag relationships; WU-1263
 
-WU-1262's accepted decisions govern this contract. Migration 100 is prepared;
-application and ledger recording are pending James's execution. Migration 098's
+WU-1262's accepted decisions govern this contract. Migration 100's effects are
+installed in both existing targets; ledger recording is pending the correction
+documented below. Migration 098's
 cleanup and synchronization stay intact. No real aliases or reasons are seeded.
 
 ## Shared contract
@@ -145,3 +146,33 @@ and live evidence; later stories are not marked complete. No branch push, PR,
 merge or deployment occurred. GitHub's connected branch search returned no remote
 epic branch; direct SSH ref inspection was unavailable because SSH authentication
 failed. Local branch/worktree selection remains verified and unchanged.
+
+## Ledger correction after DataGrip execution
+
+On November 15 James reported `100: installed definitions differ` while recording
+production history. Fresh independent read-only inspection found all five 100
+functions, five enabled statement checks, five shared write locks, the unique
+alias index and validated reasons constraint in **both** existing targets; the
+current invariant assertion passed and each still had 462 relationships. Neither
+target had a 100 ledger row. Every installed function body matched the committed
+canonical source exactly after CRLF-to-LF conversion. DataGrip's Windows line
+endings changed raw `prosrc` hashes, causing the false rejection.
+
+The ledger generator now normalizes CRLF pairs on both sides of the definition
+comparison. Standalone carriage returns and actual definition changes remain
+fingerprint differences. The canonical migration is unchanged, retaining SHA-256
+`717fb826e5787a92e24351854cfa4572c4545afbc3c46d3f17726a4dd9333b31`.
+The regenerated ledger still checks definitions/effects/conflicts before recording;
+it does not execute or replay the migration. Its exact revised definition guard
+passed read-only in both targets. Focused regression checks cover LF/CRLF parity,
+changed function rejection and exact canonical-byte checksum preservation.
+
+**Recovery at this checkpoint:** roll back the failed ledger transaction, then
+run only the updated `db/operations/100_record_applied.sql` in existing development
+first. After development success/validation, use that same updated ledger file in
+existing production through the established process. Migration 100's effects are
+already installed in both; **do not replay the canonical migration**. Expect one
+matching applied ledger entry per target. Report success or the first exact
+error/SQLSTATE and COMMIT status. Cipher will verify read-only and resume the epic
+sequence. No agent database writes occurred; ledger recording and live write/
+concurrency behavior remain unverified until further evidence is received.

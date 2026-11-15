@@ -35,7 +35,7 @@ BEGIN
 ('assert_typed_tag_relationships','b2420bcbf363f839a2b2fa6284c5223c'),
 ('check_typed_tag_relationships','2ec2825570975d3d9fa7e607b03d13a5')) e(name,hash)
     LEFT JOIN pg_proc p ON p.pronamespace='dojo'::regnamespace AND p.proname=e.name
-    WHERE p.oid IS NULL OR md5(p.prosrc)<>e.hash) THEN
+    WHERE p.oid IS NULL OR md5(replace(p.prosrc,E'\r\n',E'\n'))<>e.hash) THEN
     RAISE EXCEPTION '100: installed definitions differ; stop for review';
   END IF;
 END;
