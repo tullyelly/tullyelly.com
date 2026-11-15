@@ -1,6 +1,8 @@
 # Reviewed relationship examples; WU-1267
 
-This is a prepared, unapplied package on the existing WU-1260 branch. It follows
+This package is applied and recorded in both configured existing database targets,
+verified read-only after James reported execution on November 15, 2026. The frozen
+preparation manifest remains unchanged; see the application evidence below. It follows
 WU-1262's accepted decisions and installed 100/101 validation/synchronization.
 James executes writes; Cipher has used read-only inspection and safe checks only.
 
@@ -145,3 +147,25 @@ docs and diff checks passed. These are preparation/query proofs, not a live
 mutation, trigger/concurrency test or migration application. All database-writing
 checks remain unrun by Cipher. No dev server, seed execution, push/PR, merge or
 production deployment occurred.
+
+## Application evidence; November 15, 2026
+
+James reported execution. Independent read-only SELECTs against both configured
+branch IDs found applied 102 with the canonical SHA-256 above, no error, and
+`applied_at` 2026-11-15T22:58:17.004868Z. Both targets expose identical timestamps
+and reviewed data; these observations establish state, not distinct execution
+chronology. [Recorded results](evidence/wu-1267-applied-readonly.json) include the
+exact selected tags, owners, edges, metadata and 100/101/102 ledger records.
+
+Both invariant assertions returned successfully. Observed counts are 460
+member_of, two alias_of and one collected_because_of. New tag calvin is 568;
+new edge IDs are 479/480/481. Legacy IDs 213/325 are absent, complete archived
+rows and prior canonical evidence remain on 462/463, and Cavs edge 458 remains.
+Cal/the-lazer routes and g-league edges 17/14 remain distinct from homies
+221/eldrid and 219/lazer-face. The exact historical Lulu explanation is present.
+James explicitly chose to keep Calvin Reese excluded; no onboarding is requested.
+
+Do not execute the historical handoff again. No new SQL is needed. WU-1268 owns
+remaining integrated acceptance, live behavior and release compatibility evidence;
+this state verification does not establish a merge, deployment, concurrent-write
+behavior or production application readiness.
