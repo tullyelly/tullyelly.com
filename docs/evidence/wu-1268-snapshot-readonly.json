@@ -1,0 +1,17 @@
+{
+  "method": "Read-only canonical alias join and latest dated snapshot; SQL observation, not deployed application behavior",
+  "targets": {
+    "br-crimson-fog-ae22ws22": [
+      {
+        "type": "text",
+        "text": "[\n  {\n    \"slug\": \"king-james\",\n    \"canonical\": \"king-james\",\n    \"homie_id\": \"6\",\n    \"ranking_at\": \"2026-11-04T00:00:00.000Z\",\n    \"card_count\": 191,\n    \"ranking\": 43\n  },\n  {\n    \"slug\": \"lebron-james\",\n    \"canonical\": \"king-james\",\n    \"homie_id\": \"6\",\n    \"ranking_at\": \"2026-11-04T00:00:00.000Z\",\n    \"card_count\": 191,\n    \"ranking\": 43\n  }\n]"
+      }
+    ],
+    "br-withered-snow-aea0yck6": [
+      {
+        "type": "text",
+        "text": "[\n  {\n    \"slug\": \"king-james\",\n    \"canonical\": \"king-james\",\n    \"homie_id\": \"6\",\n    \"ranking_at\": \"2026-11-04T00:00:00.000Z\",\n    \"card_count\": 191,\n    \"ranking\": 43\n  },\n  {\n    \"slug\": \"lebron-james\",\n    \"canonical\": \"king-james\",\n    \"homie_id\": \"6\",\n    \"ranking_at\": \"2026-11-04T00:00:00.000Z\",\n    \"card_count\": 191,\n    \"ranking\": 43\n  }\n]"
+      }
+    ]
+  }
+}

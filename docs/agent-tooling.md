@@ -41,3 +41,7 @@ Neon configuration, and the user's unrelated `.gitignore` edit were preserved.
 Skills are upstream guidance; repository instructions and explicit user
 authorization still govern actions. Installing a CLI skill does not authorize
 deployments, environment pulls, project linking, or production changes.
+
+For Jira context, shared epic branches and supplied-key Chronicle commits, follow
+[the Jira workflow](jira-workflow.md). Read newly written skills directly in the
+current session; discovery does not require restarting to follow instructions.

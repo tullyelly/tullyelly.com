@@ -1,3 +1,4 @@
+import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import ClanCardCountSparkline from "@/components/tcdb/ClanCardCountSparkline";
@@ -10,7 +11,7 @@ import RankingDetailPage, {
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
-import { getTaggedPostsForTags } from "@/lib/blog";
+import { getIdentityTaggedPosts } from "@/lib/identity-chronicles";
 import type { ChronicleTagDisplayName } from "@/lib/chronicle-person-tags";
 import { listChronicleTagDisplayNames } from "@/lib/chronicle-person-tags";
 import {
@@ -177,7 +178,10 @@ export default async function Page({ params }: PageProps) {
     .filter((descendant) => descendant.metadata.kind === "person")
     .map((descendant) => descendant.slug);
   const taggedChronicles = chronicleTagMetadata
-    ? getTaggedPostsForTags([chronicleTagMetadata.slug, ...inheritedHomieTags])
+    ? await getIdentityTaggedPosts([
+        chronicleTagMetadata.slug,
+        ...inheritedHomieTags,
+      ])
     : [];
   const rankSnapshotsBySport = new Map<string, typeof rankSnapshots>();
   for (const snapshot of rankSnapshots) {
@@ -233,6 +237,13 @@ export default async function Page({ params }: PageProps) {
         };
       })}
     >
+      {chronicleTagMetadata ? (
+        <CollectionRelationships
+          slug={chronicleTagMetadata.slug}
+          displayName={chronicleTagMetadata.displayName}
+          mode="subject"
+        />
+      ) : null}
       <TradePartnerRelations partners={tradePartners} />
       <RelatedIdentities
         title="Member of"

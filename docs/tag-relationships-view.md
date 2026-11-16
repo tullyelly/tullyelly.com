@@ -88,3 +88,15 @@ with many branches and cross-links can produce many paths. This is intentional
 because the view does not silently truncate results. Filter by exact `tag_id`
 or `tag_slug` whenever possible and inspect `EXPLAIN (ANALYZE, BUFFERS)` against
 representative non-production data if the membership graph becomes large.
+
+## Typed direct edges
+
+[The typed relationship contract](typed-tag-relationships.md) defines aliases,
+collection motivations, canonical endpoint validation and the migration 100
+handoff. This view already displays those direct edges in either direction.
+Only `member_of` participates in recursive paths; no mixed-edge traversal is added.
+
+[Same-person consumer resolution](tag-alias-resolution.md) expands aliases at
+runtime without adding mixed-edge recursion to this view. Migration 101 prepares
+same-owner retargeting during homie slug changes; real seeds remain separately
+reviewed. The view and its membership paths are unchanged.

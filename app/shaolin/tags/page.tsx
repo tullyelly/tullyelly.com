@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
 import SectionHeader from "@/components/layout/SectionHeader";
+import { getTagAliasSnapshot } from "@/lib/tag-aliases-server";
+import { equivalentTagSlugs } from "@/lib/tag-aliases";
 import { getPublishedPosts, getTagsWithCounts } from "@/lib/blog";
 import { listChroniclePersonTagDisplayNames } from "@/lib/chronicle-person-tags";
 import { buildMetadata } from "@/lib/seo/builders";
@@ -69,7 +71,8 @@ function getTagAlias(metadata: TagMetadata | undefined, archiveHref: string) {
 }
 
 export default async function Page() {
-  const counts = getTagsWithCounts(getPublishedPosts());
+  const aliases = await getTagAliasSnapshot();
+  const counts = getTagsWithCounts(getPublishedPosts(), aliases);
   const normalizedCounts = Object.entries(counts).reduce<
     Record<string, number>
   >((result, [tag, count]) => {
@@ -82,9 +85,10 @@ export default async function Page() {
   const rows: TagDirectoryRow[] = tags.map((slug) => {
     const metadata = metadataBySlug.get(slug);
     const archiveHref = `/shaolin/tags/${encodeURIComponent(slug)}`;
-    const personTagNames = listChroniclePersonTagDisplayNames(slug);
+    const personTagNames = listChroniclePersonTagDisplayNames(slug, aliases);
     return {
       slug,
+      searchTerms: equivalentTagSlugs(slug, aliases),
       metadata: metadata
         ? {
             href: metadata.href,

@@ -2,8 +2,9 @@
 
 1. Inspect the current checkout and [AGENTS.md](AGENTS.md), then follow the
    relevant contracts in the [docs index](docs/README.md).
-2. Use `cipher/<short-feature-name>` or `feature/<ticket>` branches. Keep
-   refactors separate from feature logic and preserve unrelated changes.
+2. Follow [the Jira workflow](docs/jira-workflow.md): reuse one shared daily
+   epic branch, including James's supplied-key Chronicles. Attribute commits to
+   their actual child items and preserve unrelated changes.
 3. Update the owning docs alongside changes to behavior or tooling.
 4. Run the canonical baseline and applicable additional checks from
    [validation](docs/validation.md). Record incomplete checks and prerequisites.

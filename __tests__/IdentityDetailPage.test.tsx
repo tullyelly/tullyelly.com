@@ -1,3 +1,11 @@
+jest.mock("@/components/identity/CollectionRelationships", () => ({
+  __esModule: true,
+  default: () => null,
+}));
+jest.mock("@/lib/identity-chronicles", () => ({
+  getIdentityTaggedPosts: (...args: unknown[]) =>
+    mockGetTaggedPostsForTags(...args),
+}));
 import { TagMetadataProvider } from "@/components/tags/TagLink";
 import { render, screen } from "@testing-library/react";
 

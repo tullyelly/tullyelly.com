@@ -31,6 +31,7 @@ export type ChronicleListRow = {
   date: string;
   alterEgo: AlterEgo;
   tags: string[];
+  searchTerms?: string[];
   infinityStone: boolean;
 };
 
@@ -46,6 +47,7 @@ const getChronicleSearchValues = (row: ChronicleListRow) => [
   row.slug,
   row.alterEgo,
   ...row.tags,
+  ...(row.searchTerms ?? []),
 ];
 
 function TagLinks({

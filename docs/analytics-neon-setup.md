@@ -99,6 +99,11 @@ reviewed feature/grant state. Its conflict handling can preserve existing rows;
 check correctness, not just existence. It adds no memberships, but bumps revisions
 and emits authz notifications for affected users. Review those effects explicitly.
 
+Future database changes follow [the owning manual procedure](manual-migrations.md).
+The 076/077 bundle guidance below is historical/task-specific; it does not replace
+the canonical migration followed by its separate ledger file required for new work.
+Installed effects alone never authorize recording exact-file execution.
+
 ## Existing history and ledger handling
 
 Use the existing `dojo.schema_migration` definition and semantics from

@@ -1,15 +1,18 @@
+import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { normalizeTagSlug } from "@/lib/tags";
+import { notFound, redirect } from "next/navigation";
 
 import DataPageShell from "@/components/layout/DataPageShell";
 import SectionHeader from "@/components/layout/SectionHeader";
 import RelatedIdentities from "@/components/identity/RelatedIdentities";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
 import { Card } from "@ui";
-import { getTaggedPostsForTags } from "@/lib/blog";
+import { getIdentityTaggedPosts } from "@/lib/identity-chronicles";
 import type { IdentityContext, IdentityKind } from "@/lib/identity";
 import {
   getIdentityBySlug,
+  getIdentityHref,
   listGroupMembers,
   listIdentityAncestorGroups,
   listIdentityDescendants,
@@ -33,6 +36,17 @@ export default async function IdentityDetailPage({
 }) {
   const identity = await getIdentityBySlug(slug);
   if (!identity || identity.metadata.kind !== kind) notFound();
+  if (identity.slug !== normalizeTagSlug(slug)) {
+    const role = identity.metadata.contexts[context]?.role;
+    const href = getIdentityHref(identity, context);
+    if (
+      !href ||
+      (kind === "person" &&
+        role !== (context === "unclejimmy" ? "fam" : "homie"))
+    )
+      notFound();
+    redirect(href);
+  }
   const [parentGroups, members, descendants] =
     kind === "person"
       ? [await listIdentityAncestorGroups(identity.slug), [], []]
@@ -47,7 +61,7 @@ export default async function IdentityDetailPage({
       : descendants
           .filter((descendant) => descendant.metadata.kind === "person")
           .map((descendant) => descendant.slug);
-  const posts = getTaggedPostsForTags([
+  const posts = await getIdentityTaggedPosts([
     identity.slug,
     ...inheritedChronicleTags,
   ]);
@@ -87,6 +101,13 @@ export default async function IdentityDetailPage({
           </p>
         </Card>
       ) : null}
+      <CollectionRelationships
+        slug={identity.slug}
+        displayName={identity.displayName}
+        mode={
+          context === "unclejimmy" && kind === "person" ? "person" : "subject"
+        }
+      />
       <SquadMemberPosts
         tag={identity.slug}
         posts={posts}

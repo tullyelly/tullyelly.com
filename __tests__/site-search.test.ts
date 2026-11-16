@@ -1,3 +1,27 @@
+const mockTagAliases = jest.fn().mockResolvedValue(new Map());
+jest.mock("@/lib/tag-aliases-server", () => ({
+  getTagAliasSnapshot: () => mockTagAliases(),
+  resolveCanonicalTagSlug: async (tag: string) => {
+    const slug = tag.trim().toLowerCase().replace(/\s+/g, "-");
+    return (await mockTagAliases()).get(slug) ?? slug;
+  },
+  listEquivalentTagSlugs: async (tags: string[]) => {
+    const aliases: Map<string, string> = await mockTagAliases();
+    return [
+      ...new Set(
+        tags.flatMap((tag) => {
+          const canonical = aliases.get(tag) ?? tag;
+          return [
+            canonical,
+            ...[...aliases]
+              .filter(([, target]) => target === canonical)
+              .map(([source]) => source),
+          ];
+        }),
+      ),
+    ];
+  },
+}));
 import type { NavItem } from "@/types/nav";
 
 const mockGetMenu = jest.fn();
@@ -50,6 +74,7 @@ function post(overrides: Record<string, unknown> = {}) {
 
 describe("site search", () => {
   beforeEach(() => {
+    mockTagAliases.mockResolvedValue(new Map());
     mockGetMenu.mockReset().mockResolvedValue({ tree: menuTree, index: {} });
     mockGetPublishedPosts.mockReset().mockReturnValue([post()]);
   });
@@ -131,4 +156,15 @@ describe("site search", () => {
     expect(mockGetMenu).not.toHaveBeenCalled();
     expect(mockGetPublishedPosts).not.toHaveBeenCalled();
   });
+});
+
+test("site search matches either spelling once without expanding restricted menu access", async () => {
+  mockTagAliases.mockResolvedValue(new Map([["lebron-james", "king-james"]]));
+  mockGetMenu.mockResolvedValue({ tree: [], index: {} });
+  mockGetPublishedPosts.mockReturnValue([
+    post({ tags: ["king-james", "lebron-james"] }),
+  ]);
+  expect(await searchSite("lebron-james")).toHaveLength(1);
+  mockGetPublishedPosts.mockReturnValue([post({ tags: ["lebron-james"] })]);
+  expect(await searchSite("king-james")).toHaveLength(1);
 });

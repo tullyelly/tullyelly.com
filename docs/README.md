@@ -17,14 +17,32 @@
 | Analytics monitoring                                          | [Owner setup, notification checks and recovery limits](analytics-monitoring.md)                            |
 | Analytics validation                                          | [Owner development checks](analytics-validation.md), [production handoff](analytics-production-handoff.md) |
 | Category owned-card counts                                    | [Category snapshots and manual setup](card-category-counts.md)                                             |
-| Tag graph                                                     | [Tag relationships](tag-relationships-view.md)                                                             |
+| Tag graph                                                     | [Tag relationships](tag-relationships-view.md), [typed edge contract](typed-tag-relationships.md)          |
 | Debug/legacy bypasses                                         | [Escape hatches](escape-hatches.md)                                                                        |
 | Acknowledgments                                               | [Flowers naming](naming.md)                                                                                |
+
+[Same-person alias resolution](tag-alias-resolution.md) covers runtime consumers,
+cache freshness and the prepared rename migration.
+
+[Collection motivations](collection-motivations.md) owns direct readers and
+reason maintenance without membership or Chronicle inheritance.
+
+[Collection relationship sections](collection-relationship-sections.md) owns
+page semantics, individual snapshot counts and safe visual evidence.
+
+[Reviewed relationship seeds](reviewed-relationship-seeds.md) owns the small
+102 batch, per-usage content corrections, exclusions and current manual handoff.
+
+[Homie/clan audits](homie-clan-audit-2026-11-15.md) records the reusable skill, initial research coverage and prepared repairs.
 
 [Production release policy](production-releases.md) owns the protected approval
 gate, exact release binding and recovery procedure.
 [Credential maintenance](credential-maintenance.md) owns the separate protected
 password replacement path; it does not execute analytics migrations.
+
+The [Jira workflow](jira-workflow.md) owns shared daily epic branches and commit
+attribution. [Manual migrations](manual-migrations.md) owns new DataGrip packages
+and the [handoff template](templates/manual-migration-handoff.md).
 
 ## Historical decisions and proposals
 

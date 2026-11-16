@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "scope": "application-only",
+  "baselineSha": "a5389c17c02360e45e4a3e60e891fd9a6f03339c",
+  "schemaDiffSha256": "6c84cbb31512aef1e630a419b43c35c499cd2969a5a56d7fbec6e03fb47526ad",
+  "rationale": "WU-1268: both public aliases resolve to READY production dpl_BEkXwNCoYvtKt42iDehTgppmCrdg at baseline a5389c17c02360e45e4a3e60e891fd9a6f03339c. Complete guarded diff contains migrations 098-102 and matching function/tag_relation mirrors; no Prisma change. James reported manual execution; both configured targets have matching applied ledgers, 13 normalized function bodies, enabled guards and current invariants. Verified seeds: 2 aliases, 1 motivation, 460 memberships with exact archived duplicate evidence and protected family/athlete split. Application-only release must not replay SQL. Builds are database-free; canonical owners/memberships remain present. New consumers are required for alias routing and relationship sections. Live rename/concurrency, backup/PITR/restore and deployed new-page checks remain unverified; rollback of code does not reverse installed SQL. No SQL, analytics activation, automatic merge or deployment approval is granted. Fresh exact-SHA CI, unchanged live baseline/guarded digest, human review and protected production-release approval remain required."
+}

@@ -1,0 +1,610 @@
+{
+  "observedOn": "2026-11-15",
+  "method": "Independent read-only SELECTs; no SQL writes by Cipher",
+  "development": {
+    "tags": [
+      {
+        "id": 1,
+        "href": "/unclejimmy/fam/lulu",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "unclejimmy": {
+                "href": "/unclejimmy/fam/lulu",
+                "role": "fam"
+              }
+            }
+          }
+        },
+        "name": "lulu",
+        "slug": "lulu",
+        "href_kind": "squad",
+        "created_at": "2026-03-14T18:42:58.144566+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-09-20T23:51:34.193739+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "lulu",
+        "is_clickable": true
+      },
+      {
+        "id": 33,
+        "href": "/unclejimmy/fam/cal",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "unclejimmy": {
+                "href": "/unclejimmy/fam/cal",
+                "role": "fam"
+              }
+            }
+          }
+        },
+        "name": "cal",
+        "slug": "cal",
+        "href_kind": "squad",
+        "created_at": "2026-08-17T19:16:49.264016+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "cal",
+        "is_clickable": true
+      },
+      {
+        "id": 274,
+        "href": "/unclejimmy/fam/the-lazer",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "unclejimmy": {
+                "href": "/unclejimmy/fam/the-lazer",
+                "role": "fam"
+              }
+            }
+          }
+        },
+        "name": "the-lazer",
+        "slug": "the-lazer",
+        "href_kind": "squad",
+        "created_at": "2026-09-21T00:07:53.065659+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "the lazer",
+        "is_clickable": true
+      },
+      {
+        "id": 392,
+        "href": "/cardattack/homies/lebron-james",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/lebron-james",
+                "role": "homie"
+              }
+            }
+          }
+        },
+        "name": "lebron-james",
+        "slug": "lebron-james",
+        "href_kind": "homie",
+        "created_at": "2026-10-24T21:29:11.864487+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-10-24T21:29:11.864487+00:00",
+        "updated_by": null,
+        "display_name": "lebron james",
+        "is_clickable": true
+      },
+      {
+        "id": 540,
+        "href": "/cardattack/homies/king-james",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/king-james",
+                "role": "homie"
+              }
+            }
+          }
+        },
+        "name": "king-james",
+        "slug": "king-james",
+        "href_kind": "homie",
+        "created_at": "2026-11-05T05:11:48.919981+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-05T05:11:48.919981+00:00",
+        "updated_by": null,
+        "display_name": "lebron james",
+        "is_clickable": true
+      },
+      {
+        "id": 565,
+        "href": "/cardattack/homies/eldrid",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/eldrid",
+                "role": "homie"
+              }
+            }
+          },
+          "homie_sync": {
+            "href": "/cardattack/homies/eldrid",
+            "retired": false,
+            "homie_id": 221,
+            "display_name": "cal eldrid"
+          }
+        },
+        "name": "eldrid",
+        "slug": "eldrid",
+        "href_kind": "homie",
+        "created_at": "2026-11-15T16:18:00.031151+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "cal eldrid",
+        "is_clickable": true
+      },
+      {
+        "id": 566,
+        "href": "/cardattack/homies/lazer-face",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/lazer-face",
+                "role": "homie"
+              }
+            }
+          },
+          "homie_sync": {
+            "href": "/cardattack/homies/lazer-face",
+            "retired": false,
+            "homie_id": 219,
+            "display_name": "lászló kleinheisler"
+          }
+        },
+        "name": "lazer-face",
+        "slug": "lazer-face",
+        "href_kind": "homie",
+        "created_at": "2026-11-15T16:26:26.556676+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "lászló kleinheisler",
+        "is_clickable": true
+      }
+    ],
+    "homie": {
+      "id": 6,
+      "name": "Lebron James",
+      "drafted": 2003,
+      "tag_slug": "king-james",
+      "created_at": "2025-07-29T16:12:59+00:00",
+      "created_by": "tullyelly_admin",
+      "updated_at": "2026-11-05T05:11:48.919981+00:00",
+      "updated_by": "tullyelly_admin"
+    },
+    "relations": [
+      {
+        "id": 213,
+        "meta": {
+          "migration": "080_populate_player_clan_memberships",
+          "reviewed_on": "2026-10-24",
+          "evidence_url": "https://cdn.nba.com/teams/uploads/sites/1610612748/2023/11/2023-24-Miami-Heat-Media-Guide_39884007.pdf",
+          "membership_basis": "played_for",
+          "affiliation_scope": "professional"
+        },
+        "created_at": "2026-10-24T21:29:11.864487+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 392,
+        "target_tag_id": 23
+      },
+      {
+        "id": 325,
+        "meta": {
+          "migration": "081_add_lakers_player_memberships",
+          "reviewed_on": "2026-10-24",
+          "evidence_url": "https://www.nba.com/news/lebron-james-lakers-legacy-closes",
+          "membership_basis": "played_for",
+          "affiliation_scope": "professional"
+        },
+        "created_at": "2026-10-24T21:53:51.751236+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 392,
+        "target_tag_id": 503
+      },
+      {
+        "id": 458,
+        "meta": {
+          "migration": "099_audit_homie_clan_memberships",
+          "reviewed_on": "2026-11-15",
+          "evidence_url": "https://www.nba.com/news/all-time-all-nba-first-team-cleveland-cavaliers",
+          "membership_basis": "played_for",
+          "affiliation_scope": "professional"
+        },
+        "created_at": "2026-11-15T20:42:45.089428+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 540,
+        "target_tag_id": 532
+      },
+      {
+        "id": 462,
+        "meta": {
+          "migration": "099_audit_homie_clan_memberships",
+          "reviewed_on": "2026-11-15",
+          "evidence_url": "https://cdn.nba.com/teams/uploads/sites/1610612748/2023/11/2023-24-Miami-Heat-Media-Guide_39884007.pdf",
+          "copied_from_slug": "lebron-james",
+          "membership_basis": "played_for",
+          "original_edge_id": 213,
+          "affiliation_scope": "professional",
+          "identity_evidence": "db/migrations/080_populate_player_clan_memberships.sql",
+          "original_edge_meta": {
+            "migration": "080_populate_player_clan_memberships",
+            "reviewed_on": "2026-10-24",
+            "evidence_url": "https://cdn.nba.com/teams/uploads/sites/1610612748/2023/11/2023-24-Miami-Heat-Media-Guide_39884007.pdf",
+            "membership_basis": "played_for",
+            "affiliation_scope": "professional"
+          }
+        },
+        "created_at": "2026-11-15T20:42:45.089428+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 540,
+        "target_tag_id": 23
+      },
+      {
+        "id": 463,
+        "meta": {
+          "migration": "099_audit_homie_clan_memberships",
+          "reviewed_on": "2026-11-15",
+          "evidence_url": "https://www.nba.com/news/lebron-james-lakers-legacy-closes",
+          "copied_from_slug": "lebron-james",
+          "membership_basis": "played_for",
+          "original_edge_id": 325,
+          "affiliation_scope": "professional",
+          "identity_evidence": "db/migrations/080_populate_player_clan_memberships.sql",
+          "original_edge_meta": {
+            "migration": "081_add_lakers_player_memberships",
+            "reviewed_on": "2026-10-24",
+            "evidence_url": "https://www.nba.com/news/lebron-james-lakers-legacy-closes",
+            "membership_basis": "played_for",
+            "affiliation_scope": "professional"
+          }
+        },
+        "created_at": "2026-11-15T20:42:45.089428+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 540,
+        "target_tag_id": 503
+      }
+    ],
+    "reservations": null,
+    "other_homie_claims": null
+  },
+  "production": {
+    "tags": [
+      {
+        "id": 1,
+        "href": "/unclejimmy/fam/lulu",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "unclejimmy": {
+                "href": "/unclejimmy/fam/lulu",
+                "role": "fam"
+              }
+            }
+          }
+        },
+        "name": "lulu",
+        "slug": "lulu",
+        "href_kind": "squad",
+        "created_at": "2026-03-14T18:42:58.144566+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-09-20T23:51:34.193739+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "lulu",
+        "is_clickable": true
+      },
+      {
+        "id": 33,
+        "href": "/unclejimmy/fam/cal",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "unclejimmy": {
+                "href": "/unclejimmy/fam/cal",
+                "role": "fam"
+              }
+            }
+          }
+        },
+        "name": "cal",
+        "slug": "cal",
+        "href_kind": "squad",
+        "created_at": "2026-08-17T19:16:49.264016+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "cal",
+        "is_clickable": true
+      },
+      {
+        "id": 274,
+        "href": "/unclejimmy/fam/the-lazer",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "unclejimmy": {
+                "href": "/unclejimmy/fam/the-lazer",
+                "role": "fam"
+              }
+            }
+          }
+        },
+        "name": "the-lazer",
+        "slug": "the-lazer",
+        "href_kind": "squad",
+        "created_at": "2026-09-21T00:07:53.065659+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "the lazer",
+        "is_clickable": true
+      },
+      {
+        "id": 392,
+        "href": "/cardattack/homies/lebron-james",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/lebron-james",
+                "role": "homie"
+              }
+            }
+          }
+        },
+        "name": "lebron-james",
+        "slug": "lebron-james",
+        "href_kind": "homie",
+        "created_at": "2026-10-24T21:29:11.864487+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-10-24T21:29:11.864487+00:00",
+        "updated_by": null,
+        "display_name": "lebron james",
+        "is_clickable": true
+      },
+      {
+        "id": 540,
+        "href": "/cardattack/homies/king-james",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/king-james",
+                "role": "homie"
+              }
+            }
+          }
+        },
+        "name": "king-james",
+        "slug": "king-james",
+        "href_kind": "homie",
+        "created_at": "2026-11-05T05:11:48.919981+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-05T05:11:48.919981+00:00",
+        "updated_by": null,
+        "display_name": "lebron james",
+        "is_clickable": true
+      },
+      {
+        "id": 565,
+        "href": "/cardattack/homies/eldrid",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/eldrid",
+                "role": "homie"
+              }
+            }
+          },
+          "homie_sync": {
+            "href": "/cardattack/homies/eldrid",
+            "retired": false,
+            "homie_id": 221,
+            "display_name": "cal eldrid"
+          }
+        },
+        "name": "eldrid",
+        "slug": "eldrid",
+        "href_kind": "homie",
+        "created_at": "2026-11-15T16:18:00.031151+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "cal eldrid",
+        "is_clickable": true
+      },
+      {
+        "id": 566,
+        "href": "/cardattack/homies/lazer-face",
+        "meta": {
+          "identity": {
+            "kind": "person",
+            "contexts": {
+              "cardattack": {
+                "href": "/cardattack/homies/lazer-face",
+                "role": "homie"
+              }
+            }
+          },
+          "homie_sync": {
+            "href": "/cardattack/homies/lazer-face",
+            "retired": false,
+            "homie_id": 219,
+            "display_name": "lászló kleinheisler"
+          }
+        },
+        "name": "lazer-face",
+        "slug": "lazer-face",
+        "href_kind": "homie",
+        "created_at": "2026-11-15T16:26:26.556676+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": "2026-11-15T19:52:10.061389+00:00",
+        "updated_by": "tullyelly_admin",
+        "display_name": "lászló kleinheisler",
+        "is_clickable": true
+      }
+    ],
+    "homie": {
+      "id": 6,
+      "name": "Lebron James",
+      "drafted": 2003,
+      "tag_slug": "king-james",
+      "created_at": "2025-07-29T16:12:59+00:00",
+      "created_by": "tullyelly_admin",
+      "updated_at": "2026-11-05T05:11:48.919981+00:00",
+      "updated_by": "tullyelly_admin"
+    },
+    "relations": [
+      {
+        "id": 213,
+        "meta": {
+          "migration": "080_populate_player_clan_memberships",
+          "reviewed_on": "2026-10-24",
+          "evidence_url": "https://cdn.nba.com/teams/uploads/sites/1610612748/2023/11/2023-24-Miami-Heat-Media-Guide_39884007.pdf",
+          "membership_basis": "played_for",
+          "affiliation_scope": "professional"
+        },
+        "created_at": "2026-10-24T21:29:11.864487+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 392,
+        "target_tag_id": 23
+      },
+      {
+        "id": 325,
+        "meta": {
+          "migration": "081_add_lakers_player_memberships",
+          "reviewed_on": "2026-10-24",
+          "evidence_url": "https://www.nba.com/news/lebron-james-lakers-legacy-closes",
+          "membership_basis": "played_for",
+          "affiliation_scope": "professional"
+        },
+        "created_at": "2026-10-24T21:53:51.751236+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 392,
+        "target_tag_id": 503
+      },
+      {
+        "id": 458,
+        "meta": {
+          "migration": "099_audit_homie_clan_memberships",
+          "reviewed_on": "2026-11-15",
+          "evidence_url": "https://www.nba.com/news/all-time-all-nba-first-team-cleveland-cavaliers",
+          "membership_basis": "played_for",
+          "affiliation_scope": "professional"
+        },
+        "created_at": "2026-11-15T20:42:45.089428+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 540,
+        "target_tag_id": 532
+      },
+      {
+        "id": 462,
+        "meta": {
+          "migration": "099_audit_homie_clan_memberships",
+          "reviewed_on": "2026-11-15",
+          "evidence_url": "https://cdn.nba.com/teams/uploads/sites/1610612748/2023/11/2023-24-Miami-Heat-Media-Guide_39884007.pdf",
+          "copied_from_slug": "lebron-james",
+          "membership_basis": "played_for",
+          "original_edge_id": 213,
+          "affiliation_scope": "professional",
+          "identity_evidence": "db/migrations/080_populate_player_clan_memberships.sql",
+          "original_edge_meta": {
+            "migration": "080_populate_player_clan_memberships",
+            "reviewed_on": "2026-10-24",
+            "evidence_url": "https://cdn.nba.com/teams/uploads/sites/1610612748/2023/11/2023-24-Miami-Heat-Media-Guide_39884007.pdf",
+            "membership_basis": "played_for",
+            "affiliation_scope": "professional"
+          }
+        },
+        "created_at": "2026-11-15T20:42:45.089428+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 540,
+        "target_tag_id": 23
+      },
+      {
+        "id": 463,
+        "meta": {
+          "migration": "099_audit_homie_clan_memberships",
+          "reviewed_on": "2026-11-15",
+          "evidence_url": "https://www.nba.com/news/lebron-james-lakers-legacy-closes",
+          "copied_from_slug": "lebron-james",
+          "membership_basis": "played_for",
+          "original_edge_id": 325,
+          "affiliation_scope": "professional",
+          "identity_evidence": "db/migrations/080_populate_player_clan_memberships.sql",
+          "original_edge_meta": {
+            "migration": "081_add_lakers_player_memberships",
+            "reviewed_on": "2026-10-24",
+            "evidence_url": "https://www.nba.com/news/lebron-james-lakers-legacy-closes",
+            "membership_basis": "played_for",
+            "affiliation_scope": "professional"
+          }
+        },
+        "created_at": "2026-11-15T20:42:45.089428+00:00",
+        "created_by": "tullyelly_admin",
+        "updated_at": null,
+        "updated_by": null,
+        "relation_type": "member_of",
+        "source_tag_id": 540,
+        "target_tag_id": 503
+      }
+    ],
+    "reservations": null,
+    "other_homie_claims": null
+  }
+}

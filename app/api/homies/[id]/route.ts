@@ -81,6 +81,10 @@ export async function PATCH(
   ).connect();
   try {
     await client.query("BEGIN");
+    // Match direct-SQL trigger ordering before taking the optimistic row lock.
+    await client.query(
+      "SELECT pg_advisory_xact_lock(hashtextextended('cipher:homie-tag-identity',0))",
+    );
     const beforeResult = await client.query<HomieValues>(
       `SELECT id, name, tag_slug, drafted, updated_at
          FROM dojo.homie WHERE id = $1::bigint FOR UPDATE`,

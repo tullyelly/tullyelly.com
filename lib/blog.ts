@@ -1,3 +1,4 @@
+import { canonicalTagSlug, type TagAliasIndex } from "@/lib/tag-aliases";
 import { allPosts, Post } from "contentlayer/generated";
 
 export type RecentBlogPost = {
@@ -52,10 +53,15 @@ export async function getInfinityStonePosts(): Promise<RecentBlogPost[]> {
     }));
 }
 
-export function getTagsWithCounts(posts: Post[]): Record<string, number> {
+export function getTagsWithCounts(
+  posts: Post[],
+  aliases: TagAliasIndex = new Map(),
+): Record<string, number> {
   const map: Record<string, number> = {};
   for (const p of posts) {
-    for (const t of (p.tags ?? []).map((x) => x.toLowerCase())) {
+    for (const t of new Set(
+      (p.tags ?? []).map((x) => canonicalTagSlug(x, aliases)),
+    )) {
       map[t] = (map[t] ?? 0) + 1;
     }
   }

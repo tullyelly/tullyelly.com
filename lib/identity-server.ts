@@ -7,7 +7,14 @@ import {
   type IdentityContext,
   type IdentityMetadata,
 } from "@/lib/identity";
-import { normalizeTagSlug } from "@/lib/tags";
+import {
+  type RelationshipType,
+  readCollectionReasons,
+} from "@/lib/tag-relationships";
+import {
+  resolveCanonicalTagSlug,
+  getTagAliasSnapshot,
+} from "@/lib/tag-aliases-server";
 
 type IdentityRow = {
   id: number;
@@ -67,7 +74,8 @@ export async function listIdentities({
       AND (${kind ?? null}::text IS NULL OR meta->'identity'->>'kind' = ${kind ?? null})
     ORDER BY COALESCE(display_name, name), slug
   `;
-  return rows.map(identityFromRow);
+  const aliases = await getTagAliasSnapshot();
+  return rows.filter((row) => !aliases.has(row.slug)).map(identityFromRow);
 }
 
 function identityFromRow(row: IdentityRow): Identity {
@@ -109,7 +117,7 @@ function relationFromRow(row: RelationRow): IdentityRelation {
 export async function getIdentityBySlug(
   slug: string,
 ): Promise<Identity | null> {
-  const normalized = normalizeTagSlug(slug);
+  const normalized = await resolveCanonicalTagSlug(slug);
   const rows = await sql<IdentityRow>`
     SELECT id, slug, name, display_name, href, meta
     FROM dojo.tags
@@ -131,7 +139,7 @@ async function listRelations(
   direction: "outgoing" | "incoming",
   relationType?: string,
 ): Promise<IdentityRelation[]> {
-  const normalized = normalizeTagSlug(slug);
+  const normalized = await resolveCanonicalTagSlug(slug);
   const type = relationType?.trim() || null;
   const selectRelations =
     direction === "outgoing"
@@ -209,7 +217,7 @@ export async function listIdentityGroups(slug: string): Promise<Identity[]> {
 export async function listIdentityAncestorGroups(
   slug: string,
 ): Promise<Identity[]> {
-  const normalized = normalizeTagSlug(slug);
+  const normalized = await resolveCanonicalTagSlug(slug);
   const rows = await sql<IdentityRow>`
     WITH RECURSIVE group_ids(group_tag_id) AS (
       SELECT relation.target_tag_id
@@ -242,7 +250,7 @@ export async function listIdentityAncestorGroups(
 export async function listIdentityDescendants(
   slug: string,
 ): Promise<Identity[]> {
-  const normalized = normalizeTagSlug(slug);
+  const normalized = await resolveCanonicalTagSlug(slug);
   const rows = await sql<IdentityRow>`
     WITH RECURSIVE descendant_ids(descendant_tag_id) AS (
       SELECT relation.source_tag_id
@@ -276,4 +284,19 @@ export async function listIdentityDescendants(
 export async function listGroupMembers(slug: string): Promise<Identity[]> {
   const relations = await listIncomingIdentityRelations(slug, "member_of");
   return relations.map((relation) => relation.source);
+}
+
+/** Typed direct edges only; unknown legacy types remain available via existing helpers. */
+export async function listTypedIdentityRelations(
+  slug: string,
+  direction: "outgoing" | "incoming",
+  type: RelationshipType,
+): Promise<(IdentityRelation & { type: RelationshipType })[]> {
+  const relations = await listRelations(slug, direction, type);
+  return relations.map((relation) => {
+    if (relation.type !== type)
+      throw new Error("Unexpected relationship type returned");
+    if (type === "collected_because_of") readCollectionReasons(relation.meta);
+    return { ...relation, type };
+  });
 }

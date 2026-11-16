@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
 import { allPosts } from "contentlayer/generated";
-import { notFound } from "next/navigation";
+import {
+  getTagAliasSnapshot,
+  resolveCanonicalTagSlug,
+} from "@/lib/tag-aliases-server";
+import {
+  canonicalTagSlug,
+  canonicalTagSlugs,
+  equivalentTagSlugs,
+} from "@/lib/tag-aliases";
+import { notFound, redirect } from "next/navigation";
 import ChronicleListClient, {
   type ChronicleListRow,
 } from "@/app/shaolin/_components/ChronicleListClient";
@@ -47,7 +56,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { tag: rawTag } = await params;
-  const tag = normalizeTagSlug(rawTag);
+  const tag = await resolveCanonicalTagSlug(rawTag);
   const displayNames = await getTagDisplayNames([tag]);
   const displayName = displayNames[tag] ?? getKnownTagDisplayName(tag);
   return buildMetadata({
@@ -61,9 +70,12 @@ export async function generateMetadata({
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { tag: rawTag } = await params;
-  const tag = normalizeTagSlug(rawTag);
+  const tag = await resolveCanonicalTagSlug(rawTag);
+  if (tag !== normalizeTagSlug(rawTag))
+    redirect(`/shaolin/tags/${encodeURIComponent(tag)}`);
+  const aliases = await getTagAliasSnapshot();
   const posts = getPublishedPosts().filter((post) =>
-    (post.tags ?? []).some((value) => normalizeTagSlug(value) === tag),
+    (post.tags ?? []).some((value) => canonicalTagSlug(value, aliases) === tag),
   );
   if (posts.length === 0) notFound();
 
@@ -74,10 +86,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     summary: post.summary,
     date: post.date,
     alterEgo: post.resolvedAlterEgo as AlterEgo,
-    tags: Array.from(new Set((post.tags ?? []).map(normalizeTagSlug))),
+    tags: canonicalTagSlugs(post.tags ?? [], aliases),
+    searchTerms: (post.tags ?? []).flatMap((tag) =>
+      equivalentTagSlugs(tag, aliases),
+    ),
     infinityStone: post.infinityStone,
   }));
-  const tags = Array.from(new Set(rows.flatMap((row) => row.tags)));
+  const tags = Array.from(new Set([tag, ...rows.flatMap((row) => row.tags)]));
   const tagDisplayNames = await getTagDisplayNames(tags);
   const displayName = tagDisplayNames[tag] ?? getKnownTagDisplayName(tag);
   const alterEgos = Array.from(new Set(rows.map((row) => row.alterEgo))).sort(

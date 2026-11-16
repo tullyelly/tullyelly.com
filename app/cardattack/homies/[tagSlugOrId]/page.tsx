@@ -1,4 +1,10 @@
-import { notFound } from "next/navigation";
+import CollectionRelationships from "@/components/identity/CollectionRelationships";
+import {
+  getTagAliasSnapshot,
+  resolveCanonicalTagSlug,
+} from "@/lib/tag-aliases-server";
+import { normalizeTagSlug } from "@/lib/tags";
+import { notFound, redirect } from "next/navigation";
 import { Card } from "@ui";
 import HomieCardCountSparkline from "@/components/tcdb/HomieCardCountSparkline";
 import TcdbCardHistorySummary from "@/components/tcdb/TcdbCardHistorySummary";
@@ -10,7 +16,7 @@ import RankingDetailPage, {
   rankingTrendField,
 } from "@/components/tcdb/RankingDetailPage";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
-import { getTaggedPostsForTags } from "@/lib/blog";
+import { getIdentityTaggedPosts } from "@/lib/identity-chronicles";
 import {
   getHomieTcdbRankingByRouteKey,
   listHomieTcdbSnapshotHistory,
@@ -129,6 +135,12 @@ export default async function Page({ params }: PageProps) {
   if (!ranking) return notFound();
 
   const homieHref = getHomieTcdbRankingHref(ranking);
+  if (
+    (await resolveCanonicalTagSlug(tagSlugOrId)) !==
+    normalizeTagSlug(tagSlugOrId)
+  )
+    redirect(homieHref);
+  const aliases = await getTagAliasSnapshot();
   const tagMetadata = await getStoredTagMetadataForHrefKind({
     slug: ranking.tag_slug,
     href: homieHref,
@@ -137,7 +149,7 @@ export default async function Page({ params }: PageProps) {
   const chronicleTagMetadata =
     tagMetadata?.hrefKind === "homie" ? tagMetadata : null;
   const chronicleDisplayNames = chronicleTagMetadata
-    ? listChronicleTagDisplayNames(chronicleTagMetadata.slug)
+    ? listChronicleTagDisplayNames(chronicleTagMetadata.slug, aliases)
     : [];
   const [rankSnapshots, tradePartners] = await Promise.all([
     listHomieTcdbSnapshotHistory(ranking.homie_id),
@@ -147,7 +159,7 @@ export default async function Page({ params }: PageProps) {
     ? await listIdentityAncestorGroups(chronicleTagMetadata.slug)
     : [];
   const taggedChronicles = chronicleTagMetadata
-    ? getTaggedPostsForTags([
+    ? await getIdentityTaggedPosts([
         chronicleTagMetadata.slug,
         ...relatedClans.map((clan) => clan.slug),
       ])
@@ -192,6 +204,13 @@ export default async function Page({ params }: PageProps) {
         },
       ]}
     >
+      {chronicleTagMetadata ? (
+        <CollectionRelationships
+          slug={chronicleTagMetadata.slug}
+          displayName={chronicleTagMetadata.displayName}
+          mode="subject"
+        />
+      ) : null}
       <TradePartnerRelations partners={tradePartners} />
       <RelatedIdentities
         title="Clans"

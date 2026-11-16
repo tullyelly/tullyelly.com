@@ -1,3 +1,33 @@
+jest.mock("@/components/identity/CollectionRelationships", () => ({
+  __esModule: true,
+  default: ({ slug }: { slug: string }) => (
+    <div data-testid="collection-relationships">{slug}</div>
+  ),
+}));
+const mockTagAliases = jest.fn().mockResolvedValue(new Map());
+jest.mock("@/lib/tag-aliases-server", () => ({
+  getTagAliasSnapshot: () => mockTagAliases(),
+  resolveCanonicalTagSlug: async (tag: string) => {
+    const slug = tag.trim().toLowerCase().replace(/\s+/g, "-");
+    return (await mockTagAliases()).get(slug) ?? slug;
+  },
+  listEquivalentTagSlugs: async (tags: string[]) => {
+    const aliases: Map<string, string> = await mockTagAliases();
+    return [
+      ...new Set(
+        tags.flatMap((tag) => {
+          const canonical = aliases.get(tag) ?? tag;
+          return [
+            canonical,
+            ...[...aliases]
+              .filter(([, target]) => target === canonical)
+              .map(([source]) => source),
+          ];
+        }),
+      ),
+    ];
+  },
+}));
 import { render, screen } from "@testing-library/react";
 
 const mockListNumberOneTcdbHomieRankings = jest.fn();
@@ -26,6 +56,9 @@ jest.mock("next/cache", () => ({
   unstable_cache: (fn: () => unknown) => fn,
 }));
 jest.mock("next/navigation", () => ({
+  redirect: (href: string) => {
+    throw new Error(`redirect:${href}`);
+  },
   notFound: () => {
     throw new Error("not found");
   },
@@ -165,6 +198,7 @@ const clanRanking = {
 
 describe("TCDB rankings pages", () => {
   beforeEach(() => {
+    mockTagAliases.mockResolvedValue(new Map());
     mockListNumberOneTcdbHomieRankings.mockReset();
     mockListRecentTcdbHomieFallers.mockReset();
     mockListRecentTcdbHomieRisers.mockReset();
@@ -402,7 +436,10 @@ describe("TCDB rankings pages", () => {
       href: "/cardattack/homies/freak",
       hrefKind: "homie",
     });
-    expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith("freak");
+    expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith(
+      "freak",
+      new Map(),
+    );
     expect(mockGetTaggedPosts).toHaveBeenCalledWith(["freak"]);
   });
 
@@ -543,7 +580,10 @@ describe("TCDB rankings pages", () => {
       href: "/cardattack/homies/34",
       hrefKind: "homie",
     });
-    expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith("freak");
+    expect(mockListChronicleTagDisplayNames).toHaveBeenCalledWith(
+      "freak",
+      new Map(),
+    );
     expect(mockGetTaggedPosts).toHaveBeenCalledWith(["freak"]);
   });
 
@@ -749,4 +789,18 @@ describe("TCDB rankings pages", () => {
     expect(link).toHaveAttribute("href", "/cardattack/homies/freak");
     expect(link).not.toHaveAttribute("aria-haspopup");
   });
+});
+
+test("actual historical homie route redirects only through an explicit same-person alias", async () => {
+  mockTagAliases.mockResolvedValue(new Map([["lebron-james", "king-james"]]));
+  mockGetHomieTcdbRankingByRouteKey.mockResolvedValue({
+    ...homieRanking,
+    tag_slug: "king-james",
+    route_slug: "king-james",
+  });
+  await expect(
+    HomieDetailPage({
+      params: Promise.resolve({ tagSlugOrId: "lebron-james" }),
+    }),
+  ).rejects.toThrow("redirect:/cardattack/homies/king-james");
 });

@@ -1,0 +1,1453 @@
+{
+  "observedAt": "2026-11-15 18:28:48 UTC",
+  "project": "rough-bush-94516855",
+  "database": "tullyelly_db",
+  "environments": {
+    "development": {
+      "branch": "br-crimson-fog-ae22ws22",
+      "observation": {
+        "database": "tullyelly_db",
+        "read_only": "on",
+        "homies": [
+          {
+            "id": 219,
+            "name": "László Kleinheisler",
+            "drafted": 2016,
+            "tag_slug": "the-lazer"
+          },
+          {
+            "id": 221,
+            "name": "Cal Eldrid",
+            "drafted": 1989,
+            "tag_slug": "eldrid"
+          }
+        ],
+        "tags": [
+          {
+            "id": 33,
+            "href": "/unclejimmy/fam/cal",
+            "meta": {
+              "identity": {
+                "kind": "person",
+                "contexts": {
+                  "cardattack": {
+                    "href": "/cardattack/homies/cal",
+                    "role": "homie"
+                  }
+                }
+              }
+            },
+            "name": "cal",
+            "slug": "cal",
+            "href_kind": "homie",
+            "display_name": "cal",
+            "is_clickable": true
+          },
+          {
+            "id": 565,
+            "href": "/cardattack/homies/eldrid",
+            "meta": {
+              "identity": {
+                "kind": "person",
+                "contexts": {
+                  "cardattack": {
+                    "href": "/cardattack/homies/eldrid",
+                    "role": "homie"
+                  }
+                }
+              }
+            },
+            "name": "eldrid",
+            "slug": "eldrid",
+            "href_kind": "homie",
+            "display_name": "cal eldrid",
+            "is_clickable": true
+          },
+          {
+            "id": 270,
+            "href": "/unclejimmy/squads/g-league",
+            "meta": {
+              "identity": {
+                "kind": "group",
+                "contexts": {
+                  "unclejimmy": {
+                    "href": "/unclejimmy/squads/g-league",
+                    "role": "squad"
+                  }
+                }
+              }
+            },
+            "name": "g-league",
+            "slug": "g-league",
+            "href_kind": "squad",
+            "display_name": "g league",
+            "is_clickable": true
+          },
+          {
+            "id": 274,
+            "href": "/unclejimmy/fam/the-lazer",
+            "meta": {
+              "identity": {
+                "kind": "person",
+                "contexts": {
+                  "cardattack": {
+                    "href": "/cardattack/homies/the-lazer",
+                    "role": "homie"
+                  },
+                  "unclejimmy": {
+                    "href": "/unclejimmy/fam/the-lazer",
+                    "role": "fam"
+                  }
+                }
+              }
+            },
+            "name": "the-lazer",
+            "slug": "the-lazer",
+            "href_kind": "squad",
+            "display_name": "lászló kleinheisler",
+            "is_clickable": true
+          }
+        ],
+        "relationships": [
+          {
+            "meta": {},
+            "source": "the-lazer",
+            "target": "g-league",
+            "relation_type": "member_of"
+          },
+          {
+            "meta": {},
+            "source": "cal",
+            "target": "g-league",
+            "relation_type": "member_of"
+          }
+        ],
+        "ledger098": null
+      },
+      "triggers": [
+        {
+          "name": "trg_audit_homie",
+          "table": "homie",
+          "definition": "CREATE TRIGGER trg_audit_homie BEFORE INSERT OR UPDATE ON dojo.homie FOR EACH ROW EXECUTE FUNCTION dojo.audit_stamp_generic()"
+        },
+        {
+          "name": "trg_audit_tags",
+          "table": "tags",
+          "definition": "CREATE TRIGGER trg_audit_tags BEFORE INSERT OR UPDATE ON dojo.tags FOR EACH ROW EXECUTE FUNCTION dojo.audit_stamp_tags()"
+        },
+        {
+          "name": "trg_audit_tag_relation",
+          "table": "tag_relation",
+          "definition": "CREATE TRIGGER trg_audit_tag_relation BEFORE INSERT OR UPDATE ON dojo.tag_relation FOR EACH ROW EXECUTE FUNCTION dojo.audit_stamp_generic()"
+        },
+        {
+          "name": "trg_sync_homie_tag_identity",
+          "table": "homie",
+          "definition": "CREATE TRIGGER trg_sync_homie_tag_identity AFTER INSERT OR UPDATE OF name, tag_slug ON dojo.homie FOR EACH ROW WHEN (((new.tag_slug IS NOT NULL) AND (btrim((new.tag_slug)::text) <> ''::text))) EXECUTE FUNCTION dojo.sync_homie_tag_identity_from_row()"
+        },
+        {
+          "name": "trg_infer_tag_identity_from_canonical_route",
+          "table": "tags",
+          "definition": "CREATE TRIGGER trg_infer_tag_identity_from_canonical_route BEFORE INSERT OR UPDATE OF slug, href, href_kind, meta ON dojo.tags FOR EACH ROW EXECUTE FUNCTION dojo.infer_tag_identity_from_canonical_route()"
+        }
+      ],
+      "orphanHomieContexts": [
+        {
+          "id": 33,
+          "href": "/unclejimmy/fam/cal",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/cal",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "cal",
+          "href_kind": "homie",
+          "display_name": "cal"
+        },
+        {
+          "id": 482,
+          "href": "/cardattack/homies/calvin-johnson",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/calvin-johnson",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "calvin-johnson",
+          "href_kind": "homie",
+          "display_name": "calvin johnson"
+        },
+        {
+          "id": 486,
+          "href": "/cardattack/homies/carmelo-anthony",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/carmelo-anthony",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "carmelo-anthony",
+          "href_kind": "homie",
+          "display_name": "carmelo anthony"
+        },
+        {
+          "id": 476,
+          "href": "/cardattack/homies/daniel-ricciardo",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/daniel-ricciardo",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "daniel-ricciardo",
+          "href_kind": "homie",
+          "display_name": "daniel ricciardo"
+        },
+        {
+          "id": 418,
+          "href": "/cardattack/homies/dennis-rodman",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/dennis-rodman",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "dennis-rodman",
+          "href_kind": "homie",
+          "display_name": "dennis rodman"
+        },
+        {
+          "id": 472,
+          "href": "/cardattack/homies/desmond-mason",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/desmond-mason",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "desmond-mason",
+          "href_kind": "homie",
+          "display_name": "desmond mason"
+        },
+        {
+          "id": 446,
+          "href": "/cardattack/homies/dikembe-mutombo",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/dikembe-mutombo",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "dikembe-mutombo",
+          "href_kind": "homie",
+          "display_name": "dikembe mutombo"
+        },
+        {
+          "id": 490,
+          "href": "/cardattack/homies/dominique-wilkins",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/dominique-wilkins",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "dominique-wilkins",
+          "href_kind": "homie",
+          "display_name": "dominique wilkins"
+        },
+        {
+          "id": 458,
+          "href": "/cardattack/homies/edgerrin-james",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/edgerrin-james",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "edgerrin-james",
+          "href_kind": "homie",
+          "display_name": "edgerrin james"
+        },
+        {
+          "id": 425,
+          "href": "/cardattack/homies/jalen-rose",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/jalen-rose",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "jalen-rose",
+          "href_kind": "homie",
+          "display_name": "jalen rose"
+        },
+        {
+          "id": 457,
+          "href": "/cardattack/homies/john-henson",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/john-henson",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "john-henson",
+          "href_kind": "homie",
+          "display_name": "john henson"
+        },
+        {
+          "id": 430,
+          "href": "/cardattack/homies/john-stockton",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/john-stockton",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "john-stockton",
+          "href_kind": "homie",
+          "display_name": "john stockton"
+        },
+        {
+          "id": 491,
+          "href": "/cardattack/homies/johnny-newman",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/johnny-newman",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "johnny-newman",
+          "href_kind": "homie",
+          "display_name": "johnny newman"
+        },
+        {
+          "id": 437,
+          "href": "/cardattack/homies/juwan-howard",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/juwan-howard",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "juwan-howard",
+          "href_kind": "homie",
+          "display_name": "juwan howard"
+        },
+        {
+          "id": 392,
+          "href": "/cardattack/homies/lebron-james",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/lebron-james",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "lebron-james",
+          "href_kind": "homie",
+          "display_name": "lebron james"
+        },
+        {
+          "id": 495,
+          "href": "/cardattack/homies/moses-malone",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/moses-malone",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "moses-malone",
+          "href_kind": "homie",
+          "display_name": "moses malone"
+        },
+        {
+          "id": 474,
+          "href": "/cardattack/homies/patrick-williams",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/patrick-williams",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "patrick-williams",
+          "href_kind": "homie",
+          "display_name": "patrick williams"
+        },
+        {
+          "id": 481,
+          "href": "/cardattack/homies/pau-gasol",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/pau-gasol",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "pau-gasol",
+          "href_kind": "homie",
+          "display_name": "pau gasol"
+        },
+        {
+          "id": 447,
+          "href": "/cardattack/homies/tamarick-vanover",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/tamarick-vanover",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "tamarick-vanover",
+          "href_kind": "homie",
+          "display_name": "tamarick vanover"
+        },
+        {
+          "id": 411,
+          "href": "/cardattack/homies/tractor-traylor",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/tractor-traylor",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "tractor-traylor",
+          "href_kind": "homie",
+          "display_name": "tractor traylor"
+        },
+        {
+          "id": 423,
+          "href": "/cardattack/homies/victor-wembanyama",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/victor-wembanyama",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "victor-wembanyama",
+          "href_kind": "homie",
+          "display_name": "victor wembanyama"
+        },
+        {
+          "id": 432,
+          "href": "/cardattack/homies/vince-carter",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/vince-carter",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "vince-carter",
+          "href_kind": "homie",
+          "display_name": "vince carter"
+        },
+        {
+          "id": 452,
+          "href": "/cardattack/homies/wes-matthews",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/wes-matthews",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "wes-matthews",
+          "href_kind": "homie",
+          "display_name": "wes matthews"
+        },
+        {
+          "id": 522,
+          "href": "/cardattack/homies/zz",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/zz",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "zz",
+          "href_kind": "homie",
+          "display_name": "backfill"
+        }
+      ],
+      "roster": [
+        {
+          "href": null,
+          "kind": "placeholder",
+          "slug": "bench-mob"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "bonnibel"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "eeeeeeeemma"
+        },
+        {
+          "href": null,
+          "kind": "placeholder",
+          "slug": "g-league"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "jeff-meff"
+        },
+        {
+          "href": null,
+          "kind": "placeholder",
+          "slug": "key-personnel"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "lulu"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "nikkigirl"
+        },
+        {
+          "href": "/unclejimmy/table-schema",
+          "kind": "link",
+          "slug": "table-schema"
+        },
+        {
+          "href": "/unclejimmy/squad/volleyball",
+          "kind": "link",
+          "slug": "volleyball-tournaments"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "homie_drafted_check",
+          "table": "dojo.homie",
+          "definition": "CHECK (((drafted >= 0) AND (drafted <= 65535)))"
+        },
+        {
+          "name": "homie_pkey",
+          "table": "dojo.homie",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "tags_pkey",
+          "table": "dojo.tags",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "tags_slug_key",
+          "table": "dojo.tags",
+          "definition": "UNIQUE (slug)"
+        },
+        {
+          "name": "homie_tag_slug_key",
+          "table": "dojo.homie",
+          "definition": "UNIQUE (tag_slug)"
+        },
+        {
+          "name": "homie_tag_slug_check",
+          "table": "dojo.homie",
+          "definition": "CHECK (((tag_slug IS NULL) OR ((tag_slug)::text ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'::text)))"
+        },
+        {
+          "name": "tags_href_check",
+          "table": "dojo.tags",
+          "definition": "CHECK (((href IS NULL) OR (btrim(href) <> ''::text)))"
+        },
+        {
+          "name": "tags_display_name_check",
+          "table": "dojo.tags",
+          "definition": "CHECK (((display_name IS NULL) OR (btrim(display_name) <> ''::text)))"
+        },
+        {
+          "name": "tags_meta_object_check",
+          "table": "dojo.tags",
+          "definition": "CHECK ((jsonb_typeof(meta) = 'object'::text))"
+        },
+        {
+          "name": "tags_href_kind_check",
+          "table": "dojo.tags",
+          "definition": "CHECK ((href_kind = ANY (ARRAY['tag'::text, 'persona'::text, 'squad'::text, 'homie'::text, 'clan'::text, 'custom'::text, 'external'::text, 'none'::text])))"
+        },
+        {
+          "name": "schema_migration_status_check",
+          "table": "dojo.schema_migration",
+          "definition": "CHECK ((status = ANY (ARRAY['applied'::text, 'failed'::text])))"
+        },
+        {
+          "name": "schema_migration_applied_at_check",
+          "table": "dojo.schema_migration",
+          "definition": "CHECK (((status = 'failed'::text) OR (applied_at IS NOT NULL)))"
+        },
+        {
+          "name": "schema_migration_pkey",
+          "table": "dojo.schema_migration",
+          "definition": "PRIMARY KEY (filename)"
+        }
+      ]
+    },
+    "production": {
+      "branch": "br-withered-snow-aea0yck6",
+      "observation": {
+        "database": "tullyelly_db",
+        "read_only": "on",
+        "homies": [
+          {
+            "id": 219,
+            "name": "László Kleinheisler",
+            "drafted": 2016,
+            "tag_slug": "lazer-face"
+          },
+          {
+            "id": 221,
+            "name": "Cal Eldrid",
+            "drafted": 1989,
+            "tag_slug": "eldrid"
+          }
+        ],
+        "tags": [
+          {
+            "id": 33,
+            "href": "/unclejimmy/fam/cal",
+            "meta": {
+              "identity": {
+                "kind": "person",
+                "contexts": {
+                  "cardattack": {
+                    "href": "/cardattack/homies/cal",
+                    "role": "homie"
+                  }
+                }
+              }
+            },
+            "name": "cal",
+            "slug": "cal",
+            "href_kind": "homie",
+            "display_name": "cal",
+            "is_clickable": true
+          },
+          {
+            "id": 565,
+            "href": "/cardattack/homies/eldrid",
+            "meta": {
+              "identity": {
+                "kind": "person",
+                "contexts": {
+                  "cardattack": {
+                    "href": "/cardattack/homies/eldrid",
+                    "role": "homie"
+                  }
+                }
+              }
+            },
+            "name": "eldrid",
+            "slug": "eldrid",
+            "href_kind": "homie",
+            "display_name": "cal eldrid",
+            "is_clickable": true
+          },
+          {
+            "id": 270,
+            "href": "/unclejimmy/squads/g-league",
+            "meta": {
+              "identity": {
+                "kind": "group",
+                "contexts": {
+                  "unclejimmy": {
+                    "href": "/unclejimmy/squads/g-league",
+                    "role": "squad"
+                  }
+                }
+              }
+            },
+            "name": "g-league",
+            "slug": "g-league",
+            "href_kind": "squad",
+            "display_name": "g league",
+            "is_clickable": true
+          },
+          {
+            "id": 566,
+            "href": "/cardattack/homies/lazer-face",
+            "meta": {
+              "identity": {
+                "kind": "person",
+                "contexts": {
+                  "cardattack": {
+                    "href": "/cardattack/homies/lazer-face",
+                    "role": "homie"
+                  }
+                }
+              }
+            },
+            "name": "lazer-face",
+            "slug": "lazer-face",
+            "href_kind": "homie",
+            "display_name": "lászló kleinheisler",
+            "is_clickable": true
+          },
+          {
+            "id": 274,
+            "href": "/unclejimmy/fam/the-lazer",
+            "meta": {
+              "identity": {
+                "kind": "person",
+                "contexts": {
+                  "cardattack": {
+                    "href": "/cardattack/homies/the-lazer",
+                    "role": "homie"
+                  },
+                  "unclejimmy": {
+                    "href": "/unclejimmy/fam/the-lazer",
+                    "role": "fam"
+                  }
+                }
+              }
+            },
+            "name": "the-lazer",
+            "slug": "the-lazer",
+            "href_kind": "squad",
+            "display_name": "lászló kleinheisler",
+            "is_clickable": true
+          }
+        ],
+        "relationships": [
+          {
+            "meta": {},
+            "source": "the-lazer",
+            "target": "g-league",
+            "relation_type": "member_of"
+          },
+          {
+            "meta": {},
+            "source": "cal",
+            "target": "g-league",
+            "relation_type": "member_of"
+          }
+        ],
+        "ledger098": null
+      },
+      "triggers": [
+        {
+          "name": "trg_audit_homie",
+          "table": "homie",
+          "definition": "CREATE TRIGGER trg_audit_homie BEFORE INSERT OR UPDATE ON dojo.homie FOR EACH ROW EXECUTE FUNCTION dojo.audit_stamp_generic()"
+        },
+        {
+          "name": "trg_audit_tags",
+          "table": "tags",
+          "definition": "CREATE TRIGGER trg_audit_tags BEFORE INSERT OR UPDATE ON dojo.tags FOR EACH ROW EXECUTE FUNCTION dojo.audit_stamp_tags()"
+        },
+        {
+          "name": "trg_audit_tag_relation",
+          "table": "tag_relation",
+          "definition": "CREATE TRIGGER trg_audit_tag_relation BEFORE INSERT OR UPDATE ON dojo.tag_relation FOR EACH ROW EXECUTE FUNCTION dojo.audit_stamp_generic()"
+        },
+        {
+          "name": "trg_sync_homie_tag_identity",
+          "table": "homie",
+          "definition": "CREATE TRIGGER trg_sync_homie_tag_identity AFTER INSERT OR UPDATE OF name, tag_slug ON dojo.homie FOR EACH ROW WHEN (((new.tag_slug IS NOT NULL) AND (btrim((new.tag_slug)::text) <> ''::text))) EXECUTE FUNCTION dojo.sync_homie_tag_identity_from_row()"
+        },
+        {
+          "name": "trg_infer_tag_identity_from_canonical_route",
+          "table": "tags",
+          "definition": "CREATE TRIGGER trg_infer_tag_identity_from_canonical_route BEFORE INSERT OR UPDATE OF slug, href, href_kind, meta ON dojo.tags FOR EACH ROW EXECUTE FUNCTION dojo.infer_tag_identity_from_canonical_route()"
+        }
+      ],
+      "orphanHomieContexts": [
+        {
+          "id": 33,
+          "href": "/unclejimmy/fam/cal",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/cal",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "cal",
+          "href_kind": "homie",
+          "display_name": "cal"
+        },
+        {
+          "id": 482,
+          "href": "/cardattack/homies/calvin-johnson",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/calvin-johnson",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "calvin-johnson",
+          "href_kind": "homie",
+          "display_name": "calvin johnson"
+        },
+        {
+          "id": 486,
+          "href": "/cardattack/homies/carmelo-anthony",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/carmelo-anthony",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "carmelo-anthony",
+          "href_kind": "homie",
+          "display_name": "carmelo anthony"
+        },
+        {
+          "id": 476,
+          "href": "/cardattack/homies/daniel-ricciardo",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/daniel-ricciardo",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "daniel-ricciardo",
+          "href_kind": "homie",
+          "display_name": "daniel ricciardo"
+        },
+        {
+          "id": 418,
+          "href": "/cardattack/homies/dennis-rodman",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/dennis-rodman",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "dennis-rodman",
+          "href_kind": "homie",
+          "display_name": "dennis rodman"
+        },
+        {
+          "id": 472,
+          "href": "/cardattack/homies/desmond-mason",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/desmond-mason",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "desmond-mason",
+          "href_kind": "homie",
+          "display_name": "desmond mason"
+        },
+        {
+          "id": 446,
+          "href": "/cardattack/homies/dikembe-mutombo",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/dikembe-mutombo",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "dikembe-mutombo",
+          "href_kind": "homie",
+          "display_name": "dikembe mutombo"
+        },
+        {
+          "id": 490,
+          "href": "/cardattack/homies/dominique-wilkins",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/dominique-wilkins",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "dominique-wilkins",
+          "href_kind": "homie",
+          "display_name": "dominique wilkins"
+        },
+        {
+          "id": 458,
+          "href": "/cardattack/homies/edgerrin-james",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/edgerrin-james",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "edgerrin-james",
+          "href_kind": "homie",
+          "display_name": "edgerrin james"
+        },
+        {
+          "id": 425,
+          "href": "/cardattack/homies/jalen-rose",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/jalen-rose",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "jalen-rose",
+          "href_kind": "homie",
+          "display_name": "jalen rose"
+        },
+        {
+          "id": 457,
+          "href": "/cardattack/homies/john-henson",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/john-henson",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "john-henson",
+          "href_kind": "homie",
+          "display_name": "john henson"
+        },
+        {
+          "id": 430,
+          "href": "/cardattack/homies/john-stockton",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/john-stockton",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "john-stockton",
+          "href_kind": "homie",
+          "display_name": "john stockton"
+        },
+        {
+          "id": 491,
+          "href": "/cardattack/homies/johnny-newman",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/johnny-newman",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "johnny-newman",
+          "href_kind": "homie",
+          "display_name": "johnny newman"
+        },
+        {
+          "id": 437,
+          "href": "/cardattack/homies/juwan-howard",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/juwan-howard",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "juwan-howard",
+          "href_kind": "homie",
+          "display_name": "juwan howard"
+        },
+        {
+          "id": 392,
+          "href": "/cardattack/homies/lebron-james",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/lebron-james",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "lebron-james",
+          "href_kind": "homie",
+          "display_name": "lebron james"
+        },
+        {
+          "id": 495,
+          "href": "/cardattack/homies/moses-malone",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/moses-malone",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "moses-malone",
+          "href_kind": "homie",
+          "display_name": "moses malone"
+        },
+        {
+          "id": 474,
+          "href": "/cardattack/homies/patrick-williams",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/patrick-williams",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "patrick-williams",
+          "href_kind": "homie",
+          "display_name": "patrick williams"
+        },
+        {
+          "id": 481,
+          "href": "/cardattack/homies/pau-gasol",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/pau-gasol",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "pau-gasol",
+          "href_kind": "homie",
+          "display_name": "pau gasol"
+        },
+        {
+          "id": 447,
+          "href": "/cardattack/homies/tamarick-vanover",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/tamarick-vanover",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "tamarick-vanover",
+          "href_kind": "homie",
+          "display_name": "tamarick vanover"
+        },
+        {
+          "id": 274,
+          "href": "/unclejimmy/fam/the-lazer",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/the-lazer",
+                  "role": "homie"
+                },
+                "unclejimmy": {
+                  "href": "/unclejimmy/fam/the-lazer",
+                  "role": "fam"
+                }
+              }
+            }
+          },
+          "slug": "the-lazer",
+          "href_kind": "squad",
+          "display_name": "lászló kleinheisler"
+        },
+        {
+          "id": 411,
+          "href": "/cardattack/homies/tractor-traylor",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/tractor-traylor",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "tractor-traylor",
+          "href_kind": "homie",
+          "display_name": "tractor traylor"
+        },
+        {
+          "id": 423,
+          "href": "/cardattack/homies/victor-wembanyama",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/victor-wembanyama",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "victor-wembanyama",
+          "href_kind": "homie",
+          "display_name": "victor wembanyama"
+        },
+        {
+          "id": 432,
+          "href": "/cardattack/homies/vince-carter",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/vince-carter",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "vince-carter",
+          "href_kind": "homie",
+          "display_name": "vince carter"
+        },
+        {
+          "id": 452,
+          "href": "/cardattack/homies/wes-matthews",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/wes-matthews",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "wes-matthews",
+          "href_kind": "homie",
+          "display_name": "wes matthews"
+        },
+        {
+          "id": 522,
+          "href": "/cardattack/homies/zz",
+          "meta": {
+            "identity": {
+              "kind": "person",
+              "contexts": {
+                "cardattack": {
+                  "href": "/cardattack/homies/zz",
+                  "role": "homie"
+                }
+              }
+            }
+          },
+          "slug": "zz",
+          "href_kind": "homie",
+          "display_name": "backfill"
+        }
+      ],
+      "roster": [
+        {
+          "href": null,
+          "kind": "placeholder",
+          "slug": "bench-mob"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "bonnibel"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "eeeeeeeemma"
+        },
+        {
+          "href": null,
+          "kind": "placeholder",
+          "slug": "g-league"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "jeff-meff"
+        },
+        {
+          "href": null,
+          "kind": "placeholder",
+          "slug": "key-personnel"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "lulu"
+        },
+        {
+          "href": null,
+          "kind": "person",
+          "slug": "nikkigirl"
+        },
+        {
+          "href": "/unclejimmy/table-schema",
+          "kind": "link",
+          "slug": "table-schema"
+        },
+        {
+          "href": "/unclejimmy/squad/volleyball",
+          "kind": "link",
+          "slug": "volleyball-tournaments"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "homie_drafted_check",
+          "table": "dojo.homie",
+          "definition": "CHECK (((drafted >= 0) AND (drafted <= 65535)))"
+        },
+        {
+          "name": "homie_pkey",
+          "table": "dojo.homie",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "tags_pkey",
+          "table": "dojo.tags",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "tags_slug_key",
+          "table": "dojo.tags",
+          "definition": "UNIQUE (slug)"
+        },
+        {
+          "name": "homie_tag_slug_key",
+          "table": "dojo.homie",
+          "definition": "UNIQUE (tag_slug)"
+        },
+        {
+          "name": "homie_tag_slug_check",
+          "table": "dojo.homie",
+          "definition": "CHECK (((tag_slug IS NULL) OR ((tag_slug)::text ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'::text)))"
+        },
+        {
+          "name": "tags_href_check",
+          "table": "dojo.tags",
+          "definition": "CHECK (((href IS NULL) OR (btrim(href) <> ''::text)))"
+        },
+        {
+          "name": "tags_display_name_check",
+          "table": "dojo.tags",
+          "definition": "CHECK (((display_name IS NULL) OR (btrim(display_name) <> ''::text)))"
+        },
+        {
+          "name": "tags_meta_object_check",
+          "table": "dojo.tags",
+          "definition": "CHECK ((jsonb_typeof(meta) = 'object'::text))"
+        },
+        {
+          "name": "tags_href_kind_check",
+          "table": "dojo.tags",
+          "definition": "CHECK ((href_kind = ANY (ARRAY['tag'::text, 'persona'::text, 'squad'::text, 'homie'::text, 'clan'::text, 'custom'::text, 'external'::text, 'none'::text])))"
+        },
+        {
+          "name": "schema_migration_status_check",
+          "table": "dojo.schema_migration",
+          "definition": "CHECK ((status = ANY (ARRAY['applied'::text, 'failed'::text])))"
+        },
+        {
+          "name": "schema_migration_applied_at_check",
+          "table": "dojo.schema_migration",
+          "definition": "CHECK (((status = 'failed'::text) OR (applied_at IS NOT NULL)))"
+        },
+        {
+          "name": "schema_migration_pkey",
+          "table": "dojo.schema_migration",
+          "definition": "PRIMARY KEY (filename)"
+        }
+      ]
+    }
+  }
+}

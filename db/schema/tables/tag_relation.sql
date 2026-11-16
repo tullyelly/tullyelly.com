@@ -23,3 +23,11 @@ CREATE INDEX tag_relation_target_lookup_idx
 CREATE TRIGGER trg_audit_tag_relation
 BEFORE INSERT OR UPDATE ON dojo.tag_relation
 FOR EACH ROW EXECUTE PROCEDURE dojo.audit_stamp_generic();
+
+-- Migration 100; requires functions in functions/typed_tag_relationships.sql.
+CREATE UNIQUE INDEX tag_relation_one_alias_target_idx
+  ON dojo.tag_relation(source_tag_id) WHERE relation_type='alias_of';
+ALTER TABLE dojo.tag_relation ADD CONSTRAINT tag_relation_reasons_check
+  CHECK (relation_type<>'collected_because_of' OR dojo.valid_collection_reasons(meta));
+-- Statement guards on homie/tags/tag_relation/unclejimmy_squad_item/clan share
+-- 098's READ COMMITTED advisory write lock; see migration 100 for installation.

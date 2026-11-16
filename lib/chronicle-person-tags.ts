@@ -1,5 +1,5 @@
+import { canonicalTagSlug, type TagAliasIndex } from "@/lib/tag-aliases";
 import { allPosts } from "contentlayer/generated";
-import { normalizeTagSlug } from "@/lib/tags";
 
 export type ChroniclePersonTagUsage = {
   tag: string;
@@ -58,9 +58,10 @@ function trimToValue(value: string): string | null {
 export function collectChronicleTagDisplayNames(
   posts: readonly ChroniclePersonTagSource[],
   tag: string,
-  options: { includeClanTagUsages?: boolean } = {},
+  options: { includeClanTagUsages?: boolean; aliases?: TagAliasIndex } = {},
 ): ChronicleTagDisplayName[] {
-  const targetSlug = normalizeTagSlug(tag);
+  const aliases = options.aliases ?? new Map<string, string>();
+  const targetSlug = canonicalTagSlug(tag, aliases);
   if (!targetSlug) return [];
 
   const byDisplayName = new Map<
@@ -75,7 +76,7 @@ export function collectChronicleTagDisplayNames(
       post,
       options.includeClanTagUsages ?? true,
     )) {
-      if (normalizeTagSlug(usage.tag) !== targetSlug) continue;
+      if (canonicalTagSlug(usage.tag, aliases) !== targetSlug) continue;
 
       const displayName = trimToValue(usage.displayName) ?? usage.tag;
       const key = displayName;
@@ -108,20 +109,23 @@ export function collectChronicleTagDisplayNames(
 
 export function listChronicleTagDisplayNames(
   tag: string,
+  aliases?: TagAliasIndex,
 ): ChronicleTagDisplayName[] {
   return collectChronicleTagDisplayNames(
     allPosts as readonly ChroniclePersonTagSource[],
     tag,
+    { aliases },
   );
 }
 
 export function listChroniclePersonTagDisplayNames(
   tag: string,
+  aliases?: TagAliasIndex,
 ): ChronicleTagDisplayName[] {
   return collectChronicleTagDisplayNames(
     allPosts as readonly ChroniclePersonTagSource[],
     tag,
-    { includeClanTagUsages: false },
+    { includeClanTagUsages: false, aliases },
   );
 }
 
@@ -129,9 +133,12 @@ export function collectChroniclePersonTagCounts(
   posts: readonly ChroniclePersonTagSource[],
   allowedTags: readonly string[],
   limit = 10,
+  aliases: TagAliasIndex = new Map(),
 ): ChroniclePersonTagCount[] {
   const allowed = new Set(
-    allowedTags.map(normalizeTagSlug).filter((tag) => tag.length > 0),
+    allowedTags
+      .map((tag) => canonicalTagSlug(tag, aliases))
+      .filter((tag) => tag.length > 0),
   );
   const safeLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 0;
   const counts = new Map<
@@ -144,7 +151,7 @@ export function collectChroniclePersonTagCounts(
 
     for (const value of post.personTagUsages) {
       if (!isChroniclePersonTagUsage(value)) continue;
-      const tag = normalizeTagSlug(value.tag);
+      const tag = canonicalTagSlug(value.tag, aliases);
       if (!allowed.has(tag)) continue;
       const current = counts.get(tag);
       if (current) {
@@ -172,10 +179,12 @@ export function collectChroniclePersonTagCounts(
 export function listChroniclePersonTagCounts(
   allowedTags: readonly string[],
   limit = 10,
+  aliases: TagAliasIndex = new Map(),
 ): ChroniclePersonTagCount[] {
   return collectChroniclePersonTagCounts(
     allPosts as readonly ChroniclePersonTagSource[],
     allowedTags,
     limit,
+    aliases,
   );
 }

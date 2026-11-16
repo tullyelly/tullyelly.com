@@ -54,3 +54,11 @@ server read. Its helper rechecks the owner and strict capability before private 
 only the resulting chart's day/views pairs cross to its client component. It does
 not call the public cached reader or Vercel API. See
 [private analytics reporting](analytics-rollout.md#private-whole-site-reporting-wu-1209).
+
+Same-person aliases use the separate React request snapshot in
+`lib/tag-aliases-server.ts`. It reads only `alias_of`, validates one-hop shape and
+skips production-build reads. Tag metadata preserves source/target disabling while
+using canonical routes. Direct edits appear on the next refreshed server request;
+refresh a persistent browser layout snapshot. The Homies directory retains its
+existing 300-second cache; direct DataGrip edits do not invalidate it automatically.
+See [alias consumer coverage and rename ordering](tag-alias-resolution.md).

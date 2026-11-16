@@ -1,0 +1,133 @@
+{
+  "reviewedOn": "2026-11-15",
+  "applied": false,
+  "canonicalHomieId": 6,
+  "canonicalLeBronTagId": 540,
+  "legacyLeBronTagId": 392,
+  "luluTagId": 1,
+  "calTagId": 33,
+  "contentChanges": [
+    {
+      "path": "content/chronicles/dr-jones.mdx",
+      "line": 82,
+      "before": "<TcdbSnapshot tag=\"cal\" />",
+      "after": "<TcdbSnapshot tag=\"eldrid\" />",
+      "evidence": "Homie 221; dated 2026-08-06 snapshot verified in both targets: Cal Eldrid, 75 cards, rank 54; former homie slug cal is recorded in 098.",
+      "beforeSha256": "4a216904886e1a8ac294204fee3c65118d29786405bde33cddd54926707c4a32",
+      "afterSha256": "ce41516682e257b05ff1007d011d2a0a068015e99bb5d39fc7865c002978d155"
+    },
+    {
+      "path": "content/chronicles/section-80.mdx",
+      "line": 22,
+      "before": "<TcdbSnapshot tag=\"cal\" />",
+      "after": "<TcdbSnapshot tag=\"eldrid\" />",
+      "evidence": "Homie 221; dated 2026-07-02 snapshot verified in both targets: Cal Eldrid, 74 cards, rank 53; source explicitly describes former Brewers.",
+      "beforeSha256": "255ac6f705f0d55699974c6c6b1d403f4863e1a6c5ea1c9863615d1dc8989765",
+      "afterSha256": "302d1d63fe4aa31d4f80328f3044946524aa054531f437cfd25bff9191ac1ebb"
+    },
+    {
+      "path": "content/chronicles/midnight-marauders.mdx",
+      "line": 12,
+      "before": "<TcdbSnapshot tag=\"the-lazer\" />",
+      "after": "<TcdbSnapshot tag=\"lazer-face\" />",
+      "evidence": "Homie 219; dated 2026-09-27 snapshot verified in both targets: Laszlo Kleinheisler, 2 cards, rank 24; former homie slug the-lazer is recorded in 098.",
+      "beforeSha256": "af32438871f8629b5635f34fe9992562ea2148d153d98847cf86faae946a0612",
+      "afterSha256": "707c09fba7462e8b8d7ba13495e8564fdbc9f9d2dc744e3257122e14a4a14799"
+    },
+    {
+      "path": "content/chronicles/mike-vick.mdx",
+      "line": 17,
+      "before": "<PersonTag displayName=\"james\" tag=\"cal\" />",
+      "after": "<PersonTag displayName=\"james\" tag=\"edgerrin\" />",
+      "evidence": "Explicit Edgerrin James sentence; current homie 232/tag 563/edgerrin verified in both targets. Authored james label and following cal/calvin TagLink remain unchanged.",
+      "beforeSha256": "4a0ff74b25187891d20effb578fa47c165fbf2c9f0aa9df2918764e1dcf1187b",
+      "afterSha256": "4ad1eba9bba02b9e2fb1d49af30068455a72eada449e08a1ba0f0d10b4e79cb9"
+    }
+  ],
+  "included": [
+    {
+      "source": "lebron-james",
+      "target": "king-james",
+      "type": "alias_of",
+      "meta": {
+        "migration": "102_seed_tag_relationship_examples",
+        "reviewed_on": "2026-11-15",
+        "homie_id": 6,
+        "identity_evidence": [
+          "WU-1262 accepted record",
+          "db/migrations/080_populate_player_clan_memberships.sql",
+          "db/migrations/099_audit_homie_clan_memberships.sql"
+        ]
+      }
+    },
+    {
+      "source": "calvin",
+      "target": "cal",
+      "type": "alias_of",
+      "meta": {
+        "migration": "102_seed_tag_relationship_examples",
+        "reviewed_on": "2026-11-15",
+        "identity_evidence": {
+          "path": "content/chronicles/silent-reflection.mdx",
+          "line": 43,
+          "sha256": "a53e43173ffe7f353e552e4af837da27597c9c298e070c2c01c0dd414813fb76",
+          "meaning": "Authored nephews paragraph explicitly names Calvin through tag cal; not spelling inference."
+        }
+      }
+    },
+    {
+      "source": "king-james",
+      "target": "lulu",
+      "type": "collected_because_of",
+      "meta": {
+        "migration": "102_seed_tag_relationship_examples",
+        "reviewed_on": "2026-11-15",
+        "decision": "WU-1262",
+        "reasons": [
+          {
+            "code": "favorite_player",
+            "explanation": "I collect LeBron because he was Lulu's favorite player."
+          }
+        ]
+      }
+    }
+  ],
+  "newAliasTag": {
+    "slug": "calvin",
+    "name": "calvin",
+    "display_name": "calvin",
+    "href": null,
+    "href_kind": "tag",
+    "is_clickable": true,
+    "meta": {
+      "identity": {
+        "kind": "person"
+      },
+      "relationship_seed": "102_seed_tag_relationship_examples"
+    }
+  },
+  "excluded": [
+    {
+      "candidate": "Calvin Reese -> cal",
+      "status": "excluded; exact intended player confirmation and separate existing-process onboarding required",
+      "evidence": "No Calvin Reese/Pokey Reese homie in either existing target. TCDB indexed listing identifies candidate Pokey Reese / Calvin Reese Jr., pid 4852; not proof of user intent. Root profile fetch unavailable.",
+      "candidateUrl": "https://www.tcdb.com/GalleryP.cfm/pid/4852/col/1/yea/2006/Pokey-Reese",
+      "question": "Is the intended player Pokey Reese (Calvin Reese Jr., TCDB 4852)? Track onboarding separately; no guessed seed."
+    },
+    {
+      "candidate": "t-wolves -> aden/cal/the-lazer",
+      "status": "excluded optional batch; matching reason vocabulary is not approved",
+      "evidence": "silent-reflection.mdx:43 proves family fandom, but neither favorite_player nor shared_name accurately describes a team-fandom reason. Future family_fandom code needs a coordinated contract change; do not mislabel."
+    },
+    {
+      "candidate": "secret-identity.mdx:211 David Carr mention",
+      "status": "excluded per-usage correction; no verified existing subject endpoint",
+      "evidence": "No David Carr homie/tag found. Preserve authored david/the-lazer usage and track canonical athlete onboarding/intent rather than create or equate people."
+    },
+    {
+      "candidate": "midnight-marauders.mdx:46 laszlo cards PersonTag",
+      "status": "excluded ambiguous per-usage correction",
+      "evidence": "Could denote the athlete or a nephew-inspired collection. Retain authored tag/display text pending per-usage intent; the separate dated TcdbSnapshot correction is independently verified."
+    }
+  ]
+}

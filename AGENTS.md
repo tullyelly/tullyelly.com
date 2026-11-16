@@ -13,6 +13,15 @@ behavior. Historical proposals and generated dumps are not current contracts.
 Update the owning documentation when behavior, commands, or procedures change.
 Orientation: [README](README.md). Workflow: [CONTRIBUTING](CONTRIBUTING.md).
 
+## Jira work and commits
+
+Follow [.agents/skills/jira-workflow/SKILL.md](.agents/skills/jira-workflow/SKILL.md)
+and [the Jira workflow](docs/jira-workflow.md) on start/resume and before commits.
+Use one shared daily epic branch for James and Cipher, including supplied-key
+Chronicles. Attribute each commit to its actual verified child item; preserve
+session-specific context and serialize Git/index mutations. No separate story,
+author or agent branches. Jira attribution does not authorize release or SQL.
+
 ## Universal rules
 
 - Use npm. Do not start the dev server; the user handles it locally.
@@ -40,7 +49,8 @@ Orientation: [README](README.md). Workflow: [CONTRIBUTING](CONTRIBUTING.md).
 
 James executes reviewed migration, repair, grant and migration-ledger SQL manually
 through his existing DataGrip connections: existing development first, then
-existing production after development validation and fresh production preflight.
+existing production after development validation and fresh checks embedded in
+the production execution files.
 Cipher and every delegated agent have read-only access to both databases through
 all routes, including scripts, tests, APIs, browser actions and workflows. They
 must not trigger migration executors, seeds, cleanup, rollback fixtures,
@@ -62,6 +72,19 @@ release machinery and human approvals remain in place. The legacy analytics SQL
 executor is not authorized by this policy. No new recovery environment or
 mandatory isolated restore proof is required; document actual backup coverage,
 unrun recovery checks and accepted limitations before production approval.
+
+## Mandatory database preparation handoff
+
+For every database mutation or ledger change, follow the existing
+[database-migrations skill](.agents/skills/database-migrations/SKILL.md) and
+[manual procedure](docs/manual-migrations.md). Cipher prepares; James executes.
+Use two complete DataGrip files: canonical migration first, separate ledger SQL
+only after success; development then approved production. Embed essential checks
+inside those files. Stop on failure; never automatically replay a successful
+migration to fix ledger recording. Cipher handles safe validation/read-only checks
+and release compatibility preparation. Extra diagnostics/tests are engineering
+work, not James's normal checklist. Keep the final handoff brief with the two
+exact paths and actual blockers; never imply prepared SQL is applied.
 
 ## Validation
 

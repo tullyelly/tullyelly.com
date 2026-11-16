@@ -30,7 +30,7 @@ SQL file changes later, `status` and `verify` report `checksum_mismatch`, and
 Production operations require the concrete review and human protected approval in
 [production releases](production-releases.md). The owner-operated
 [DataGrip procedure](analytics-neon-setup.md) covers individually reviewed files,
-exact checksums, atomic ledger handling and read-only postflight. It does not
+historical analytics execution details; new changes use the two-file procedure. It does not
 change application deployment or authorize SQL through code-only approval.
 The legacy commands below remain non-production tools; do not use apply-all or
 manual SQL to bypass approval or run concurrently with a release executor.
@@ -69,17 +69,18 @@ The runner reads `DATABASE_URL` first, then `TEST_DATABASE_URL`. It honors
 prod-looking URLs outside `NODE_ENV=production`, and keeps the production
 `neondb_owner/neondb` guard.
 
-## Daily Workflow
+## Daily workflow
 
-1. Add a new numbered SQL file under `db/migrations`.
-2. Run `npm run db:migrate:status` to see pending work.
-3. Run `npm run db:migrate:apply` to apply pending migrations in filename
-   order.
-4. Run `npm run db:migrate:verify` before shipping. It fails if anything is
-   pending, failed, missing from the repo, or checksum-mismatched.
+Follow [manual preparation and execution](manual-migrations.md) for every new
+change. Cipher prepares and inspects read-only; James runs the complete canonical
+migration, then its separate ledger file only after success, development first. Runner status/verify/apply
+are legacy write-producing tools and are not agent inspection commands. The
+commands above describe implementation, not authorization to execute them.
 
-Do not edit a migration after it has been applied to a shared database. Add a
-new numbered migration instead.
+The domain-specific sections below preserve historical execution records and
+legacy handoffs; they are not the default procedure for future changes. Never
+replay them or reconcile their ledgers without separately reviewed exact-file
+execution evidence. Preserve applied files and checksums.
 
 ## Clan slug and tag creation
 
@@ -107,7 +108,8 @@ The matching application changes remove clan reads of the retired column and use
 `slug` for ranking metadata, snapshots and trade-partner tag links. They work
 before and after migration 079, so the application can be released first.
 Homie `tag_slug` fields and aliases representing `dojo.tags.slug` remain valid.
-Review and reconcile the ledger separately after manually applying SQL.
+Historical 079 ledger reconciliation requires separate exact-execution evidence;
+future changes use the two-file handoff in [manual migrations](manual-migrations.md).
 
 [079_clan_slug_test.sql](../db/tests/079_clan_slug_test.sql) supplies rollback-only
 SQL assertions for a non-production database after applying the migration. It
@@ -245,3 +247,13 @@ clan `jazz`. Its [evidence and manual handoff](jazz-membership-backfill.md)
 records both databases' read-only preflight, exclusions and postflight queries.
 Run [093_record_applied.sql](../db/operations/093_record_applied.sql) only after
 successful migration application; Cipher has executed neither file.
+
+## Homie identity protection; prepared migration 098
+
+[098_protect_homie_tag_identity.sql](../db/migrations/098_protect_homie_tag_identity.sql)
+is the directly executable transaction. After success, James runs
+[098_record_applied.sql](../db/operations/098_record_applied.sql), which verifies
+required effects and records the canonical ledger checksum. Repeat development
+then approved production. [The short handoff](wu-1260-handoff.md) records failure
+handling and engineering evidence; [the feature contract](homie-tag-synchronization.md)
+explains unchanged cleanup/synchronization behavior. No agent has applied 098.
