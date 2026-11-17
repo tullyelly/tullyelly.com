@@ -1174,6 +1174,9 @@
     "/images/optimus/madvillainy/fern.webp",
     "/images/optimus/madvillainy/george.webp",
     "/images/optimus/man-cave/1055666.webp",
+    "/images/optimus/manager/cold.webp",
+    "/images/optimus/manager/deer.webp",
+    "/images/optimus/manager/heat.webp",
     "/images/optimus/marty-supreme/autograph.webp",
     "/images/optimus/marty-supreme/lebron-green.webp",
     "/images/optimus/marty-supreme/marty-supreme.webp",
@@ -8211,6 +8214,21 @@
     },
     {
       "src": "/images/optimus/man-cave/1055666.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/manager/cold.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/manager/deer.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/manager/heat.webp",
       "width": 1920,
       "height": 2550
     },
