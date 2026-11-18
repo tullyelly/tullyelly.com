@@ -2336,6 +2336,10 @@
     "/images/optimus/xmas-eve/xmas.webp",
     "/images/optimus/year-end/discord.webp",
     "/images/optimus/year-end/youtube.webp",
+    "/images/optimus/year-two/fern/fern-0.webp",
+    "/images/optimus/year-two/fern/fern-1.webp",
+    "/images/optimus/year-two/fern/fern-2.webp",
+    "/images/optimus/year-two/steph.webp",
     "/images/optimus/you-know-my-steez/2020-21/2020-21-0-.webp",
     "/images/optimus/you-know-my-steez/2020-21/2020-21-1.webp",
     "/images/optimus/you-know-my-steez/2020-21/2020-21-2.webp",
@@ -14026,6 +14030,26 @@
       "src": "/images/optimus/year-end/youtube.webp",
       "width": 1080,
       "height": 1920
+    },
+    {
+      "src": "/images/optimus/year-two/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/year-two/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/year-two/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/year-two/steph.webp",
+      "width": 1920,
+      "height": 2550
     },
     {
       "src": "/images/optimus/you-know-my-steez/2020-21/2020-21-0-.webp",
