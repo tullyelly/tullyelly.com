@@ -125,7 +125,7 @@ export default function Page() {
         <YouTubeVideo
           id="-mnJEnjyaY4"
           loop
-          tag="westside-gunn"
+          tag="flygod"
           song="DAVEY BOY SMITH"
           album="HEELS HAVE EYES"
         />
