@@ -770,6 +770,13 @@
     "/images/optimus/graduation-day/post-office.webp",
     "/images/optimus/graduation-day/squad/squad-0.webp",
     "/images/optimus/graduation-day/squad/squad-1.webp",
+    "/images/optimus/grant-heel/fern/fern-0.webp",
+    "/images/optimus/grant-heel/fern/fern-1.webp",
+    "/images/optimus/grant-heel/fern/fern-2.webp",
+    "/images/optimus/grant-heel/fern/fern-3.webp",
+    "/images/optimus/grant-heel/fern/fern-4.webp",
+    "/images/optimus/grant-heel/fern/fern-5.webp",
+    "/images/optimus/grant-heel/fern/fern-6.webp",
     "/images/optimus/gully-days/1036316.webp",
     "/images/optimus/gully-days/1055666.webp",
     "/images/optimus/gully-days/george.webp",
@@ -6200,6 +6207,41 @@
       "src": "/images/optimus/graduation-day/squad/squad-1.webp",
       "width": 1920,
       "height": 1440
+    },
+    {
+      "src": "/images/optimus/grant-heel/fern/fern-0.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/grant-heel/fern/fern-1.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/grant-heel/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/grant-heel/fern/fern-3.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/grant-heel/fern/fern-4.webp",
+      "width": 1920,
+      "height": 1440
+    },
+    {
+      "src": "/images/optimus/grant-heel/fern/fern-5.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/grant-heel/fern/fern-6.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/gully-days/1036316.webp",
