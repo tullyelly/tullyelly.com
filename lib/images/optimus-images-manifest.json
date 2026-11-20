@@ -777,6 +777,8 @@
     "/images/optimus/grant-heel/fern/fern-4.webp",
     "/images/optimus/grant-heel/fern/fern-5.webp",
     "/images/optimus/grant-heel/fern/fern-6.webp",
+    "/images/optimus/gta-vi-released/gta-vi.webp",
+    "/images/optimus/gta-vi-released/gta.webp",
     "/images/optimus/gully-days/1036316.webp",
     "/images/optimus/gully-days/1055666.webp",
     "/images/optimus/gully-days/george.webp",
@@ -6242,6 +6244,16 @@
       "src": "/images/optimus/grant-heel/fern/fern-6.webp",
       "width": 1920,
       "height": 2560
+    },
+    {
+      "src": "/images/optimus/gta-vi-released/gta-vi.webp",
+      "width": 738,
+      "height": 414
+    },
+    {
+      "src": "/images/optimus/gta-vi-released/gta.webp",
+      "width": 1000,
+      "height": 667
     },
     {
       "src": "/images/optimus/gully-days/1036316.webp",

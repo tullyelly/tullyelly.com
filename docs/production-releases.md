@@ -27,16 +27,17 @@ is independently required. This record permits application deployment only; it n
 applies SQL nor claims that migrations have run. A separately reviewed migration
 release remains necessary for database writes.
 
-The current WU-1242 compatibility record binds production application baseline
-`a7706088e12bd9c38abfe3f6386a3ae502f1c472`. Its complete guarded database diff
-contains only data migrations 090-096; no permanent schema or Prisma changes.
-Fresh read-only inspection found exact applied ledger checksums and matching
-installed effects in both existing databases. No SQL replay is needed for this
-application-only release. Other historical ledger gaps remain separate. The
-[compatibility review](schema-compatibility-review.md) records the failed run,
-provider baseline, full diff digest, application contracts and read-only evidence.
-Analytics activation retains its independent intent/readiness requirements and
-the protected workflow. Review current evidence at the human production gate.
+The current WU-1277 compatibility record binds verified READY production baseline
+`d648d984059dd73e2a14490d5649c8966946e725`. The complete guarded diff contains
+only additive membership data migration 103, with no permanent schema or Prisma
+change. Both existing databases have all 56 reviewed memberships and exact evidence;
+production has the matching applied ledger record. Development still needs the
+separate 103 ledger file, without migration replay. The
+[compatibility review](schema-compatibility-review.md) records the exact diff
+digest, provider baseline, verified effects and remaining release steps. This
+record remains a local review proposal until committed and reviewed through main;
+its binding must match the final release commit and then-current production.
+Analytics intent/readiness, exact-SHA CI and protected human approval remain required.
 
 Implementation and policy changes do not authorize a live release. Only the
 coordinating agent initiates an authorized release. Never approve the environment

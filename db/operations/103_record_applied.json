@@ -1,0 +1,9 @@
+{
+  "canonicalPath": "db/migrations/103_add_sixers_hawks_magic_memberships.sql",
+  "canonicalSha256": "b334dc3145684754907a8f946613c8836623bde7ec3ba62b3ce5af6f1349e3d3",
+  "assertionsPath": "db/audits/103_membership_assertions.sql",
+  "assertionsSha256": "0ab8e8b219312f83566ad089a712d50b1ae812be7ff7d6eeb97d515493dc6321",
+  "ledgerPath": "db/operations/103_record_applied.sql",
+  "ledgerSha256": "a60147f0e4867dbaffce5ea316dcf7447e5b13226e23f85743c9605bd7dc22ba",
+  "mode": "record-after-success"
+}

@@ -1,5 +1,10 @@
 # SQL Migrations
 
+The [November 19 clan audit](homie-clan-audit-2026-11-19.md) prepares migration
+103 and its separate ledger file for 56 Sixers, Hawks and Magic memberships.
+All 56 effects are verified in both databases; production ledger 103 matches.
+Development still needs only the separate 103 ledger file; do not replay the migration.
+
 SQL migrations live in `db/migrations` and run through a small ledger-backed
 runner. The runner keeps the repo as the source of truth without switching the
 app to Prisma migrations.
