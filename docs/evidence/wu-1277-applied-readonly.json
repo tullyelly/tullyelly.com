@@ -1,0 +1,94 @@
+{
+  "issue": "WU-1277",
+  "parent": "WU-1015",
+  "mode": "read-only",
+  "database": "tullyelly_db",
+  "project": "rough-bush-94516855",
+  "canonicalSha256": "b334dc3145684754907a8f946613c8836623bde7ec3ba62b3ce5af6f1349e3d3",
+  "targets": [
+    {
+      "name": "development",
+      "branch": "br-crimson-fog-ae22ws22",
+      "endpointDrift": 0,
+      "memberships": [
+        {
+          "observed_at": "2026-11-20T03:29:37.017Z",
+          "clan_slug": "hawks",
+          "expected": "20",
+          "present": "20",
+          "evidence_matches": "20"
+        },
+        {
+          "observed_at": "2026-11-20T03:29:37.017Z",
+          "clan_slug": "magic-kingdom",
+          "expected": "14",
+          "present": "14",
+          "evidence_matches": "14"
+        },
+        {
+          "observed_at": "2026-11-20T03:29:37.017Z",
+          "clan_slug": "sixers",
+          "expected": "22",
+          "present": "22",
+          "evidence_matches": "22"
+        }
+      ],
+      "ledger": null
+    },
+    {
+      "name": "production",
+      "branch": "br-withered-snow-aea0yck6",
+      "endpointDrift": 0,
+      "memberships": [
+        {
+          "observed_at": "2026-11-20T03:29:39.617Z",
+          "clan_slug": "hawks",
+          "expected": "20",
+          "present": "20",
+          "evidence_matches": "20"
+        },
+        {
+          "observed_at": "2026-11-20T03:29:39.617Z",
+          "clan_slug": "magic-kingdom",
+          "expected": "14",
+          "present": "14",
+          "evidence_matches": "14"
+        },
+        {
+          "observed_at": "2026-11-20T03:29:39.617Z",
+          "clan_slug": "sixers",
+          "expected": "22",
+          "present": "22",
+          "evidence_matches": "22"
+        }
+      ],
+      "ledger": {
+        "filename": "103_add_sixers_hawks_magic_memberships.sql",
+        "checksum": "b334dc3145684754907a8f946613c8836623bde7ec3ba62b3ce5af6f1349e3d3",
+        "algorithm": "sha256",
+        "status": "applied",
+        "appliedAt": "2026-11-20T03:27:13.632Z",
+        "error": null
+      }
+    }
+  ],
+  "application": {
+    "aliases": ["tullyelly.com", "www.tullyelly.com"],
+    "deployment": "dpl_Aub8kHbzD5m4YLf6vcj6CmKL92xA",
+    "state": "READY",
+    "sha": "d648d984059dd73e2a14490d5649c8966946e725",
+    "previousProtectedRun": "44461863381",
+    "previousRunConclusion": "success",
+    "guardedDiffSha256": "8d3cf6692d989b7761f9ee4feba83a50c6199bea4fbe8336171d91ebfa12640a"
+  },
+  "remaining": [
+    "Development ledger 103 absent; James runs existing ledger only.",
+    "Local uncommitted files require reviewed publication, merge and exact-SHA CI.",
+    "Protected human release approval; no new deployment initiated."
+  ],
+  "limitations": [
+    "No agent database writes.",
+    "Original execution chronology and transaction-wide preservation not independently observed.",
+    "Controlled write/concurrency, UI and recovery checks unrun."
+  ]
+}

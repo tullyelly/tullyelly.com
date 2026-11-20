@@ -1,6 +1,65 @@
 # Application compatibility review
 
-## Current WU-1242 review; November 1, 2026
+## Current WU-1277 / WU-1015 review; November 19, 2026
+
+James reports migration 103 executed. Independent read-only checks of existing
+Neon development and production at 21:29 America/Chicago found all 56 current
+professional memberships and exact evidence, grouped 22 Sixers, 20 Hawks and
+14 Magic. Endpoint checks copied from the canonical migration returned no drift
+in either target. Production ledger 103 matches the canonical SHA-256, status
+applied, non-null applied timestamp and null error. Development ledger 103 is
+absent. James must run only its existing ledger file in development; never replay
+successful migration SQL. [The evidence receipt](evidence/wu-1277-applied-readonly.json)
+and [audit](homie-clan-audit-2026-11-19.md) preserve the actual limitations.
+
+Both `tullyelly.com` and `www.tullyelly.com` currently resolve to READY production
+`dpl_Aub8kHbzD5m4YLf6vcj6CmKL92xA`, project
+`prj_lyZDCv46lEtMMZ4mCsuhjxxc0ACU`, team
+`team_pB5TcLa7apLtPAiVrRbcjBG3`. Provider Git metadata establishes application
+baseline `d648d984059dd73e2a14490d5649c8966946e725`, also current remote main.
+[Protected run 44461863381](https://github.com/tullyelly/tullyelly.com/actions/runs/44461863381)
+completed successfully for that SHA. The old compatibility record bound a5389c17
+and migrations 098-102; both bindings are stale for this next release.
+
+The complete guarded diff to the prepared tree is only the addition of
+[103_add_sixers_hawks_magic_memberships.sql](../db/migrations/103_add_sixers_hawks_magic_memberships.sql).
+Its canonical SHA-256 remains
+`b334dc3145684754907a8f946613c8836623bde7ec3ba62b3ce5af6f1349e3d3`.
+No existing immutable SQL, schema mirror or Prisma file changes. The binary Git
+diff digest, computed with the validator's exact arguments, is
+`8d3cf6692d989b7761f9ee4feba83a50c6199bea4fbe8336171d91ebfa12640a`.
+The ledger/manifest, assertions and reviewed-pair JSON are manual preparation and
+evidence inputs outside the guarded roots; none executes in an application build
+or release. The complete database-file scope was reviewed, including these inputs.
+
+103 adds only direct `member_of` rows in existing tables. It changes no persistent
+schema, grants, authorization, snapshots, rankings, cache policy or application
+code. Existing identity/clan consumers already read these memberships; an
+application deployment is not needed to activate the data. Existing consumers
+retain their documented cache behavior. Builds stay database-free. The migration
+preserves authored identity and existing edge metadata. Read-only current state
+cannot retroactively prove every original preservation assertion or execution
+order; no agent claims write/concurrency or recovery tests passed.
+
+The current record is an application-only compatibility proposal authorized by
+James's request to update stale deployment files. Applied migration and generated
+ledger bytes are preserved. It is not a database-write or release authorization.
+Development ledger reconciliation, final reviewed commit/main merge, exact-SHA
+trusted CI and the protected human production-release gate remain outstanding.
+A changed production baseline or guarded SQL diff invalidates the record.
+The prior local source/coverage stages and remaining build passed; documentation,
+record and evidence updates reuse that validation. The installed Next version's
+reported security advisory remains for separate dependency review; no dependency
+or safety policy was silently changed. No new production run is started.
+
+The actual release compatibility validator accepts an isolated immutable tree of
+the prepared files with this baseline and digest. Negative checks reject both a
+different baseline and changed SQL. The isolated check did not mutate the shared
+index, refs or object store. Formatting, documentation checks, unchanged migration
+package hashes and Git whitespace checks passed; full application checks were
+not repeated for these documentation/evidence-only changes.
+
+## Historical WU-1242 review; November 1, 2026
 
 [Production run 41382584230](https://github.com/tullyelly/tullyelly.com/actions/runs/41382584230)
 for merged candidate `6dc57341093e127c0f5cce7ffeef5527e032eeab` failed at
