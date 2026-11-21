@@ -482,6 +482,7 @@
     "/images/optimus/danny-manning/kansas.webp",
     "/images/optimus/danny-manning/me.webp",
     "/images/optimus/data-dump/menu.webp",
+    "/images/optimus/day-two/gta.webp",
     "/images/optimus/day-zero/at-work.webp",
     "/images/optimus/deadpool-and-wolverine/deadpool-wolverine.webp",
     "/images/optimus/deadpool-and-wolverine/dinosaur.webp",
@@ -4769,6 +4770,11 @@
       "src": "/images/optimus/data-dump/menu.webp",
       "width": 1920,
       "height": 783
+    },
+    {
+      "src": "/images/optimus/day-two/gta.webp",
+      "width": 738,
+      "height": 414
     },
     {
       "src": "/images/optimus/day-zero/at-work.webp",
