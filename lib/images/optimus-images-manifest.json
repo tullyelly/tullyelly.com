@@ -1788,6 +1788,12 @@
     "/images/optimus/silent-reflection/1043034.webp",
     "/images/optimus/silent-reflection/pokemon/pokemon-0.webp",
     "/images/optimus/silent-reflection/pokemon/pokemon-1.webp",
+    "/images/optimus/skyfall/fern/fern-0.webp",
+    "/images/optimus/skyfall/fern/fern-1.webp",
+    "/images/optimus/skyfall/fern/fern-2.webp",
+    "/images/optimus/skyfall/gta.webp",
+    "/images/optimus/skyfall/skyfall.webp",
+    "/images/optimus/skyfall/vi.webp",
     "/images/optimus/sleepy/1011837/1011837-0.webp",
     "/images/optimus/sleepy/1011837/1011837-1.webp",
     "/images/optimus/sleepy/auto.webp",
@@ -11300,6 +11306,36 @@
       "src": "/images/optimus/silent-reflection/pokemon/pokemon-1.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/skyfall/fern/fern-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/skyfall/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/skyfall/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/skyfall/gta.webp",
+      "width": 480,
+      "height": 270
+    },
+    {
+      "src": "/images/optimus/skyfall/skyfall.webp",
+      "width": 465,
+      "height": 340
+    },
+    {
+      "src": "/images/optimus/skyfall/vi.webp",
+      "width": 638,
+      "height": 480
     },
     {
       "src": "/images/optimus/sleepy/1011837/1011837-0.webp",
