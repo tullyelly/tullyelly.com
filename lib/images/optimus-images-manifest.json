@@ -2196,6 +2196,14 @@
     "/images/optimus/travel-day/fern.webp",
     "/images/optimus/travel-day/travel.webp",
     "/images/optimus/triumph/border.webp",
+    "/images/optimus/trouble-mountain/1101091/1101091-0.webp",
+    "/images/optimus/trouble-mountain/1101091/1101091-1.webp",
+    "/images/optimus/trouble-mountain/1104411.webp",
+    "/images/optimus/trouble-mountain/901078/901078-0.webp",
+    "/images/optimus/trouble-mountain/901078/901078-1.webp",
+    "/images/optimus/trouble-mountain/fern.webp",
+    "/images/optimus/trouble-mountain/gta.webp",
+    "/images/optimus/trouble-mountain/trouble.webp",
     "/images/optimus/turkey-day/thanksgiving.webp",
     "/images/optimus/twelve-jewels/care.webp",
     "/images/optimus/typos/bucks-n-six.webp",
@@ -13346,6 +13354,46 @@
       "src": "/images/optimus/triumph/border.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/1101091/1101091-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/1101091/1101091-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/1104411.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/901078/901078-0.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/901078/901078-1.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/fern.webp",
+      "width": 960,
+      "height": 1280
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/gta.webp",
+      "width": 387,
+      "height": 516
+    },
+    {
+      "src": "/images/optimus/trouble-mountain/trouble.webp",
+      "width": 1254,
+      "height": 1254
     },
     {
       "src": "/images/optimus/turkey-day/thanksgiving.webp",
