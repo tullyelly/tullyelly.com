@@ -2280,6 +2280,9 @@
     "/images/optimus/war/summary/summary-1.webp",
     "/images/optimus/water/love-rtj.webp",
     "/images/optimus/water/new-emma.webp",
+    "/images/optimus/wednesday/fern.webp",
+    "/images/optimus/wednesday/hoops/hoops-0.webp",
+    "/images/optimus/wednesday/hoops/hoops-1.webp",
     "/images/optimus/whats-the-point/pooh/pooh-0.webp",
     "/images/optimus/whats-the-point/pooh/pooh-1.webp",
     "/images/optimus/white-donte/1039514.webp",
@@ -13776,6 +13779,21 @@
       "src": "/images/optimus/water/new-emma.webp",
       "width": 1673,
       "height": 2231
+    },
+    {
+      "src": "/images/optimus/wednesday/fern.webp",
+      "width": 480,
+      "height": 853
+    },
+    {
+      "src": "/images/optimus/wednesday/hoops/hoops-0.webp",
+      "width": 1920,
+      "height": 1446
+    },
+    {
+      "src": "/images/optimus/wednesday/hoops/hoops-1.webp",
+      "width": 1920,
+      "height": 1446
     },
     {
       "src": "/images/optimus/whats-the-point/pooh/pooh-0.webp",
