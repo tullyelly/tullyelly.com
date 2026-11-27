@@ -32,7 +32,8 @@ describe("ClanSnapshot", () => {
           ranking: 149,
           rankingAt: "2026-04-10",
           ...(trend === "flat" ? { prevRanking: 149 } : {}),
-          trend,
+          trend: trend === "up" ? "down" : "up",
+          trendOverall: trend,
         },
       ]);
 
@@ -86,6 +87,7 @@ describe("ClanSnapshot", () => {
         ranking: 149,
         rankingAt: "2026-04-10",
         trend: "up",
+        trendOverall: "up",
       },
       {
         clanId: "12",
@@ -96,6 +98,7 @@ describe("ClanSnapshot", () => {
         ranking: 1,
         rankingAt: "2026-04-10",
         trend: "flat",
+        trendOverall: "flat",
       },
     ]);
 
@@ -124,6 +127,7 @@ describe("ClanSnapshot", () => {
         ranking: 149,
         rankingAt: "2026-04-10",
         trend: "flat",
+        trendOverall: "flat",
       },
     ]);
 

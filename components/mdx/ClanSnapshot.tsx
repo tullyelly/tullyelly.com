@@ -62,19 +62,19 @@ function formatCardCount(value: number): string {
 }
 
 function isNewSnapshot(snapshot: ClanSnapshotRecord): boolean {
-  return snapshot.trend === "flat" && snapshot.prevRanking === undefined;
+  return snapshot.trendOverall === "flat" && snapshot.prevRanking === undefined;
 }
 
 function getTrendEmoji(snapshot: ClanSnapshotRecord): string {
   return isNewSnapshot(snapshot)
     ? NEW_SNAPSHOT_EMOJI
-    : TREND_EMOJI[snapshot.trend];
+    : TREND_EMOJI[snapshot.trendOverall];
 }
 
 function getTrendLabel(snapshot: ClanSnapshotRecord): string {
   return isNewSnapshot(snapshot)
     ? NEW_SNAPSHOT_LABEL
-    : TREND_LABEL[snapshot.trend];
+    : TREND_LABEL[snapshot.trendOverall];
 }
 
 function ClanTag({

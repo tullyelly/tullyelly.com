@@ -125,3 +125,38 @@ it("includes signed difference and separate overall/rank trends on the exact dat
     "difference +0; difference change +10; difference sign changed yes; overall trend up",
   );
 });
+
+it.each([null, 0])(
+  "keeps current facts with comparison %p without fallback prose",
+  async (change) => {
+    mockExact.mockResolvedValue({
+      card_count: 12199,
+      measured_on: "2026-11-26",
+      count_change: change,
+      ranking: 6969,
+      difference: -1,
+      rank_delta: null,
+      diff_delta: null,
+      diff_sign_changed: null,
+      trend_rank: null,
+      trend_overall: null,
+    });
+    const { container } = render(
+      await CategorySnapshot({
+        category: "football",
+        snapshotDate: "2026-11-26",
+      }),
+    );
+    expect(container).toHaveTextContent("12,199 cards on 2026-11-26");
+    expect(container).toHaveTextContent("TCDb #6,969; difference -1");
+    expect(container).not.toHaveTextContent(
+      /No previous|No rank comparison|no comparison|No difference/,
+    );
+    if (change === null)
+      expect(container).toHaveTextContent("Comparison unavailable");
+    else {
+      expect(container).toHaveTextContent("; +0;");
+      expect(container).not.toHaveTextContent("Comparison unavailable");
+    }
+  },
+);
