@@ -35,24 +35,49 @@ export default async function CategorySnapshot({
   const summary = snapshot
     ? [
         `${formatCategoryCount(snapshot.card_count)} cards on ${snapshot.measured_on}`,
-        formatCategoryChange(snapshot.count_change),
+        ...(snapshot.count_change == null
+          ? []
+          : [formatCategoryChange(snapshot.count_change)]),
         ...(snapshot.ranking == null
           ? []
           : [
               `TCDb ${formatCategoryRanking(snapshot.ranking)}`,
-              formatCategoryRankChange(snapshot.rank_delta),
-              `rank trend ${snapshot.trend_rank ?? "no comparison"}`,
+              ...(snapshot.rank_delta == null
+                ? []
+                : [formatCategoryRankChange(snapshot.rank_delta)]),
+              ...(snapshot.trend_rank == null
+                ? []
+                : [`rank trend ${snapshot.trend_rank}`]),
             ]),
         ...(snapshot.difference == null
           ? []
           : [
               `difference ${formatCategoryDifference(snapshot.difference)}`,
-              `difference change ${formatCategoryDifferenceChange(snapshot.diff_delta)}`,
-              `difference sign changed ${formatCategorySignChange(snapshot.diff_sign_changed).toLowerCase()}`,
+              ...(snapshot.diff_delta == null
+                ? []
+                : [
+                    `difference change ${formatCategoryDifferenceChange(snapshot.diff_delta)}`,
+                  ]),
+              ...(snapshot.diff_sign_changed == null
+                ? []
+                : [
+                    `difference sign changed ${formatCategorySignChange(snapshot.diff_sign_changed).toLowerCase()}`,
+                  ]),
             ]),
-        ...(snapshot.ranking == null && snapshot.difference == null
+        ...((snapshot.ranking == null && snapshot.difference == null) ||
+        snapshot.trend_overall == null
           ? []
-          : [`overall trend ${snapshot.trend_overall ?? "no comparison"}`]),
+          : [`overall trend ${snapshot.trend_overall}`]),
+        ...([
+          snapshot.count_change,
+          snapshot.rank_delta,
+          snapshot.diff_delta,
+          snapshot.trend_rank,
+          snapshot.trend_overall,
+          snapshot.diff_sign_changed,
+        ].every((value) => value == null)
+          ? ["Comparison unavailable"]
+          : []),
       ].join("; ")
     : null;
   return (

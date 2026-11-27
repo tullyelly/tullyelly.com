@@ -34,7 +34,7 @@ it.each([null, 0, 125, -125])(
     expect(container).toHaveTextContent("0 cards on 2026-10-01");
     expect(container).toHaveTextContent(
       change === null
-        ? "No previous measurement"
+        ? "Comparison unavailable"
         : change === 0
           ? "+0"
           : change > 0

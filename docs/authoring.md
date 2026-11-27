@@ -99,6 +99,8 @@ metadata, and ordinary page navigation retain their purpose-specific URLs.
 `<CategorySnapshot category="basketball" />` displays the overall category count
 and optional TCDb ranking, signed difference and trends recorded on the Chronicle's
 exact frontmatter date.
+Unavailable comparison fields are omitted; a snapshot with no comparison history
+shows one compact "Comparison unavailable" hint. Recorded zero changes remain visible.
 A missing measurement renders
 a linked category label; it never substitutes a latest count. It does not infer
 tags. See [category counts](card-category-counts.md) for the full example and setup.
