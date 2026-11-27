@@ -1945,6 +1945,8 @@
     "/images/optimus/texas-forever/hotel.webp",
     "/images/optimus/texas-forever/j&m.webp",
     "/images/optimus/texas-forever/primetime.webp",
+    "/images/optimus/thanksgiving/fern/fern-0.webp",
+    "/images/optimus/thanksgiving/fern/fern-1.webp",
     "/images/optimus/the-beatles/beatles.webp",
     "/images/optimus/the-beatles/computer.webp",
     "/images/optimus/the-beatles/engagement.webp",
@@ -12104,6 +12106,16 @@
       "src": "/images/optimus/texas-forever/primetime.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/thanksgiving/fern/fern-0.webp",
+      "width": 1280,
+      "height": 960
+    },
+    {
+      "src": "/images/optimus/thanksgiving/fern/fern-1.webp",
+      "width": 964,
+      "height": 1280
     },
     {
       "src": "/images/optimus/the-beatles/beatles.webp",
