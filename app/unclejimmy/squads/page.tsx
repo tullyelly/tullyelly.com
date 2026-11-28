@@ -4,10 +4,11 @@ export default function Page() {
   return (
     <IdentityDirectoryPage
       context="unclejimmy"
+      directoryHref="/unclejimmy/squads"
       kind="group"
       title="Squads"
-      description="Groups and teams in the unclejimmy context."
-      emptyLabel="No Squads have been classified yet."
+      description="Family groups, teams and the stories they share."
+      emptyLabel="No Squads have been recorded yet."
     />
   );
 }

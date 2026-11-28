@@ -1,3 +1,5 @@
+import DataPageShell from "@/components/layout/DataPageShell";
+import PageIntro from "@/components/layout/PageIntro";
 import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
@@ -85,11 +87,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     `/shaolin/tags/${encodeURIComponent(member.tagSlug)}` as Route;
 
   return (
-    <div className="space-y-10">
+    <DataPageShell width="wide">
       <div className="space-y-8">
-        <h1 className="text-2xl md:text-3xl font-bold italic leading-tight text-[var(--blue)]">
-          {member.displayName}
-        </h1>
+        <PageIntro eyebrow="unclejimmy · Squad" title={member.displayName} />
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           {getMemberDescription(member.displayName)}
         </p>
@@ -212,6 +212,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </ul>
         )}
       </section>
-    </div>
+    </DataPageShell>
   );
 }

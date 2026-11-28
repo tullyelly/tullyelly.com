@@ -189,3 +189,36 @@ describe("IdentityDetailPage", () => {
     ]);
   });
 });
+
+test("family aliases retain only safe directory return state", async () => {
+  mockGetIdentityBySlug.mockResolvedValue({
+    id: 1,
+    slug: "bonnibel",
+    displayName: "Bonnibel",
+    metadata: { kind: "person", contexts: { unclejimmy: { role: "fam" } } },
+  });
+  mockGetIdentityHref.mockReturnValue("/unclejimmy/fam/bonnibel");
+  const props = {
+    slug: "bonnie",
+    context: "unclejimmy" as const,
+    kind: "person" as const,
+    noun: "Fam",
+    directoryHref: "/unclejimmy/fam",
+    directoryLabel: "Fam",
+  };
+  await expect(
+    IdentityDetailPage({
+      ...props,
+      returnTo: "/unclejimmy/fam?q=bonnie&page=2",
+    }),
+  ).rejects.toMatchObject({
+    digest: expect.stringContaining(
+      "returnTo=%2Funclejimmy%2Ffam%3Fq%3Dbonnie%26page%3D2",
+    ),
+  });
+  await expect(
+    IdentityDetailPage({ ...props, returnTo: "https://example.com" }),
+  ).rejects.toMatchObject({
+    digest: expect.stringContaining("returnTo=%2Funclejimmy%2Ffam;"),
+  });
+});

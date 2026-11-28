@@ -1,3 +1,7 @@
+import IdentityDirectoryClient from "@/components/identity/IdentityDirectoryClient";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
+import { TagMetadataProvider } from "@/components/tags/TagLink";
+import VolleyballTournamentList from "@/components/unclejimmy/VolleyballTournamentList";
 import React from "react";
 import TCDBRankingTableClient from "@/components/tcdb/TCDBRankingTableClient";
 import type { TCDBRankingTableRow } from "@/components/tcdb/TCDBRankingTable";
@@ -233,8 +237,112 @@ function ClanFixture() {
     </main>
   );
 }
+function FamilyFixture() {
+  const directory = "/unclejimmy/fam";
+  const rows = Array.from({ length: 30 }, (_, i) => ({
+    id: i + 1,
+    slug: `fam-${i + 1}`,
+    displayName:
+      i === 0
+        ? "Bonnibel with a very long family display name"
+        : `Fam ${String(i + 1).padStart(2, "0")}`,
+    aliases: i === 0 ? ["bonnie"] : [],
+  }));
+  const metadata = Object.fromEntries(
+    rows.map((row) => [
+      row.slug,
+      {
+        href: `${directory}/${row.slug}`,
+        hrefKind: "custom",
+        isClickable: true,
+      },
+    ]),
+  );
+  return (
+    <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+      <TagMetadataProvider metadata={metadata}>
+        {location.pathname === directory ? (
+          <>
+            <PageIntro title="Fam" eyebrow="unclejimmy" />
+            <IdentityDirectoryClient
+              identities={rows}
+              directoryHref={directory}
+              title="Fam"
+              emptyLabel="No family recorded yet"
+            />
+          </>
+        ) : (
+          <>
+            <PageIntro
+              title={rows[0].displayName}
+              eyebrow="unclejimmy · Fam"
+              actions={
+                <DirectoryReturnLink directory={directory} className="btn">
+                  Back to Fam
+                </DirectoryReturnLink>
+              }
+            />
+            <PageSections
+              sections={[
+                {
+                  id: "story",
+                  title: "Personal story",
+                  content: (
+                    <>
+                      <p>A preserved family story.</p>
+                      <iframe
+                        title="Family document fixture"
+                        srcDoc="<p>Document preview</p>"
+                        className="h-[640px] w-full"
+                      />
+                    </>
+                  ),
+                },
+                {
+                  id: "chronicles",
+                  title: "Chronicles",
+                  content: <p>No chronicles recorded yet.</p>,
+                },
+              ]}
+            />
+          </>
+        )}
+      </TagMetadataProvider>
+    </main>
+  );
+}
+function VolleyballFixture() {
+  const directory = "/unclejimmy/squad/volleyball";
+  return (
+    <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+      <PageIntro title="Volleyball Tournaments" eyebrow="unclejimmy" />
+      {location.pathname === directory ? (
+        <VolleyballTournamentList
+          rows={Array.from({ length: 30 }, (_, i) => ({
+            tournamentId: String(i + 1),
+            tournamentName: `Tournament ${String(i + 1).padStart(2, "0")}`,
+            finish: i === 0 ? null : 1,
+            overallWins: 3,
+            overallLosses: 1,
+            overallRecord: "3-1",
+            tournamentDays: 2,
+            latestTournamentDate: "2026-11-28",
+          }))}
+        />
+      ) : (
+        <DirectoryReturnLink directory={directory} className="btn">
+          Back to tournaments
+        </DirectoryReturnLink>
+      )}
+    </main>
+  );
+}
 createRoot(document.getElementById("root")!).render(
-  location.pathname.startsWith("/cardattack/clans") ? (
+  location.pathname.startsWith("/unclejimmy/fam") ? (
+    <FamilyFixture />
+  ) : location.pathname.startsWith("/unclejimmy/squad/volleyball") ? (
+    <VolleyballFixture />
+  ) : location.pathname.startsWith("/cardattack/clans") ? (
     <ClanFixture />
   ) : location.pathname.startsWith("/cardattack/homies") ? (
     <HomieFixture />

@@ -82,3 +82,30 @@ Eight Chromium checks passed, including Clan filter/sort -> multi-sport profile
 -> same-state directory and Back at 375px/1440px. Mobile profile capture inspected.
 Server query navigation is a fixture adapter; live database/Next integration is
 not claimed. No SQL mutation or deployment occurred.
+
+## WU-1292
+
+Fam/Squads use searchable, alias-aware directories with name sorting, bounded
+pagination and safe return state. Canonical alias redirects retain public
+directory state. Generic profiles separate memberships, collections and
+Chronicles; the existing feed readers and distinct family/athlete identities
+remain unchanged. Bonnibel/Jeff retain authored text, images, Reddit/document
+URLs and activities in the common shell with explicit story/collection/feed
+sections. Singular squad and legacy member URLs retain their existing behavior;
+the curated landing links to both canonical directories. Volleyball supports
+URL search/sort/page state and detail returns, retaining dates, records and
+unknown finishes.
+
+Twelve isolated Chromium checks passed, including Fam alias search/pagination,
+long names/document frames, volleyball search/sort and detail returns at
+375px/1440px. Representative Fam mobile and volleyball desktop captures were
+inspected. These fixtures do not claim live third-party embed availability or
+a connected Next/database integration. Focused mocked tests (24) passed,
+including family feed isolation, disabled tag links and safe alias redirects.
+
+Full baseline passed in 132.7s: 269 suites/2,149 tests, passing thresholds and
+production build. Format, docs and server self-fetch checks passed. Separate
+metadata lint reports 14 pre-existing missing declarations (including generic
+identity routes); copy lint reports the existing FirstOffTheLineSection em dash.
+These are recorded for the final integration sweep, not attributed to this story.
+Database-writing suites, connected authentication and deployment remain unrun.

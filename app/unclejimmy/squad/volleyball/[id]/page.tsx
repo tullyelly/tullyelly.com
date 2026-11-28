@@ -1,9 +1,11 @@
+import PageIntro from "@/components/layout/PageIntro";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
 
-import FullBleedPage from "@/components/layout/FullBleedPage";
+import DataPageShell from "@/components/layout/DataPageShell";
 import VolleyballTournamentSections from "@/components/unclejimmy/VolleyballTournamentSections";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
@@ -79,15 +81,24 @@ export default async function UncleJimmyVolleyballTournamentPage({
     : "inline-flex items-center justify-center gap-3 rounded-full border border-black/10 bg-black/5 px-3 py-2 text-sm font-semibold text-muted-foreground";
 
   return (
-    <FullBleedPage>
+    <DataPageShell width="wide">
       <Card
         as="section"
         className="space-y-8 border-0 shadow-none px-1 py-6 md:p-8"
       >
         <header className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-            {tournamentSummary.tournamentName}
-          </h1>
+          <PageIntro
+            eyebrow="unclejimmy · Volleyball"
+            title={tournamentSummary.tournamentName}
+            actions={
+              <DirectoryReturnLink
+                directory="/unclejimmy/squad/volleyball"
+                className="btn"
+              >
+                Back to tournaments
+              </DirectoryReturnLink>
+            }
+          />
           {finishLabel ? (
             <div className={finishBadgeClassName}>
               {finishHasTrophy ? (
@@ -109,6 +120,6 @@ export default async function UncleJimmyVolleyballTournamentPage({
         </header>
         <VolleyballTournamentSections sections={sections} />
       </Card>
-    </FullBleedPage>
+    </DataPageShell>
   );
 }

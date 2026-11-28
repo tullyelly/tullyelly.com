@@ -191,3 +191,65 @@ for (const width of [375, 1440])
       page.getByRole("heading", { name: "Football", exact: true }),
     ).toBeVisible();
   });
+
+for (const width of [375, 1440]) {
+  test(`Fam aliases, pagination, embedded detail and return at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mount(page, "unclejimmy/fam?page=2");
+    await expect(
+      page.getByRole("heading", { name: "Fam 30", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("searchbox").fill("bonnie");
+    await page
+      .getByRole("combobox", { name: "Sort Fam" })
+      .selectOption("name-desc");
+    await page.getByRole("link", { name: /Bonnibel/ }).click();
+    await expect(page.getByTitle("Family document fixture")).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`fam-${width}.png`),
+      fullPage: true,
+    });
+    await page.getByRole("link", { name: "Back to Fam" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("bonnie");
+    await expect(page.getByRole("combobox", { name: "Sort Fam" })).toHaveValue(
+      "name-desc",
+    );
+    await page.getByRole("button", { name: "Clear filters" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("");
+  });
+  test(`Volleyball search, detail and return at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mount(page, "unclejimmy/squad/volleyball?page=2");
+    await page.getByRole("searchbox").fill("Tournament 01");
+    await page
+      .getByRole("combobox", { name: "Sort tournaments" })
+      .selectOption("name");
+    await expect(
+      page.getByText("Not tracked").filter({ visible: true }).first(),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`volleyball-${width}.png`),
+      fullPage: true,
+    });
+    await page
+      .getByRole("link", { name: "Tournament 01" })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("link", { name: "Back to tournaments" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("Tournament 01");
+  });
+}
