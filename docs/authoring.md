@@ -26,6 +26,17 @@ manifests and dynamic image props fail. Remote image URLs require separate revie
 and currently fail this focused local-assets check. It neither builds Contentlayer
 nor publishes content. Rendered staging and public verification are still required.
 
+## Focused Chronicle checks; WU-1117
+
+The content profile accepts published Chronicles using supported literal MDX
+components and local images. It compiles MDX without evaluating authored code,
+checks the existing inference contracts and publication metadata, and compares
+image dimensions with actual image bytes. Shared image replacements include all
+recognized consumers. Unsupported expressions/components, deletions, renames and
+unpublishing require the application profile. Editorial and presentation defects
+may still escape; correct those with another reviewed content publication.
+Rendered staged/public checks remain part of every release.
+
 ## Static pages
 
 `npm run new-page -- <slug> "Title"` takes positional arguments, with no prompts
