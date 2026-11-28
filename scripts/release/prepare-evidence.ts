@@ -179,6 +179,7 @@ async function main() {
     settingsSha256: vercel.settingsSha256,
     previousDeployment: id,
     ciRunId: ci.runId,
+    validationProfile: ci.validationProfile ?? "application",
     workflowRunId: evidence.workflow.runId,
     workflowRunAttempt: evidence.workflow.runAttempt,
     workflowRevision: evidence.workflow.sha,

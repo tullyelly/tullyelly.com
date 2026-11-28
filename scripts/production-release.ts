@@ -263,6 +263,7 @@ async function main() {
     evidenceSha256: required("RELEASE_EVIDENCE_SHA256"),
     sourceSha256: manifest.source.sha256,
     ciRunId: manifest.ci.runId,
+    validationProfile: manifest.ci.validationProfile ?? "application",
     workflowRunId: manifest.workflow.runId,
     workflowRunAttempt: manifest.workflow.runAttempt,
     workflowRevision: manifest.workflow.sha,

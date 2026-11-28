@@ -317,6 +317,7 @@ export function renderReleaseSummary(events, results = {}) {
           `Workflow run: ${typeof context.workflowRunId === "string" && /^[1-9][0-9]*$/.test(context.workflowRunId) ? context.workflowRunId : "unavailable"}`,
           `Workflow attempt: ${typeof context.workflowRunAttempt === "string" && /^[1-9][0-9]*$/.test(context.workflowRunAttempt) ? context.workflowRunAttempt : "unavailable"}`,
           `Reused exact-revision CI run: ${typeof context.ciRunId === "string" && /^[1-9][0-9]*$/.test(context.ciRunId) ? context.ciRunId : "unavailable"}`,
+          `Validation profile: ${["application", "content"].includes(context.validationProfile) ? context.validationProfile : "application"}.`,
           "Canonical application build: Vercel native source build after human approval.",
         ]
       : [
