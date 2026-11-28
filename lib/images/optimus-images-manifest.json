@@ -1050,6 +1050,15 @@
     "/images/optimus/kind-words/ice/ice-0.webp",
     "/images/optimus/kind-words/ice/ice1.webp",
     "/images/optimus/kind-words/jalen.webp",
+    "/images/optimus/kohler/fern/fern-0.webp",
+    "/images/optimus/kohler/fern/fern-1.webp",
+    "/images/optimus/kohler/fern/fern-2.webp",
+    "/images/optimus/kohler/fern/fern-3.webp",
+    "/images/optimus/kohler/fern/fern-4.webp",
+    "/images/optimus/kohler/hotel.webp",
+    "/images/optimus/kohler/lulu.webp",
+    "/images/optimus/kohler/roadtrip/roadtrip-0.webp",
+    "/images/optimus/kohler/roadtrip/roadtrip-1.webp",
     "/images/optimus/labor-day/1085367.webp",
     "/images/optimus/labor-day/1088776.webp",
     "/images/optimus/labor-day/1091025.webp",
@@ -7631,6 +7640,51 @@
       "src": "/images/optimus/kind-words/jalen.webp",
       "width": 1920,
       "height": 2550
+    },
+    {
+      "src": "/images/optimus/kohler/fern/fern-0.webp",
+      "width": 896,
+      "height": 1195
+    },
+    {
+      "src": "/images/optimus/kohler/fern/fern-1.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kohler/fern/fern-2.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kohler/fern/fern-3.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kohler/fern/fern-4.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kohler/hotel.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kohler/lulu.webp",
+      "width": 1088,
+      "height": 1445
+    },
+    {
+      "src": "/images/optimus/kohler/roadtrip/roadtrip-0.webp",
+      "width": 1920,
+      "height": 2560
+    },
+    {
+      "src": "/images/optimus/kohler/roadtrip/roadtrip-1.webp",
+      "width": 1920,
+      "height": 2560
     },
     {
       "src": "/images/optimus/labor-day/1085367.webp",
