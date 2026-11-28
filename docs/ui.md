@@ -50,3 +50,10 @@ owned/total ratio clamped to 0–100, with a solid HSL hue interpolated from red
 through orange, yellow and yellow-green to green. Its scale and neutral track use
 `--collector-progress-*` tokens in `app/globals.css`. Missing snapshots or invalid
 progress omit the counts and bar; only actual completion earns 💯.
+
+## Frontend facelift
+
+The WU-1000 rollout follows the [design contract](facelift/design.md) and
+[route/capability inventory](facelift/routes.md). WU-1288 owns the design fixture;
+rollout stories adopt the shared patterns in sequence without changing domain
+semantics or expanding write permissions.
