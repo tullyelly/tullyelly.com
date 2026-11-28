@@ -28,7 +28,7 @@ const css = output
 await fs.mkdir(".cache/facelift", { recursive: true });
 await fs.writeFile(
   ".cache/facelift/preview.html",
-  `<!doctype html><html lang="en"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Facelift design</title><style>${css}</style><div id="root"></div><script>${js}</script></html>`,
+  `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Facelift design</title><style>${css}</style><div id="root"></div><script>${js}</script></html>`,
 );
 const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROME_PATH,
@@ -41,7 +41,7 @@ for (const width of [375, 1440])
     await page.route("http://facelift.test/**", (route) =>
       route.fulfill({
         contentType: "text/html",
-        body: '<html lang="en"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="root"></div></html>',
+        body: '<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="root"></div></html>',
       }),
     );
     await page.goto(`http://facelift.test/?view=${view}`);

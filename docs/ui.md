@@ -57,3 +57,25 @@ The WU-1000 rollout follows the [design contract](facelift/design.md) and
 [route/capability inventory](facelift/routes.md). WU-1288 owns the design fixture;
 rollout stories adopt the shared patterns in sequence without changing domain
 semantics or expanding write permissions.
+
+Shared directory state lives in `lib/directory-state.ts` and
+`components/directory/useDirectoryField.ts`. Use one field hook for each supported
+public query key, with an explicit default and allowed enum/page-size values.
+Search replaces history; other changes push history and reset page. Read from
+`window.location` only in the external-store snapshot and event handlers so SSR
+and initial hydration agree. Clamp the displayed page before slicing rows.
+Server-paged directories retain their server queries instead of adopting a
+client full-dataset load. Keep private edit drafts in local React state.
+
+`DirectoryReturnLink` validates `returnTo` against its exact directory path and
+keeps only supported public query keys. `withDirectoryReturn` adds that public
+context to local detail links. Canonicals continue to use the route path.
+`PageSections` composes optional section navigation with caller-owned content;
+`PageIntro` accepts a persona eyebrow; `PageState compact` uses h2 for an inline
+state below the page's existing h1. Existing defaults remain unchanged.
+
+Database-free browser coverage runs with
+`PLAYWRIGHT_CHROME_PATH=/usr/bin/chromium npx playwright test --config playwright.facelift.config.ts`.
+It covers real native history, reload, invalid queries, page-size changes, no
+matches and responsive layouts without environment files, seeding or app startup.
+It does not establish live Next/database integration.

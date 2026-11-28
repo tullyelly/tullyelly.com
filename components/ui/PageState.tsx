@@ -6,6 +6,7 @@ import { Card } from "./Card";
 
 type PageStateProps = {
   title: ReactNode;
+  compact?: boolean;
   description?: ReactNode;
   eyebrow?: ReactNode;
   visual?: ReactNode;
@@ -16,6 +17,7 @@ type PageStateProps = {
 
 export function PageState({
   title,
+  compact = false,
   description,
   eyebrow,
   visual,
@@ -23,12 +25,19 @@ export function PageState({
   role,
   className,
 }: PageStateProps) {
+  const Heading = compact ? "h2" : "h1";
   const id = useId();
   const headingId = `${id}-heading`;
   const descriptionId = description ? `${id}-description` : undefined;
 
   return (
-    <div className="flex min-h-[50vh] items-center justify-center py-8 sm:py-12">
+    <div
+      className={
+        compact
+          ? "py-4"
+          : "flex min-h-[50vh] items-center justify-center py-8 sm:py-12"
+      }
+    >
       <Card
         as="section"
         accent="great-lakes-blue"
@@ -54,7 +63,7 @@ export function PageState({
             {eyebrow}
           </p>
         ) : null}
-        <h1
+        <Heading
           id={headingId}
           className={cn(
             "text-2xl font-semibold text-ink sm:text-3xl",
@@ -62,7 +71,7 @@ export function PageState({
           )}
         >
           {title}
-        </h1>
+        </Heading>
         {description ? (
           <div
             id={descriptionId}

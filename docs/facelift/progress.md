@@ -29,3 +29,19 @@ recent WU-1117 story usage. Existing James assignee/reporter, Medium priority,
 labels, hierarchy and native dependency links were retained. Start date records
 actual work for the epic and WU-1288; later stories receive it when started.
 No due date or team was invented; comparable recent work leaves those empty.
+
+## WU-1289
+
+Shared query parsing/serialization, page clamping, hydration-safe native-history
+field hooks and validated directory-return links are implemented. PageIntro gains
+an optional eyebrow; PageSections composes section navigation; compact PageState
+uses h2 without changing existing full-page defaults. No data/API changes.
+
+The full baseline passed with 269 suites/2,138 tests, the same passing coverage
+thresholds, and a database-free production build. Four database-free Chromium
+checks passed for reload/history/search/sort/page-size/reset and responsive
+375px/768px/1440px layouts. Unit checks cover malformed paging/enums, preserved
+unrelated parameters and hostile/private return destinations. The mobile fixture
+was inspected; UTF-8 metadata was added to the isolated screenshot harness after
+spotting an encoding artifact, and browser checks passed again. Screenshot
+outputs live under test-results/facelift-*/. No connected write checks ran.
