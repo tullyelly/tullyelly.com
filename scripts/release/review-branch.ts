@@ -4,7 +4,9 @@ import { z } from "zod";
 export const reviewBranchSchema = z
   .string()
   .max(200)
-  .regex(/^(?:cipher|feature)\/[a-z0-9][a-z0-9._/-]*$/)
+  .regex(
+    /^(?:(?:cipher|feature)\/[a-z0-9][a-z0-9._/-]*|epic\/WU-[1-9][0-9]*-[a-z0-9][a-z0-9._/-]*)$/,
+  )
   .refine(
     (branch) =>
       !branch.includes("..") &&

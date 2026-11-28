@@ -14,7 +14,7 @@ retained for maintenance and recovery, not an instruction to duplicate setup.
 
 Use the existing local installation configuration; no new App, key, SSH login or
 persistent Git configuration is needed. Publication requires a separately approved
-exact SHA and explicit `cipher/` or `feature/` working branch. The current branch
+exact SHA and explicit `cipher/`, `feature/` or shared `epic/WU-<key>-<name>` working branch. The current branch
 and HEAD must match both inputs. Main, tags, revision expressions and unsafe Git
 refs are rejected. Pushes are non-force, repository-scoped and authenticated as
 the configured App; installation tokens are revoked even when an operation fails.

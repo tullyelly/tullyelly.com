@@ -27,7 +27,7 @@ test("image fan-out is bounded and waits for active readers before surfacing fai
   expect(active).toBe(0);
 });
 test("duplicate content GETs share bytes only within one verification pass", async () => {
-  const fetcher = jest.fn<typeof fetch>(
+  const fetcher = jest.fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>(
     async () => new Response("<html>publication</html>"),
   );
   const staged = verificationReads(fetcher),

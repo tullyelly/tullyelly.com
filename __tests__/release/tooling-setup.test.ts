@@ -29,7 +29,7 @@ test.each([
     ["scripts/release/install-tools.mjs"],
     {
       encoding: "utf8",
-      env: { PATH: "", [key]: "fixture-secret" },
+      env: { NODE_ENV: "test", PATH: "", [key]: "fixture-secret" },
     },
   );
   expect(child.status).toBe(1);
@@ -51,4 +51,22 @@ test("dispatcher bundles before credentials and summary avoids checking out medi
   ).split("  summary:")[1];
   expect(summary).toContain("sparse-checkout:");
   expect(summary).not.toContain("public/images");
+});
+test("bundled dispatcher executes its guards rather than silently exiting", () => {
+  const bundled = spawnSync(
+    process.execPath,
+    ["scripts/release/bundle-dispatcher.mjs"],
+    { encoding: "utf8" },
+  );
+  expect(bundled.status).toBe(0);
+  const child = spawnSync(
+    process.execPath,
+    [".cache/release-tools/release-dispatch.cjs"],
+    {
+      encoding: "utf8",
+      env: { NODE_ENV: "test", PATH: process.env.PATH },
+    },
+  );
+  expect(child.status).toBe(1);
+  expect(child.stderr).toContain("App dispatch stopped");
 });
