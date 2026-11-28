@@ -352,7 +352,7 @@ async function main() {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${message}\n`);
 }
 // Importing this file for fixtures never executes authentication or network requests.
-if (process.argv[1]?.endsWith("release-dispatch.ts"))
+if (/release-dispatch\.(?:ts|cjs)$/.test(process.argv[1] ?? ""))
   main().catch(() => {
     console.error(
       "App dispatch stopped. Check protected refs, App identity/installation, narrowly scoped permissions and prepared inputs. No gate was approved; no token or private key is logged. Do not automatically retry an ambiguous dispatch.",

@@ -64,12 +64,15 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: npm
+          cache-dependency-path: tools/release/package-lock.json
       - name: Install reviewed code without the App private key
-        run: npm ci
+        run: |
+          node scripts/release/install-tools.mjs
+          node scripts/release/bundle-dispatcher.mjs
         env:
           SKIP_DB: "true"
       - name: Mint a temporary scoped App token, perform one explicit operation, revoke
-        run: npx tsx scripts/release-dispatch.ts
+        run: node .cache/release-tools/release-dispatch.cjs
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_DISPATCH_MODE: ${{ inputs.mode }}

@@ -33,22 +33,35 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
+    outputs:
+      profile: ${{ steps.profile.outputs.profile }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Node, dependencies and lint cache
         id: setup
         uses: ./.github/actions/setup
 
+      - name: Select exact-source validation profile
+        id: profile
+        run: node --import tsx scripts/chronicle-profile.ts select
+
+      - name: Validate Chronicle content
+        if: steps.profile.outputs.profile == 'content'
+        run: node --import tsx scripts/chronicle-profile.ts validate
+
       - name: Validate source
+        if: steps.profile.outputs.profile != 'content'
         env:
           SKIP_DB: "true"
         run: npm run verify:source
 
       - name: Upload lcov report
+        if: steps.profile.outputs.profile != 'content'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-lcov
@@ -56,6 +69,7 @@ jobs:
           if-no-files-found: error
 
       - name: Cache Next build
+        if: steps.profile.outputs.profile != 'content'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .next/cache
@@ -64,11 +78,13 @@ jobs:
             next-v2-${{ runner.os }}-${{ runner.arch }}-node${{ steps.setup.outputs.node-version }}-${{ hashFiles('.nvmrc', 'package-lock.json', 'package.json', 'next.config.*', 'tsconfig.json', 'contentlayer.config.*', 'postcss.config.*', 'tailwind.config.*', '.github/workflows/ci.yml', '.github/actions/setup/action.yml') }}-
 
       - name: Build validated application
+        if: steps.profile.outputs.profile != 'content'
         env:
           SKIP_DB: "true"
         run: npm run build:validated
 
       - name: Check security headers
+        if: steps.profile.outputs.profile != 'content'
         env:
           SKIP_DB: "true"
         run: |
@@ -86,10 +102,10 @@ jobs:
       # Playwright, image checks, and SEO checks stay optional for now;
       # keep the baseline guardrail workflow focused on stable PR blockers.
 
-  # Preserve the existing coverage status context without rerunning Jest.
+  # Truthful profile status: content checks never claim application coverage.
   # always() makes prerequisite failures fail this check instead of skipping it.
   coverage:
-    name: coverage
+    name: ${{ needs.guardrails.outputs.profile == 'content' && 'Chronicle content checks' || 'coverage' }}
     needs: guardrails
     if: ${{ always() }}
     runs-on: ubuntu-24.04

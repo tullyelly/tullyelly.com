@@ -110,7 +110,9 @@
     "docs:check": "node scripts/check-docs.mjs",
     "test:charts": "cross-env PLAYWRIGHT_BROWSERS_PATH=.pw-browsers playwright test --config playwright.charts.config.ts",
     "workflows:check": "node scripts/check-workflows.mjs",
-    "chronicle:ready": "node --import tsx scripts/check-chronicle-publication.ts"
+    "chronicle:ready": "node --import tsx scripts/check-chronicle-publication.ts",
+    "chronicle:publish": "node --import tsx scripts/publish-chronicle.ts publish",
+    "chronicle:status": "node --import tsx scripts/publish-chronicle.ts status"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",

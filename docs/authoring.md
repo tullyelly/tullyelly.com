@@ -26,6 +26,17 @@ manifests and dynamic image props fail. Remote image URLs require separate revie
 and currently fail this focused local-assets check. It neither builds Contentlayer
 nor publishes content. Rendered staging and public verification are still required.
 
+## Focused Chronicle checks; WU-1117
+
+The content profile accepts published Chronicles using supported literal MDX
+components and local images. It compiles MDX without evaluating authored code,
+checks the existing inference contracts and publication metadata, and compares
+image dimensions with actual image bytes. Shared image replacements include all
+recognized consumers. Unsupported expressions/components, deletions, renames and
+unpublishing require the application profile. Editorial and presentation defects
+may still escape; correct those with another reviewed content publication.
+Rendered staged/public checks remain part of every release.
+
 ## Static pages
 
 `npm run new-page -- <slug> "Title"` takes positional arguments, with no prompts
@@ -96,9 +107,11 @@ metadata, and ordinary page navigation retain their purpose-specific URLs.
 
 ## Category count snapshots
 
-`<CategorySnapshot category="basketball" />` displays the overall category count
-and optional TCDb ranking, signed difference and trends recorded on the Chronicle's
-exact frontmatter date.
+`<CategorySnapshot category="basketball" />` uses the Chronicle's exact frontmatter date
+and renders the linked category followed by its ordinal rank, trend emoji and
+card count in parentheses. Category, clan and homie snapshots share this compact
+summary. Missing comparison history uses the labeled 🆕 indicator; measured flat
+trends use ↔️. Count-only snapshots omit the rank.
 A missing measurement renders
 a linked category label; it never substitutes a latest count. It does not infer
 tags. See [category counts](card-category-counts.md) for the full example and setup.

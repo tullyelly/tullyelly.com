@@ -171,17 +171,19 @@ those checks.
 ## Hooks and remote CI
 
 [pre-commit](../.husky/pre-commit) runs lint-staged (secretlint, formatting,
-ESLint, MD punctuation fixing). [pre-push](../.husky/pre-push) runs lint,
+ESLint, MD punctuation fixing). [pre-push](../.husky/pre-push) first selects the
+profile below. Its application path runs lint,
 typecheck, related smoke, and full thresholded coverage. It skips when CI=true;
 SKIP_COVERAGE_GUARD=1 bypasses the whole hook, only when needed, and does not
 waive required validation. [Coverage guard](coverage-guard.md) tracks gate policy.
 
 [ci.yml](../.github/workflows/ci.yml) runs on pushes to main and PRs targeting
 main, using Node 22.20.0 from .nvmrc, matching all release workflows. Its
-`guardrails` job retains the exact `Lint, test, build` check name. It runs
+`guardrails` job retains the exact `Lint, test, build` profile-gate name. For
+application scope it runs
 verify:source with SKIP_DB=true, uploads `coverage-lcov` (missing lcov fails the
 job), runs build:validated in the same checkout, then checks security headers on
-the production server. There is no CI_ENABLED gate or path-based bypass. Vitest,
+the production server. There is no CI_ENABLED gate. The reviewed Chronicle profile below selects focused checks. Vitest,
 formatting, metadata, Playwright, images, and SEO are not CI baseline steps.
 
 All workflows use ubuntu-24.04 and select the application Node version through
@@ -211,11 +213,12 @@ alone does not update those contracts or the provider runtime. Keep mocked datab
 fixture isolation explicit as described below; never globally reset Jest's database
 safety flag to accommodate a runtime or workflow update.
 
-The `coverage` job in CI retains the exact `coverage` status context and requires
-successful guardrails. It uses `always()` and explicitly fails on failure,
+The companion job is named `coverage` for application scope and `Chronicle
+content checks` for content scope. It requires successful guardrails. It uses `always()` and explicitly fails on failure,
 cancellation or skipping of the prerequisite; it cannot pass through a skipped
 test suite. It mirrors the full guardrail result, so a build/header failure also
-fails coverage. The former standalone coverage workflow is removed: it executed
+fails the companion check. Content uses no coverage artifact. The former
+standalone coverage workflow is removed: it executed
 the same full Jest suite a second time, installed dependencies and regenerated
 content. Reports now belong to the CI run; artifact consumers must select CI
 rather than the old coverage workflow. The artifact name and lcov path are stable.
@@ -229,13 +232,15 @@ entries. Its immutable cache key includes OS, architecture, Node, lockfile,
 package/configuration, local ESLint rules, TypeScript configuration and commit.
 The Node identity comes from setup-node's resolved output; .nvmrc is also hashed.
 Restore prefixes retain all compatibility inputs and omit only the commit; each
-new commit can save updated results. Lint and documentation checks always run.
+new commit can save updated results. Application lint/documentation checks always
+run for the application profile.
 
 CI caches only `.next/cache`, with OS, architecture, Node, lockfile, package,
 Next/TypeScript/Contentlayer/CSS configuration, CI setup/environment definition
 and commit in the key. It uses the shared setup's resolved Node output and hashes
 .nvmrc, avoiding a second handwritten version pin. Restore prefixes omit only the
-commit. Next still builds every time and owns source dependency invalidation, following its
+commit. Application-profile Next validation still builds every time and owns source
+dependency invalidation, following its
 [CI cache guidance](https://nextjs.org/docs/app/guides/ci-build-caching).
 Next 16.1.6 disables Turbopack build persistence by default, so CI explicitly sets
 NEXT_BUILD_CACHE=1 to enable experimental.turbopackFileSystemCacheForBuild in
@@ -254,8 +259,9 @@ validation or transfer the CI build. Vercel builds one clean source revision
 remotely after the protected human gate; see
 [production releases](production-releases.md#native-source-production-path).
 Analytics and credential-maintenance workflows retain separate full validation
-and Vercel builds. npm ci's postinstall and validation both generate Prisma. The pre-push
-hook still runs smoke followed by coverage and prepares via typecheck and coverage;
+and Vercel builds. npm ci's postinstall and validation both generate Prisma. For application scope the pre-push
+hook still runs smoke followed by the canonical in-band coverage command and
+reuses the preparation already completed by typecheck;
 its release-publication stage markers remain intact. Next's Contentlayer plugin
 may also perform its own generation during production builds. These remaining
 costs are not silently bypassed by this change.
@@ -270,17 +276,10 @@ that exact name; its contract is unchanged. Classic branch-protection inspection
 returned 403, so an owner must verify those settings separately. No GitHub
 configuration was modified.
 
-Before landing, an owner must inspect all applicable branch protection and
-rulesets. Ordinary status requirements for `Lint, test, build` and `coverage`
-need no rename: both retain their GitHub Actions contexts. If any rule requires
-the **coverage.yml workflow file** rather than a status context, first land the
-replacement CI gate while temporarily retaining the old workflow, require CI and
-observe both checks passing on the same SHA, then remove the old workflow-specific
-requirement and land its deletion. Never remove the existing guardrail requirement
-or weaken strict checks to make the transition pass. Update external consumers of
-coverage workflow run IDs/artifacts. No in-repository consumer pins that workflow.
-The coverage policy recommends requiring the retained `coverage` status as well;
-the observed ruleset currently requires only the combined guardrail.
+The WU-1117 profile rollout below supersedes the old unconditional coverage-check
+recommendation. The required combined profile gate remains; application coverage
+still runs exactly once in its CI job. Live enforcement is distinct from workflow
+code and must match the reviewed profile contract.
 
 ### Story 1.1 timing evidence
 
@@ -344,3 +343,38 @@ binding. Other Neon hostname occurrences remain flagged. The exception does not
 skip the rest of the file or the recommended secret rules. Decoded JSON strings
 are checked for database URLs, URL credentials and secret query parameters;
 validation subprocess failures deny the hostname exception without logging input.
+
+## Chronicle content profile; WU-1117
+
+`node --import tsx scripts/chronicle-profile.ts select` reads the public production
+revision and classifies its complete diff to HEAD. Unavailable identity, missing
+ancestry, dirty tracked files or unsupported changes select full application
+validation. No force-fast switch exists. CI uses a full-history checkout and
+reruns selection on each exact PR/merged target.
+
+`node --import tsx scripts/chronicle-profile.ts validate` rechecks the saved
+selection, prepares content once, requires manifest regeneration to match Git,
+compiles affected MDX, checks inference/assets and runs focused inference,
+renderer, path and feed regressions. It does not run application-wide lint,
+typechecking, coverage or a validation Next build. The native production build
+and staged/public acceptance still run. Editorial/presentation regressions can
+escape this deliberately narrower profile; use a reviewed forward correction.
+
+The historical `Lint, test, build` context remains the required profile gate. Its
+job output and logs state the actual profile. The second check is `coverage` for
+application validation and `Chronicle content checks` for content validation;
+content never publishes an lcov artifact or claims full coverage. Release
+preparation independently reclassifies the authoritative production-to-target
+diff and accepts content evidence only for content-eligible scope. A full
+application pass remains stronger acceptable evidence. Checks must come from the
+trusted push-main workflow on the exact selected revision.
+
+Before activating this policy, inspect effective branch rules. Require the
+existing `Lint, test, build` profile gate; if an additional unconditional
+`coverage` requirement exists, replace that extra requirement with the profile
+gate through owner review. Do not remove PR reviews, strict/up-to-date checks or
+workflow ownership requirements. The implementation PR itself uses full
+verify:agent and full application CI. No repository setting is changed by code.
+
+Pre-push uses the same selection and focused validation. Application scope falls
+back to the existing hook. A focused validation failure blocks push.

@@ -22,6 +22,7 @@ import {
 } from "./native-evidence";
 
 import { readAnalyticsIntent } from "./analytics-intent";
+import { classifyContent } from "./content-profile";
 
 const required = (key: string) => {
   const value = process.env[key];
@@ -40,7 +41,6 @@ async function main() {
   await codeGuard("github.child-dispatch", () =>
     verifyChildDispatch(process.env),
   );
-  const ci = await trustedRequiredCi(commit, required("GH_TOKEN"), githubApi);
   // Token exists only in this reviewed GET-only provider step; dependencies installed earlier.
   const token = required("VERCEL_RELEASE_READ_TOKEN");
   delete process.env.VERCEL_RELEASE_READ_TOKEN;
@@ -128,6 +128,14 @@ async function main() {
       throw new Error("code.domain-drift");
   }
   const compatibility = changedCompatibility(applicationSha, commit);
+  const profile = classifyContent(applicationSha, commit);
+  const ci = await trustedRequiredCi(
+    commit,
+    required("GH_TOKEN"),
+    githubApi,
+    profile.profile,
+  );
+  console.log(`Validation profile: ${profile.profile}; ${profile.reason}`);
   const analytics = readAnalyticsIntent(commit);
   if (analytics.intent.collectionEnabled)
     compatibility.risks = [
@@ -171,6 +179,7 @@ async function main() {
     settingsSha256: vercel.settingsSha256,
     previousDeployment: id,
     ciRunId: ci.runId,
+    validationProfile: ci.validationProfile ?? "application",
     workflowRunId: evidence.workflow.runId,
     workflowRunAttempt: evidence.workflow.runAttempt,
     workflowRevision: evidence.workflow.sha,

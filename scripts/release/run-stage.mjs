@@ -8,7 +8,11 @@ const executor = [
 const cliVersion = "63.1.2";
 const stages = {
   install: [
-    ["Installing source dependencies", npm, ["ci"]],
+    [
+      "Installing source dependencies",
+      process.execPath,
+      ["scripts/release/install-tools.mjs"],
+    ],
     [
       "Installing release CLI",
       npm,

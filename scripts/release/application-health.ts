@@ -8,6 +8,7 @@ import {
 } from "./code-publication-health";
 
 import { verifyAnalyticsRuntime } from "./analytics-intent";
+import { verificationReads } from "./probe-reads";
 
 export async function checkApplicationHealth(options: {
   deployment: CodeDeployment;
@@ -19,34 +20,40 @@ export async function checkApplicationHealth(options: {
   fetcher?: typeof fetch;
   analytics?: { collectionEnabled: boolean; targetSha256?: string };
 }) {
-  await checkCodeHealth({ ...options, operation: "deploy" });
-  const read = (path: string) =>
-    readHealthResponse({
-      stagedHost: options.deployment.url,
-      publicDomain: options.publicDomain,
-      path,
-      // Optimized image URLs belong to the canonical rendered-page origin.
-      publicOrigin: options.publicDomain
-        ? "https://www.tullyelly.com"
-        : undefined,
-      bypassSecret: options.bypassSecret,
-      fetcher: options.fetcher,
-      timeoutMs: 30000,
-      rejectChallenges: true,
-    });
-  await checkPublicationHealth(
-    read,
-    options.commit,
-    options.publication.archive,
-  );
-  await checkChangedPublicationHealth(read, options.publication);
-  if (options.analytics) {
-    const response = await read("/api/health/analytics");
-    if (response.status !== 200)
-      throw new Error("code.analytics-runtime-response");
-    return verifyAnalyticsRuntime(await response.json(), {
-      commit: options.commit,
-      ...options.analytics,
-    });
+  const pass = verificationReads(options.fetcher);
+  options = { ...options, fetcher: pass.fetcher };
+  try {
+    await checkCodeHealth({ ...options, operation: "deploy" });
+    const read = (path: string) =>
+      readHealthResponse({
+        stagedHost: options.deployment.url,
+        publicDomain: options.publicDomain,
+        path,
+        // Optimized image URLs belong to the canonical rendered-page origin.
+        publicOrigin: options.publicDomain
+          ? "https://www.tullyelly.com"
+          : undefined,
+        bypassSecret: options.bypassSecret,
+        fetcher: options.fetcher,
+        timeoutMs: 30000,
+        rejectChallenges: true,
+      });
+    await checkPublicationHealth(
+      read,
+      options.commit,
+      options.publication.archive,
+    );
+    await checkChangedPublicationHealth(read, options.publication);
+    if (options.analytics) {
+      const response = await read("/api/health/analytics");
+      if (response.status !== 200)
+        throw new Error("code.analytics-runtime-response");
+      return verifyAnalyticsRuntime(await response.json(), {
+        commit: options.commit,
+        ...options.analytics,
+      });
+    }
+  } finally {
+    pass.dispose();
   }
 }

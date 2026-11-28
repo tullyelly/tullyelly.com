@@ -37,6 +37,11 @@ export function reportCodeEvent(event: Record<string, unknown>) {
         typeof event.ciRunId === "string" && /^[1-9][0-9]*$/.test(event.ciRunId)
           ? event.ciRunId
           : undefined,
+      validationProfile: ["application", "content"].includes(
+        String(event.validationProfile),
+      )
+        ? event.validationProfile
+        : undefined,
       workflowRunId:
         typeof event.workflowRunId === "string" &&
         /^[1-9][0-9]*$/.test(event.workflowRunId)

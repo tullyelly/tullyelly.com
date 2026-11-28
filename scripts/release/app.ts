@@ -175,7 +175,7 @@ export function modePermissions(
 }
 export const appConfig = appConfiguration;
 export type InstallationPermissions = {
-  actions?: "write";
+  actions?: "read" | "write";
   contents?: "read" | "write";
   pull_requests?: "write";
   workflows?: "write";
@@ -205,6 +205,8 @@ export async function withScopedInstallationToken<T>(
   );
   const allowed = [
     { actions: "write" },
+    { actions: "write", contents: "read" },
+    { actions: "read", contents: "read" },
     { contents: "read", pull_requests: "write" },
     { contents: "write", workflows: "write" },
   ].map((value) =>

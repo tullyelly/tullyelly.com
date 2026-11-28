@@ -61,6 +61,7 @@ export const nativeEvidenceSchema = z
         workflowPath: z.literal(".github/workflows/ci.yml"),
         workflowId: decimal,
         checkRunIds: z.array(decimal).length(2),
+        validationProfile: z.literal("content").optional(),
       })
       .strict(),
     vercel: releaseManifestSchema.shape.vercel
@@ -353,6 +354,7 @@ export async function trustedRequiredCi(
   commit: string,
   token: string,
   api: Api,
+  requiredProfile: "application" | "content" = "application",
 ) {
   sha.parse(commit);
   const base = `/repos/${RELEASE_REPOSITORY}`;
@@ -422,7 +424,15 @@ export async function trustedRequiredCi(
       ),
     );
   if (checks.total_count > 100) throw new Error("code.required-ci-ambiguous");
-  const ids = ["Lint, test, build", "coverage"].map((name) => {
+  const content =
+    requiredProfile === "content" &&
+    !checks.check_runs.some(
+      (c) => c.name === "coverage" && c.conclusion === "success",
+    );
+  const ids = [
+    "Lint, test, build",
+    content ? "Chronicle content checks" : "coverage",
+  ].map((name) => {
     const matches = checks.check_runs.filter(
       (c) =>
         c.name === name &&
@@ -444,5 +454,6 @@ export async function trustedRequiredCi(
     workflowPath: workflow.path,
     workflowId: String(workflow.id),
     checkRunIds: ids,
+    ...(content ? { validationProfile: "content" as const } : {}),
   };
 }

@@ -3,16 +3,8 @@ import {
   getCardCategory,
   getCategorySnapshotOnDate,
 } from "@/lib/data/card-categories";
-import {
-  categorySlugSchema,
-  formatCategoryChange,
-  formatCategoryCount,
-  formatCategoryRanking,
-  formatCategoryRankChange,
-  formatCategoryDifference,
-  formatCategoryDifferenceChange,
-  formatCategorySignChange,
-} from "@/lib/card-categories";
+import { categorySlugSchema } from "@/lib/card-categories";
+import SnapshotSummary from "./SnapshotSummary";
 
 export type CategorySnapshotProps = { category: string; snapshotDate: string };
 export default async function CategorySnapshot({
@@ -32,29 +24,6 @@ export default async function CategorySnapshot({
   } catch {
     // Linked identity is still useful during initial migration or a database outage.
   }
-  const summary = snapshot
-    ? [
-        `${formatCategoryCount(snapshot.card_count)} cards on ${snapshot.measured_on}`,
-        formatCategoryChange(snapshot.count_change),
-        ...(snapshot.ranking == null
-          ? []
-          : [
-              `TCDb ${formatCategoryRanking(snapshot.ranking)}`,
-              formatCategoryRankChange(snapshot.rank_delta),
-              `rank trend ${snapshot.trend_rank ?? "no comparison"}`,
-            ]),
-        ...(snapshot.difference == null
-          ? []
-          : [
-              `difference ${formatCategoryDifference(snapshot.difference)}`,
-              `difference change ${formatCategoryDifferenceChange(snapshot.diff_delta)}`,
-              `difference sign changed ${formatCategorySignChange(snapshot.diff_sign_changed).toLowerCase()}`,
-            ]),
-        ...(snapshot.ranking == null && snapshot.difference == null
-          ? []
-          : [`overall trend ${snapshot.trend_overall ?? "no comparison"}`]),
-      ].join("; ")
-    : null;
   return (
     <>
       <Link
@@ -64,7 +33,16 @@ export default async function CategorySnapshot({
       >
         {label}
       </Link>
-      {summary ? <span>{` (${summary})`}</span> : null}
+      {snapshot ? (
+        <>
+          {" "}
+          <SnapshotSummary
+            ranking={snapshot.ranking}
+            trend={snapshot.trend_overall}
+            cardCount={snapshot.card_count}
+          />
+        </>
+      ) : null}
     </>
   );
 }

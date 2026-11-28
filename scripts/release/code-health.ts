@@ -1,5 +1,6 @@
 /** Release-only reads; one verified domain redirect, never a staged fallback. */
 import { z } from "zod";
+import { boundedReads } from "./probe-reads";
 import type { CodeDeployment } from "./code-release";
 import { CodeHealthError } from "./code-diagnostics";
 import {
@@ -220,12 +221,12 @@ export async function checkCodeHealth(options: {
     d.readyState !== "READY"
   )
     throw new Error("code.health-deployment-identity");
-  let requestTrace: HealthRequestTrace | undefined;
   const read = (
     path: string,
     timeoutMs: number,
     allowLoginRedirect = false,
     onLoginRedirect?: (protocol: "http" | "streamed") => void,
+    observe?: (trace: HealthRequestTrace) => void,
   ) =>
     readHealthResponse({
       stagedHost: d.url,
@@ -238,25 +239,26 @@ export async function checkCodeHealth(options: {
       onLoginRedirect,
       rejectChallenges: true,
       onObservation: (trace) => {
-        requestTrace = trace;
+        observe?.(trace);
       },
     });
   const paths =
     options.operation === "deploy"
       ? (["/", "/shaolin", "/stats"] as const)
       : (["/", "/shaolin"] as const);
-  for (const path of paths) {
-    const r = await read(path, 30000);
+  const checkPage = async (path: (typeof paths)[number]) => {
+    let trace: HealthRequestTrace | undefined;
+    const r = await read(path, 30000, false, undefined, (value) => {
+      trace = value;
+    });
     if (r.status !== 200)
-      throw new CodeHealthError(path, r.status, "http-status", requestTrace);
+      throw new CodeHealthError(path, r.status, "http-status", trace);
     if (!(await r.text()).toLowerCase().includes("<!doctype html>"))
-      throw new CodeHealthError(
-        path,
-        r.status,
-        "missing-doctype",
-        requestTrace,
-      );
-  }
+      throw new CodeHealthError(path, r.status, "missing-doctype", trace);
+  };
+  // Establish the homepage/challenge boundary before fanning out other pages.
+  await checkPage(paths[0]);
+  await boundedReads(paths.slice(1), checkPage);
   if (options.operation === "rollback") return;
   if ((await read("/api/cron/analytics", 15000)).status !== 401)
     throw new Error("code.health-cron-authorization");

@@ -405,6 +405,23 @@ function ciApi(changeRun: object = {}, changeCheck: object = {}) {
         : { total_count: 2, check_runs: checks },
   );
 }
+test("content checks are accepted only for a content-eligible production diff", async () => {
+  const original = ciApi();
+  const api: Api = async (...args) => {
+    const value = await original(...args);
+    if (value && typeof value === "object" && "check_runs" in value) {
+      const data = value as { check_runs: { name: string }[] };
+      data.check_runs[1].name = "Chronicle content checks";
+    }
+    return value;
+  };
+  await expect(
+    trustedRequiredCi(sha, "TOKEN", api, "content"),
+  ).resolves.toMatchObject({ validationProfile: "content" });
+  await expect(
+    trustedRequiredCi(sha, "TOKEN", api, "application"),
+  ).rejects.toThrow("code.required-ci-unavailable");
+});
 test("only a successful trusted push-main CI run and GitHub Actions checks for the exact SHA can be reused", async () => {
   await expect(trustedRequiredCi(sha, "TOKEN", ciApi())).resolves.toMatchObject(
     { runId: "200", sha, workflowSha: sha, checkRunIds: ["400", "401"] },

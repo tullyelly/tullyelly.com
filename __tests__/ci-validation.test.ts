@@ -256,7 +256,11 @@ test("both status contexts retain a blocking application-wide gate with one cove
   expect(guardrails).toContain("name: coverage-lcov");
   expect(guardrails).toContain("path: coverage/lcov.info");
   expect(guardrails).toContain("if-no-files-found: error");
-  expect(coverage).toContain("name: coverage");
+  expect(coverage).toContain("'Chronicle content checks' || 'coverage'");
+  expect(guardrails).toContain("scripts/chronicle-profile.ts validate");
+  expect(guardrails).toContain(
+    "if: steps.profile.outputs.profile != 'content'",
+  );
   expect(coverage).toContain("needs: guardrails");
   expect(coverage).toContain("if: ${{ always() }}");
   expect(coverage).not.toMatch(/npm|checkout/);

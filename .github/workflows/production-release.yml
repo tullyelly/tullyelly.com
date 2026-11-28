@@ -63,6 +63,7 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: npm
+          cache-dependency-path: tools/release/package-lock.json
       - name: Initialize stage report and require exact reviewed main
         run: |
           set -euo pipefail
@@ -198,6 +199,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .nvmrc
+            scripts/release/release-summary.mjs
+            scripts/release/code-invariants.mjs
+            scripts/release/provider-diagnostic.mjs
+            scripts/release/publication-observation.mjs
+            scripts/release/health-observation.mjs
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: ".nvmrc"

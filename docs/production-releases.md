@@ -61,31 +61,29 @@ executor is dispatched and no mandatory new recovery environment is introduced.
 
 ### Normal operator procedure
 
-1. Review and merge the application and workflow changes through protected main.
-   Select the exact full merged SHA with successful trusted CI. Inspect the diff
-   against live production for database consumers, authentication, dependencies
-   and configuration compatibility. Surface actual risks before release; code-only
-   approval never authorizes migrations or credential/settings changes.
-2. Use the existing GitHub App dispatcher in `production` mode with `release_sha`
-   set to that SHA; for example:
-   `gh workflow run release-dispatch.yml --ref main -f mode=production -f release_sha=<full-reviewed-SHA>`.
-   Tooling binds the application/workflow revisions, actual run
-   and attempt, exact trusted checks, project/team, live production baseline,
-   configuration and compatibility-risk evidence. It does not create a manifest PR.
-3. Review the generated evidence and have the authorized human approve the existing
-   **production-release** environment gate. Confirm the approved SHA, checks,
-   configuration, compatibility risks and current production baseline. No agent
-   approves this gate; no second approval is added after staged checks pass.
-4. Observe one clean-source `vercel deploy --prod --skip-domain` operation using
-   the protected release credential. Wait for authoritative READY identity and
-   verify the exact application revision, health, authorization, existing content
-   and changed publications/assets on that deployment. Public domains must still
-   point at the baseline through staged verification.
-5. Recheck the baseline and promote the verified deployment by its exact ID.
-   Promotion never creates another build. Verify public aliases, revision,
-   health, authorization and publication probes, then record the final sanitized
-   report. Failures stop; ambiguous writes are reconciled before considering any
-   separately authorized retry. Never automatically roll back.
+1. Review and merge the intended work through protected main. Select its exact
+   merged SHA; existing CI automatically selects the content or application
+   profile. Keep main stable until this release finishes.
+2. Run `npm run chronicle:publish -- <full-merged-SHA>`. The coordinator waits for
+   CI, starts the existing App dispatcher once and prints the Actions link.
+   Approve the existing **production-release** environment gate there.
+3. Read the final receipt: exact SHA/deployment, publication links, elapsed time
+   and verified/pending/failure state. Reconnect read-only with
+   `npm run chronicle:status -- <full-SHA>`.
+
+The command also handles the application profile; it never force-selects content.
+It does not merge, approve a gate or automatically retry an ambiguous write.
+[Chronicle publishing](chronicle-publishing.md) covers the short path and real
+stop conditions. The existing dispatcher UI remains available when no local
+coordinator is running; no laptop is required by production Actions.
+
+Tooling binds source/workflow/run/attempt, trusted exact-SHA CI, live baseline,
+project/team and configuration before the same human gate. After approval it
+stages one native source deployment, verifies it, rechecks the baseline, promotes
+that exact deployment ID and checks public aliases/content/authorization. There
+is no second build or post-staging approval. Failures stop; pending public
+verification retains its existing resolution procedure. SQL, settings and
+credential operations keep their separate concrete authorization.
 
 ### Coordination across coding agents
 
@@ -160,10 +158,12 @@ an explicit read-only transaction. No `RELEASE_DATABASE_URL` or
 
 ### Native source production path
 
-The release workflow reuses successful `Lint, test, build` evidence only for the
-exact SHA from the trusted CI workflow. Existing CI remains application-wide and
-continues its useful validation build. That build is CI evidence, not the canonical
-production deployment. The release does not repeat equivalent full validation,
+The release workflow reuses successful `Lint, test, build` profile evidence only
+for the exact SHA from the trusted CI workflow. Application scope retains full
+coverage and its validation build; eligible content uses the focused checks in
+[validation](validation.md#chronicle-content-profile-wu-1117). Content evidence
+never claims application coverage. A CI build is validation evidence, not the
+canonical production deployment. The release does not repeat equivalent full validation,
 create a local production artifact, run `vercel build`, or transfer an application
 build archive between jobs. Node 22.20.0 selected from .nvmrc, locked npm
 dependencies and Vercel CLI 63.1.2 remain pinned.
