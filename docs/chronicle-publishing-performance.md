@@ -65,3 +65,22 @@ report the observed spans instead. Five pilot releases establish an initial
 median and slowest observation, not a reliable tail percentile. Current required
 validation and production approval apply until reviewed changes implement the
 focused profile. This baseline changes no release policy.
+
+## Release setup implementation; WU-1309
+
+Dispatcher and preparation install the pinned tools/release lock instead of the
+application graph. The fresh Actions checkout links that ignored dependency tree
+for source bundling; existing local node_modules are preserved. App/private and
+provider credentials are refused by installation and appear only in later scoped
+steps. npm download caches remain keyed by the tooling lock; cache misses use
+the same exact locked installation. The pinned provider CLI remains separately
+installed and checked. The summary checks out only its dependency-free renderer
+and helpers, omitting media.
+
+An isolated /tmp fixture installed 297 packages in 13 seconds and successfully
+bundled dispatcher, preparation and production executors without application
+dependencies. This is a fresh dependency directory with the existing local npm
+download cache; it is not a hosted before/after measurement or a proven cold
+network result. The historical hosted dispatcher installation was 72 seconds
+and release installation 83 seconds. Hosted cache-hit/miss and phase results
+remain part of WU-1312's next authorized production test.
