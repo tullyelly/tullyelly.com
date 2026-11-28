@@ -1,3 +1,6 @@
+import DataPageShell from "@/components/layout/DataPageShell";
+import PageIntro from "@/components/layout/PageIntro";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import YouTubeVideo from "@/components/mdx/YouTubeVideo";
 import LegacyPostDate from "@/components/layout/LegacyPostDate";
 import ArtistAlbumGrid, {
@@ -81,11 +84,17 @@ const albums: ArtistAlbum[] = [
 
 export default function Page() {
   return (
-    <article className="space-y-12">
+    <DataPageShell width="wide">
       <header className="space-y-3">
-        <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
-          Roadwork Rappin’
-        </h1>
+        <PageIntro
+          eyebrow="theabbott · Music collection"
+          title="Roadwork Rappin’"
+          actions={
+            <DirectoryReturnLink directory="/theabbott/crates" className="btn">
+              Back to Crates
+            </DirectoryReturnLink>
+          }
+        />
         <LegacyPostDate date="2025-08-19">August 19, 2025</LegacyPostDate>
         <p className="text-[16px] text-muted-foreground md:text-[18px]">
           Welcome to my newest experiment. Please excuse any bugs or lack of
@@ -145,6 +154,6 @@ export default function Page() {
           classicTitle="Spirit World Field Guide"
         />
       </section>
-    </article>
+    </DataPageShell>
   );
 }

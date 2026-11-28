@@ -1,10 +1,10 @@
 import TagLink from "@/components/tags/TagLink";
-import type { Route } from "next";
+import CratesDirectory from "@/components/theabbott/CratesDirectory";
 import Link from "next/link";
 import { allPosts } from "contentlayer/generated";
 
 import DataPageShell from "@/components/layout/DataPageShell";
-import SectionHeader from "@/components/layout/SectionHeader";
+import PageIntro from "@/components/layout/PageIntro";
 import { Card } from "@ui";
 import { listIdentities } from "@/lib/identity-server";
 import { collectCrateAppearances } from "@/lib/music/crates";
@@ -30,17 +30,17 @@ export default async function Page() {
 
   return (
     <DataPageShell width="wide">
-      <SectionHeader
+      <PageIntro
         eyebrow="theabbott"
         title="The Crates"
-        description="Music discoveries generated from Chronicle videos, songs, playlists, and their original appearances."
+        description="Explore songs, videos and playlists, then revisit the Chronicles where they appeared."
       />
       <div className="grid gap-4 md:grid-cols-2">
         <Card as="section">
-          <h2 className="text-xl font-semibold">Identity archive</h2>
+          <h2 className="text-xl font-semibold">Artists and groups</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {homies.length} Homies and {clans.length} Clans are explicitly
-            classified. Unclassified artist tags remain visible below.
+            {homies.length} Homies and {clans.length} Clans to explore. More
+            artists and tags appear below.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link href="/theabbott/homies" className="btn">
@@ -67,50 +67,10 @@ export default async function Page() {
           </ul>
         </Card>
       </div>
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">Recent appearances</h2>
-        {appearances.length > 0 ? (
-          <ul className="grid gap-4 md:grid-cols-2">
-            {appearances.map((appearance) => (
-              <li
-                key={`${appearance.chronicleUrl}-${appearance.type}-${appearance.id ?? appearance.url}-${appearance.artistTag ?? ""}-${appearance.song ?? appearance.title ?? ""}`}
-              >
-                <Card as="article" className="h-full">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {appearance.type}
-                  </p>
-                  <h3 className="mt-2 text-lg font-semibold">
-                    {appearance.song ??
-                      appearance.title ??
-                      appearance.album ??
-                      (appearance.artistTag
-                        ? artistMetadata.get(appearance.artistTag)?.displayName
-                        : undefined) ??
-                      appearance.id ??
-                      "Music appearance"}
-                  </h3>
-                  {appearance.artistTag ? (
-                    <p className="mt-1 text-sm">
-                      {artistMetadata.get(appearance.artistTag)?.displayName ??
-                        appearance.artistTag}
-                    </p>
-                  ) : null}
-                  <Link
-                    href={appearance.chronicleUrl as Route}
-                    className="mt-4 inline-block link-blue"
-                  >
-                    {appearance.chronicleTitle}
-                  </Link>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Card as="p" className="text-muted-foreground">
-            No theabbott music appearances have been inferred yet.
-          </Card>
-        )}
-      </section>
+      <CratesDirectory
+        appearances={appearances}
+        artistNames={Object.fromEntries(artistTags)}
+      />
       {artistTags.length > 0 ? (
         <section className="space-y-3">
           <h2 className="text-2xl font-semibold">Artists and tags</h2>

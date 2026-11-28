@@ -1,3 +1,5 @@
+import CratesDirectory from "@/components/theabbott/CratesDirectory";
+import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import IdentityDirectoryClient from "@/components/identity/IdentityDirectoryClient";
 import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import { TagMetadataProvider } from "@/components/tags/TagLink";
@@ -337,8 +339,55 @@ function VolleyballFixture() {
     </main>
   );
 }
+function MusicFixture() {
+  const rows = Array.from({ length: 30 }, (_, i) => ({
+    type: i % 2 === 0 ? ("video" as const) : ("playlist" as const),
+    id: String(i + 1),
+    song: i === 0 ? undefined : `Music ${i + 1}`,
+    artistTag: i === 0 ? "unclassified-artist" : "aesop-rock",
+    chronicleTitle: `Source Chronicle ${i + 1}`,
+    chronicleUrl: `/shaolin/music-${i + 1}`,
+    chronicleDate: "2026-11-28",
+  }));
+  return (
+    <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+      <PageIntro title="The Crates" eyebrow="theabbott" />
+      {location.pathname === "/theabbott/crates" ? (
+        <TagMetadataProvider
+          metadata={{
+            "unclassified-artist": {
+              href: "/shaolin/tags/unclassified-artist",
+              hrefKind: "tag",
+              isClickable: true,
+            },
+          }}
+        >
+          <CratesDirectory
+            appearances={rows}
+            artistNames={{
+              "unclassified-artist":
+                "An unclassified artist with a long display name",
+              "aesop-rock": "Aesop Rock",
+            }}
+          />
+        </TagMetadataProvider>
+      ) : (
+        <>
+          <ContextDirectoryReturn
+            directory="/theabbott/crates"
+            label="Back to Crates"
+          />
+          <p>Original Chronicle and music destination fixture.</p>
+        </>
+      )}
+    </main>
+  );
+}
 createRoot(document.getElementById("root")!).render(
-  location.pathname.startsWith("/unclejimmy/fam") ? (
+  location.pathname.startsWith("/theabbott/crates") ||
+    location.pathname.startsWith("/shaolin/") ? (
+    <MusicFixture />
+  ) : location.pathname.startsWith("/unclejimmy/fam") ? (
     <FamilyFixture />
   ) : location.pathname.startsWith("/unclejimmy/squad/volleyball") ? (
     <VolleyballFixture />

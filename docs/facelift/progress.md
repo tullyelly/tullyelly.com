@@ -109,3 +109,24 @@ metadata lint reports 14 pre-existing missing declarations (including generic
 identity routes); copy lint reports the existing FirstOffTheLineSection em dash.
 These are recorded for the final integration sweep, not attributed to this story.
 Database-writing suites, connected authentication and deployment remain unrun.
+
+## WU-1293
+
+Music Homies/Clans opt into alias-aware searchable identity directories. Music
+profiles show canonical artist appearances and memberships without card snapshot
+modules. Crates keeps the original aggregation/fallback semantics, adds public
+query/search/type/sort/page controls and dated cards with canonical artist links.
+Unclassified tags remain discoverable. Source Chronicles and tag archives offer
+a safe Crates return; archive alias redirects preserve it. Dedicated music pages
+retain authored prose, albums and YouTube media in the common shell.
+
+Fourteen isolated browser checks passed, including music filtering, unclassified
+artist keyboard navigation, source/artist returns, no-match state and responsive
+bounds at 375px/1440px. Mobile Crates capture inspected. Focused mocked checks
+verify canonical artist aliases, source/fallback titles and draft exclusion.
+No external music service, live media fetch or database write was introduced.
+
+Full verify:agent passed: 270 suites/2,150 tests with thresholds met and the
+production build completed. Docs and formatting passed. The known metadata/copy
+lint findings from WU-1292 remain assigned to the final sweep. Connected media,
+authentication and database-writing integration checks remain unrun.

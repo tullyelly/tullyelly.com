@@ -253,3 +253,45 @@ for (const width of [375, 1440]) {
     await expect(page.getByRole("searchbox")).toHaveValue("Tournament 01");
   });
 }
+
+for (const width of [375, 1440]) {
+  test(`Crates filtering, unclassified artist and source return at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mount(page, "theabbott/crates?page=2");
+    await page.getByRole("searchbox").fill("unclassified");
+    await page
+      .getByRole("combobox", { name: "Appearance type" })
+      .selectOption("video");
+    await page
+      .getByRole("combobox", { name: "Sort music" })
+      .selectOption("title");
+    await expect(page.getByText("1 appearance", { exact: true })).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`crates-${width}.png`),
+      fullPage: true,
+    });
+    await page.getByRole("link", { name: /An unclassified artist/ }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/shaolin\/tags\/unclassified-artist/);
+    await page.getByRole("link", { name: "Back to Crates" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("unclassified");
+    await page
+      .getByRole("link", { name: "Source Chronicle 1", exact: true })
+      .click();
+    await page.getByRole("link", { name: "Back to Crates" }).click();
+    await expect(
+      page.getByRole("combobox", { name: "Appearance type" }),
+    ).toHaveValue("video");
+    await page.getByRole("searchbox").fill("not-found-xyz");
+    await expect(
+      page.getByRole("heading", { name: "No music matches these filters." }),
+    ).toBeVisible();
+  });
+}

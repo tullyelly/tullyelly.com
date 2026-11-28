@@ -4,10 +4,11 @@ export default function Page() {
   return (
     <IdentityDirectoryPage
       context="theabbott"
+      directoryHref="/theabbott/homies"
       kind="person"
       title="Homies"
-      description="Individual artists represented by shared site identities."
-      emptyLabel="No theabbott Homies have been classified yet."
+      description="Individual artists, their music and their stories."
+      emptyLabel="No theabbott Homies have been recorded yet."
     />
   );
 }

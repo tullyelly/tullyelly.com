@@ -1,3 +1,5 @@
+import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
+import type { ReactNode } from "react";
 import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import PageIntro from "@/components/layout/PageIntro";
@@ -31,6 +33,7 @@ export default async function IdentityDetailPage({
   directoryHref,
   directoryLabel,
   returnTo,
+  music,
 }: {
   slug: string;
   context: IdentityContext;
@@ -39,6 +42,7 @@ export default async function IdentityDetailPage({
   directoryHref: string;
   directoryLabel: string;
   returnTo?: string;
+  music?: ReactNode;
 }) {
   const identity = await getIdentityBySlug(slug);
   if (!identity || identity.metadata.kind !== kind) notFound();
@@ -55,7 +59,13 @@ export default async function IdentityDetailPage({
       returnTo
         ? withDirectoryReturn(
             href,
-            safeDirectoryReturn(returnTo, directoryHref),
+            safeDirectoryReturn(
+              returnTo,
+              context === "theabbott" &&
+                returnTo.split("?")[0] === "/theabbott/crates"
+                ? "/theabbott/crates"
+                : directoryHref,
+            ),
           )
         : href,
     );
@@ -85,14 +95,24 @@ export default async function IdentityDetailPage({
         eyebrow={`${context} ${noun}`}
         title={identity.displayName}
         description={
-          kind === "person"
-            ? "Stories, groups and the collections connected to this person."
-            : "Members, shared stories and the collections connected to this group."
+          context === "theabbott"
+            ? "Music, memberships and the stories connected to this artist."
+            : kind === "person"
+              ? "Stories, groups and the collections connected to this person."
+              : "Members, shared stories and the collections connected to this group."
         }
         actions={
-          <DirectoryReturnLink directory={directoryHref} className="btn">
-            Back to {directoryLabel}
-          </DirectoryReturnLink>
+          <div className="flex flex-wrap gap-3">
+            <DirectoryReturnLink directory={directoryHref} className="btn">
+              Back to {directoryLabel}
+            </DirectoryReturnLink>
+            {context === "theabbott" ? (
+              <ContextDirectoryReturn
+                directory="/theabbott/crates"
+                label="Back to Crates"
+              />
+            ) : null}
+          </div>
         }
       />
       <nav aria-label="On this page" className="flex flex-wrap gap-3">
@@ -100,7 +120,7 @@ export default async function IdentityDetailPage({
           Memberships
         </a>
         <a className="link-blue" href="#identity-collections">
-          Collections
+          {context === "theabbott" ? "Music" : "Collections"}
         </a>
         <a className="link-blue" href="#identity-chronicles">
           Chronicles
@@ -132,13 +152,19 @@ export default async function IdentityDetailPage({
         ) : null}
       </div>
       <div id="identity-collections" className="scroll-mt-24">
-        <CollectionRelationships
-          slug={identity.slug}
-          displayName={identity.displayName}
-          mode={
-            context === "unclejimmy" && kind === "person" ? "person" : "subject"
-          }
-        />
+        {context === "theabbott" ? (
+          music
+        ) : (
+          <CollectionRelationships
+            slug={identity.slug}
+            displayName={identity.displayName}
+            mode={
+              context === "unclejimmy" && kind === "person"
+                ? "person"
+                : "subject"
+            }
+          />
+        )}
       </div>
       <div id="identity-chronicles" className="scroll-mt-24">
         <SquadMemberPosts
