@@ -1,3 +1,4 @@
+import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import Image from "next/image";
 import Link from "next/link";
@@ -241,6 +242,10 @@ export default function SetCollectorDetailPage({
           </div>
         </section>
 
+        <ContextDirectoryReturn
+          directory="/cardattack/hof"
+          label="Back to Hall of Fame"
+        />
         <nav aria-label="On this page" className="flex flex-wrap gap-3">
           <a className="link-blue" href="#set-collector-history">
             Snapshot history

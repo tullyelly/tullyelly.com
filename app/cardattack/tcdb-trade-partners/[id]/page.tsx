@@ -1,3 +1,5 @@
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
+import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import TagLink from "@/components/tags/TagLink";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -66,13 +68,25 @@ export default async function Page({ params }: Props) {
     <FullBleedPage width="wide">
       <div className="space-y-6 py-6">
         <Card as="section">
-          <Link
-            href="/cardattack/tcdb-trade-partners"
+          <DirectoryReturnLink
+            directory="/cardattack/tcdb-trade-partners"
             className="link-blue text-sm"
           >
             ← Back to trade partners
-          </Link>
-          <h1 className="mt-3 text-3xl font-bold">{partner.tcdbUsername}</h1>
+          </DirectoryReturnLink>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <ContextDirectoryReturn
+              directory="/cardattack/tcdb-trades"
+              label="Back to trades"
+            />
+            <ContextDirectoryReturn
+              directory="/cardattack/hof"
+              label="Back to Hall of Fame"
+            />
+          </div>
+          <h1 className="mt-3 break-words text-3xl font-bold">
+            {partner.tcdbUsername}
+          </h1>
           {partner.name ? <p className="text-lg">{partner.name}</p> : null}
           <p className="text-muted-foreground">
             {[partner.cityState, partner.country].filter(Boolean).join("; ")}

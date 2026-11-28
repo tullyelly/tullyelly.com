@@ -411,3 +411,76 @@ for (const width of [375, 1440]) {
     });
   }
 }
+
+for (const width of [375, 1440]) {
+  test(`Trade and partner stateful journeys at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mount(page, "cardattack/tcdb-trades?page=2");
+    await page.getByRole("searchbox").fill("Partner 01");
+    await page
+      .getByRole("combobox", { name: "Filter TCDb trades by status" })
+      .selectOption("Completed");
+    await page
+      .getByRole("link", { name: "Partner 01", exact: true })
+      .filter({ visible: true })
+      .click();
+    await page
+      .getByRole("link", { name: "Back to trades", exact: true })
+      .click();
+    await expect(page.getByRole("searchbox")).toHaveValue("Partner 01");
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`trades-${width}.png`),
+      fullPage: true,
+    });
+    await page.goto(
+      "http://directory.test/cardattack/tcdb-trade-partners?recognition=hall-of-fame&page=2",
+    );
+    await page.getByRole("searchbox").fill("Partner 01");
+    await page
+      .getByRole("link", { name: "Partner 01", exact: true })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("link", { name: "Back to directory" }).click();
+    await expect(
+      page.getByRole("combobox", {
+        name: "Filter trade partners by recognition",
+      }),
+    ).toHaveValue("hall-of-fame");
+  });
+  test(`Hall of Fame induction view and set return at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mount(page, "cardattack/hof");
+    await page
+      .getByRole("combobox", { name: "Hall of Fame view" })
+      .selectOption("inductions");
+    await page.getByRole("searchbox").fill("Set 01");
+    await page.reload();
+    await expect(
+      page.getByRole("combobox", { name: "Hall of Fame view" }),
+    ).toHaveValue("inductions");
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`hof-${width}.png`),
+      fullPage: true,
+    });
+    await page
+      .getByRole("link", { name: "Set 01", exact: true })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("link", { name: "Back to Hall of Fame" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("Set 01");
+  });
+}

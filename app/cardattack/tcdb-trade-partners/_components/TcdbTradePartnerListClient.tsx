@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useDirectoryField } from "@/components/directory/useDirectoryField";
+import { useDirectoryPagination } from "@/components/directory/useDirectoryPagination";
+import TablePager from "@/components/ui/TablePager";
 
 import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
 import {
@@ -45,9 +48,18 @@ export default function TcdbTradePartnerListClient({
 }: {
   rows: TcdbTradePartnerSummary[];
 }) {
-  const [query, setQuery] = useState("");
-  const [recognition, setRecognition] = useState("");
-  const [sort, setSort] = useState<PartnerSort>("latest");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [recognition, setRecognition] = useDirectoryField<string>(
+    "recognition",
+    "",
+    ["", "hall-of-fame"],
+  );
+  const [sort, setSort] = useDirectoryField<PartnerSort>("sort", "latest", [
+    "latest",
+    "username",
+    "trades",
+    "cards",
+  ]);
   const searchedRows = useTableSearch(rows, query, getPartnerSearchValues);
   const visibleRows = useMemo(() => {
     const filtered = searchedRows.filter(
@@ -66,6 +78,10 @@ export default function TcdbTradePartnerListClient({
   }, [recognition, searchedRows, sort]);
   const hasActiveControls =
     query.length > 0 || recognition.length > 0 || sort !== "latest";
+  const { pageRows, detailHref, pagination } = useDirectoryPagination(
+    visibleRows,
+    "/cardattack/tcdb-trade-partners",
+  );
   const emptyState =
     rows.length === 0
       ? "No trade partners are available yet."
@@ -130,14 +146,16 @@ export default function TcdbTradePartnerListClient({
 
       <ul className="space-y-3 md:hidden">
         {visibleRows.length > 0 ? (
-          visibleRows.map((partner) => (
+          pageRows.map((partner) => (
             <MobileDataCard key={partner.id}>
               <MobileDataCardHeader
                 eyebrow="TCDb partner"
                 title={
                   <Link
                     className="link-blue"
-                    href={`/cardattack/tcdb-trade-partners/${partner.id}`}
+                    href={detailHref(
+                      `/cardattack/tcdb-trade-partners/${partner.id}`,
+                    )}
                   >
                     {partner.tcdbUsername}
                   </Link>
@@ -200,12 +218,14 @@ export default function TcdbTradePartnerListClient({
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
-            visibleRows.map((partner) => (
+            pageRows.map((partner) => (
               <tr key={partner.id}>
                 <TableCell intent="name">
                   <Link
                     className="link-blue font-medium"
-                    href={`/cardattack/tcdb-trade-partners/${partner.id}`}
+                    href={detailHref(
+                      `/cardattack/tcdb-trade-partners/${partner.id}`,
+                    )}
                   >
                     {partner.tcdbUsername}
                   </Link>
@@ -249,6 +269,7 @@ export default function TcdbTradePartnerListClient({
           )}
         </TBody>
       </Table>
+      <TablePager {...pagination} />
     </div>
   );
 }

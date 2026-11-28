@@ -1,3 +1,6 @@
+import TcdbTradeListClient from "@/app/cardattack/tcdb-trades/_components/TcdbTradeListClient";
+import TcdbTradePartnerListClient from "@/app/cardattack/tcdb-trade-partners/_components/TcdbTradePartnerListClient";
+import HallOfFameDirectory from "@/app/cardattack/hof/HallOfFameDirectory";
 import LcsLandingPage from "@/components/lcs/LcsLandingPage";
 import UspsLandingPage from "@/components/usps/UspsLandingPage";
 import BricksLandingPage from "@/components/bricks/BricksLandingPage";
@@ -594,8 +597,94 @@ function TrackerFixture() {
     </main>
   );
 }
+
+function TradingFixture() {
+  const partners = Array.from({ length: 30 }, (_, i) => ({
+    id: i + 1,
+    tcdbUsername: `Partner ${String(i + 1).padStart(2, "0")}`,
+    tradeCount: 1,
+    cardsSent: 0,
+    cardsReceived: 10,
+    totalCardsExchanged: 10,
+    hallOfFameCount: 1,
+  }));
+  const trades = partners.map((p) => ({
+    tradeId: String(p.id),
+    startDate: "2026-11-28",
+    received: 10,
+    tradePartnerId: p.id,
+    partner: p.tcdbUsername,
+    status: "Completed" as const,
+  }));
+  const path = location.pathname;
+  return (
+    <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+      <PageIntro
+        title={
+          path === "/cardattack/hof"
+            ? "Hall of Fame"
+            : path.includes("partners")
+              ? "Trade Partners"
+              : "TCDb Trades"
+        }
+        eyebrow="cardattack"
+      />
+      {path === "/cardattack/tcdb-trades" ? (
+        <TcdbTradeListClient rows={trades} />
+      ) : path === "/cardattack/tcdb-trade-partners" ? (
+        <TcdbTradePartnerListClient rows={partners} />
+      ) : path === "/cardattack/hof" ? (
+        <HallOfFameDirectory
+          partners={partners.map((p) => ({
+            tradePartnerId: p.id,
+            tcdbUsername: p.tcdbUsername,
+            inductionCount: 1,
+            latestInductedDate: "2026-11-28",
+          }))}
+          inductions={partners.map((p) => ({
+            setSlug: `set-${p.id}`,
+            setName: `Set ${String(p.id).padStart(2, "0")}`,
+            releaseYear: 2026,
+            manufacturer: "Upper Deck",
+            tradeId: String(p.id),
+            tradePartnerId: p.id,
+            tcdbUsername: p.tcdbUsername,
+            inductedDate: "2026-11-28",
+            cardsOwned: 100,
+            totalCards: 100,
+          }))}
+        />
+      ) : (
+        <>
+          <DirectoryReturnLink
+            directory={
+              path.includes("partners")
+                ? "/cardattack/tcdb-trade-partners"
+                : "/cardattack/tcdb-trades"
+            }
+            className="btn"
+          >
+            Back to directory
+          </DirectoryReturnLink>
+          <ContextDirectoryReturn
+            directory="/cardattack/tcdb-trades"
+            label="Back to trades"
+          />
+          <ContextDirectoryReturn
+            directory="/cardattack/hof"
+            label="Back to Hall of Fame"
+          />
+          <p>Completed trade; 10 received; sent quantity not recorded.</p>
+        </>
+      )}
+    </main>
+  );
+}
 createRoot(document.getElementById("root")!).render(
-  trackerPaths.some((path) => location.pathname.startsWith(path)) ? (
+  location.pathname.startsWith("/cardattack/tcdb-trade") ||
+    location.pathname === "/cardattack/hof" ? (
+    <TradingFixture />
+  ) : trackerPaths.some((path) => location.pathname.startsWith(path)) ? (
     <TrackerFixture />
   ) : location.pathname.startsWith("/cardattack/categories") ? (
     <CategoryFixture />

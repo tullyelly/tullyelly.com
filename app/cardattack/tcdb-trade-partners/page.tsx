@@ -21,6 +21,7 @@ export default async function Page() {
   return (
     <DataPageShell width="wide">
       <PageIntro
+        eyebrow="cardattack"
         title="TCDb Trade Partners"
         description="The people behind the trades, the cards, and the sets they helped complete."
       />

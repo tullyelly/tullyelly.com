@@ -11,8 +11,9 @@ export default async function Page() {
   const trades = await listTcdbTrades();
 
   return (
-    <DataPageShell>
+    <DataPageShell width="wide">
       <PageIntro
+        eyebrow="cardattack"
         title="TCDb Trades"
         description="Thank you to all of my trade partners. A wonderful community."
       />

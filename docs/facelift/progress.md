@@ -177,3 +177,34 @@ Full baseline passed in 129.1s: 270 suites/2,150 tests and production build with
 passing coverage. Docs/format checks passed. Existing shared loading, error with
 retry and not-found boundaries remain in use. Connected database/authentication
 and external media integration remain unrun; all fixtures used synthetic data.
+
+## WU-1296
+
+Trades and partners now retain URL search/filter/sort/page state and safe returns.
+Received-only/completed classification and quantities remain owned by existing
+readers. The Hall of Fame scoreboard stays unchanged; a public view selector
+switches between partner rankings and exact set inductions, each searchable,
+sortable and pageable. Default partner induction ranking and induction chronology
+are preserved. Induction links carry Hall of Fame state to partner/trade/set
+pages. Trade detail gains a semantic heading, compact mobile stats and timeline
+navigation; partner relationships still use their existing canonical links.
+Singular compatibility routes retain allowlisted public browse state and reject
+external returns. No import/status/induction mutation capability was added.
+
+Thirty-five focused mocked checks passed for trade classifications, partner
+relationships, Hall of Fame tables and original timeline content. Two additional
+compatibility regressions passed for query filtering and safe redirects. The
+Hall of Fame route regression now exercises the view selector and unchanged
+scoreboard instead of expecting both tables to be visible simultaneously.
+
+All 34 browse checks passed, including trade-to-partner returns, partner
+recognition filters and Hall of Fame view reload/set returns at both sizes.
+Mobile captures exposed missing quantity fields and an incorrect "Open" fallback
+for completed trades without an end date. Cards now show received/sent/total with
+unknown values preserved; missing completion dates say "Not recorded". A focused
+regression covers this distinction, and all four trade/Hall of Fame browser
+journeys passed again. Filtered Hall of Fame emptiness has a distinct message.
+
+Final baseline passed in 142.5s: 271 suites/2,153 tests, passing coverage and
+production build. Docs and formatting passed. No connected database mutation,
+authentication, import or deployment was run.

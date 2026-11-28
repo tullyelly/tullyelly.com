@@ -8,8 +8,8 @@ import {
 import { getSetCollectorDetailHref } from "@/lib/set-collector-content";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import { SHARED_OPEN_GRAPH_FIELDS } from "@/lib/seo/constants";
-import TcdbTradeHallOfFameInductionsTable from "../tcdb-trades/_components/TcdbTradeHallOfFameInductionsTable";
-import TcdbTradeHallOfFameTable from "../tcdb-trades/_components/TcdbTradeHallOfFameTable";
+import HallOfFameDirectory from "./HallOfFameDirectory";
+
 import { fmtDate } from "@/lib/datetime";
 
 const pageTitle = "TCDb Trade Hall of Fame | tullyelly";
@@ -48,8 +48,9 @@ export default async function Page() {
     .sort((a, b) => Date.parse(b) - Date.parse(a))[0];
 
   return (
-    <DataPageShell>
+    <DataPageShell width="wide">
       <PageIntro
+        eyebrow="cardattack"
         title="TCDb Trade Hall of Fame"
         description="Celebrating the trade partners who helped close out a set."
       />
@@ -78,8 +79,7 @@ export default async function Page() {
         </StatGrid>
       </section>
 
-      <TcdbTradeHallOfFameTable rows={hallOfFamers} />
-      <TcdbTradeHallOfFameInductionsTable rows={inductionRows} />
+      <HallOfFameDirectory partners={hallOfFamers} inductions={inductionRows} />
     </DataPageShell>
   );
 }
