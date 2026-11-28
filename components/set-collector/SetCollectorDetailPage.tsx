@@ -1,3 +1,4 @@
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@ui";
@@ -174,19 +175,19 @@ export default function SetCollectorDetailPage({
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--collector-accent)_0%,var(--collector-accent-deep)_100%)] text-[color:var(--collector-pill-fg)] shadow-sm">
           <div className="space-y-4 px-4 py-4 md:space-y-6 md:px-6 md:py-6">
             <div className="space-y-2 md:grid md:grid-cols-[max-content_minmax(0,1fr)_max-content] md:items-center md:gap-x-4 md:space-y-0">
-              <Link
-                href="/cardattack/set-collector"
+              <DirectoryReturnLink
+                directory="/cardattack/set-collector"
                 className={`${topLinkClassName} whitespace-nowrap`}
               >
                 ← Back to Set Collector
-              </Link>
+              </DirectoryReturnLink>
               <div className="min-w-0 space-y-2 md:px-4 md:text-center">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/72">
                   {`${setCollector.releaseYear} ${setCollector.manufacturer}`}
                 </p>
-                <div className="text-[1.45rem] font-bold leading-none md:text-[1.8rem]">
+                <h1 className="!m-0 break-words text-[1.45rem] font-bold leading-none md:text-[1.8rem]">
                   {setCollector.setName}
-                </div>
+                </h1>
               </div>
               <span
                 aria-hidden="true"
@@ -196,11 +197,11 @@ export default function SetCollectorDetailPage({
               </span>
             </div>
 
-            <dl className="grid gap-px overflow-hidden rounded-xl border border-white/15 bg-white/15 sm:grid-cols-2 xl:grid-cols-5">
+            <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/15 bg-white/15 xl:grid-cols-5">
               {summaryStats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-black/10 px-3.5 py-3 md:px-4 md:py-3.5"
+                  className="min-w-0 break-words bg-black/10 px-3.5 py-3 md:px-4 md:py-3.5"
                 >
                   <dt className={summaryLabelClassName}>{stat.label}</dt>
                   <dd className={`mt-2 ${stat.valueContainerClassName ?? ""}`}>
@@ -240,11 +241,21 @@ export default function SetCollectorDetailPage({
           </div>
         </section>
 
+        <nav aria-label="On this page" className="flex flex-wrap gap-3">
+          <a className="link-blue" href="#set-collector-history">
+            Snapshot history
+          </a>
+          {photoPath ? (
+            <a className="link-blue" href="#set-collector-photo">
+              Completed set photo
+            </a>
+          ) : null}
+        </nav>
         {photoPath ? (
           <section aria-labelledby="set-collector-photo" className="space-y-5">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--collector-link)]/70">
-                reference path
+                completed collection
               </p>
               <h2
                 id="set-collector-photo"

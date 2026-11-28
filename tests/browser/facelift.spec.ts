@@ -295,3 +295,67 @@ for (const width of [375, 1440]) {
     ).toBeVisible();
   });
 }
+
+for (const width of [375, 1440]) {
+  test(`Category URL state, zero measurement and return at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mount(page, "cardattack/categories?page=2");
+    await page.getByRole("searchbox").fill("Category 01");
+    await page
+      .getByRole("combobox", { name: "Sort categories" })
+      .selectOption("date");
+    await page.getByRole("link", { name: "Category 01" }).click();
+    await expect(page.getByText("Nov 28, 2026: 0 cards")).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`category-${width}.png`),
+      fullPage: true,
+    });
+    await page.getByRole("link", { name: "Back to categories" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("Category 01");
+    await expect(
+      page.getByRole("combobox", { name: "Sort categories" }),
+    ).toHaveValue("date");
+  });
+  test(`Set controls, unknown progress and detail return at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mount(page, "cardattack/set-collector");
+    await expect(
+      page.getByText("No snapshot yet").filter({ visible: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("combobox", { name: "Filter tracked sets by category" })
+      .selectOption("non-sport");
+    await page.getByRole("searchbox").fill("Set 01");
+    await page
+      .getByRole("link", { name: "Set 01", exact: true })
+      .filter({ visible: true })
+      .click();
+    await expect(page.getByRole("heading", { name: "Set 01" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Snapshot History" }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`set-${width}.png`),
+      fullPage: true,
+    });
+    await page.getByRole("link", { name: /Back to Set Collector/ }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("Set 01");
+    await expect(
+      page.getByRole("combobox", { name: "Filter tracked sets by category" }),
+    ).toHaveValue("non-sport");
+  });
+}

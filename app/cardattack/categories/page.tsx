@@ -28,6 +28,7 @@ export default async function Page() {
     <div style={tcdbTradePageThemeVars}>
       <DataPageShell width="wide">
         <PageIntro
+          eyebrow="cardattack"
           title="Categories"
           description="Owned-card counts, optional TCDb rankings and signed differences recorded independently for each category. Each snapshot has its own measurement date."
           actions={

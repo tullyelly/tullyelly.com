@@ -1,3 +1,8 @@
+import CategoryOverview from "@/components/categories/CategoryOverview";
+import CategoryHistoryChart from "@/components/categories/CategoryHistoryChart";
+import SetCollectorLandingPage from "@/components/set-collector/SetCollectorLandingPage";
+import SetCollectorDetailPage from "@/components/set-collector/SetCollectorDetailPage";
+import { tcdbTradePageThemeVars } from "@/lib/tcdb-theme";
 import CratesDirectory from "@/components/theabbott/CratesDirectory";
 import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import IdentityDirectoryClient from "@/components/identity/IdentityDirectoryClient";
@@ -383,8 +388,108 @@ function MusicFixture() {
     </main>
   );
 }
+
+function CategoryFixture() {
+  const rows = Array.from({ length: 30 }, (_, i) => ({
+    category_id: String(i + 1),
+    slug: `category-${i + 1}`,
+    name: `Category ${String(i + 1).padStart(2, "0")}`,
+    snapshot_id: i === 1 ? null : String(i + 1),
+    measured_on: i === 1 ? null : "2026-11-28",
+    card_count: i === 1 ? null : i * 10,
+    previous_date: null,
+    previous_count: null,
+    count_change: null,
+    ranking: null,
+    previous_ranking: null,
+    rank_delta: null,
+    trend_rank: null,
+    difference: null,
+    previous_difference: null,
+    diff_delta: null,
+    trend_overall: null,
+    diff_sign_changed: null,
+  }));
+  return (
+    <main
+      className="mx-auto max-w-[72rem] space-y-6 p-4"
+      style={tcdbTradePageThemeVars}
+    >
+      <PageIntro title="Categories" eyebrow="cardattack" />
+      {location.pathname === "/cardattack/categories" ? (
+        <CategoryOverview categories={rows} />
+      ) : (
+        <>
+          <DirectoryReturnLink
+            directory="/cardattack/categories"
+            className="btn"
+          >
+            Back to categories
+          </DirectoryReturnLink>
+          <h2>Count history</h2>
+          <CategoryHistoryChart
+            snapshots={[
+              {
+                ...rows[0],
+                snapshot_id: "1",
+                measured_on: "2026-11-28",
+                card_count: 0,
+              },
+            ]}
+          />
+          <p>Nov 28, 2026: 0 cards</p>
+        </>
+      )}
+    </main>
+  );
+}
+function SetsFixture() {
+  const rows = Array.from({ length: 30 }, (_, i) => ({
+    id: i + 1,
+    setSlug: `set-${i + 1}`,
+    setName: `Set ${String(i + 1).padStart(2, "0")}`,
+    releaseYear: 2026,
+    manufacturer: "Upper Deck",
+    tcdbSetUrl: "https://www.tcdb.com/",
+    totalCards: 100,
+    snapshotCount: i === 1 ? 0 : 1,
+    cardsOwned: i === 1 ? undefined : i === 2 ? 100 : 0,
+    cardsMissing: i === 1 ? undefined : i === 2 ? 0 : 100,
+    percentComplete: i === 1 ? undefined : i === 2 ? 100 : 0,
+    latestSnapshotDate: i === 1 ? undefined : "2026-11-28",
+    categoryTag: i % 2 ? "basketball" : "non-sport",
+  }));
+  return (
+    <main className="mx-auto max-w-[72rem] p-4">
+      {location.pathname === "/cardattack/set-collector" ? (
+        <SetCollectorLandingPage rows={rows} />
+      ) : (
+        <SetCollectorDetailPage
+          setCollector={{
+            ...rows[0],
+            snapshots: [
+              {
+                id: 1,
+                setId: 1,
+                snapshotDate: "2026-11-28",
+                cardsOwned: 0,
+                totalCards: 100,
+                cardsMissing: 100,
+                percentComplete: 0,
+              },
+            ],
+          }}
+        />
+      )}
+    </main>
+  );
+}
 createRoot(document.getElementById("root")!).render(
-  location.pathname.startsWith("/theabbott/crates") ||
+  location.pathname.startsWith("/cardattack/categories") ? (
+    <CategoryFixture />
+  ) : location.pathname.startsWith("/cardattack/set-collector") ? (
+    <SetsFixture />
+  ) : location.pathname.startsWith("/theabbott/crates") ||
     location.pathname.startsWith("/shaolin/") ? (
     <MusicFixture />
   ) : location.pathname.startsWith("/unclejimmy/fam") ? (

@@ -130,3 +130,26 @@ Full verify:agent passed: 270 suites/2,150 tests with thresholds met and the
 production build completed. Docs and formatting passed. The known metadata/copy
 lint findings from WU-1292 remain assigned to the final sweep. Connected media,
 authentication and database-writing integration checks remain unrun.
+
+## WU-1294
+
+Category and SetCollector directories now use URL-backed search, domain-specific
+sorting, pagination and safe detail returns. Default ordering and clean canonical
+links remain intact. Category profiles add anchors to counts/ranks/dated history;
+set profiles gain a real page heading and history/photo navigation. Shared
+collection details inherit safe return state while retaining persona themes.
+Set progress calculation, selected inline snapshot behavior, ratings, trade links,
+category authorization and snapshot API/form contracts remain unchanged.
+
+The separate database-free chart suite passed all 16 checks, covering chart
+measurement, exact tooltip values, ranking gaps and responsive snapshot
+entry/correction with intercepted API responses. The full baseline includes
+existing inline SetCollector zero/partial/complete progress and date selection
+regressions. No category total is synthesized from overlapping collections.
+
+Full baseline passed in 128.2s: 270 suites/2,150 tests, coverage thresholds and
+production build. Eighteen browse fixture checks passed. Category desktop and
+SetCollector mobile captures were inspected; the latter prompted a compact
+two-column mobile summary, which passed the focused mobile/desktop browser
+journey again. Fixture types, docs and formatting checked separately. Connected
+SQL/authentication tests remain unrun under the read-only boundary.

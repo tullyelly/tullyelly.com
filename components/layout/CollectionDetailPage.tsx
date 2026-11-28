@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import Link from "next/link";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 
 import { Stat, StatGrid } from "@/components/ui/StatGrid";
 import ShareButton from "@/components/share/ShareButton";
@@ -77,15 +77,18 @@ export default function CollectionDetailPage({
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--collection-detail-accent)_0%,var(--collection-detail-accent-deep)_100%)] text-[color:var(--collection-detail-foreground)] shadow-sm">
           <div className="space-y-4 px-4 py-4 md:space-y-6 md:px-6 md:py-6">
             <div className="space-y-2 md:grid md:grid-cols-[max-content_minmax(0,1fr)_max-content] md:items-center md:gap-x-4 md:space-y-0">
-              <Link href={backHref} className={backLinkClassName}>
+              <DirectoryReturnLink
+                directory={backHref}
+                className={backLinkClassName}
+              >
                 {`← ${backLabel}`}
-              </Link>
+              </DirectoryReturnLink>
               <div className="min-w-0 space-y-2 md:px-4 md:text-center">
                 <p className="!m-0 text-xs font-semibold uppercase tracking-[0.24em] text-white/72">
                   {eyebrow}
                 </p>
                 <div className="space-y-1">
-                  <h1 className="!m-0 text-[1.45rem] font-bold leading-none md:text-[1.8rem]">
+                  <h1 className="!m-0 break-words text-[1.45rem] font-bold leading-none md:text-[1.8rem]">
                     {title}
                   </h1>
                   {subtitle ? (

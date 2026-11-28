@@ -1,7 +1,18 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import {
+  useDirectoryField,
+  useDirectorySearch,
+} from "@/components/directory/useDirectoryField";
+import {
+  clampDirectoryPage,
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+import TablePager from "@/components/ui/TablePager";
+
 import Link from "next/link";
 import { Card } from "@ui";
 
@@ -106,9 +117,25 @@ export default function SetCollectorListClient({
   tableTestId = "set-collector-table",
   rowTestId = "set-collector-row",
 }: SetCollectorListClientProps) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("");
-  const [sort, setSort] = useState<SetSort>("default");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [category, setCategory] = useDirectoryField<string>("category", "");
+  const [sort, setSort] = useDirectoryField<SetSort>("sort", "default", [
+    "default",
+    "name",
+    "year",
+    "progress",
+  ]);
+  const [page, setPage] = useDirectoryField<number>("page", 1);
+  const [pageSize, setPageSize] = useDirectoryField<number>(
+    "pageSize",
+    25,
+    [25, 50, 100],
+  );
+  const search = useDirectorySearch();
+  const returnTo = safeDirectoryReturn(
+    `${detailBasePath}${search}`,
+    detailBasePath,
+  );
   const searchedRows = useTableSearch(rows, query, getSetSearchValues);
   const categories = useMemo(
     () =>
@@ -127,11 +154,19 @@ export default function SetCollectorListClient({
     if (sort === "default") return filtered;
 
     return [...filtered].sort((a, b) => {
-      if (sort === "name") return a.setName.localeCompare(b.setName);
-      if (sort === "year") return b.releaseYear - a.releaseYear;
-      return (b.percentComplete ?? -1) - (a.percentComplete ?? -1);
+      if (sort === "name")
+        return a.setName.localeCompare(b.setName) || a.id - b.id;
+      if (sort === "year") return b.releaseYear - a.releaseYear || a.id - b.id;
+      return (
+        (b.percentComplete ?? -1) - (a.percentComplete ?? -1) || a.id - b.id
+      );
     });
   }, [category, searchedRows, sort]);
+  const current = clampDirectoryPage(page, visibleRows.length, pageSize);
+  const pagedRows = visibleRows.slice(
+    (current - 1) * pageSize,
+    current * pageSize,
+  );
   const emptyState =
     rows.length === 0 ? emptyMessage : "No tracked sets match these filters.";
   const hasActiveControls =
@@ -201,7 +236,7 @@ export default function SetCollectorListClient({
       />
       <ul className="space-y-4 md:hidden">
         {visibleRows.length > 0 ? (
-          visibleRows.map((row) => {
+          pagedRows.map((row) => {
             const progress = formatLatestProgress(
               row.cardsOwned,
               row.totalCards,
@@ -220,7 +255,14 @@ export default function SetCollectorListClient({
                     <div className="min-w-0 space-y-1">
                       <p className={mobileMetaLabelClassName}>Tracked Set</p>
                       <Link
-                        href={`${detailBasePath}/${row.setSlug}`}
+                        href={
+                          search
+                            ? withDirectoryReturn(
+                                `${detailBasePath}/${row.setSlug}`,
+                                returnTo,
+                              )
+                            : `${detailBasePath}/${row.setSlug}`
+                        }
                         className="block text-lg font-semibold leading-tight text-[color:var(--collector-link)] transition hover:text-[color:var(--collector-link-hover)]"
                       >
                         {row.setName}
@@ -305,7 +347,7 @@ export default function SetCollectorListClient({
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
-            visibleRows.map((row) => {
+            pagedRows.map((row) => {
               const progress = formatLatestProgress(
                 row.cardsOwned,
                 row.totalCards,
@@ -316,7 +358,14 @@ export default function SetCollectorListClient({
                 <tr key={row.id} data-testid={rowTestId}>
                   <TableCell intent="grow">
                     <Link
-                      href={`${detailBasePath}/${row.setSlug}`}
+                      href={
+                        search
+                          ? withDirectoryReturn(
+                              `${detailBasePath}/${row.setSlug}`,
+                              returnTo,
+                            )
+                          : `${detailBasePath}/${row.setSlug}`
+                      }
                       className="text-base font-semibold text-[color:var(--collector-link)] transition hover:text-[color:var(--collector-link-hover)]"
                     >
                       {row.setName}
@@ -388,6 +437,14 @@ export default function SetCollectorListClient({
           )}
         </TBody>
       </Table>
+      <TablePager
+        page={current}
+        pageSize={pageSize}
+        total={visibleRows.length}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={[25, 50, 100]}
+      />
     </div>
   );
 }
