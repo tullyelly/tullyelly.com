@@ -1055,7 +1055,9 @@
     "/images/optimus/kohler/fern/fern-2.webp",
     "/images/optimus/kohler/fern/fern-3.webp",
     "/images/optimus/kohler/fern/fern-4.webp",
+    "/images/optimus/kohler/hoops.webp",
     "/images/optimus/kohler/hotel.webp",
+    "/images/optimus/kohler/jordan.webp",
     "/images/optimus/kohler/lulu.webp",
     "/images/optimus/kohler/roadtrip/roadtrip-0.webp",
     "/images/optimus/kohler/roadtrip/roadtrip-1.webp",
@@ -7667,7 +7669,17 @@
       "height": 2560
     },
     {
+      "src": "/images/optimus/kohler/hoops.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
       "src": "/images/optimus/kohler/hotel.webp",
+      "width": 1920,
+      "height": 2550
+    },
+    {
+      "src": "/images/optimus/kohler/jordan.webp",
       "width": 1920,
       "height": 2550
     },
