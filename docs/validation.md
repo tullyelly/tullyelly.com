@@ -260,7 +260,8 @@ remotely after the protected human gate; see
 [production releases](production-releases.md#native-source-production-path).
 Analytics and credential-maintenance workflows retain separate full validation
 and Vercel builds. npm ci's postinstall and validation both generate Prisma. For application scope the pre-push
-hook still runs smoke followed by coverage and prepares via typecheck and coverage;
+hook still runs smoke followed by the canonical in-band coverage command and
+reuses the preparation already completed by typecheck;
 its release-publication stage markers remain intact. Next's Contentlayer plugin
 may also perform its own generation during production builds. These remaining
 costs are not silently bypassed by this change.

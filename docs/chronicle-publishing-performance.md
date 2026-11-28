@@ -131,3 +131,9 @@ WU-1312 and the epic stay open for actual production acceptance and timing.
 WU-1313 remains conditional; local results do not justify a new content platform
 or establish the five-minute hosted objective. No production attempt was run as
 part of preparation.
+
+An isolated application pre-push reproduction found a 15-second rollback CLI
+fixture timeout under the legacy parallel coverage command, while canonical
+in-band coverage passed. Application pre-push now calls test:ci:prepared after
+typecheck has prepared content. It retains full thresholded coverage, uses the
+same deterministic worker mode as CI and avoids preparing content a second time.
