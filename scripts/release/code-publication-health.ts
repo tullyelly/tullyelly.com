@@ -4,6 +4,7 @@ import { decodeHTML, decodeHTMLAttribute } from "entities";
 import probe from "./publication-probe.json";
 import type { PublicationPlan } from "./code-publication-plan";
 import { CodeHealthError, CodePublicationError } from "./code-diagnostics";
+import { boundedReads } from "./probe-reads";
 
 type Read = (path: string) => Promise<Response>;
 
@@ -165,7 +166,7 @@ export async function checkChangedPublicationHealth(
       renderedAssets.set(url.pathname + url.search, asset!);
     }
   }
-  for (const asset of plan.assets) {
+  await boundedReads(plan.assets, async (asset) => {
     if (
       !/^\/images\/[A-Za-z0-9_./-]+$/.test(asset.path) ||
       asset.path.split("/").includes("..") ||
@@ -173,8 +174,10 @@ export async function checkChangedPublicationHealth(
     )
       throw new Error("code.health-publication-asset");
     await image(read, asset.path, asset.path, asset.sha256, 64 * 1024 * 1024);
-  }
-  for (const [path, asset] of renderedAssets) await image(read, path, asset);
+  });
+  await boundedReads([...renderedAssets], async ([path, asset]) => {
+    await image(read, path, asset);
+  });
 }
 
 export async function checkPublicationHealth(
@@ -294,17 +297,22 @@ export async function checkPublicationHealth(
       "asset-missing",
       status,
     );
-  for (const requestPath of new Set([
-    ...probe.assets,
-    ...images.map((url) => url.pathname + url.search),
-  ])) {
-    const asset = requestPath.startsWith("/_next/image?")
-      ? new URL(requestPath, "https://tullyelly.com").searchParams.get("url")!
-      : requestPath;
-    const hash =
-      probe.assetSha256[requestPath as keyof typeof probe.assetSha256];
-    await image(read, requestPath, asset, hash);
-  }
+  await boundedReads(
+    [
+      ...new Set([
+        ...probe.assets,
+        ...images.map((url) => url.pathname + url.search),
+      ]),
+    ],
+    async (requestPath) => {
+      const asset = requestPath.startsWith("/_next/image?")
+        ? new URL(requestPath, "https://tullyelly.com").searchParams.get("url")!
+        : requestPath;
+      const hash =
+        probe.assetSha256[requestPath as keyof typeof probe.assetSha256];
+      await image(read, requestPath, asset, hash);
+    },
+  );
   const listingResponse = await html(read, "/shaolin");
   const listing = markup(listingResponse.body);
   // The archive's actual rows must contain the source-bound newest publication.

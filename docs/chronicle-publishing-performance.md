@@ -84,3 +84,18 @@ download cache; it is not a hosted before/after measurement or a proven cold
 network result. The historical hosted dispatcher installation was 72 seconds
 and release installation 83 seconds. Hosted cache-hit/miss and phase results
 remain part of WU-1312's next authorized production test.
+
+## Verification implementation; WU-1310
+
+Independent page and image reads use at most four workers per batch. Active
+readers settle before a failure is surfaced, and errors retain the original
+probe ordering. Each application verification owns a two-minute abort deadline
+in addition to existing request timeouts. Duplicate Chronicle/image GETs reuse
+response bytes only inside that pass, with a 16 MiB retention budget; owner and
+authorization responses are never cached. Staged/public passes remain separate.
+All existing content, hash, redirect and authorization assertions remain.
+
+A local synthetic batch of twelve 20 ms reads took 254 ms serially and 63 ms with
+four workers. This demonstrates scheduling only; hosted staged/public network
+timings remain unmeasured until the authorized pilot. The pinned CLI 63.1.2
+loopback contract passed under Node 22.20.0 without a provider deployment.
