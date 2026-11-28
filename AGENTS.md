@@ -22,6 +22,10 @@ Chronicles. Attribute each commit to its actual verified child item; preserve
 session-specific context and serialize Git/index mutations. No separate story,
 author or agent branches. Jira attribution does not authorize release or SQL.
 
+For ordinary “commit this,” “open/update a PR,” or “deploy this” requests, follow
+[delivery requests](.agents/skills/delivery-requests/SKILL.md). Use the existing
+profile tooling automatically; James need not choose a lane or special prompt.
+
 ## Universal rules
 
 - Use npm. Do not start the dev server; the user handles it locally.
