@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 const appDir = path.join(process.cwd(), "app");
 
@@ -38,10 +39,40 @@ for (const abs of pages) {
   const rel = abs.replace(appDir, "").replace(/\\/g, "/");
   if (shouldIgnore(rel)) continue;
   const src = fs.readFileSync(abs, "utf8");
-  const hasMetadata =
-    /export\s+const\s+metadata\s*=/.test(src) ||
-    /export\s+(?:async\s+)?function\s+generateMetadata\s*\(/.test(src) ||
-    /export\s+const\s+generateMetadata\s*=/.test(src);
+  const source = ts.createSourceFile(
+    abs,
+    src,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
+  const names = new Set(["metadata", "generateMetadata"]);
+  const hasMetadata = source.statements.some((statement) => {
+    if (
+      ts.isExportDeclaration(statement) &&
+      statement.exportClause &&
+      ts.isNamedExports(statement.exportClause)
+    ) {
+      return statement.exportClause.elements.some((element) =>
+        names.has(element.name.text),
+      );
+    }
+    const exported =
+      ts.canHaveModifiers(statement) &&
+      ts
+        .getModifiers(statement)
+        ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
+    if (!exported) return false;
+    if (ts.isFunctionDeclaration(statement))
+      return !!statement.name && names.has(statement.name.text);
+    return (
+      ts.isVariableStatement(statement) &&
+      statement.declarationList.declarations.some(
+        (declaration) =>
+          ts.isIdentifier(declaration.name) && names.has(declaration.name.text),
+      )
+    );
+  });
   if (!hasMetadata) offenders.push(rel);
 }
 

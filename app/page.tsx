@@ -1,3 +1,5 @@
+import { buildRootMetadata } from "@/lib/seo/root-metadata";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import PageIntro from "@/components/layout/PageIntro";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,3 +55,8 @@ export default async function HomePage() {
     </div>
   );
 }
+
+export const metadata = {
+  ...buildRootMetadata(),
+  alternates: { canonical: canonicalUrl("") },
+};

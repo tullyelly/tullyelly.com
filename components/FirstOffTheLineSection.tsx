@@ -40,7 +40,7 @@ export function FirstOffTheLineSection({ date }: Props) {
         <div className="fol-video__frame">
           <iframe
             src="https://www.youtube.com/embed/4zWeI5dDDyY?playsinline=1&rel=0&loop=1&playlist=4zWeI5dDDyY"
-            title="Legend — tullyelly (First Off The Line)"
+            title="Legend ; tullyelly (First Off The Line)"
             loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"

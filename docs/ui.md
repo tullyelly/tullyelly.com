@@ -95,3 +95,12 @@ filter, sort and page actions push Next history, preserving Back/Forward. The
 client displays the supplied server order and carries safe directory context to
 profiles. Each sport retains its own dated metrics/history and profile anchor;
 no member/collection counts are combined into a new distinct-card metric.
+
+The complete rollout and intentional exceptions are tracked in
+[the final route matrix](facelift/routes.md) and [verification](facelift/verification.md).
+Use `IdentityDirectoryPage` with an explicit directory path; the superseded
+unfiltered card branch has no remaining route consumers. Use `ArchiveReturnLink`
+for recognized content archives and `DirectoryReturnLink` for a fixed domain
+fallback. Persona application discovery must consume the existing filtered menu;
+never introduce a second hardcoded route/permission inventory. Shared primitives
+do not own relationship queries, release extraction, authorization or calculations.

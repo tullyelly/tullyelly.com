@@ -1,3 +1,4 @@
+import { makeIdentityGenerateMetadata } from "@/lib/seo/identity-metadata";
 import IdentityMusic from "@/components/theabbott/IdentityMusic";
 import IdentityDetailPage from "@/components/identity/IdentityDetailPage";
 
@@ -25,3 +26,9 @@ export default async function Page({
     />
   );
 }
+
+export const generateMetadata = makeIdentityGenerateMetadata({
+  directory: "/theabbott/homies",
+  kind: "person",
+  noun: "Homie",
+});

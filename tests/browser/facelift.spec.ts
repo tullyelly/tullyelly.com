@@ -11,6 +11,18 @@ test.beforeAll(async () => {
     css: { postcss: { plugins: [tailwind()] } },
     resolve: {
       alias: {
+        ...(process.env.FACELIFT_BASELINE_DIR
+          ? Object.fromEntries(
+              [
+                "app/cardattack/homies/_components/HomieDirectory",
+                "components/tcdb/RankingDetailPage",
+                "app/shaolin/_components/ChronicleListClient",
+              ].map((module) => [
+                `@/${module}`,
+                path.join(process.env.FACELIFT_BASELINE_DIR!, `${module}.tsx`),
+              ]),
+            )
+          : {}),
         "@/lib/cn": path.resolve("app/lib/cn.ts"),
         "next-auth/react": path.resolve(
           "tests/browser/fixtures/navigation-session.ts",
@@ -630,5 +642,41 @@ for (const width of [375, 1440]) {
     ).toBe(true);
     await apps.getByRole("link", { name: /Homies/ }).click();
     await expect(page).toHaveURL(/cardattack\/homies/);
+  });
+}
+
+for (const width of [375, 1440]) {
+  test(`visual comparison at ${width}px`, async ({ page }, info) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await mount(page, "cardattack/homies");
+    await page.screenshot({ path: info.outputPath(`homies-${width}.png`) });
+    await page.goto("http://directory.test/cardattack/homies/homie-1");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await page.screenshot({ path: info.outputPath(`profile-${width}.png`) });
+    await page.goto("http://directory.test/shaolin");
+    await expect(page.getByRole("searchbox")).toBeVisible();
+    await page.screenshot({ path: info.outputPath(`chronicles-${width}.png`) });
+  });
+}
+
+for (const width of [320, 768]) {
+  test(`reflow across route families at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await mount(page, "cardattack/homies/homie-1");
+    for (const route of [
+      "cardattack/homies/homie-1",
+      "unclejimmy/fam",
+      "theabbott/crates",
+      "shaolin",
+      "mark2/shaolin-scrolls",
+    ]) {
+      await page.goto(`http://directory.test/${route}`);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
   });
 }

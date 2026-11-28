@@ -217,6 +217,16 @@ test("family aliases retain only safe directory return state", async () => {
     ),
   });
   await expect(
+    IdentityDetailPage({
+      ...props,
+      returnTo: "/shaolin/tags?q=bonnie&page=2&token=private",
+    }),
+  ).rejects.toMatchObject({
+    digest: expect.stringContaining(
+      "returnTo=%2Fshaolin%2Ftags%3Fq%3Dbonnie%26page%3D2",
+    ),
+  });
+  await expect(
     IdentityDetailPage({ ...props, returnTo: "https://example.com" }),
   ).rejects.toMatchObject({
     digest: expect.stringContaining("returnTo=%2Funclejimmy%2Ffam;"),

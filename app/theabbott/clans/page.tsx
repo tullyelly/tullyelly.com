@@ -1,3 +1,5 @@
+import { buildMetadata } from "@/lib/seo/builders";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import IdentityDirectoryPage from "@/components/identity/IdentityDirectoryPage";
 
 export default function Page() {
@@ -12,3 +14,9 @@ export default function Page() {
     />
   );
 }
+
+export const metadata = buildMetadata({
+  title: "Clans | tullyelly",
+  description: "Music groups, members and their stories.",
+  canonical: canonicalUrl("theabbott/clans"),
+});

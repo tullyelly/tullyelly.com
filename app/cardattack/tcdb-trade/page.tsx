@@ -1,3 +1,10 @@
+import { buildMetadata } from "@/lib/seo/builders";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
+export const metadata = buildMetadata({
+  title: "TCDb Trades | tullyelly",
+  description: "The cardattack trade ledger and trading partners.",
+  canonical: canonicalUrl("cardattack/tcdb-trades"),
+});
 import { permanentRedirect } from "next/navigation";
 import { safeDirectoryReturn } from "@/lib/directory-state";
 export default async function Page({

@@ -257,3 +257,28 @@ interaction. Vitest's full 38 checks passed again after that fix.
 
 Final navigation baseline passed in 124.8s: 272 suites/2,162 tests, passing
 coverage and database-free production build. Docs and formatting passed.
+
+## WU-1299
+
+Final reconciliation accounts for all 74 page routes with an owner and explicit
+migrated/intentional-exception outcome. Canonical metadata was added where routes
+previously inherited generic metadata; typed/re-exported declarations no longer
+trigger false scanner failures. Identity metadata preserves authored names/previews
+and canonical aliases, sharing one request-local lookup with profile/music content.
+Alias redirects now preserve archive return state. Malformed archive paths are
+rejected. The unused pre-rollout identity-card branch was removed after confirming
+all four callers use the new directory. The existing prohibited punctuation in
+First Off the Line was corrected without changing its meaning.
+
+All 44 isolated browse/navigation/visual/reflow checks, 16 chart/editor fixtures
+and 38 Vitest checks passed. Before/after component screenshots are committed in
+`evidence/`, with their scope and reproduction method in `verification.md`.
+Metadata, copy, server-fetch, docs and explicit formatting checks passed. Final
+baseline: 112.3s, 274 suites/2,168 tests, passing coverage and production build.
+No new SQL or database-writing validation was needed or run.
+
+The extra local production probe was blocked by missing runtime auth/database
+configuration and returned 500 error boundaries. It is not counted as hydration
+or rendered-SEO evidence. Connected-runtime validation, real authentication and
+owner-operated mutation checks remain pending. Code preparation, merge and
+production deployment are separate states; no deployment was initiated.

@@ -1,3 +1,4 @@
+import { makeIdentityGenerateMetadata } from "@/lib/seo/identity-metadata";
 import IdentityDetailPage from "@/components/identity/IdentityDetailPage";
 
 export default async function Page({
@@ -23,3 +24,9 @@ export default async function Page({
     />
   );
 }
+
+export const generateMetadata = makeIdentityGenerateMetadata({
+  directory: "/unclejimmy/squads",
+  kind: "group",
+  noun: "Squad",
+});

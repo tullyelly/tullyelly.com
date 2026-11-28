@@ -1,3 +1,19 @@
+import { buildMetadata } from "@/lib/seo/builders";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { tradeId } = await params;
+  return buildMetadata({
+    title: `TCDb Trade ${tradeId}`,
+    description: `TCDb trade ${tradeId} detail page.`,
+    canonical: canonicalUrl(
+      `cardattack/tcdb-trades/${encodeURIComponent(tradeId)}`,
+    ),
+  });
+}
 import { permanentRedirect } from "next/navigation";
 import {
   safeDirectoryReturn,

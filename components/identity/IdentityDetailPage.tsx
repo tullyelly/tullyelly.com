@@ -1,3 +1,4 @@
+import { getArchiveReturnDirectory } from "@/lib/archive-return";
 import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import type { ReactNode } from "react";
 import CollectionRelationships from "@/components/identity/CollectionRelationships";
@@ -61,10 +62,11 @@ export default async function IdentityDetailPage({
             href,
             safeDirectoryReturn(
               returnTo,
-              context === "theabbott" &&
+              getArchiveReturnDirectory(returnTo)?.path ??
+                (context === "theabbott" &&
                 returnTo.split("?")[0] === "/theabbott/crates"
-                ? "/theabbott/crates"
-                : directoryHref,
+                  ? "/theabbott/crates"
+                  : directoryHref),
             ),
           )
         : href,

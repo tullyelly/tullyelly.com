@@ -1,3 +1,5 @@
+import { buildMetadata } from "@/lib/seo/builders";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import TagLink from "@/components/tags/TagLink";
 import CratesDirectory from "@/components/theabbott/CratesDirectory";
 import Link from "next/link";
@@ -91,3 +93,9 @@ export default async function Page() {
     </DataPageShell>
   );
 }
+
+export const metadata = buildMetadata({
+  title: "The Crates | tullyelly",
+  description: "Discover albums, songs, artists and their source Chronicles.",
+  canonical: canonicalUrl("theabbott/crates"),
+});

@@ -4,6 +4,11 @@ import { getPersonaReleaseFeed } from "@/lib/persona-release-feeds";
 export function getArchiveReturnDirectory(candidate?: string | null) {
   const path = candidate?.split("?")[0];
   if (!path) return null;
+  try {
+    decodeURIComponent(path);
+  } catch {
+    return null;
+  }
   if (path === "/shaolin") return { path, label: "Back to Chronicles" };
   if (path === "/shaolin/tags") return { path, label: "Back to tag directory" };
   if (

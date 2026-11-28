@@ -11,6 +11,8 @@ it.each([
   "/shaolin/../admin",
   "/shaolin/tags/../../admin",
   "/unknown/releases",
+  "/shaolin/tags/%ZZ",
+  "/shaolin/tags/%2e%2e",
   "/shaolin/tags/tag/extra",
 ])("rejects unrecognized archive source %s", (source) => {
   expect(getArchiveReturnDirectory(source)).toBeNull();
