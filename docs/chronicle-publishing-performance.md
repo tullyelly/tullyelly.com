@@ -99,3 +99,35 @@ A local synthetic batch of twelve 20 ms reads took 254 ms serially and 63 ms wit
 four workers. This demonstrates scheduling only; hosted staged/public network
 timings remain unmeasured until the authorized pilot. The pinned CLI 63.1.2
 loopback contract passed under Node 22.20.0 without a provider deployment.
+
+## Production pilot preparation; WU-1312
+
+The complete focused command passed against an isolated checkout of the real
+Thanksgiving source commit 3361dde44d84ea55a46f05e23a93fda616c0875b, comparing
+6b9dbe88b2d0cf5e80ec4c6b7ae8d784645d0938. It inspected all 2,380 image records
+without a dimension cache, reproduced the manifest, compiled the changed post,
+checked its two image assets and passed eight suites / 56 tests. Preparation
+took 10.6 seconds and Jest 2.687 seconds locally. Dependencies were already
+installed; these numbers exclude CI setup, review, queues and native deployment.
+
+Read-only inspection on November 27, 2026 found the active main ruleset requiring
+`Lint, test, build` from GitHub Actions (15368), strict up-to-date checks, one
+approval, stale/last-push and code-owner review. That observed ruleset needs no
+status rename for the profile gate. Classic protection was not independently
+verified and no setting was changed.
+
+The new read-only status command successfully read the original release receipt
+for run 45948107918, attempt 1, application
+ff4c7e920aaa69502a4cd542a28b8ac95c629a07 and deployment
+dpl_7W8Rv76kJQxUka1k2PgbANeQGV9S. The original record says public verification
+pending; workflow success is not public proof. No suitable local read-only
+Vercel metadata credential was available to run the standalone completion
+verifier. Preserve this record for resolution or an explicit supersession
+decision during release coordination.
+
+The first implementation release exercises the application profile, smaller
+setup, concurrent verification and receipts through the existing protected gate.
+WU-1312 and the epic stay open for actual production acceptance and timing.
+WU-1313 remains conditional; local results do not justify a new content platform
+or establish the five-minute hosted objective. No production attempt was run as
+part of preparation.
