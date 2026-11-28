@@ -33,6 +33,14 @@ if [[ "${CI:-}" == "true" ]]; then
   exit 0
 fi
 
+# Exit 2 selects the existing application path. Content failures still block push.
+if node --import tsx scripts/chronicle-profile.ts hook; then
+  exit 0
+else
+  profile_status=$?
+  if [[ "$profile_status" != "2" ]]; then exit "$profile_status"; fi
+fi
+
 echo "🧹 Linting…"
 run_workspace_script lint
 if has_npm_script lint; then

@@ -1,5 +1,6 @@
 /** Only the App-dispatched protected workflow may execute production mutations. */
 import { z } from "zod";
+import { classifyContent } from "./release/content-profile";
 import { verifyChildDispatch, verifyHumanApproval } from "./release/app";
 import {
   assertVercelProject,
@@ -94,6 +95,7 @@ async function githubGate() {
     token,
     async (path, accessToken) =>
       request(`https://api.github.com${path}`, accessToken),
+    classifyContent(manifest.baseline.applicationSha, manifest.commit).profile,
   );
   if (JSON.stringify(ci) !== JSON.stringify(manifest.ci))
     throw new Error("code.required-ci-unavailable");

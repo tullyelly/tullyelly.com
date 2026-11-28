@@ -90,7 +90,10 @@ exact paths and actual blockers; never imply prepared SQL is applied.
 
 Run `npm run verify:agent` before review; it prepares once, lints, typechecks,
 generates Prisma, runs full thresholded Jest coverage once, and builds Next.
-Do not repeat those checks after a successful run. Fix failures caused by changes;
+Do not repeat those checks after a successful run.
+For later eligible Chronicle-only publication, the reviewed content profile in
+[validation](docs/validation.md#chronicle-content-profile-wu-1117) replaces unrelated
+application validation; engineering and uncertain changes retain verify:agent. Fix failures caused by changes;
 report existing failures and incomplete checks accurately. Do not skip CI checks.
 Additional required checks and prerequisites are owned by
 [validation](docs/validation.md), including formatting, metadata, content/images,

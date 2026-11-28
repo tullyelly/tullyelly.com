@@ -12,6 +12,7 @@ import {
   inferClanSnapshotTagUsagesFromTree,
   inferYouTubeVideoTagsFromTree,
   inferChronicleMusicUsagesFromTree,
+  type MdxNode,
 } from "../../lib/alterEgo";
 
 export async function validateChangedContent(
@@ -42,7 +43,7 @@ export async function validateChangedContent(
           data.date.slice(0, 10)
       )
         throw new Error("Invalid publication date");
-      const tree = createProcessor().parse(content);
+      const tree = createProcessor().parse(content) as unknown as MdxNode;
       inferAlterEgosFromTree(tree);
       inferPersonTagUsagesFromTree(tree);
       inferClanSnapshotTagUsagesFromTree(tree);

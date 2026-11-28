@@ -181,7 +181,7 @@ main, using Node 22.20.0 from .nvmrc, matching all release workflows. Its
 `guardrails` job retains the exact `Lint, test, build` check name. It runs
 verify:source with SKIP_DB=true, uploads `coverage-lcov` (missing lcov fails the
 job), runs build:validated in the same checkout, then checks security headers on
-the production server. There is no CI_ENABLED gate or path-based bypass. Vitest,
+the production server. There is no CI_ENABLED gate. The reviewed Chronicle profile below selects focused checks. Vitest,
 formatting, metadata, Playwright, images, and SEO are not CI baseline steps.
 
 All workflows use ubuntu-24.04 and select the application Node version through
@@ -344,3 +344,38 @@ binding. Other Neon hostname occurrences remain flagged. The exception does not
 skip the rest of the file or the recommended secret rules. Decoded JSON strings
 are checked for database URLs, URL credentials and secret query parameters;
 validation subprocess failures deny the hostname exception without logging input.
+
+## Chronicle content profile; WU-1117
+
+`node --import tsx scripts/chronicle-profile.ts select` reads the public production
+revision and classifies its complete diff to HEAD. Unavailable identity, missing
+ancestry, dirty tracked files or unsupported changes select full application
+validation. No force-fast switch exists. CI uses a full-history checkout and
+reruns selection on each exact PR/merged target.
+
+`node --import tsx scripts/chronicle-profile.ts validate` rechecks the saved
+selection, prepares content once, requires manifest regeneration to match Git,
+compiles affected MDX, checks inference/assets and runs focused inference,
+renderer, path and feed regressions. It does not run application-wide lint,
+typechecking, coverage or a validation Next build. The native production build
+and staged/public acceptance still run. Editorial/presentation regressions can
+escape this deliberately narrower profile; use a reviewed forward correction.
+
+The historical `Lint, test, build` context remains the required profile gate. Its
+job output and logs state the actual profile. The second check is `coverage` for
+application validation and `Chronicle content checks` for content validation;
+content never publishes an lcov artifact or claims full coverage. Release
+preparation independently reclassifies the authoritative production-to-target
+diff and accepts content evidence only for content-eligible scope. A full
+application pass remains stronger acceptable evidence. Checks must come from the
+trusted push-main workflow on the exact selected revision.
+
+Before activating this policy, inspect effective branch rules. Require the
+existing `Lint, test, build` profile gate; if an additional unconditional
+`coverage` requirement exists, replace that extra requirement with the profile
+gate through owner review. Do not remove PR reviews, strict/up-to-date checks or
+workflow ownership requirements. The implementation PR itself uses full
+verify:agent and full application CI. No repository setting is changed by code.
+
+Pre-push uses the same selection and focused validation. Application scope falls
+back to the existing hook. A focused validation failure blocks push.
