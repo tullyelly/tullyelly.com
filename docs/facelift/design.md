@@ -55,7 +55,7 @@ to defaults; positive integer pages are bounded to available results. Filter,
 search, sort and page-size changes reset the page to 1. Clear resets only that
 directory's supported state and preserves unrelated query parameters.
 
-Defaults: Homies retain jersey order with supported name/rank alternatives;
+Defaults: Homies retain card-count descending order with supported name/rank alternatives;
 Clans retain existing server ordering and paging; identity lists use name then
 slug; sets retain repository ordering; visits/reviews use latest first; trades
 use newest first; tags use usage then name; Chronicles/releases use newest first.

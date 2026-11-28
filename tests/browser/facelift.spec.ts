@@ -101,3 +101,48 @@ for (const width of [375, 768, 1440])
       fullPage: true,
     });
   });
+
+for (const width of [375, 1440])
+  test(`Homie directory and profile return at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await mount(page);
+    await page.goto(
+      "http://directory.test/cardattack/homies?q=greek&sort=name",
+    );
+    await expect(page.getByRole("searchbox")).toHaveValue("greek");
+    await expect(page.getByRole("status").first()).toContainText("1 homie");
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath(`homies-${width}.png`),
+      fullPage: true,
+    });
+    await page
+      .getByRole("link", {
+        name: "Giannis Antetokounmpo with a very long display name",
+        exact: true,
+      })
+      .click();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Giannis",
+    );
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath(`homie-detail-${width}.png`),
+      fullPage: true,
+    });
+    await page
+      .getByRole("link", { name: "Back to homies", exact: true })
+      .click();
+    await expect(page.getByRole("searchbox")).toHaveValue("greek");
+    await expect(page.getByLabel("Sort homies")).toHaveValue("name");
+  });

@@ -45,3 +45,23 @@ unrelated parameters and hostile/private return destinations. The mobile fixture
 was inspected; UTF-8 metadata was added to the isolated screenshot harness after
 spotting an encoding artifact, and browser checks passed again. Screenshot
 outputs live under test-results/facelift-*/. No connected write checks ran.
+
+## WU-1290
+
+Homies now persist alias search, trend, sort and paging, clamp stale pages and
+carry validated return context through detail/alias navigation. Cards and tables
+show measurement dates; absent values remain distinct from zero. Card-count
+ordering remains the default, with stable name/rank alternatives. The pilot
+corrected the initial inventory's mistaken jersey-order note after inspecting
+the reader's actual ORDER BY. Profile headers wrap long names, and section links
+organize history, relationships, names and Chronicles without changing feeds.
+Snapshot close targets/action spacing improved; existing authorization and editing
+remain intact.
+
+Full verify:agent passed in 115.7s: 269 suites/2,142 tests, unchanged passing
+coverage and database-free build. The subsequently added alias-return regression
+passed in the focused 13-test route suite. Six Chromium checks passed, including
+mobile/desktop alias-search -> profile -> same-state directory journeys; pilot
+screenshots under test-results were inspected. Mocked 409/403/422 responses retain
+edited input, alongside existing save/failure/unsaved-edit tests. No database
+writes or connected authentication checks ran.

@@ -367,11 +367,11 @@ export default function AddSnapshotButton({
               borderTopRightRadius: "13px",
             }}
           >
-            <Dialog.Title className="text-base font-semibold leading-6">
+            <Dialog.Title className="text-lg font-semibold leading-6">
               New Snapshot
             </Dialog.Title>
             <Dialog.Close
-              className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded border border-white/80 text-white transition hover:opacity-80"
+              className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded border border-white/80 text-white transition hover:opacity-80"
               aria-label="Close dialog"
               disabled={isSubmitting}
             >
@@ -600,7 +600,7 @@ export default function AddSnapshotButton({
                   )}
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-wrap justify-end gap-3 border-t border-[var(--border)] pt-4">
                 <Dialog.Close asChild>
                   <Button
                     type="button"

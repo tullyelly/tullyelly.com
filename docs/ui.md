@@ -79,3 +79,11 @@ Database-free browser coverage runs with
 It covers real native history, reload, invalid queries, page-size changes, no
 matches and responsive layouts without environment files, seeding or app startup.
 It does not establish live Next/database integration.
+
+The Homies pilot keeps all directory subjects and card-count ordering, with name
+and rank alternatives (missing values last). Search includes aliases; trend,
+sort and paging persist in the URL. Cards and tables show measurement dates and
+explicit unavailable values. Profiles use wrapping grid headers, safe directory
+return links and section anchors. Alias redirects retain validated return state;
+canonical metadata and missing-ranking detail behavior remain unchanged. Existing
+snapshot/edit validation, permissions, conflict preservation and feedback remain.

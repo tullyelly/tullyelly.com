@@ -70,6 +70,7 @@ export default async function Page(_props?: {
   return (
     <DataPageShell>
       <PageIntro
+        eyebrow="cardattack"
         title="Homies"
         description="The public homie directory, with current TCDb collection rankings where available."
         actions={
