@@ -246,7 +246,7 @@ export async function checkCodeHealth(options: {
     options.operation === "deploy"
       ? (["/", "/shaolin", "/stats"] as const)
       : (["/", "/shaolin"] as const);
-  await boundedReads(paths, async (path) => {
+  const checkPage = async (path: (typeof paths)[number]) => {
     let trace: HealthRequestTrace | undefined;
     const r = await read(path, 30000, false, undefined, (value) => {
       trace = value;
@@ -255,7 +255,10 @@ export async function checkCodeHealth(options: {
       throw new CodeHealthError(path, r.status, "http-status", trace);
     if (!(await r.text()).toLowerCase().includes("<!doctype html>"))
       throw new CodeHealthError(path, r.status, "missing-doctype", trace);
-  });
+  };
+  // Establish the homepage/challenge boundary before fanning out other pages.
+  await checkPage(paths[0]);
+  await boundedReads(paths.slice(1), checkPage);
   if (options.operation === "rollback") return;
   if ((await read("/api/cron/analytics", 15000)).status !== 401)
     throw new Error("code.health-cron-authorization");
