@@ -403,6 +403,17 @@ export default function NavDesktop({
             sideOffset={8}
             collisionPadding={16}
             data-testid="nav-desktop-panel"
+            onCloseAutoFocus={(event) => {
+              // A closing animation must not steal focus from a newly opened
+              // command menu or another control the visitor already selected.
+              const active = document.activeElement;
+              if (
+                active instanceof HTMLElement &&
+                active !== document.body &&
+                !active.closest('[data-testid="nav-desktop-panel"]')
+              )
+                event.preventDefault();
+            }}
             onEscapeKeyDown={(event) => {
               event.preventDefault();
               closeMenu();

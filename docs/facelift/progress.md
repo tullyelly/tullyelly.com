@@ -233,3 +233,27 @@ services; connected databases, authentication and release creation remain unrun.
 
 Full baseline passed in 153.8s: 272 suites/2,162 tests, passing coverage and
 database-free production build. Docs and formatting checks passed.
+
+## WU-1298
+
+All five persona pages now share an introduction and application discovery module
+backed by the existing request-cached, permission-filtered menu. Database labels,
+ordering, external targets and feature visibility are retained. Authored sections,
+media, activity charts and release feeds remain intact. Home and site search use
+the shared heading contract; Mark2's authored blueprint heading becomes h2 beneath
+its new page h1. The route-to-menu reconciliation is recorded in `docs/menu.md`.
+No new navigation SQL or global stylesheet change was needed.
+
+All 38 Vitest checks passed, including actual menu loader fixtures for anonymous
+and authorized Admin discovery, external links, public route coverage, mobile
+and desktop discovery, command search and feature/requirements precedence.
+
+Both isolated navigation journeys passed at 375px/1440px. Screenshots were
+inspected. They cover landing-to-Homies navigation, mobile dismissal, desktop
+Escape/focus return and command discovery of both Homies directories. The browser
+exposed a desktop closing-animation focus race; dismissal now preserves a newly
+selected control or command input. The regression passes with rapid menu-to-search
+interaction. Vitest's full 38 checks passed again after that fix.
+
+Final navigation baseline passed in 124.8s: 272 suites/2,162 tests, passing
+coverage and database-free production build. Docs and formatting passed.

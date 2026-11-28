@@ -1,3 +1,4 @@
+import PersonaApplications from "@/components/persona/PersonaApplications";
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
@@ -249,4 +250,40 @@ describe("shared database menu discovery", () => {
       document.querySelector('[data-testid="menu-item-menu.mark2.admin"]'),
     ).toBeNull();
   });
+});
+
+it("landing applications reuse authorized menu links without exposing Admin to anonymous visitors", async () => {
+  const { rerender } = render(
+    <PersonaApplications tree={(await getMenu()).tree} persona="mark2" />,
+  );
+  expect(screen.queryByRole("link", { name: /admin/i })).toBeNull();
+  expect(
+    screen.getByRole("link", { name: /Shaolin Scrolls/i }),
+  ).toHaveAttribute("href", "/mark2/shaolin-scrolls");
+  state.caps = new Set(["admin.app.view", "admin.membership.manage"]);
+  rerender(
+    <PersonaApplications tree={(await getMenu()).tree} persona="mark2" />,
+  );
+  expect(screen.getByRole("link", { name: /admin/i })).toHaveAttribute(
+    "href",
+    "/mark2/admin",
+  );
+});
+it("landing discovery preserves external destinations and covers every public persona child", async () => {
+  const tree = (await getMenu()).tree;
+  const { rerender } = render(
+    <PersonaApplications tree={tree} persona="tullyelly" />,
+  );
+  expect(screen.getByRole("link", { name: /github/i })).toHaveAttribute(
+    "rel",
+    "noopener noreferrer",
+  );
+  for (const persona of ["cardattack", "theabbott", "unclejimmy"] as const) {
+    rerender(<PersonaApplications tree={tree} persona={persona} />);
+    for (const href of publicDestinations.filter((href) =>
+      href.startsWith(`/${persona}/`),
+    )) {
+      expect(document.querySelector(`a[href="${href}"]`)).not.toBeNull();
+    }
+  }
 });

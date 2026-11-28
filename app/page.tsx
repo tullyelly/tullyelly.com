@@ -1,3 +1,4 @@
+import PageIntro from "@/components/layout/PageIntro";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,14 +12,15 @@ import { TopChronicleTagsCard } from "@/components/home/top-chronicle-tags-card"
 export default async function HomePage() {
   return (
     <div className="space-y-4 p-6">
+      <PageIntro title="tullyelly" />
       <p className="text-base text-muted-foreground">
         Welcome to the next last homepage. Here you&apos;ll find a collection of
         whatever I arbitarily decide should be the first thing you see. Also
         known as, engagement farming.
       </p>
       <p className="text-base text-muted-foreground">
-        Hover over or touch on the information icon ℹ️ on each card below to experience a deeper level
-        of comtemplation.
+        Hover over or touch on the information icon ℹ️ on each card below to
+        experience a deeper level of comtemplation.
       </p>
       <p className="text-base text-muted-foreground">
         Visit the{" "}

@@ -1,3 +1,14 @@
+import PersonaApplications from "@/components/persona/PersonaApplications";
+import NavDesktop from "@/components/nav/NavDesktop";
+import MobileDrawer from "@/components/nav/MobileDrawer";
+import CommandMenu, {
+  CommandMenuProvider,
+  useCommandMenu,
+} from "@/components/nav/CommandMenu";
+import { NavControllerProvider } from "@/components/nav/NavController";
+import { buildMenuPayload, buildPersonaChildren } from "@/lib/menu/buildMenu";
+import { menuCoverageRows } from "@/vitest/fixtures/menu-coverage";
+import type { NavItem } from "@/types/nav";
 import ChronicleListClient from "@/app/shaolin/_components/ChronicleListClient";
 import TagDirectoryClient from "@/app/shaolin/tags/_components/TagDirectoryClient";
 import ArchiveReturnLink from "@/components/directory/ArchiveReturnLink";
@@ -791,8 +802,84 @@ function ScrollFixture() {
   );
 }
 
+function FixtureSearchButton() {
+  const { setOpen } = useCommandMenu();
+  return (
+    <button className="btn" onClick={() => setOpen(true)}>
+      Search applications
+    </button>
+  );
+}
+function NavigationFixture() {
+  const [open, setOpen] = React.useState(false);
+  const [data, setData] = React.useState<Awaited<
+    ReturnType<typeof buildMenuPayload>
+  > | null>(null);
+  const [children, setChildren] = React.useState<Awaited<
+    ReturnType<typeof buildPersonaChildren>
+  > | null>(null);
+  const rows = React.useMemo(
+    () => menuCoverageRows().filter((r) => !r.feature_key),
+    [],
+  );
+  const tree: NavItem[] = rows
+    .filter((r) => r.kind === "persona")
+    .map((root) => ({
+      id: String(root.id),
+      kind: "persona",
+      persona: root.persona!,
+      label: root.label,
+      children: rows
+        .filter((r) => r.parent_id === root.id)
+        .map((r) => ({
+          id: String(r.id),
+          label: r.label,
+          kind: r.href?.startsWith("https:")
+            ? ("external" as const)
+            : ("link" as const),
+          href: r.href!,
+        })),
+    }));
+  React.useEffect(() => {
+    void buildMenuPayload(rows, "cardattack", () => false).then(setData);
+    void buildPersonaChildren(rows, () => false).then(setChildren);
+  }, [rows]);
+  if (!data || !children) return null;
+  return (
+    <CommandMenuProvider items={tree}>
+      <NavControllerProvider>
+        <header className="bg-[#00471b] p-4">
+          <div className="hidden md:block">
+            <NavDesktop menu={data} childrenMap={children} />
+          </div>
+          <button className="btn md:hidden" onClick={() => setOpen(true)}>
+            Open menu
+          </button>
+        </header>
+        <MobileDrawer
+          open={open}
+          onOpenChange={setOpen}
+          menu={data}
+          childrenMap={children}
+        />
+        <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+          <PageIntro
+            title="cardattack"
+            description="The collecting vault and its applications."
+          />
+          <FixtureSearchButton />
+          <PersonaApplications tree={tree} persona="cardattack" />
+        </main>
+        <CommandMenu />
+      </NavControllerProvider>
+    </CommandMenuProvider>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
-  location.pathname.startsWith("/mark2/shaolin-scrolls") ? (
+  location.pathname === "/navigation-fixture" ? (
+    <NavigationFixture />
+  ) : location.pathname.startsWith("/mark2/shaolin-scrolls") ? (
     <ScrollFixture />
   ) : location.pathname === "/shaolin" ||
     location.pathname === "/shaolin/tags" ||

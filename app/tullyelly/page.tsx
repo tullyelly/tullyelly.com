@@ -1,3 +1,4 @@
+import PersonaLandingIntro from "@/components/persona/PersonaLandingIntro";
 import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import {
   SHARED_OPEN_GRAPH_FIELDS,
@@ -31,6 +32,7 @@ export const metadata = {
 export default function TullyellyPage() {
   return (
     <div className="space-y-12">
+      <PersonaLandingIntro persona="tullyelly" description={pageDescription} />
       <PersonaActivityChart alterEgo="tullyelly" />
       <PersonaReleaseFeed persona="tullyelly" />
       <section className="space-y-4">

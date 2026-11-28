@@ -1,3 +1,4 @@
+import PersonaLandingIntro from "@/components/persona/PersonaLandingIntro";
 import PersonTag from "@/components/mdx/PersonTag";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
@@ -32,6 +33,7 @@ export const metadata = {
 export default function CardattackPage() {
   return (
     <div className="space-y-12">
+      <PersonaLandingIntro persona="cardattack" description={pageDescription} />
       <PersonaActivityChart alterEgo="cardattack" />
       <PersonaReleaseFeed persona="cardattack" />
       <section className="space-y-4">

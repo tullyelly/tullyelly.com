@@ -12,6 +12,9 @@ test.beforeAll(async () => {
     resolve: {
       alias: {
         "@/lib/cn": path.resolve("app/lib/cn.ts"),
+        "next-auth/react": path.resolve(
+          "tests/browser/fixtures/navigation-session.ts",
+        ),
         "next/navigation": path.resolve(
           "tests/browser/fixtures/directory-navigation.ts",
         ),
@@ -559,5 +562,73 @@ for (const width of [375, 1440]) {
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+  });
+}
+
+for (const width of [375, 1440]) {
+  test(`persona discovery and navigation overlays at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await mount(page, "navigation-fixture");
+    const apps = page.getByRole("navigation", {
+      name: "cardattack applications",
+    });
+    await expect(apps.getByRole("link", { name: /Homies/ })).toHaveAttribute(
+      "href",
+      "/cardattack/homies",
+    );
+    await expect(page.getByRole("link", { name: /^admin$/i })).toHaveCount(0);
+    if (width < 768) {
+      await page.getByRole("button", { name: "Open menu" }).click();
+      await page
+        .getByRole("button", { name: "cardattack", exact: true })
+        .click();
+      await expect(
+        page.getByRole("dialog").getByText("Local Card Shops", { exact: true }),
+      ).toBeVisible();
+      await page.screenshot({
+        path: info.outputPath(`navigation-${width}.png`),
+        fullPage: true,
+      });
+      await page.getByRole("button", { name: "Close menu" }).click();
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    } else {
+      const menu = page.getByTestId("nav-desktop-menu");
+      await menu.focus();
+      await page.keyboard.press("Enter");
+      await expect(
+        page
+          .getByRole("link", { name: "Local Card Shops", exact: true })
+          .first(),
+      ).toBeVisible();
+      await page.screenshot({
+        path: info.outputPath(`navigation-${width}.png`),
+        fullPage: true,
+      });
+      await page.keyboard.press("Escape");
+      await expect(menu).toBeFocused();
+    }
+    await page.getByRole("button", { name: "Search applications" }).focus();
+    await page.keyboard.press("Control+k");
+    await page.getByPlaceholder(/find a page/i).fill("Homies");
+    await expect(
+      page.getByRole("option", { name: "Homies cardattack", exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      page.getByRole("option", { name: "Homies theabbott", exact: true }),
+    ).toHaveCount(1);
+    await page.keyboard.press("Escape");
+    await expect(
+      page.getByRole("button", { name: "Search applications" }),
+    ).toBeFocused();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await apps.getByRole("link", { name: /Homies/ }).click();
+    await expect(page).toHaveURL(/cardattack\/homies/);
   });
 }

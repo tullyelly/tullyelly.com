@@ -1,3 +1,4 @@
+import PersonaLandingIntro from "@/components/persona/PersonaLandingIntro";
 import { ScrollAmendment } from "@/components/scrolls/ScrollAmendment";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
@@ -31,6 +32,7 @@ export const metadata = {
 export default function TheAbbottPage() {
   return (
     <div className="space-y-12">
+      <PersonaLandingIntro persona="theabbott" description={pageDescription} />
       <PersonaActivityChart alterEgo="theabbott" />
       <PersonaReleaseFeed persona="theabbott" />
       <section className="space-y-4">
