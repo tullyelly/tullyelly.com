@@ -30,19 +30,19 @@ production changes require explicit authorization.
 
 ## Where things live
 
-| Directory                | Purpose                                                      |
-| ------------------------ | ------------------------------------------------------------ |
-| app                      | Routes, layouts, handlers, static MDX, page-local components |
-| content/chronicles       | Contentlayer documents published under `/shaolin`            |
-| components               | Shared UI and MDX primitives                                 |
-| lib                      | Domain data, authz, menu, SEO, content, and cache helpers    |
-| db                       | pg pool, SQL migrations, schema and verification utilities   |
-| prisma                   | NextAuth-only schema                                         |
-| public                   | Static media and optimized assets                            |
-| scripts                  | Authoring, generation, validation, and migration tooling     |
-| **tests**, lib/**tests** | Jest tests                                                   |
-| vitest                   | Separate component/client suite                              |
-| e2e, tests               | Playwright suites                                            |
+| Directory                    | Purpose                                                      |
+| ---------------------------- | ------------------------------------------------------------ |
+| app                          | Routes, layouts, handlers, static MDX, page-local components |
+| content/chronicles           | Contentlayer documents published under `/shaolin`            |
+| components                   | Shared UI and MDX primitives                                 |
+| lib                          | Domain data, authz, menu, SEO, content, and cache helpers    |
+| db                           | pg pool, SQL migrations, schema and verification utilities   |
+| prisma                       | NextAuth-only schema                                         |
+| public                       | Static media and optimized assets                            |
+| scripts                      | Authoring, generation, validation, and migration tooling     |
+| `__tests__`, `lib/__tests__` | Jest tests                                                   |
+| vitest                       | Separate component/client suite                              |
+| e2e, tests                   | Playwright suites                                            |
 
 Read [AGENTS.md](AGENTS.md) for agent constraints,
 [CONTRIBUTING.md](CONTRIBUTING.md) for contribution workflow, and the
