@@ -65,3 +65,20 @@ mobile/desktop alias-search -> profile -> same-state directory journeys; pilot
 screenshots under test-results were inspected. Mocked 409/403/422 responses retain
 edited input, alongside existing save/failure/unsaved-edit tests. No database
 writes or connected authentication checks ran.
+
+## WU-1291
+
+Clans use server-backed cards/name/rank sorting with stable ties, a sort-specific
+cache key and stale-page recovery. The client preserves server order and pushes
+explicit query changes into browser history. Directory names and detail links
+carry safe return state; rows/cards show measurement dates. Group profiles retain
+sport-specific snapshots and metrics, add section anchors and explain missing
+members/history. Membership and motivation feeds remain separate.
+
+Full baseline passed in 112.7s: 269 suites/2,148 tests, passing coverage and
+production build. Focused mocked checks cover sorting before pagination, stale
+server pages, filters, existing scoreboard semantics and group/detail rendering.
+Eight Chromium checks passed, including Clan filter/sort -> multi-sport profile
+-> same-state directory and Back at 375px/1440px. Mobile profile capture inspected.
+Server query navigation is a fixture adapter; live database/Next integration is
+not claimed. No SQL mutation or deployment occurred.

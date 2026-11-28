@@ -47,6 +47,7 @@ export type TCDBRankingSportOption = {
 };
 
 type TCDBRankingTableProps = {
+  allowSort?: boolean;
   serverData: TCDBRankingTableData;
   theme?: TCDBRankingTableTheme;
   labels: TCDBRankingTableLabels;
@@ -102,6 +103,7 @@ export function clanRankingsToTableData(
 }
 
 export default function TCDBRankingTable({
+  allowSort,
   serverData,
   theme,
   labels,
@@ -110,6 +112,7 @@ export default function TCDBRankingTable({
   return (
     <TCDBRankingTableClient
       serverData={serverData}
+      allowSort={allowSort}
       theme={theme}
       labels={labels}
       sportOptions={sportOptions}

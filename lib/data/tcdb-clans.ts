@@ -92,12 +92,19 @@ export async function listTcdbClanRankings(opts: {
   q?: string;
   sport?: string;
   trend?: Trend;
+  sort?: "cards" | "name" | "rank";
 }): Promise<ClanRankingResponse> {
   const page = Math.max(1, Number(opts.page ?? 1));
   const pageSize = Math.max(1, Math.min(200, Number(opts.pageSize ?? 50)));
   const q = (opts.q ?? "").trim();
   const sport = opts.sport ? normalizeSlug(opts.sport) : null;
   const trend = opts.trend;
+  const order =
+    opts.sort === "name"
+      ? "r.name ASC, r.sport ASC, r.clan_id ASC"
+      : opts.sort === "rank"
+        ? "r.ranking ASC, r.card_count DESC, r.clan_id ASC, r.sport ASC"
+        : "r.card_count DESC, r.ranking ASC, r.ranking_at DESC, r.clan_id ASC, r.sport ASC";
 
   const where: string[] = [];
   const params: unknown[] = [];
@@ -141,7 +148,7 @@ export async function listTcdbClanRankings(opts: {
         JOIN dojo.clan AS c
           ON c.id = r.clan_id
         ${whereSql}
-        ORDER BY r.card_count DESC, r.ranking ASC, r.ranking_at DESC
+        ORDER BY ${order}
         LIMIT $${i++} OFFSET $${i++}
       `,
       [...params, pageSize, offset],

@@ -12,6 +12,9 @@ test.beforeAll(async () => {
     resolve: {
       alias: {
         "@/lib/cn": path.resolve("app/lib/cn.ts"),
+        "next/navigation": path.resolve(
+          "tests/browser/fixtures/directory-navigation.ts",
+        ),
         "@": process.cwd(),
         "@ui": path.resolve("components/ui"),
       },
@@ -145,4 +148,46 @@ for (const width of [375, 1440])
       .click();
     await expect(page.getByRole("searchbox")).toHaveValue("greek");
     await expect(page.getByLabel("Sort homies")).toHaveValue("name");
+  });
+
+for (const width of [375, 1440])
+  test(`Clan server-query fixture and multi-sport profile at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await mount(page);
+    await page.goto("http://directory.test/cardattack/clans?q=bucks");
+    await page.getByLabel("Filter by sport").selectOption("basketball");
+    await expect(page).toHaveURL(/sport=basketball/);
+    await page.getByLabel("Sort clans").selectOption("rank");
+    await expect(page).toHaveURL(/sort=rank/);
+    await page.screenshot({
+      path: info.outputPath(`clans-${width}.png`),
+      fullPage: true,
+    });
+    await page
+      .getByRole("link", { name: "View TCDB details for Milwaukee Bucks" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Basketball", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Football", exact: true }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath(`clan-detail-${width}.png`),
+      fullPage: true,
+    });
+    await page.getByRole("link", { name: "Back to clans" }).click();
+    await expect(page.getByLabel("Filter by sport")).toHaveValue("basketball");
+    await expect(page.getByLabel("Sort clans")).toHaveValue("rank");
+    await page.goBack();
+    await expect(
+      page.getByRole("heading", { name: "Football", exact: true }),
+    ).toBeVisible();
   });

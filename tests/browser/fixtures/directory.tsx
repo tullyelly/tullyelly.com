@@ -1,4 +1,6 @@
 import React from "react";
+import TCDBRankingTableClient from "@/components/tcdb/TCDBRankingTableClient";
+import type { TCDBRankingTableRow } from "@/components/tcdb/TCDBRankingTable";
 import HomieDirectory from "@/app/cardattack/homies/_components/HomieDirectory";
 import RankingDetailPage from "@/components/tcdb/RankingDetailPage";
 import type { HomieDirectoryRow } from "@/lib/data/homies";
@@ -153,8 +155,88 @@ function HomieFixture() {
     </main>
   );
 }
+
+function ClanFixture() {
+  const query = new URLSearchParams(location.search);
+  const clanRows: TCDBRankingTableRow[] = ["Basketball", "Football"].map(
+    (sport, i) => ({
+      key: sport,
+      name: "Milwaukee Bucks",
+      href: "/cardattack/clans/milwaukee-bucks",
+      identifierLabel: "Sport",
+      identifierValue: sport,
+      card_count: 120 - i * 20,
+      ranking: i + 1,
+      ranking_at: "2026-11-28",
+      difference: 1,
+      rank_delta: 1,
+      diff_delta: 1,
+      trend_rank: "up",
+      trend_overall: "up",
+      diff_sign_changed: false,
+    }),
+  );
+  const rows = clanRows.filter(
+    (row) =>
+      !query.get("sport") ||
+      row.identifierValue.toLowerCase() === query.get("sport"),
+  );
+  return (
+    <main className="mx-auto max-w-[72rem] p-4">
+      {location.pathname.endsWith("milwaukee-bucks") ? (
+        <RankingDetailPage
+          title="Milwaukee Bucks"
+          eyebrow="Clan"
+          topHref="/cardattack/clans"
+          topLabel="Back to clans"
+          fieldGroups={clanRows.map((row) => ({
+            title: row.identifierValue,
+            fields: [
+              { label: "Cards", value: row.card_count },
+              { label: "Measured", value: "Nov 28, 2026" },
+            ],
+            content: <p>No snapshot history recorded yet.</p>,
+          }))}
+        >
+          <h2>Members</h2>
+          <p>No memberships recorded yet.</p>
+        </RankingDetailPage>
+      ) : (
+        <>
+          <h1>Clans</h1>
+          <TCDBRankingTableClient
+            allowSort
+            sportOptions={[
+              { value: "basketball", label: "Basketball" },
+              { value: "football", label: "Football" },
+            ]}
+            labels={{
+              searchPlaceholder: "Search clans",
+              searchAriaLabel: "Search clans",
+              identifierColumn: "Sport",
+              emptyMessage: "No matching clans",
+              emptyDatasetMessage: "No clans yet",
+              tableAriaLabel: "Clans",
+            }}
+            serverData={{
+              data: rows,
+              meta: {
+                page: 1,
+                pageSize: 25,
+                total: rows.length,
+                totalPages: 1,
+              },
+            }}
+          />
+        </>
+      )}
+    </main>
+  );
+}
 createRoot(document.getElementById("root")!).render(
-  location.pathname.startsWith("/cardattack/homies") ? (
+  location.pathname.startsWith("/cardattack/clans") ? (
+    <ClanFixture />
+  ) : location.pathname.startsWith("/cardattack/homies") ? (
     <HomieFixture />
   ) : (
     <Fixture />

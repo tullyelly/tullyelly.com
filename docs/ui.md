@@ -87,3 +87,11 @@ explicit unavailable values. Profiles use wrapping grid headers, safe directory
 return links and section anchors. Alias redirects retain validated return state;
 canonical metadata and missing-ranking detail behavior remain unchanged. Existing
 snapshot/edit validation, permissions, conflict preservation and feedback remain.
+
+Clans retain server pagination. The reader whitelists cards/name/rank SQL ordering
+and uses stable clan/sport tie-breakers; the cache key includes sort. A stale page
+past the final result page is reread at the last valid page. Explicit search,
+filter, sort and page actions push Next history, preserving Back/Forward. The
+client displays the supplied server order and carries safe directory context to
+profiles. Each sport retains its own dated metrics/history and profile anchor;
+no member/collection counts are combined into a new distinct-card metric.
