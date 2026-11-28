@@ -10,40 +10,6 @@ beforeEach(() => {
   jest.resetAllMocks();
   mockIdentity.mockResolvedValue({ name: "Basketball" });
 });
-it.each([null, 0, 125, -125])(
-  "shows dated count and comparison %p inline",
-  async (change) => {
-    mockExact.mockResolvedValue({
-      card_count: 0,
-      measured_on: "2026-10-01",
-      count_change: change,
-    });
-    const { container } = render(
-      <p>
-        {await CategorySnapshot({
-          category: "basketball",
-          snapshotDate: "2026-10-01",
-        })}
-      </p>,
-    );
-    expect(mockExact).toHaveBeenCalledWith("basketball", "2026-10-01");
-    expect(screen.getByRole("link", { name: "Basketball" })).toHaveAttribute(
-      "href",
-      "/cardattack/categories/basketball",
-    );
-    expect(container).toHaveTextContent("0 cards on 2026-10-01");
-    expect(container).toHaveTextContent(
-      change === null
-        ? "No previous measurement"
-        : change === 0
-          ? "+0"
-          : change > 0
-            ? "+125"
-            : "-125",
-    );
-    expect(container.querySelector("p > div")).toBeNull();
-  },
-);
 it("uses a linked label only for a missing date; never substitutes latest", async () => {
   mockExact.mockResolvedValue(null);
   const { container } = render(
@@ -68,60 +34,62 @@ it("keeps a linked slug fallback during outages", async () => {
   );
 });
 
-it("embeds only the ranking on the Chronicle's exact snapshot date", async () => {
-  mockExact.mockResolvedValue({
-    card_count: 12125,
-    measured_on: "2026-10-20",
-    count_change: 65,
-    ranking: 1400,
-    rank_delta: 40,
-  });
-  const { container } = render(
-    await CategorySnapshot({
-      category: "basketball",
-      snapshotDate: "2026-10-20",
-    }),
-  );
-  expect(container).toHaveTextContent("TCDb #1,400; Up 40 places");
-});
-it("does not invent a rank for a count-only snapshot", async () => {
-  mockExact.mockResolvedValue({
-    card_count: 12125,
-    measured_on: "2026-10-20",
-    count_change: null,
-    ranking: null,
-    rank_delta: null,
-  });
-  const { container } = render(
-    await CategorySnapshot({
-      category: "basketball",
-      snapshotDate: "2026-10-20",
-    }),
-  );
-  expect(container).not.toHaveTextContent("TCDb #");
-});
-
-it("includes signed difference and separate overall/rank trends on the exact date", async () => {
-  mockExact.mockResolvedValue({
-    card_count: 12125,
-    measured_on: "2026-10-20",
-    count_change: 65,
-    ranking: 1400,
-    rank_delta: 0,
-    trend_rank: "flat",
-    difference: 0,
-    diff_delta: 10,
-    trend_overall: "up",
-    diff_sign_changed: true,
-  });
-  const { container } = render(
-    await CategorySnapshot({
-      category: "basketball",
-      snapshotDate: "2026-10-20",
-    }),
-  );
-  expect(container).toHaveTextContent("rank trend flat");
-  expect(container).toHaveTextContent(
-    "difference +0; difference change +10; difference sign changed yes; overall trend up",
-  );
-});
+it.each([
+  { trend: null, label: "New snapshot", emoji: "🆕" },
+  { trend: "up", label: "Trending up", emoji: "↗️" },
+  { trend: "down", label: "Trending down", emoji: "↘️" },
+  { trend: "flat", label: "No change", emoji: "↔️" },
+])(
+  "renders the compact category summary for $trend",
+  async ({ trend, label, emoji }) => {
+    mockIdentity.mockResolvedValue({ name: "Football" });
+    mockExact.mockResolvedValue({
+      card_count: 12199,
+      ranking: 6969,
+      trend_overall: trend,
+      difference: -1,
+      measured_on: "2026-11-26",
+    });
+    const { container } = render(
+      <p>
+        {await CategorySnapshot({
+          category: "football",
+          snapshotDate: "2026-11-26",
+        })}
+      </p>,
+    );
+    expect(screen.getByRole("link", { name: "Football" })).toHaveAttribute(
+      "href",
+      "/cardattack/categories/football",
+    );
+    expect(container).toHaveTextContent(
+      `Football [6969th] ${emoji} (12,199 cards)`,
+    );
+    expect(screen.getByRole("img", { name: label })).toHaveTextContent(emoji);
+    expect(container).not.toHaveTextContent(
+      /difference|2026-11-26|Comparison unavailable/,
+    );
+    expect(mockExact).toHaveBeenCalledWith("football", "2026-11-26");
+    expect(container.querySelector("p > div")).toBeNull();
+  },
+);
+it.each([0, 1])(
+  "keeps count-only snapshots compact with %p cards",
+  async (count) => {
+    mockExact.mockResolvedValue({
+      card_count: count,
+      ranking: null,
+      trend_overall: null,
+    });
+    const { container } = render(
+      await CategorySnapshot({
+        category: "basketball",
+        snapshotDate: "2026-11-26",
+      }),
+    );
+    expect(container).toHaveTextContent(
+      `Basketball 🆕 (${count} ${count === 1 ? "card" : "cards"})`,
+    );
+    expect(container).not.toHaveTextContent("[");
+  },
+);

@@ -107,9 +107,11 @@ metadata, and ordinary page navigation retain their purpose-specific URLs.
 
 ## Category count snapshots
 
-`<CategorySnapshot category="basketball" />` displays the overall category count
-and optional TCDb ranking, signed difference and trends recorded on the Chronicle's
-exact frontmatter date.
+`<CategorySnapshot category="basketball" />` uses the Chronicle's exact frontmatter date
+and renders the linked category followed by its ordinal rank, trend emoji and
+card count in parentheses. Category, clan and homie snapshots share this compact
+summary. Missing comparison history uses the labeled 🆕 indicator; measured flat
+trends use ↔️. Count-only snapshots omit the rank.
 A missing measurement renders
 a linked category label; it never substitutes a latest count. It does not infer
 tags. See [category counts](card-category-counts.md) for the full example and setup.

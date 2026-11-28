@@ -1,12 +1,11 @@
 import TagLink from "@/components/tags/TagLink";
 import type { TagLinkMetadata } from "@/lib/tags";
-import Link from "next/link";
+import SnapshotSummary from "./SnapshotSummary";
 import type { ReactNode } from "react";
 
 import {
   getClanSnapshotsForTagOnDate,
   type ClanSnapshotRecord,
-  type ClanSnapshotTrend,
 } from "@/lib/data/tcdb-clan-snapshot";
 import { getTcdbClanRankingHref } from "@/lib/tcdb-clan-routes";
 import { formatClanSportLabel } from "@/lib/tcdb-clan-format";
@@ -20,62 +19,8 @@ export type ClanSnapshotProps = {
   sport?: string;
 };
 
-const TREND_EMOJI: Record<ClanSnapshotTrend, string> = {
-  up: "↗️",
-  down: "↘️",
-  flat: "↔️",
-};
-const NEW_SNAPSHOT_EMOJI = "🆕";
-
-const TREND_LABEL: Record<ClanSnapshotTrend, string> = {
-  up: "Trending up",
-  down: "Trending down",
-  flat: "No change",
-};
-const NEW_SNAPSHOT_LABEL = "New snapshot";
-
-const linkClassName = "underline hover:no-underline text-primary";
 const clanTagClassName =
   "font-bold italic !text-[var(--person-tag-color,var(--blue))] !no-underline hover:!bg-[var(--person-tag-hover-bg,var(--blue))] hover:!text-[var(--person-tag-hover-color,var(--white))] hover:!no-underline";
-
-function formatOrdinal(value: number): string {
-  const remainder100 = value % 100;
-
-  if (remainder100 >= 11 && remainder100 <= 13) {
-    return `${value}th`;
-  }
-
-  switch (value % 10) {
-    case 1:
-      return `${value}st`;
-    case 2:
-      return `${value}nd`;
-    case 3:
-      return `${value}rd`;
-    default:
-      return `${value}th`;
-  }
-}
-
-function formatCardCount(value: number): string {
-  return `${value} ${value === 1 ? "card" : "cards"}`;
-}
-
-function isNewSnapshot(snapshot: ClanSnapshotRecord): boolean {
-  return snapshot.trend === "flat" && snapshot.prevRanking === undefined;
-}
-
-function getTrendEmoji(snapshot: ClanSnapshotRecord): string {
-  return isNewSnapshot(snapshot)
-    ? NEW_SNAPSHOT_EMOJI
-    : TREND_EMOJI[snapshot.trend];
-}
-
-function getTrendLabel(snapshot: ClanSnapshotRecord): string {
-  return isNewSnapshot(snapshot)
-    ? NEW_SNAPSHOT_LABEL
-    : TREND_LABEL[snapshot.trend];
-}
 
 function ClanTag({
   displayName,
@@ -108,19 +53,16 @@ function renderSnapshotSummary(
   return (
     <span key={`${snapshot.slug}-${snapshot.sport}`}>
       {index === 0 ? ", " : "; "}
-      <span>{sportLabel}</span> <span>[</span>
-      <Link
-        href={getTcdbClanRankingHref(snapshot)}
-        prefetch={false}
-        className={linkClassName}
-      >
-        {formatOrdinal(snapshot.ranking)}
-      </Link>
-      <span>]</span>{" "}
-      <span aria-label={getTrendLabel(snapshot)} role="img">
-        {getTrendEmoji(snapshot)}
-      </span>{" "}
-      <span>{`(${formatCardCount(snapshot.cardCount)})`}</span>
+      <span>{sportLabel}</span>{" "}
+      <SnapshotSummary
+        ranking={snapshot.ranking}
+        rankHref={getTcdbClanRankingHref(snapshot)}
+        trend={snapshot.trendOverall}
+        isNew={
+          snapshot.trendOverall === "flat" && snapshot.prevRanking === undefined
+        }
+        cardCount={snapshot.cardCount}
+      />
     </span>
   );
 }
