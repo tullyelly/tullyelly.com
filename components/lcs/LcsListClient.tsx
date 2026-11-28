@@ -1,7 +1,11 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useDirectoryField } from "@/components/directory/useDirectoryField";
+import { useDirectoryPagination } from "@/components/directory/useDirectoryPagination";
+import TablePager from "@/components/ui/TablePager";
+
 import Link from "next/link";
 import { Card } from "@ui";
 
@@ -88,9 +92,13 @@ export default function LcsListClient({
   tableTestId = "lcs-table",
   rowTestId = "lcs-row",
 }: LcsListClientProps) {
-  const [query, setQuery] = useState("");
-  const [state, setState] = useState("");
-  const [sort, setSort] = useState<VisitDirectorySort>("latest");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [state, setState] = useDirectoryField<string>("state", "");
+  const [sort, setSort] = useDirectoryField<VisitDirectorySort>(
+    "sort",
+    "latest",
+    ["latest", "rating", "visits", "name"],
+  );
   const searchedRows = useTableSearch(rows, query, getLcsSearchValues);
   const stateOptions = useMemo(() => getVisitDirectoryStates(rows), [rows]);
   const visibleRows = useMemo(
@@ -102,6 +110,10 @@ export default function LcsListClient({
         (row) => row.name,
       ),
     [searchedRows, sort, state],
+  );
+  const { pageRows, detailHref, pagination } = useDirectoryPagination(
+    visibleRows,
+    detailBasePath,
   );
   const emptyState =
     rows.length === 0 ? emptyMessage : "No card shops match these controls.";
@@ -148,6 +160,20 @@ export default function LcsListClient({
             </select>
           </>
         }
+        actions={
+          query || sort !== "latest" || state ? (
+            <button
+              className="btn"
+              onClick={() => {
+                setQuery("");
+                setSort("latest");
+                setState("");
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null
+        }
         result={
           <DataResultCount>
             {visibleRows.length} card shop{visibleRows.length === 1 ? "" : "s"}
@@ -156,7 +182,7 @@ export default function LcsListClient({
       />
       <ul className="space-y-4 md:hidden">
         {visibleRows.length > 0 ? (
-          visibleRows.map((row) => {
+          pageRows.map((row) => {
             const location = getLocationLabel(row);
 
             return (
@@ -171,8 +197,8 @@ export default function LcsListClient({
                     <div className="min-w-0 space-y-1">
                       <p className={mobileMetaLabelClassName}>{shopLabel}</p>
                       <Link
-                        href={`${detailBasePath}/${row.slug}`}
-                        className="block text-lg font-semibold leading-tight text-[color:var(--lcs-link)] transition hover:text-[color:var(--lcs-link-hover)]"
+                        href={detailHref(`${detailBasePath}/${row.slug}`)}
+                        className="block break-words text-lg font-semibold leading-tight text-[color:var(--lcs-link)] transition hover:text-[color:var(--lcs-link-hover)]"
                       >
                         {row.name}
                       </Link>
@@ -253,14 +279,14 @@ export default function LcsListClient({
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
-            visibleRows.map((row) => {
+            pageRows.map((row) => {
               const location = getLocationLabel(row);
 
               return (
                 <tr key={row.slug} data-testid={rowTestId}>
                   <TableCell intent="grow">
                     <Link
-                      href={`${detailBasePath}/${row.slug}`}
+                      href={detailHref(`${detailBasePath}/${row.slug}`)}
                       className="text-base font-semibold text-[color:var(--lcs-link)] transition hover:text-[color:var(--lcs-link-hover)]"
                     >
                       {row.name}
@@ -319,6 +345,7 @@ export default function LcsListClient({
           )}
         </TBody>
       </Table>
+      <TablePager {...pagination} />
     </div>
   );
 }

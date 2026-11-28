@@ -359,3 +359,55 @@ for (const width of [375, 1440]) {
     ).toHaveValue("non-sport");
   });
 }
+
+for (const width of [375, 1440]) {
+  for (const route of [
+    "cardattack/lcs",
+    "cardattack/usps",
+    "unclejimmy/bricks",
+    "unclejimmy/call-a-save-point",
+    "unclejimmy/golden-age",
+    "unclejimmy/table-schema",
+  ]) {
+    test(`${route} configured tracker return at ${width}px`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize({ width, height: 900 });
+      await mount(page, `${route}?page=2`);
+      await page.getByRole("searchbox").fill("Fixture 01");
+      const sort = page.getByRole("combobox", { name: /^Sort / });
+      await sort.selectOption(
+        route.includes("lcs") ||
+          route.includes("usps") ||
+          route.includes("bricks")
+          ? "name"
+          : "a-z",
+      );
+      await expect(
+        page
+          .getByRole("link", { name: "Fixture 01", exact: true })
+          .filter({ visible: true }),
+      ).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: testInfo.outputPath(`tracker-${width}.png`),
+        fullPage: true,
+      });
+      await page
+        .getByRole("link", { name: "Fixture 01", exact: true })
+        .filter({ visible: true })
+        .click();
+      await expect(
+        page.getByRole("heading", { name: "Chronicle Feed" }),
+      ).toBeVisible();
+      await page.getByRole("link", { name: /Back to directory/ }).click();
+      await expect(page.getByRole("searchbox")).toHaveValue("Fixture 01");
+      await page.getByRole("button", { name: "Clear filters" }).click();
+      await expect(page.getByRole("searchbox")).toHaveValue("");
+    });
+  }
+}

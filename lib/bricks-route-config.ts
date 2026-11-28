@@ -45,10 +45,10 @@ export const BRICKS_ROUTE_CONFIG: Record<BricksSubset, BricksRouteConfig> = {
     brandTitle: "🎙unclejimmy",
     collectionMetaTitle: "Bricks: LEGO | 🎙unclejimmy",
     collectionMetaDescription:
-      "LEGO build sessions tracked from chronicles, with DB-backed set metadata and day-by-day narrative history.",
+      "LEGO sets, ratings and build sessions with day-by-day stories from the Chronicles.",
     collectionHeroTitle: "Bricks: LEGO",
     collectionHeroDescription:
-      "Set dossiers organized by DB-backed bricks metadata, while the actual build notes stay in the original chronicle MDX sections.",
+      "Explore LEGO sets, ratings and build sessions, then follow each build through its original stories.",
     detailMetaSuffix: "Bricks: LEGO | 🎙unclejimmy",
     detailHeroEyebrow: "LEGO Build Dossier",
     collectionSectionEyebrow: "Build Directory",
@@ -72,7 +72,7 @@ export const BRICKS_ROUTE_CONFIG: Record<BricksSubset, BricksRouteConfig> = {
     collectionDirectoryHeading: "Tracked Sets",
     detailFeedHeading: "Chronicle Feed",
     detailFeedDescription:
-      "Each session below is grouped by the DB-backed build day while the narrative content stays in the original chronicle MDX.",
+      "Follow each build session in date order, with links to its original Chronicle.",
     pageThemeVars: bricksPageThemeVarsBySubset.lego,
     tableThemeStyle: bricksTableThemeStyleBySubset.lego,
     collectionPath: "/unclejimmy/bricks",

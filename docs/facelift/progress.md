@@ -153,3 +153,27 @@ SetCollector mobile captures were inspected; the latter prompted a compact
 two-column mobile summary, which passed the focused mobile/desktop browser
 journey again. Fixture types, docs and formatting checked separately. Connected
 SQL/authentication tests remain unrun under the read-only boundary.
+
+## WU-1295
+
+All six tracker families use shared URL/pagination/return behavior: LCS, USPS,
+Bricks, Call A Save Point, Golden Age and Table Schema. Existing state/rating/
+visit sorting remains; Bricks adds name/rating/session sorting while retaining
+its source default order. The new shared pagination hook owns only paging and
+safe detail links; domain fields and calculations remain with each tracker.
+Route configs now describe browsing and original stories rather than storage or
+MDX implementation. Detail layouts link to the dated feed; feed chronology,
+original MDX compilation, source links and media remain unchanged. Review
+subjects with no external URL render plain text.
+
+Thirty isolated browser checks passed, covering all six configurations at
+375px/1440px with search/sort/page reset/detail return and responsive bounds.
+LCS and game-review mobile captures inspected. Thirteen focused mock tests passed
+for controls, detail metrics and original Chronicle rendering. Heading queries
+were made explicit where a new timeline anchor shares the heading's text.
+No tracker route was omitted and no backend feature or SQL work was added.
+
+Full baseline passed in 129.1s: 270 suites/2,150 tests and production build with
+passing coverage. Docs/format checks passed. Existing shared loading, error with
+retry and not-found boundaries remain in use. Connected database/authentication
+and external media integration remain unrun; all fixtures used synthetic data.

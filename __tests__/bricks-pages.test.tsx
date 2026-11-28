@@ -119,7 +119,9 @@ describe("bricks route pages", () => {
     expect(
       screen.getByRole("link", { name: "← Back to Bricks: LEGO" }),
     ).toHaveAttribute("href", "/unclejimmy/bricks");
-    expect(screen.getByText("Chronicle Feed")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Chronicle Feed" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("LEGO ID")).toBeInTheDocument();
     expect(screen.getByText("693")).toBeInTheDocument();
     expect(screen.getByText("f1")).toBeInTheDocument();
@@ -135,3 +137,6 @@ describe("bricks route pages", () => {
     );
   });
 });
+
+// Each mounted directory starts a new browsing journey.
+beforeEach(() => window.history.replaceState(null, "", "/"));

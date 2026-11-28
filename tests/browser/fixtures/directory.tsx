@@ -1,3 +1,12 @@
+import LcsLandingPage from "@/components/lcs/LcsLandingPage";
+import UspsLandingPage from "@/components/usps/UspsLandingPage";
+import BricksLandingPage from "@/components/bricks/BricksLandingPage";
+import ReviewLandingPage from "@/components/reviews/ReviewLandingPage";
+import CollectionDetailPage from "@/components/layout/CollectionDetailPage";
+import { getLcsRouteConfig } from "@/lib/lcs-route-config";
+import { getUspsRouteConfig } from "@/lib/usps-route-config";
+import { getBricksRouteConfig } from "@/lib/bricks-route-config";
+import { getReviewRouteConfig } from "@/lib/review-route-config";
 import CategoryOverview from "@/components/categories/CategoryOverview";
 import CategoryHistoryChart from "@/components/categories/CategoryHistoryChart";
 import SetCollectorLandingPage from "@/components/set-collector/SetCollectorLandingPage";
@@ -484,8 +493,111 @@ function SetsFixture() {
     </main>
   );
 }
+
+const trackerPaths = [
+  "/cardattack/lcs",
+  "/cardattack/usps",
+  "/unclejimmy/bricks",
+  "/unclejimmy/call-a-save-point",
+  "/unclejimmy/golden-age",
+  "/unclejimmy/table-schema",
+];
+function TrackerFixture() {
+  const base = trackerPaths.find((path) => location.pathname.startsWith(path))!;
+  const reviewType = base.endsWith("call-a-save-point")
+    ? "save-point"
+    : base.endsWith("golden-age")
+      ? "golden-age"
+      : "table-schema";
+  const config = base.endsWith("lcs")
+    ? getLcsRouteConfig()
+    : base.endsWith("usps")
+      ? getUspsRouteConfig()
+      : base.endsWith("bricks")
+        ? getBricksRouteConfig("lego")
+        : getReviewRouteConfig(reviewType);
+  const rows = Array.from({ length: 30 }, (_, i) => ({
+    slug: `fixture-${i + 1}`,
+    name: `Fixture ${String(i + 1).padStart(2, "0")}`,
+    rating: 9,
+    visitCount: i,
+    latestVisitDate: i === 1 ? undefined : "2026-11-28",
+    state: i % 2 ? "WI" : "IL",
+  }));
+  const prefix = base.endsWith("lcs")
+    ? "lcs"
+    : base.endsWith("usps")
+      ? "usps"
+      : base.endsWith("bricks")
+        ? "bricks"
+        : "review";
+  return (
+    <main className="mx-auto max-w-[72rem] p-4">
+      {location.pathname !== base ? (
+        <CollectionDetailPage
+          backHref={base}
+          backLabel="Back to directory"
+          eyebrow={config.detailHeroEyebrow}
+          title="Fixture 01"
+          stats={[{ label: "Recorded activity", value: 0 }]}
+          sectionId="fixture-feed"
+          sectionTitle="Chronicle Feed"
+          pageThemeStyle={config.pageThemeVars}
+          theme={{
+            accent: `var(--${prefix}-accent)`,
+            accentDeep: `var(--${prefix}-accent-deep)`,
+            foreground: `var(--${prefix}-pill-fg)`,
+            ink: `var(--${prefix}-ink)`,
+            link: `var(--${prefix}-link)`,
+            linkHover: `var(--${prefix}-link-hover)`,
+            accentSoft: `var(--${prefix}-accent-soft)`,
+          }}
+        >
+          <p>No activity recorded yet.</p>
+        </CollectionDetailPage>
+      ) : base.endsWith("lcs") ? (
+        <LcsLandingPage config={getLcsRouteConfig()} rows={rows} />
+      ) : base.endsWith("usps") ? (
+        <UspsLandingPage
+          config={getUspsRouteConfig()}
+          rows={rows.map((row) => ({
+            ...row,
+            citySlug: row.slug,
+            cityName: row.name,
+          }))}
+        />
+      ) : base.endsWith("bricks") ? (
+        <BricksLandingPage
+          config={getBricksRouteConfig("lego")}
+          rows={rows.map((row) => ({
+            subset: "lego",
+            publicId: row.slug,
+            setName: row.name,
+            reviewScore: row.rating,
+            sessionCount: row.visitCount,
+            latestBuildDate: row.latestVisitDate,
+          }))}
+        />
+      ) : (
+        <ReviewLandingPage
+          config={getReviewRouteConfig(reviewType)}
+          rows={rows.map((row) => ({
+            reviewType,
+            externalId: row.slug,
+            name: row.name,
+            averageRating: row.rating,
+            visitCount: row.visitCount,
+            latestPostDate: "2026-11-28",
+          }))}
+        />
+      )}
+    </main>
+  );
+}
 createRoot(document.getElementById("root")!).render(
-  location.pathname.startsWith("/cardattack/categories") ? (
+  trackerPaths.some((path) => location.pathname.startsWith(path)) ? (
+    <TrackerFixture />
+  ) : location.pathname.startsWith("/cardattack/categories") ? (
     <CategoryFixture />
   ) : location.pathname.startsWith("/cardattack/set-collector") ? (
     <SetsFixture />

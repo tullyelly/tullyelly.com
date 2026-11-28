@@ -1,7 +1,10 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useDirectoryField } from "@/components/directory/useDirectoryField";
+import { useDirectoryPagination } from "@/components/directory/useDirectoryPagination";
+import TablePager from "@/components/ui/TablePager";
+
 import Link from "next/link";
 import { Card } from "@ui";
 
@@ -64,8 +67,30 @@ export default function BricksListClient({
   tableTestId = "bricks-table",
   rowTestId = "bricks-row",
 }: BricksListClientProps) {
-  const [query, setQuery] = useState("");
-  const visibleRows = useTableSearch(rows, query, getBricksSearchValues);
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [sort, setSort] = useDirectoryField<string>("sort", "default", [
+    "default",
+    "name",
+    "rating",
+    "sessions",
+  ]);
+  const searched = useTableSearch(rows, query, getBricksSearchValues);
+  const visibleRows =
+    sort === "default"
+      ? searched
+      : [...searched].sort(
+          (a, b) =>
+            (sort === "name"
+              ? a.setName.localeCompare(b.setName)
+              : sort === "rating"
+                ? b.reviewScore - a.reviewScore
+                : b.sessionCount - a.sessionCount) ||
+            a.publicId.localeCompare(b.publicId),
+        );
+  const { pageRows, detailHref, pagination } = useDirectoryPagination(
+    visibleRows,
+    detailBasePath,
+  );
   const emptyState =
     rows.length === 0 ? emptyMessage : "No brick sets match this search.";
 
@@ -81,6 +106,32 @@ export default function BricksListClient({
             ariaControls="bricks-data-view"
           />
         }
+        filters={
+          <select
+            aria-label="Sort brick sets"
+            className="form-input"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
+            <option value="default">Default order</option>
+            <option value="name">Name A to Z</option>
+            <option value="rating">Highest rated</option>
+            <option value="sessions">Most sessions</option>
+          </select>
+        }
+        actions={
+          query || sort !== "default" ? (
+            <button
+              className="btn"
+              onClick={() => {
+                setQuery("");
+                setSort("default");
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null
+        }
         result={
           <DataResultCount>
             {visibleRows.length} brick set{visibleRows.length === 1 ? "" : "s"}
@@ -89,7 +140,7 @@ export default function BricksListClient({
       />
       <ul className="space-y-4 md:hidden">
         {visibleRows.length > 0 ? (
-          visibleRows.map((row) => (
+          pageRows.map((row) => (
             <Card
               as="li"
               key={`mobile-${row.publicId}`}
@@ -101,8 +152,8 @@ export default function BricksListClient({
                   <div className="min-w-0 space-y-1">
                     <p className={mobileMetaLabelClassName}>Set</p>
                     <Link
-                      href={`${detailBasePath}/${row.publicId}`}
-                      className="block text-lg font-semibold leading-tight text-[color:var(--bricks-link)] transition hover:text-[color:var(--bricks-link-hover)]"
+                      href={detailHref(`${detailBasePath}/${row.publicId}`)}
+                      className="block break-words text-lg font-semibold leading-tight text-[color:var(--bricks-link)] transition hover:text-[color:var(--bricks-link-hover)]"
                     >
                       {row.setName}
                     </Link>
@@ -169,11 +220,11 @@ export default function BricksListClient({
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
-            visibleRows.map((row) => (
+            pageRows.map((row) => (
               <tr key={row.publicId} data-testid={rowTestId}>
                 <TableCell intent="grow">
                   <Link
-                    href={`${detailBasePath}/${row.publicId}`}
+                    href={detailHref(`${detailBasePath}/${row.publicId}`)}
                     className="text-base font-semibold text-[color:var(--bricks-link)] transition hover:text-[color:var(--bricks-link-hover)]"
                   >
                     {row.setName}
@@ -223,6 +274,7 @@ export default function BricksListClient({
           )}
         </TBody>
       </Table>
+      <TablePager {...pagination} />
     </div>
   );
 }

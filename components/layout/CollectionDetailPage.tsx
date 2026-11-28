@@ -130,6 +130,11 @@ export default function CollectionDetailPage({
           </div>
         </section>
 
+        <nav aria-label="On this page">
+          <a className="link-blue" href={`#${sectionId}`}>
+            {sectionTitle}
+          </a>
+        </nav>
         <section aria-labelledby={sectionId} className="space-y-5">
           <SectionHeader
             id={sectionId}

@@ -1,7 +1,11 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useDirectoryField } from "@/components/directory/useDirectoryField";
+import { useDirectoryPagination } from "@/components/directory/useDirectoryPagination";
+import TablePager from "@/components/ui/TablePager";
+
 import type { Route } from "next";
 import Link from "next/link";
 import { Card } from "@ui";
@@ -74,8 +78,13 @@ export default function ReviewListClient({
   tableTestId = "review-table",
   rowTestId = "review-row",
 }: ReviewListClientProps) {
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<ReviewSort>("latest");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [sort, setSort] = useDirectoryField<ReviewSort>("sort", "latest", [
+    "latest",
+    "highest-rated",
+    "most-visited",
+    "a-z",
+  ]);
   const searchedRows = useTableSearch(rows, query, getReviewSearchValues);
   const visibleRows = useMemo(
     () =>
@@ -94,6 +103,10 @@ export default function ReviewListClient({
         }
       }),
     [searchedRows, sort],
+  );
+  const { pageRows, detailHref, pagination } = useDirectoryPagination(
+    visibleRows,
+    detailBasePath,
   );
   const emptyState =
     rows.length === 0 ? emptyMessage : "No review subjects match this search.";
@@ -123,6 +136,19 @@ export default function ReviewListClient({
             <option value="a-z">A-Z</option>
           </select>
         }
+        actions={
+          query || sort !== "latest" ? (
+            <button
+              className="btn"
+              onClick={() => {
+                setQuery("");
+                setSort("latest");
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null
+        }
         result={
           <DataResultCount>
             {visibleRows.length} review subject
@@ -132,7 +158,7 @@ export default function ReviewListClient({
       />
       <ul className="space-y-4 md:hidden">
         {visibleRows.length > 0 ? (
-          visibleRows.map((row) => (
+          pageRows.map((row) => (
             <Card
               as="li"
               key={`mobile-${row.id}`}
@@ -144,8 +170,8 @@ export default function ReviewListClient({
                   <div className="min-w-0 space-y-1">
                     <p className={mobileMetaLabelClassName}>{subjectLabel}</p>
                     <Link
-                      href={`${detailBasePath}/${row.id}` as Route}
-                      className="block text-lg font-semibold leading-tight text-[color:var(--review-link)] transition hover:text-[color:var(--review-link-hover)]"
+                      href={detailHref(`${detailBasePath}/${row.id}`) as Route}
+                      className="block break-words text-lg font-semibold leading-tight text-[color:var(--review-link)] transition hover:text-[color:var(--review-link-hover)]"
                     >
                       {row.name}
                     </Link>
@@ -218,11 +244,11 @@ export default function ReviewListClient({
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
-            visibleRows.map((row) => (
+            pageRows.map((row) => (
               <tr key={row.id} data-testid={rowTestId}>
                 <TableCell intent="grow">
                   <Link
-                    href={`${detailBasePath}/${row.id}` as Route}
+                    href={detailHref(`${detailBasePath}/${row.id}`) as Route}
                     className="text-base font-semibold text-[color:var(--review-link)] transition hover:text-[color:var(--review-link-hover)]"
                   >
                     {row.name}
@@ -274,6 +300,7 @@ export default function ReviewListClient({
           )}
         </TBody>
       </Table>
+      <TablePager {...pagination} />
     </div>
   );
 }

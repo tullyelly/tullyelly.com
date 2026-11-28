@@ -48,7 +48,7 @@ export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
       "Restaurant visits tracked from chronicles, with normalized ratings and visit history by establishment.",
     collectionHeroTitle: "Table Schema",
     collectionHeroDescription:
-      "Restaurant dossiers driven by normalized review metadata, while the actual meal notes and commentary stay in the chronicle MDX files.",
+      "Browse restaurant ratings and visits, then read the meals and stories behind them.",
     detailMetaSuffix: "🎙unclejimmy table schema",
     detailHeroEyebrow: "Restaurant Dossier",
     collectionSectionEyebrow: "Review Directory",
@@ -63,13 +63,14 @@ export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
     tableExternalLinkLabel: "restaurant site",
     emptyCollectionMessage:
       "No table schema reviews have been referenced in chronicles yet.",
-    emptyFeedMessage: "No chronicle visits are attached to this restaurant yet.",
+    emptyFeedMessage:
+      "No chronicle visits are attached to this restaurant yet.",
     collectionTableAriaLabel: "Table schema restaurants table",
     collectionTableFirstColumnLabel: "Establishment",
     collectionDirectoryHeading: "Tracked Establishments",
     detailFeedHeading: "Chronicle Feed",
     detailFeedDescription:
-      "Every entry below is compiled from the original chronicle MDX source.",
+      "Read the original stories in date order, with links to their Chronicles.",
     pageThemeVars: reviewPageThemeVarsByType["table-schema"],
     tableThemeStyle: reviewTableThemeStyleByType["table-schema"],
     collectionPath: REVIEW_TYPE_CONFIG["table-schema"].collectionPath,
@@ -84,7 +85,7 @@ export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
       "Video game reviews tracked from chronicles, with normalized ratings and review history by game.",
     collectionHeroTitle: "Call A Save Point",
     collectionHeroDescription:
-      "Video game dossiers organized by normalized review metadata, while the actual narrative review text still comes from the chronicle MDX sections.",
+      "Explore game ratings and reviews, then revisit each playthrough in the Chronicles.",
     detailMetaSuffix: "🎙unclejimmy call a save point",
     detailHeroEyebrow: "Game Dossier",
     collectionSectionEyebrow: "Review Directory",
@@ -105,7 +106,7 @@ export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
     collectionDirectoryHeading: "Tracked Games",
     detailFeedHeading: "Chronicle Feed",
     detailFeedDescription:
-      "Every entry below is compiled from the original chronicle MDX source.",
+      "Read the original stories in date order, with links to their Chronicles.",
     pageThemeVars: reviewPageThemeVarsByType["save-point"],
     tableThemeStyle: reviewTableThemeStyleByType["save-point"],
     collectionPath: REVIEW_TYPE_CONFIG["save-point"].collectionPath,
@@ -120,7 +121,7 @@ export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
       "Antique shop visits tracked from chronicles, with normalized ratings and visit history by location.",
     collectionHeroTitle: "Golden Age",
     collectionHeroDescription:
-      "Antique shop dossiers organized by normalized review metadata, while the actual hunt notes and story beats remain MDX-authored chronicle content.",
+      "Browse antique shops and ratings, then follow the hunts and finds from each visit.",
     detailMetaSuffix: "🎙unclejimmy golden age",
     detailHeroEyebrow: "Antique Shop Dossier",
     collectionSectionEyebrow: "Review Directory",
@@ -142,7 +143,7 @@ export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
     collectionDirectoryHeading: "Tracked Shops",
     detailFeedHeading: "Chronicle Feed",
     detailFeedDescription:
-      "Every entry below is compiled from the original chronicle MDX source.",
+      "Read the original stories in date order, with links to their Chronicles.",
     pageThemeVars: reviewPageThemeVarsByType["golden-age"],
     tableThemeStyle: reviewTableThemeStyleByType["golden-age"],
     collectionPath: REVIEW_TYPE_CONFIG["golden-age"].collectionPath,
@@ -151,6 +152,8 @@ export const REVIEW_ROUTE_CONFIG: Record<ReviewType, ReviewRouteConfig> = {
   },
 };
 
-export function getReviewRouteConfig(reviewType: ReviewType): ReviewRouteConfig {
+export function getReviewRouteConfig(
+  reviewType: ReviewType,
+): ReviewRouteConfig {
   return REVIEW_ROUTE_CONFIG[reviewType];
 }

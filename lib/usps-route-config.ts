@@ -39,7 +39,7 @@ export const USPS_ROUTE_CONFIG: UspsRouteConfig = {
     "USPS location visits tracked from chronicles, with normalized city ratings and day-by-day visit history.",
   collectionHeroTitle: "USPS",
   collectionHeroDescription:
-    "USPS location dossiers organized by DB-backed city records and visit dates, while the actual mailing-day notes stay in the original chronicle MDX.",
+    "Browse USPS locations, ratings and visit dates, then revisit the mailing-day stories.",
   detailMetaSuffix: "USPS | 🃏cardattack",
   detailHeroEyebrow: "USPS Location Dossier",
   collectionSectionEyebrow: "USPS Directory",
@@ -61,7 +61,7 @@ export const USPS_ROUTE_CONFIG: UspsRouteConfig = {
   collectionDirectoryHeading: "Tracked Locations",
   detailFeedHeading: "Chronicle Feed",
   detailFeedDescription:
-    "Each visit day below comes from the DB-backed USPS log, while the narrative content still renders from the original chronicle MDX.",
+    "Follow the mailing-day stories in date order, with links to their original Chronicles.",
   pageThemeVars: uspsPageThemeVars,
   tableThemeStyle: uspsTableThemeStyle,
   collectionPath: "/cardattack/usps",
