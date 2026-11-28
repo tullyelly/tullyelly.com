@@ -14,6 +14,7 @@ export const publicationRunSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   head_repository: z.object({ id: z.number(), full_name: z.string() }),
+  display_title: z.string().optional(),
 });
 export type PublicationRun = z.infer<typeof publicationRunSchema>;
 export type PublicationReceipt = {
@@ -80,7 +81,9 @@ export async function publicationProgress(options: {
     runs("production-release.yml"),
   ]);
   const child = children[0],
-    parent = parents[0];
+    parent = parents.find(
+      (run) => run.display_title === `App dispatch production at ${sha}`,
+    );
   const run = child ?? parent;
   const result = (
     state: PublicationProgress["state"],
@@ -159,20 +162,24 @@ export async function publicationProgress(options: {
         token,
       ),
     );
-  if (
-    !ci.workflow_runs.some(
+  const matchingCi = ci.workflow_runs
+    .filter(
       (r) =>
         r.head_sha === sha &&
         r.head_branch === "main" &&
         r.event === "push" &&
         r.path === ".github/workflows/ci.yml" &&
         r.head_repository.id === RELEASE_REPOSITORY_ID &&
-        r.head_repository.full_name === RELEASE_REPOSITORY &&
-        r.status === "completed" &&
-        r.conclusion === "success",
+        r.head_repository.full_name === RELEASE_REPOSITORY,
     )
-  )
+    .sort((a, b) => b.id - a.id)[0];
+  if (!matchingCi || matchingCi.status !== "completed")
     return result("checking");
+  if (matchingCi.conclusion !== "success")
+    return {
+      ...result("failed"),
+      url: `https://github.com/${RELEASE_REPOSITORY}/actions/runs/${matchingCi.id}`,
+    };
   if (options.mode === "status") return result("ready");
   options.recordIntent(); // Durable before the only write; ambiguity never triggers a blind retry.
   await api(

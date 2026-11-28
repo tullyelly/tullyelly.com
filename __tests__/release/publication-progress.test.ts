@@ -43,10 +43,13 @@ function run(path: string, id = 10): PublicationRun {
       id: RELEASE_REPOSITORY_ID,
       full_name: RELEASE_REPOSITORY,
     },
+    display_title: `App dispatch production at ${sha}`,
   };
 }
 function fixture() {
   let intent = false;
+  let mainSha = sha,
+    ciConclusion = "success";
   const parents: PublicationRun[] = [],
     children: PublicationRun[] = [];
   let receipt: { deployment: string; publicVerified: boolean } | undefined;
@@ -62,7 +65,7 @@ function fixture() {
           total_count: 1,
           jobs: [{ name: "prepare", status: "completed" }],
         };
-      if (path.endsWith("/branches/main")) return { commit: { sha } };
+      if (path.endsWith("/branches/main")) return { commit: { sha: mainSha } };
       if (path.includes("ci.yml/runs"))
         return {
           workflow_runs: [
@@ -70,7 +73,7 @@ function fixture() {
               ...run("ci.yml"),
               event: "push",
               status: "completed",
-              conclusion: "success",
+              conclusion: ciConclusion,
             },
           ],
         };
@@ -94,11 +97,30 @@ function fixture() {
     parents,
     children,
     progress,
+    setMain: (value: string) => {
+      mainSha = value;
+    },
+    setCi: (value: string) => {
+      ciConclusion = value;
+    },
     setReceipt: (value: typeof receipt) => {
       receipt = value;
     },
   };
 }
+test("unmerged source and failed CI stop before dispatch; smoke dispatch is not production", async () => {
+  const f = fixture();
+  f.parents.push({
+    ...run("release-dispatch.yml"),
+    display_title: `App dispatch smoke at ${sha}`,
+  });
+  f.setMain("b".repeat(40));
+  expect((await f.progress()).state).toBe("needs-merge");
+  f.setMain(sha);
+  f.setCi("failure");
+  expect((await f.progress()).state).toBe("failed");
+  expect(f.api.mock.calls.filter((c) => c[2] === "POST")).toHaveLength(0);
+});
 test("read-only status never dispatches; publish writes once and ambiguous reconnect never retries", async () => {
   const f = fixture();
   expect((await f.progress("status")).state).toBe("ready");
