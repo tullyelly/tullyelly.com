@@ -1,3 +1,5 @@
+import { buildMetadata } from "@/lib/seo/builders";
+import { canonicalUrl } from "@/lib/share/canonicalUrl";
 import DataPageShell from "@/components/layout/DataPageShell";
 import PageIntro from "@/components/layout/PageIntro";
 import SectionHeader from "@/components/layout/SectionHeader";
@@ -11,8 +13,9 @@ export default async function Page() {
   const trades = await listTcdbTrades();
 
   return (
-    <DataPageShell>
+    <DataPageShell width="wide">
       <PageIntro
+        eyebrow="cardattack"
         title="TCDb Trades"
         description="Thank you to all of my trade partners. A wonderful community."
       />
@@ -29,3 +32,9 @@ export default async function Page() {
     </DataPageShell>
   );
 }
+
+export const metadata = buildMetadata({
+  title: "TCDb Trades | tullyelly",
+  description: "The cardattack trade ledger and trading partners.",
+  canonical: canonicalUrl("cardattack/tcdb-trades"),
+});

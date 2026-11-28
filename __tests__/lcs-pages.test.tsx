@@ -112,14 +112,15 @@ describe("lcs route pages", () => {
       screen.getByRole("link", { name: "← Back to local card shops" }),
     ).toHaveAttribute("href", "/cardattack/lcs");
     expect(screen.getAllByText("Indianapolis, IN").length).toBeGreaterThan(0);
-    expect(screen.getByText("Chronicle Feed")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Chronicle Feed" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("indy-card-exchange")).toBeInTheDocument();
     expect(screen.getByText("8.7/10")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "https://indycardexchange.com/" })).toHaveAttribute(
-      "href",
-      "https://indycardexchange.com/",
-    );
+    expect(
+      screen.getByRole("link", { name: "https://indycardexchange.com/" }),
+    ).toHaveAttribute("href", "https://indycardexchange.com/");
     expect(screen.getByTestId("lcs-chronicle-feed")).toHaveTextContent(
       "Visit:2026-02-14",
     );
@@ -131,3 +132,6 @@ describe("lcs route pages", () => {
     );
   });
 });
+
+// Each mounted directory starts a new browsing journey.
+beforeEach(() => window.history.replaceState(null, "", "/"));

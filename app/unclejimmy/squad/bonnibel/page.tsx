@@ -1,5 +1,7 @@
 import CollectionRelationships from "@/components/identity/CollectionRelationships";
-import Link from "next/link";
+import DataPageShell from "@/components/layout/DataPageShell";
+import PageIntro from "@/components/layout/PageIntro";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 
 import { SectionDivider } from "@/components/SectionDivider";
 import RedditEmbed from "@/components/unclejimmy/RedditEmbed";
@@ -37,11 +39,9 @@ export default async function UncleJimmySquadBonnibelPage() {
   const taggedPosts = await getIdentityTaggedPosts(["bonnibel"]);
 
   return (
-    <div className="space-y-10">
+    <DataPageShell width="wide">
       <div className="space-y-8">
-        <h1 className="text-2xl md:text-3xl font-semibold leading-tight">
-          bonnibel
-        </h1>
+        <PageIntro eyebrow="unclejimmy · Fam" title="bonnibel" />
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           <i>bonnibel</i> is the OG seed from 🎙<i>unclejimmy</i>&rsquo;s squad.
           As such, she&rsquo;s being gifted the first dedicated page for any
@@ -51,16 +51,32 @@ export default async function UncleJimmySquadBonnibelPage() {
           Keep scrolling to see all content. There&rsquo;s more to come soon!
         </p>
         <p>
-          <Link
-            href="/unclejimmy/squad"
+          <DirectoryReturnLink
+            directory="/unclejimmy/squad"
+            alternatives={["/unclejimmy/fam"]}
             className="text-[16px] md:text-[18px] underline hover:no-underline"
           >
-            ← back to squad
-          </Link>
+            ← Back to directory
+          </DirectoryReturnLink>
         </p>
       </div>
       <SectionDivider className="my-6" />
-      <section className="space-y-4">
+      <nav aria-label="On this page" className="flex flex-wrap gap-3">
+        <a className="link-blue" href="#family-story">
+          Personal story
+        </a>
+        <a className="link-blue" href="#family-collections">
+          Collections
+        </a>
+        <a className="link-blue" href="#family-chronicles">
+          Chronicles
+        </a>
+      </nav>
+      <section
+        id="family-story"
+        aria-label="Personal story"
+        className="min-w-0 space-y-4"
+      >
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           lost series
         </h2>
@@ -105,12 +121,16 @@ export default async function UncleJimmySquadBonnibelPage() {
         </p>
       </section>
       <SectionDivider className="my-6" />
-      <CollectionRelationships
-        slug="bonnibel"
-        displayName="bonnibel"
-        mode="person"
-      />
-      <SquadMemberPosts tag="bonnibel" posts={taggedPosts} />
-    </div>
+      <div id="family-collections" className="scroll-mt-24">
+        <CollectionRelationships
+          slug="bonnibel"
+          displayName="bonnibel"
+          mode="person"
+        />
+      </div>
+      <div id="family-chronicles" className="scroll-mt-24">
+        <SquadMemberPosts tag="bonnibel" posts={taggedPosts} />
+      </div>
+    </DataPageShell>
   );
 }

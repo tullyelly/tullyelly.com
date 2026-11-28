@@ -1,10 +1,17 @@
+import { getArchiveReturnDirectory } from "@/lib/archive-return";
+import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
+import type { ReactNode } from "react";
 import CollectionRelationships from "@/components/identity/CollectionRelationships";
-import Link from "next/link";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
+import PageIntro from "@/components/layout/PageIntro";
+import {
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
 import { normalizeTagSlug } from "@/lib/tags";
 import { notFound, redirect } from "next/navigation";
 
 import DataPageShell from "@/components/layout/DataPageShell";
-import SectionHeader from "@/components/layout/SectionHeader";
 import RelatedIdentities from "@/components/identity/RelatedIdentities";
 import SquadMemberPosts from "@/components/unclejimmy/SquadMemberPosts";
 import { Card } from "@ui";
@@ -26,6 +33,8 @@ export default async function IdentityDetailPage({
   noun,
   directoryHref,
   directoryLabel,
+  returnTo,
+  music,
 }: {
   slug: string;
   context: IdentityContext;
@@ -33,6 +42,8 @@ export default async function IdentityDetailPage({
   noun: string;
   directoryHref: string;
   directoryLabel: string;
+  returnTo?: string;
+  music?: ReactNode;
 }) {
   const identity = await getIdentityBySlug(slug);
   if (!identity || identity.metadata.kind !== kind) notFound();
@@ -45,7 +56,21 @@ export default async function IdentityDetailPage({
         role !== (context === "unclejimmy" ? "fam" : "homie"))
     )
       notFound();
-    redirect(href);
+    redirect(
+      returnTo
+        ? withDirectoryReturn(
+            href,
+            safeDirectoryReturn(
+              returnTo,
+              getArchiveReturnDirectory(returnTo)?.path ??
+                (context === "theabbott" &&
+                returnTo.split("?")[0] === "/theabbott/crates"
+                  ? "/theabbott/crates"
+                  : directoryHref),
+            ),
+          )
+        : href,
+    );
   }
   const [parentGroups, members, descendants] =
     kind === "person"
@@ -68,54 +93,91 @@ export default async function IdentityDetailPage({
 
   return (
     <DataPageShell width="wide">
-      <SectionHeader
+      <PageIntro
         eyebrow={`${context} ${noun}`}
         title={identity.displayName}
-        description={`Shared identity #${identity.slug} in the ${context} context.`}
+        description={
+          context === "theabbott"
+            ? "Music, memberships and the stories connected to this artist."
+            : kind === "person"
+              ? "Stories, groups and the collections connected to this person."
+              : "Members, shared stories and the collections connected to this group."
+        }
         actions={
-          <Link href={directoryHref} className="btn">
-            Back to {directoryLabel}
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <DirectoryReturnLink directory={directoryHref} className="btn">
+              Back to {directoryLabel}
+            </DirectoryReturnLink>
+            {context === "theabbott" ? (
+              <ContextDirectoryReturn
+                directory="/theabbott/crates"
+                label="Back to Crates"
+              />
+            ) : null}
+          </div>
         }
       />
-      <RelatedIdentities
-        title={kind === "person" ? "Clans and squads" : "Member of"}
-        identities={parentGroups}
-        context={context}
-      />
-      {kind === "group" ? (
+      <nav aria-label="On this page" className="flex flex-wrap gap-3">
+        <a className="link-blue" href="#identity-memberships">
+          Memberships
+        </a>
+        <a className="link-blue" href="#identity-collections">
+          {context === "theabbott" ? "Music" : "Collections"}
+        </a>
+        <a className="link-blue" href="#identity-chronicles">
+          Chronicles
+        </a>
+      </nav>
+      <div id="identity-memberships" className="scroll-mt-24 space-y-4">
         <RelatedIdentities
-          title="Members"
-          identities={members}
+          title={kind === "person" ? "Clans and squads" : "Member of"}
+          identities={parentGroups}
           context={context}
         />
-      ) : null}
-      {parentGroups.length === 0 &&
-      (kind === "person" || members.length === 0) ? (
-        <Card as="section">
-          <h2 className="!m-0 text-xl font-semibold">
-            {kind === "person" ? "Clans and squads" : "Members"}
-          </h2>
-          <p className="!mb-0 mt-3 text-muted-foreground">
-            No relationships are recorded yet.
-          </p>
-        </Card>
-      ) : null}
-      <CollectionRelationships
-        slug={identity.slug}
-        displayName={identity.displayName}
-        mode={
-          context === "unclejimmy" && kind === "person" ? "person" : "subject"
-        }
-      />
-      <SquadMemberPosts
-        tag={identity.slug}
-        posts={posts}
-        includesAffiliatedClans={kind === "person" && parentGroups.length > 0}
-        includesAffiliatedMembers={
-          kind === "group" && inheritedChronicleTags.length > 0
-        }
-      />
+        {kind === "group" ? (
+          <RelatedIdentities
+            title="Members"
+            identities={members}
+            context={context}
+          />
+        ) : null}
+        {parentGroups.length === 0 &&
+        (kind === "person" || members.length === 0) ? (
+          <Card as="section">
+            <h2 className="!m-0 text-xl font-semibold">
+              {kind === "person" ? "Clans and squads" : "Members"}
+            </h2>
+            <p className="!mb-0 mt-3 text-muted-foreground">
+              No relationships are recorded yet.
+            </p>
+          </Card>
+        ) : null}
+      </div>
+      <div id="identity-collections" className="scroll-mt-24">
+        {context === "theabbott" ? (
+          music
+        ) : (
+          <CollectionRelationships
+            slug={identity.slug}
+            displayName={identity.displayName}
+            mode={
+              context === "unclejimmy" && kind === "person"
+                ? "person"
+                : "subject"
+            }
+          />
+        )}
+      </div>
+      <div id="identity-chronicles" className="scroll-mt-24">
+        <SquadMemberPosts
+          tag={identity.slug}
+          posts={posts}
+          includesAffiliatedClans={kind === "person" && parentGroups.length > 0}
+          includesAffiliatedMembers={
+            kind === "group" && inheritedChronicleTags.length > 0
+          }
+        />
+      </div>
     </DataPageShell>
   );
 }

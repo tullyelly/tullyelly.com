@@ -31,6 +31,7 @@ const giannis: HomieDirectoryRow = {
 describe("HomieDirectory desktop editing", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.history.replaceState(null, "", "/cardattack/homies");
   });
 
   it("toggles a focused editing table with room for the full name", () => {
@@ -177,4 +178,61 @@ describe("HomieDirectory desktop editing", () => {
     expect(nameInput).toHaveValue("Giannis");
     fetchMock.mockRestore();
   });
+});
+
+describe("Homie browse state and safe update failures", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState(null, "", "/cardattack/homies");
+  });
+  it("restores aliases, clamps stale pages, and carries return context", () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/cardattack/homies?q=greek&page=999&sort=name",
+    );
+    render(
+      <HomieDirectory
+        initialRows={[{ ...giannis, searchTerms: ["greek-freak"] }]}
+        canUpdate={false}
+      />,
+    );
+    expect(screen.getByRole("searchbox")).toHaveValue("greek");
+    expect(
+      screen.getAllByRole("link", { name: giannis.name })[0],
+    ).toHaveAttribute("href", expect.stringContaining("returnTo="));
+    expect(screen.getAllByText("Jul 25, 2026").length).toBeGreaterThan(0);
+  });
+  it.each([409, 403, 422])(
+    "preserves edited input after mocked HTTP %s",
+    async (status) => {
+      const fetchMock = jest
+        .spyOn(global, "fetch")
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify(
+              status === 422
+                ? { fieldErrors: { name: ["Name is required"] } }
+                : {},
+            ),
+            { status, headers: { "Content-Type": "application/json" } },
+          ),
+        );
+      render(<HomieDirectory initialRows={[giannis]} canUpdate />);
+      fireEvent.click(screen.getByRole("button", { name: "Unlock Editing" }));
+      const input = screen.getByRole("textbox", {
+        name: `Name for ${giannis.name}`,
+      });
+      fireEvent.change(input, { target: { value: "Changed name" } });
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      await waitFor(() =>
+        expect(getPersistentBanners()).toEqual([
+          expect.objectContaining({ variant: "error" }),
+        ]),
+      );
+      expect(input).toHaveValue("Changed name");
+      expect(window.location.search).not.toContain("Changed");
+      fetchMock.mockRestore();
+    },
+  );
 });

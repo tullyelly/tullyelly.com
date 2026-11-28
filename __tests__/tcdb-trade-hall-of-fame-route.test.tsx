@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 
 jest.mock("server-only", () => ({}));
 
@@ -83,28 +83,25 @@ describe("TCDb Trade Hall of Fame route", () => {
       name: "TCDb Trade Hall of Fame",
     });
     const [pageIntro, hallOfFameHeading] = hallOfFameHeadings;
-    const inductionsHeading = screen.getByRole("heading", {
-      name: "Hall of Fame Inductions",
-    });
-
     expect(pageIntro.compareDocumentPosition(hallOfFameHeading)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
-    expect(hallOfFameHeading.compareDocumentPosition(inductionsHeading)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
-
-    expect(screen.getAllByText("Hall of Famer").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Inductions").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Category").length).toBeGreaterThan(0);
     expect(
       screen.getAllByText("(basketball, football)").length,
     ).toBeGreaterThan(0);
-    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
     expect(screen.getByTestId("tcdb-trade-hof-table")).toBeInTheDocument();
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Hall of Fame view" }),
+      { target: { value: "inductions" } },
+    );
+    expect(
+      screen.getByRole("heading", { name: "Hall of Fame Inductions" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByTestId("tcdb-trade-hof-inductions-table"),
     ).toBeInTheDocument();
+    expect(screen.getAllByText("Category").length).toBeGreaterThan(0);
+    expect(window.location.search).toContain("view=inductions");
     const scoreboard = screen.getByRole("region", {
       name: "Hall of Fame scoreboard",
     });
@@ -120,3 +117,5 @@ describe("TCDb Trade Hall of Fame route", () => {
     expect(within(scoreboard).getByText("2026-04-10")).toBeInTheDocument();
   });
 });
+
+beforeEach(() => window.history.replaceState(null, "", "/"));

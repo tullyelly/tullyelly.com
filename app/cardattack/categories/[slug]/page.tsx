@@ -1,4 +1,4 @@
-import Link from "next/link";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import { notFound } from "next/navigation";
 import { Card } from "@ui";
 import DataPageShell from "@/components/layout/DataPageShell";
@@ -49,9 +49,9 @@ export default async function Page({ params }: Props) {
   if (categoryResult.status === "fulfilled" && !categoryResult.value)
     return notFound();
   const back = (
-    <Link className="underline" href="/cardattack/categories">
+    <DirectoryReturnLink className="btn" directory="/cardattack/categories">
       Back to categories
-    </Link>
+    </DirectoryReturnLink>
   );
   if (
     categoryResult.status === "rejected" ||
@@ -75,6 +75,7 @@ export default async function Page({ params }: Props) {
     <div style={tcdbTradePageThemeVars}>
       <DataPageShell width="wide">
         <PageIntro
+          eyebrow="cardattack · Category"
           title={category.name}
           description="Owned-card counts, TCDb rankings and signed differences; changes compare consecutive measurement dates."
           actions={
@@ -88,6 +89,21 @@ export default async function Page({ params }: Props) {
           }
         />
         {back}
+        <nav aria-label="On this page" className="flex flex-wrap gap-3">
+          {category.card_count !== null ? (
+            <>
+              <a className="link-blue" href="#category-chart">
+                Count history
+              </a>
+              <a className="link-blue" href="#category-ranking-chart">
+                Rank history
+              </a>
+            </>
+          ) : null}
+          <a className="link-blue" href="#category-history">
+            Dated measurements
+          </a>
+        </nav>
         {category.card_count === null ? (
           <Card>
             <p>

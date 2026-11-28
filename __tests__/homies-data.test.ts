@@ -402,3 +402,26 @@ describe("tcdb clan ranking data helpers", () => {
     expect(fallerValues).toEqual(["down", 2]);
   });
 });
+
+describe("clan server sorting", () => {
+  it.each(["name", "rank", "cards"] as const)(
+    "sorts %s before applying the page limit",
+    async (sort) => {
+      queryRowsMock.mockReset();
+      queryRowsMock
+        .mockResolvedValueOnce([clanRow])
+        .mockResolvedValueOnce([{ c: "30" }]);
+      await listTcdbClanRankings({ page: 2, pageSize: 20, sort });
+      const sql = String(queryRowsMock.mock.calls[0][0]);
+      expect(sql).toContain(
+        sort === "name"
+          ? "ORDER BY r.name ASC"
+          : sort === "rank"
+            ? "ORDER BY r.ranking ASC"
+            : "ORDER BY r.card_count DESC",
+      );
+      expect(sql).toContain("r.clan_id ASC");
+      expect(queryRowsMock.mock.calls[0][1]).toEqual([20, 20]);
+    },
+  );
+});

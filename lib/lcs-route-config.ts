@@ -38,10 +38,10 @@ export const LCS_ROUTE_CONFIG: LcsRouteConfig = {
   brandTitle: "🃏cardattack",
   collectionMetaTitle: "LCS | 🃏cardattack",
   collectionMetaDescription:
-    "Local card shop visits tracked from chronicles, with DB-backed shop metadata and visit-day history.",
+    "Local card shop ratings, locations and visits, with stories from the Chronicles.",
   collectionHeroTitle: "Local Card Shops",
   collectionHeroDescription:
-    "Card shop dossiers are keyed by DB-backed LCS records and visit dates, while the narrative visit notes still render from the original chronicle MDX.",
+    "Find local card shops by location, rating or latest visit, then read the stories behind each stop.",
   detailMetaSuffix: "LCS | 🃏cardattack",
   detailHeroEyebrow: "Card Shop Dossier",
   collectionSectionEyebrow: "LCS Directory",
@@ -65,7 +65,7 @@ export const LCS_ROUTE_CONFIG: LcsRouteConfig = {
   collectionDirectoryHeading: "Tracked Shops",
   detailFeedHeading: "Chronicle Feed",
   detailFeedDescription:
-    "Each visit day below comes from the DB-backed LCS log, while the narrative content still renders from the original chronicle MDX.",
+    "Read each visit in date order, with links to its original Chronicle.",
   pageThemeVars: lcsPageThemeVars,
   tableThemeStyle: lcsTableThemeStyle,
   collectionPath: "/cardattack/lcs",

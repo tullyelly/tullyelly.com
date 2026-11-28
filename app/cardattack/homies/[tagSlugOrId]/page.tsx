@@ -1,3 +1,7 @@
+import {
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
 import CollectionRelationships from "@/components/identity/CollectionRelationships";
 import {
   getTagAliasSnapshot,
@@ -54,6 +58,7 @@ export const generateMetadata = makeDetailGenerateMetadata({
 
 type PageProps = {
   params: Promise<{ tagSlugOrId: string }>;
+  searchParams?: Promise<{ returnTo?: string }>;
 };
 
 function pluralize(count: number, singular: string, plural = `${singular}s`) {
@@ -129,7 +134,7 @@ function HomieChronicleDisplayNamesSection({
   );
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params, searchParams }: PageProps) {
   const { tagSlugOrId } = await params;
   const ranking = await getHomieTcdbRankingByRouteKey(tagSlugOrId);
   if (!ranking) return notFound();
@@ -138,8 +143,17 @@ export default async function Page({ params }: PageProps) {
   if (
     (await resolveCanonicalTagSlug(tagSlugOrId)) !==
     normalizeTagSlug(tagSlugOrId)
-  )
-    redirect(homieHref);
+  ) {
+    const query = await searchParams;
+    redirect(
+      query?.returnTo
+        ? withDirectoryReturn(
+            homieHref,
+            safeDirectoryReturn(query.returnTo, "/cardattack/homies"),
+          )
+        : homieHref,
+    );
+  }
   const aliases = await getTagAliasSnapshot();
   const tagMetadata = await getStoredTagMetadataForHrefKind({
     slug: ranking.tag_slug,
@@ -204,32 +218,49 @@ export default async function Page({ params }: PageProps) {
         },
       ]}
     >
-      {chronicleTagMetadata ? (
-        <CollectionRelationships
-          slug={chronicleTagMetadata.slug}
-          displayName={chronicleTagMetadata.displayName}
-          mode="subject"
+      <nav aria-label="On this page" className="flex flex-wrap gap-3">
+        <a href="#collection-summary-0" className="link-blue">
+          Collection history
+        </a>
+        <a href="#homie-relationships" className="link-blue">
+          Relationships
+        </a>
+        {chronicleTagMetadata ? (
+          <a href="#homie-chronicles" className="link-blue">
+            Chronicles and names
+          </a>
+        ) : null}
+      </nav>
+      <div id="homie-relationships" className="scroll-mt-24 space-y-5">
+        {chronicleTagMetadata ? (
+          <CollectionRelationships
+            slug={chronicleTagMetadata.slug}
+            displayName={chronicleTagMetadata.displayName}
+            mode="subject"
+          />
+        ) : null}
+        <TradePartnerRelations partners={tradePartners} />
+        <RelatedIdentities
+          title="Clans"
+          identities={relatedClans}
+          context="cardattack"
         />
-      ) : null}
-      <TradePartnerRelations partners={tradePartners} />
-      <RelatedIdentities
-        title="Clans"
-        identities={relatedClans}
-        context="cardattack"
-      />
-      {chronicleTagMetadata ? (
-        <HomieChronicleDisplayNamesSection
-          tagMetadata={chronicleTagMetadata}
-          displayNames={chronicleDisplayNames}
-        />
-      ) : null}
-      {chronicleTagMetadata ? (
-        <SquadMemberPosts
-          tag={chronicleTagMetadata.slug}
-          posts={taggedChronicles}
-          includesAffiliatedClans={relatedClans.length > 0}
-        />
-      ) : null}
+      </div>
+      <div id="homie-chronicles" className="scroll-mt-24 space-y-5">
+        {chronicleTagMetadata ? (
+          <HomieChronicleDisplayNamesSection
+            tagMetadata={chronicleTagMetadata}
+            displayNames={chronicleDisplayNames}
+          />
+        ) : null}
+        {chronicleTagMetadata ? (
+          <SquadMemberPosts
+            tag={chronicleTagMetadata.slug}
+            posts={taggedChronicles}
+            includesAffiliatedClans={relatedClans.length > 0}
+          />
+        ) : null}
+      </div>
     </RankingDetailPage>
   );
 }

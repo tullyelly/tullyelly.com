@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { withDirectoryReturn } from "@/lib/directory-state";
 import {
   createContext,
   useContext,
@@ -31,12 +32,14 @@ export function TagMetadataProvider({
 
 export type TagLinkProps = Omit<ComponentProps<typeof Link>, "href"> & {
   tag: string;
+  directoryReturn?: string;
   metadata?: TagLinkMetadata;
 };
 
 /** All tag references share this contract, including plain text for disabled tags. */
 export default function TagLink({
   tag,
+  directoryReturn,
   metadata,
   children,
   className = "underline hover:no-underline text-primary",
@@ -71,7 +74,7 @@ export default function TagLink({
     <Link
       {...props}
       className={className}
-      href={href}
+      href={directoryReturn ? withDirectoryReturn(href, directoryReturn) : href}
       prefetch={props.prefetch ?? false}
     >
       {children}

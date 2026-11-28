@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 
 import { sql } from "@/lib/db";
 import {
@@ -114,7 +115,7 @@ function relationFromRow(row: RelationRow): IdentityRelation {
   };
 }
 
-export async function getIdentityBySlug(
+export const getIdentityBySlug = cache(async function getIdentityBySlug(
   slug: string,
 ): Promise<Identity | null> {
   const normalized = await resolveCanonicalTagSlug(slug);
@@ -125,7 +126,7 @@ export async function getIdentityBySlug(
     LIMIT 1
   `;
   return rows[0] ? identityFromRow(rows[0]) : null;
-}
+});
 
 export function getIdentityHref(
   identity: Identity,

@@ -65,7 +65,11 @@ export async function renderScrollsPage(searchParams: ScrollsSearchParams) {
   return (
     <DataPageShell>
       <div id="scrolls-root" className="space-y-8">
-        <PageIntro title="Shaolin Scrolls" contentClassName="space-y-0">
+        <PageIntro
+          eyebrow="mark2"
+          title="Shaolin Scrolls"
+          contentClassName="space-y-0"
+        >
           <section className="flex flex-col-reverse gap-3 md:flow-root">
             <div className="w-full md:float-right md:mb-4 md:ml-6 md:w-[240px]">
               <ReleaseTypeLegend releaseTypes={releaseTypes} />

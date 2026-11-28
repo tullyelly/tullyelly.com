@@ -207,7 +207,11 @@ export default async function Page({ params }: PageProps) {
               <TcdbCardHistorySummary>
                 <ClanCardCountSparkline snapshots={sportSnapshots} />
               </TcdbCardHistorySummary>
-            ) : null,
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No snapshot history is recorded for this sport yet.
+              </p>
+            ),
           fields: [
             {
               label: "TCDb Rank",
@@ -237,37 +241,66 @@ export default async function Page({ params }: PageProps) {
         };
       })}
     >
-      {chronicleTagMetadata ? (
-        <CollectionRelationships
-          slug={chronicleTagMetadata.slug}
-          displayName={chronicleTagMetadata.displayName}
-          mode="subject"
+      <nav aria-label="On this page" className="flex flex-wrap gap-3">
+        {rankings.map((row, index) => (
+          <a
+            key={row.sport}
+            href={`#collection-summary-${index}`}
+            className="link-blue"
+          >
+            {formatClanSportLabel(row.sport)} history
+          </a>
+        ))}
+        <a href="#clan-memberships" className="link-blue">
+          Members and relationships
+        </a>
+        {chronicleTagMetadata ? (
+          <a href="#clan-chronicles" className="link-blue">
+            Chronicles and names
+          </a>
+        ) : null}
+      </nav>
+      <div id="clan-memberships" className="scroll-mt-24 space-y-5">
+        {chronicleTagMetadata ? (
+          <CollectionRelationships
+            slug={chronicleTagMetadata.slug}
+            displayName={chronicleTagMetadata.displayName}
+            mode="subject"
+          />
+        ) : null}
+        <TradePartnerRelations partners={tradePartners} />
+        <RelatedIdentities
+          title="Member of"
+          identities={parentClans}
+          context="cardattack"
         />
-      ) : null}
-      <TradePartnerRelations partners={tradePartners} />
-      <RelatedIdentities
-        title="Member of"
-        identities={parentClans}
-        context="cardattack"
-      />
-      <RelatedIdentities
-        title="Members"
-        identities={relatedMembers}
-        context="cardattack"
-      />
-      {chronicleTagMetadata ? (
-        <ClanChronicleDisplayNamesSection
-          tagMetadata={chronicleTagMetadata}
-          displayNames={chronicleDisplayNames}
+        {relatedMembers.length === 0 ? (
+          <Card as="section">
+            <h2 className="text-xl font-semibold">Members</h2>
+            <p>No members are recorded yet.</p>
+          </Card>
+        ) : null}
+        <RelatedIdentities
+          title="Members"
+          identities={relatedMembers}
+          context="cardattack"
         />
-      ) : null}
-      {chronicleTagMetadata ? (
-        <SquadMemberPosts
-          tag={chronicleTagMetadata.slug}
-          posts={taggedChronicles}
-          includesAffiliatedMembers={inheritedHomieTags.length > 0}
-        />
-      ) : null}
+      </div>
+      <div id="clan-chronicles" className="scroll-mt-24 space-y-5">
+        {chronicleTagMetadata ? (
+          <ClanChronicleDisplayNamesSection
+            tagMetadata={chronicleTagMetadata}
+            displayNames={chronicleDisplayNames}
+          />
+        ) : null}
+        {chronicleTagMetadata ? (
+          <SquadMemberPosts
+            tag={chronicleTagMetadata.slug}
+            posts={taggedChronicles}
+            includesAffiliatedMembers={inheritedHomieTags.length > 0}
+          />
+        ) : null}
+      </div>
     </RankingDetailPage>
   );
 }

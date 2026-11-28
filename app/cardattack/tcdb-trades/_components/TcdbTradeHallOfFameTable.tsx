@@ -26,13 +26,18 @@ type TcdbTradeHallOfFamerRow = {
 };
 
 type Props = {
+  preserveOrder?: boolean;
+  detailHref?: (href: string) => string;
   rows: TcdbTradeHallOfFamerRow[];
 };
 
-function renderHallOfFamer(row: TcdbTradeHallOfFamerRow) {
+function renderHallOfFamer(
+  row: TcdbTradeHallOfFamerRow,
+  detailHref: (href: string) => string,
+) {
   return (
     <Link
-      href={`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`}
+      href={detailHref(`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`)}
       className="link-blue"
     >
       {row.tcdbUsername}
@@ -53,8 +58,13 @@ function renderCategoryTags(categoryTags?: string[]) {
   );
 }
 
-export default function TcdbTradeHallOfFameTable({ rows }: Props) {
+export default function TcdbTradeHallOfFameTable({
+  rows,
+  preserveOrder = false,
+  detailHref = (href) => href,
+}: Props) {
   const sortedRows = useMemo(() => {
+    if (preserveOrder) return rows;
     return [...rows].sort((a, b) => {
       const inductionDelta = b.inductionCount - a.inductionCount;
 
@@ -72,7 +82,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
 
       return a.tcdbUsername.localeCompare(b.tcdbUsername);
     });
-  }, [rows]);
+  }, [rows, preserveOrder]);
 
   return (
     <section className="space-y-4">
@@ -99,7 +109,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
                       Hall of Famer
                     </p>
                     <p className="[overflow-wrap:anywhere] text-sm font-medium">
-                      {renderHallOfFamer(row)}
+                      {renderHallOfFamer(row, detailHref)}
                       {renderCategoryTags(row.categoryTags)}
                     </p>
                   </div>
@@ -153,7 +163,7 @@ export default function TcdbTradeHallOfFameTable({ rows }: Props) {
               return (
                 <tr key={key} data-testid="tcdb-trade-hof-row">
                   <TableCell intent="grow" className="font-medium">
-                    {renderHallOfFamer(row)}
+                    {renderHallOfFamer(row, detailHref)}
                     {renderCategoryTags(row.categoryTags)}
                   </TableCell>
                   <TableCell intent="numeric" className="font-semibold">

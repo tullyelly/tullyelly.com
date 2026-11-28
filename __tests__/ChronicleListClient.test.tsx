@@ -30,6 +30,7 @@ function renderList(initialAlterEgo: "" | "mark2" | "cardattack" = "") {
 
 describe("ChronicleListClient", () => {
   it("uses the initial alter ego filter and can clear it", () => {
+    window.history.replaceState(null, "", "/shaolin?alterEgo=cardattack");
     renderList("cardattack");
 
     expect(screen.getByText("6 matching chronicles")).toBeInTheDocument();
@@ -82,7 +83,14 @@ describe("ChronicleListClient", () => {
     const links = screen.getAllByRole("link", { name: "#Build Journal" });
     expect(links).toHaveLength(2);
     for (const link of links) {
-      expect(link).toHaveAttribute("href", "/shaolin/tags/builds");
+      expect(link).toHaveAttribute(
+        "href",
+        "/shaolin/tags/builds?returnTo=%2Fshaolin",
+      );
     }
   });
+});
+
+beforeEach(() => {
+  window.history.replaceState(null, "", "/");
 });

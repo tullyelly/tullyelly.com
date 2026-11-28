@@ -1,3 +1,4 @@
+import { withDirectoryReturn } from "@/lib/directory-state";
 import Link from "next/link";
 import type { ComponentProps } from "react";
 
@@ -20,9 +21,11 @@ type YouTubeVideoProps = ComponentProps<typeof YouTubeVideo>;
 export async function PersonaReleaseLogEntry({
   entry,
   tagMetadataBySlug,
+  directoryReturn,
 }: {
   entry: AlterEgoReleaseEntry;
   tagMetadataBySlug: ReadonlyMap<string, TagMetadata>;
+  directoryReturn?: string;
 }) {
   const code = await compileMdxToCode(entry.mdx);
   const rainbowColour = getOriginalReleaseSectionColour(
@@ -63,7 +66,14 @@ export async function PersonaReleaseLogEntry({
         </time>
         <h2 className="font-semibold">
           <Link
-            href={getReleaseSectionHref(entry.postUrl, entry.sectionOrdinal)}
+            href={
+              directoryReturn
+                ? withDirectoryReturn(
+                    getReleaseSectionHref(entry.postUrl, entry.sectionOrdinal),
+                    directoryReturn,
+                  )
+                : getReleaseSectionHref(entry.postUrl, entry.sectionOrdinal)
+            }
             className="link-blue"
           >
             {entry.postTitle}

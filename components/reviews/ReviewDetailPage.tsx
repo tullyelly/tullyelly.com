@@ -21,7 +21,7 @@ function buildReviewSummaryStats(
   return [
     {
       label: config.subjectLabel,
-      value: (
+      value: review.url ? (
         <a
           href={review.url}
           target="_blank"
@@ -30,6 +30,8 @@ function buildReviewSummaryStats(
         >
           {review.name}
         </a>
+      ) : (
+        <span>{review.name}</span>
       ),
     },
     {

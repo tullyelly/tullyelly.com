@@ -11,7 +11,7 @@ let mockSearchParams = new URLSearchParams();
 
 jest.mock("next/navigation", () => ({
   usePathname: () => "/cardattack/clans",
-  useRouter: () => ({ replace: mockReplace }),
+  useRouter: () => ({ push: mockReplace }),
   useSearchParams: () => mockSearchParams,
 }));
 
@@ -215,7 +215,27 @@ describe("TCDBRankingTableClient clan filters", () => {
     });
     expect(links).toHaveLength(2);
     links.forEach((link) =>
-      expect(link).toHaveAttribute("href", "/cardattack/clans/milwaukee-bucks"),
+      expect(link).toHaveAttribute(
+        "href",
+        expect.stringContaining("/cardattack/clans/milwaukee-bucks?returnTo="),
+      ),
     );
   });
+});
+
+test("clan sort requests a new server page and preserves existing filters", () => {
+  mockSearchParams = new URLSearchParams("q=bucks&sport=basketball&page=3");
+  render(
+    <TCDBRankingTableClient
+      serverData={serverData}
+      labels={labels}
+      allowSort
+    />,
+  );
+  fireEvent.change(screen.getByLabelText("Sort clans"), {
+    target: { value: "rank" },
+  });
+  expect(mockReplace).toHaveBeenCalledWith(
+    "/cardattack/clans?q=bucks&sport=basketball&sort=rank",
+  );
 });

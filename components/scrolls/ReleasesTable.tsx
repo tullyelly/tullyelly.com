@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { withDirectoryReturn } from "@/lib/directory-state";
 
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
@@ -18,6 +19,7 @@ import type { ReleaseRow } from "@/lib/scrolls";
 type ReleasesTableProps = {
   rows: ReleaseRow[];
   emptyMessage?: string;
+  returnTo?: string;
 };
 
 function getReleaseName(row: ReleaseRow) {
@@ -26,6 +28,7 @@ function getReleaseName(row: ReleaseRow) {
 
 export default function ReleasesTable({
   rows,
+  returnTo,
   emptyMessage = "No scrolls have been recorded yet.",
 }: ReleasesTableProps) {
   return (
@@ -52,7 +55,14 @@ export default function ReleasesTable({
               <tr key={r.id}>
                 <TableCell intent="identifier" className="text-ink/80">
                   <Link
-                    href={`/mark2/shaolin-scrolls/${r.id}`}
+                    href={
+                      returnTo
+                        ? withDirectoryReturn(
+                            `/mark2/shaolin-scrolls/${r.id}`,
+                            returnTo,
+                          )
+                        : `/mark2/shaolin-scrolls/${r.id}`
+                    }
                     aria-label={`View release ${r.id} details`}
                     className="link-blue"
                   >

@@ -29,6 +29,7 @@ export type ClanSearchParams = {
   q?: string;
   sport?: string;
   trend?: string;
+  sort?: string;
 };
 
 const readClanRankings = (
@@ -37,9 +38,18 @@ const readClanRankings = (
   q?: string,
   sport?: string,
   trend?: "up" | "down" | "flat",
+  sort?: "name" | "rank",
 ) =>
   unstable_cache(
-    () => listTcdbClanRankings({ page, pageSize, q, sport, trend }),
+    () =>
+      listTcdbClanRankings({
+        page,
+        pageSize,
+        q,
+        sport,
+        trend,
+        ...(sort ? { sort } : {}),
+      }),
     [
       "clan-ranking-data",
       `p:${page}`,
@@ -47,6 +57,7 @@ const readClanRankings = (
       `q:${q ?? ""}`,
       `s:${sport ?? ""}`,
       `t:${trend ?? ""}`,
+      `sort:${sort ?? "cards"}`,
     ],
     { revalidate: 300, tags: ["tcdb-ranking-data", "clan-ranking-data"] },
   )();
@@ -66,18 +77,33 @@ export async function renderTcdbClanRankingsPage(
   const sport = raw.sport?.trim().toLowerCase() || undefined;
   const trend = isTrend(raw.trend) ? raw.trend : undefined;
 
-  const [data, scoreboard]: [
+  const sort =
+    raw.sort === "name" || raw.sort === "rank" ? raw.sort : undefined;
+  const [initialData, scoreboard]: [
     ClanRankingResponse,
     Awaited<ReturnType<typeof getTcdbClanCollectionScoreboard>>,
   ] = await Promise.all([
-    readClanRankings(page, pageSize, raw.q, sport, trend),
+    readClanRankings(page, pageSize, raw.q, sport, trend, sort),
     readClanCollectionScoreboard(),
   ]);
+
+  const data =
+    page > initialData.meta.totalPages && initialData.meta.total > 0
+      ? await readClanRankings(
+          initialData.meta.totalPages,
+          pageSize,
+          raw.q,
+          sport,
+          trend,
+          sort,
+        )
+      : initialData;
 
   return (
     <DataPageShell contentClassName="space-y-8">
       <div style={tcdbTradePageThemeVars} className="space-y-8">
         <PageIntro
+          eyebrow="cardattack"
           title="Clans"
           description="Team collections across CardAttack, with current TCDb rankings and collection growth in one place."
         />
@@ -95,6 +121,7 @@ export async function renderTcdbClanRankingsPage(
 
           <TCDBRankingTable
             serverData={clanRankingsToTableData(data)}
+            allowSort
             sportOptions={scoreboard.sports.map((value) => ({
               value,
               label: formatClanSportLabel(value),

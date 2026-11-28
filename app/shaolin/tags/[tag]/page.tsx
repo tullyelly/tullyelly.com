@@ -1,3 +1,9 @@
+import { getArchiveReturnDirectory } from "@/lib/archive-return";
+import {
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import type { Metadata } from "next";
 import { allPosts } from "contentlayer/generated";
 import {
@@ -68,11 +74,33 @@ export async function generateMetadata({
   });
 }
 
-export default async function Page({ params }: { params: Promise<Params> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<Params>;
+  searchParams?: Promise<{ returnTo?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const returnTo =
+    typeof query?.returnTo === "string" ? query.returnTo : undefined;
   const { tag: rawTag } = await params;
   const tag = await resolveCanonicalTagSlug(rawTag);
   if (tag !== normalizeTagSlug(rawTag))
-    redirect(`/shaolin/tags/${encodeURIComponent(tag)}`);
+    redirect(
+      returnTo
+        ? withDirectoryReturn(
+            `/shaolin/tags/${encodeURIComponent(tag)}`,
+            safeDirectoryReturn(
+              returnTo,
+              getArchiveReturnDirectory(returnTo)?.path ??
+                (returnTo.split("?")[0] === "/theabbott/crates"
+                  ? "/theabbott/crates"
+                  : "/shaolin/tags"),
+            ),
+          )
+        : `/shaolin/tags/${encodeURIComponent(tag)}`,
+    );
   const aliases = await getTagAliasSnapshot();
   const posts = getPublishedPosts().filter((post) =>
     (post.tags ?? []).some((value) => canonicalTagSlug(value, aliases) === tag),
@@ -101,6 +129,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   return (
     <DataPageShell>
+      <ContextDirectoryReturn
+        directory="/theabbott/crates"
+        label="Back to Crates"
+      />
       <PageIntro
         title={`#${displayName}`}
         description={`Published Shaolin Chronicles that carry the ${displayName} tag.`}
@@ -112,6 +144,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           description={`${rows.length} chronicle${rows.length === 1 ? "" : "s"} in this tag archive.`}
         />
         <ChronicleListClient
+          directoryHref={`/shaolin/tags/${encodeURIComponent(tag)}`}
           rows={rows}
           alterEgos={alterEgos}
           tagDisplayNames={tagDisplayNames}

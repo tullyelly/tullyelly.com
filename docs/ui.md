@@ -50,3 +50,57 @@ owned/total ratio clamped to 0–100, with a solid HSL hue interpolated from red
 through orange, yellow and yellow-green to green. Its scale and neutral track use
 `--collector-progress-*` tokens in `app/globals.css`. Missing snapshots or invalid
 progress omit the counts and bar; only actual completion earns 💯.
+
+## Frontend facelift
+
+The WU-1000 rollout follows the [design contract](facelift/design.md) and
+[route/capability inventory](facelift/routes.md). WU-1288 owns the design fixture;
+rollout stories adopt the shared patterns in sequence without changing domain
+semantics or expanding write permissions.
+
+Shared directory state lives in `lib/directory-state.ts` and
+`components/directory/useDirectoryField.ts`. Use one field hook for each supported
+public query key, with an explicit default and allowed enum/page-size values.
+Search replaces history; other changes push history and reset page. Read from
+`window.location` only in the external-store snapshot and event handlers so SSR
+and initial hydration agree. Clamp the displayed page before slicing rows.
+Server-paged directories retain their server queries instead of adopting a
+client full-dataset load. Keep private edit drafts in local React state.
+
+`DirectoryReturnLink` validates `returnTo` against its exact directory path and
+keeps only supported public query keys. `withDirectoryReturn` adds that public
+context to local detail links. Canonicals continue to use the route path.
+`PageSections` composes optional section navigation with caller-owned content;
+`PageIntro` accepts a persona eyebrow; `PageState compact` uses h2 for an inline
+state below the page's existing h1. Existing defaults remain unchanged.
+
+Database-free browser coverage runs with
+`PLAYWRIGHT_CHROME_PATH=/usr/bin/chromium npx playwright test --config playwright.facelift.config.ts`.
+It covers real native history, reload, invalid queries, page-size changes, no
+matches and responsive layouts without environment files, seeding or app startup.
+It does not establish live Next/database integration.
+
+The Homies pilot keeps all directory subjects and card-count ordering, with name
+and rank alternatives (missing values last). Search includes aliases; trend,
+sort and paging persist in the URL. Cards and tables show measurement dates and
+explicit unavailable values. Profiles use wrapping grid headers, safe directory
+return links and section anchors. Alias redirects retain validated return state;
+canonical metadata and missing-ranking detail behavior remain unchanged. Existing
+snapshot/edit validation, permissions, conflict preservation and feedback remain.
+
+Clans retain server pagination. The reader whitelists cards/name/rank SQL ordering
+and uses stable clan/sport tie-breakers; the cache key includes sort. A stale page
+past the final result page is reread at the last valid page. Explicit search,
+filter, sort and page actions push Next history, preserving Back/Forward. The
+client displays the supplied server order and carries safe directory context to
+profiles. Each sport retains its own dated metrics/history and profile anchor;
+no member/collection counts are combined into a new distinct-card metric.
+
+The complete rollout and intentional exceptions are tracked in
+[the final route matrix](facelift/routes.md) and [verification](facelift/verification.md).
+Use `IdentityDirectoryPage` with an explicit directory path; the superseded
+unfiltered card branch has no remaining route consumers. Use `ArchiveReturnLink`
+for recognized content archives and `DirectoryReturnLink` for a fixed domain
+fallback. Persona application discovery must consume the existing filtered menu;
+never introduce a second hardcoded route/permission inventory. Shared primitives
+do not own relationship queries, release extraction, authorization or calculations.

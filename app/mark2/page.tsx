@@ -1,3 +1,4 @@
+import PersonaLandingIntro from "@/components/persona/PersonaLandingIntro";
 import Image from "next/image";
 import Link from "next/link";
 import FlowersInline from "@/components/flowers/FlowersInline";
@@ -45,12 +46,13 @@ export const metadata = {
 export default function Mark2Page() {
   return (
     <div className="space-y-12">
+      <PersonaLandingIntro persona="mark2" description={pageDescription} />
       <PersonaActivityChart alterEgo="mark2" />
       <PersonaReleaseFeed persona="mark2" />
       <section className="space-y-4">
-        <h1 className="text-xl md:text-2xl font-semibold leading-snug">
+        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           blueprint
-        </h1>
+        </h2>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           Yes me, this is a good starting point.
         </p>

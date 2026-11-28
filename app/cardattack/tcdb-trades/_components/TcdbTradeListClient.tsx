@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useDirectoryField } from "@/components/directory/useDirectoryField";
+import { useDirectoryPagination } from "@/components/directory/useDirectoryPagination";
+import TablePager from "@/components/ui/TablePager";
+
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
@@ -57,10 +61,10 @@ function getTradeStatusBadgeClass(status: "Open" | "Completed") {
   return getBadgeClass(status === "Open" ? "tcdb" : "spike");
 }
 
-function renderPartner(row: TradeRow) {
+function renderPartner(row: TradeRow, detailHref: (href: string) => string) {
   return (
     <Link
-      href={`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`}
+      href={detailHref(`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`)}
       className="link-blue"
     >
       {row.partner}
@@ -78,9 +82,17 @@ function renderTradeCount(value?: number) {
 }
 
 export default function TcdbTradeListClient({ rows }: Props) {
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("");
-  const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [status, setStatus] = useDirectoryField<string>("status", "", [
+    "",
+    "Open",
+    "Completed",
+  ]);
+  const [sort, setSort] = useDirectoryField<"newest" | "oldest">(
+    "sort",
+    "newest",
+    ["newest", "oldest"],
+  );
   const searchedRows = useTableSearch(rows, query, getTradeSearchValues);
   const visibleRows = useMemo(() => {
     const filtered = searchedRows.filter(
@@ -91,6 +103,10 @@ export default function TcdbTradeListClient({ rows }: Props) {
       return sort === "newest" ? difference : -difference;
     });
   }, [searchedRows, sort, status]);
+  const { pageRows, detailHref, pagination } = useDirectoryPagination(
+    visibleRows,
+    "/cardattack/tcdb-trades",
+  );
   const emptyState =
     rows.length === 0
       ? "No TCDb trades have been referenced in chronicles yet."
@@ -161,7 +177,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
       />
       <ul className="space-y-3 md:hidden">
         {visibleRows.length > 0 ? (
-          visibleRows.map((row) => (
+          pageRows.map((row) => (
             <MobileDataCard
               key={`mobile-${row.tradeId}`}
               className="p-3"
@@ -171,7 +187,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
                 eyebrow="Trade ID"
                 title={
                   <Link
-                    href={`/cardattack/tcdb-trades/${row.tradeId}`}
+                    href={detailHref(`/cardattack/tcdb-trades/${row.tradeId}`)}
                     className="link-blue text-sm font-medium"
                   >
                     {row.tradeId}
@@ -190,16 +206,27 @@ export default function TcdbTradeListClient({ rows }: Props) {
                 <MobileDataField label="End date">
                   {row.endDate ? (
                     <time dateTime={row.endDate}>{fmtDate(row.endDate)}</time>
-                  ) : (
+                  ) : row.status === "Open" ? (
                     "Open"
+                  ) : (
+                    "Not recorded"
                   )}
+                </MobileDataField>
+                <MobileDataField label="Received">
+                  {renderTradeCount(row.received)}
+                </MobileDataField>
+                <MobileDataField label="Sent">
+                  {renderTradeCount(row.sent)}
+                </MobileDataField>
+                <MobileDataField label="Total">
+                  {renderTradeCount(row.total)}
                 </MobileDataField>
               </MobileDataGrid>
               <div className="mt-2 text-sm">
                 <p className="text-xs uppercase tracking-wide text-ink/60">
                   Partner
                 </p>
-                <p>{renderPartner(row)}</p>
+                <p>{renderPartner(row, detailHref)}</p>
               </div>
             </MobileDataCard>
           ))
@@ -226,11 +253,11 @@ export default function TcdbTradeListClient({ rows }: Props) {
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
-            visibleRows.map((row) => (
+            pageRows.map((row) => (
               <tr key={row.tradeId} data-testid="tcdb-trade-row">
                 <TableCell intent="identifier" className="font-medium">
                   <Link
-                    href={`/cardattack/tcdb-trades/${row.tradeId}`}
+                    href={detailHref(`/cardattack/tcdb-trades/${row.tradeId}`)}
                     className="link-blue"
                   >
                     {row.tradeId}
@@ -247,8 +274,10 @@ export default function TcdbTradeListClient({ rows }: Props) {
                 <TableCell intent="date">
                   {row.endDate ? (
                     <time dateTime={row.endDate}>{fmtDate(row.endDate)}</time>
-                  ) : (
+                  ) : row.status === "Open" ? (
                     "Open"
+                  ) : (
+                    "Not recorded"
                   )}
                 </TableCell>
                 <TableCell intent="numeric">
@@ -260,7 +289,9 @@ export default function TcdbTradeListClient({ rows }: Props) {
                 <TableCell intent="numeric">
                   {renderTradeCount(row.total)}
                 </TableCell>
-                <TableCell intent="grow">{renderPartner(row)}</TableCell>
+                <TableCell intent="grow">
+                  {renderPartner(row, detailHref)}
+                </TableCell>
               </tr>
             ))
           ) : (
@@ -268,6 +299,7 @@ export default function TcdbTradeListClient({ rows }: Props) {
           )}
         </TBody>
       </Table>
+      <TablePager {...pagination} />
     </section>
   );
 }

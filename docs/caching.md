@@ -62,3 +62,8 @@ using canonical routes. Direct edits appear on the next refreshed server request
 refresh a persistent browser layout snapshot. The Homies directory retains its
 existing 300-second cache; direct DataGrip edits do not invalidate it automatically.
 See [alias consumer coverage and rename ordering](tag-alias-resolution.md).
+
+Identity lookup by input slug uses React request caching. Page rendering, artist
+music and identity metadata reuse that lookup within one request; it is not a
+cross-request identity or session cache. Canonical alias resolution retains its
+existing request snapshot and freshness semantics.

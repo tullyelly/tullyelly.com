@@ -91,3 +91,30 @@ See the [096 DataGrip and ledger handoff](lowercase-menu-labels.md) for exact
 files/hashes, preservation checks and development-first manual execution.
 Future authored database menu labels should be lowercase. Applied migration
 files remain immutable; 096 supersedes earlier title-case label expectations.
+
+## Persona application discovery; WU-1298
+
+The five persona landing pages use `PersonaLandingIntro` and
+`PersonaApplications`. They reuse `getRootRequestData` and the same already
+permission-filtered `menu.tree` as global navigation. React request caching avoids
+another root data lookup; no user/session decision is put into a shared cache.
+The component uses the existing `flattenLinks` traversal, preserves database
+labels/order and external targets, omits the current landing link and deduplicates
+identical destinations. An empty authorized menu renders no application section.
+It never substitutes a hardcoded public or administrative fallback.
+
+The route audit found existing coverage in 094/095 and the matching fallback:
+Cardattack Homies, Clans, Categories, Set Collector, Trades, Trade Partners, Hall
+of Fame, LCS and USPS; Theabbott Crates, Homies, Clans and curated music pages;
+Unclejimmy Fam, Squads, the legacy squad, volleyball, Bricks and review directories;
+Shaolin Chronicles/tags; Mark2 Scrolls; and all five release logs. Entity details
+and compatibility aliases remain reachable through their directories rather than
+becoming top-level menu entries. Home persona cards, menu breadcrumbs, mobile
+accordion and command/site search continue using their existing contracts.
+
+No menu SQL is required by this facelift. This is a code/fixture coverage audit,
+not evidence that an earlier migration was applied to either connected database.
+Existing SQL application ownership, cache timing and server authorization remain
+unchanged. The shared stylesheet is unchanged. Desktop menu dismissal preserves focus
+when a visitor has already moved to another control or opened command search;
+the closing animation must not steal focus back to the old menu trigger.

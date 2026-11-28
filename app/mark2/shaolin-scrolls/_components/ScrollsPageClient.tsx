@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { safeDirectoryReturn } from "@/lib/directory-state";
 import { useTransition } from "react";
 import type { Route } from "next";
 import ReleaseCards from "@/components/scrolls/ReleaseCards";
@@ -29,6 +30,10 @@ export default function ScrollsPageClient({
   const search = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const searchSnapshot = search?.toString() ?? "";
+  const returnTo = safeDirectoryReturn(
+    `${pathname}${searchSnapshot ? `?${searchSnapshot}` : ""}`,
+    "/mark2/shaolin-scrolls",
+  );
   const emptyMessage = meta.q
     ? "No scrolls match the current search."
     : "No scrolls have been recorded yet.";
@@ -49,7 +54,7 @@ export default function ScrollsPageClient({
     const queryString = current.toString();
     startTransition(() => {
       const nextPath = queryString ? `${pathname}?${queryString}` : pathname;
-      router.replace(nextPath as Route);
+      router.push(nextPath as Route);
     });
   }
 
@@ -59,10 +64,18 @@ export default function ScrollsPageClient({
       aria-busy={isPending ? "true" : undefined}
       role="region"
     >
-      <div className="md:hidden" suppressHydrationWarning>
-        <ReleaseCards rows={rows} emptyMessage={emptyMessage} />
+      <div className="md:hidden">
+        <ReleaseCards
+          rows={rows}
+          emptyMessage={emptyMessage}
+          returnTo={searchSnapshot ? returnTo : undefined}
+        />
       </div>
-      <ReleasesTable rows={rows} emptyMessage={emptyMessage} />
+      <ReleasesTable
+        rows={rows}
+        emptyMessage={emptyMessage}
+        returnTo={searchSnapshot ? returnTo : undefined}
+      />
       <TablePager
         page={meta.page}
         pageSize={meta.pageSize}

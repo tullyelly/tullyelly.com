@@ -1,3 +1,4 @@
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -133,12 +134,12 @@ export default async function Page({ params }: PageProps) {
       <div className="space-y-8 px-1 py-6 md:px-2 md:py-8">
         <header className="overflow-hidden rounded-[28px] bg-[var(--blue)] text-white shadow-sm">
           <div className="space-y-6 px-4 py-5 md:px-7 md:py-7">
-            <Link
-              href="/mark2/shaolin-scrolls"
+            <DirectoryReturnLink
+              directory="/mark2/shaolin-scrolls"
               className="inline-flex rounded-full border border-white bg-white px-3 py-1.5 text-sm font-semibold text-[var(--blue)] transition hover:bg-[var(--cream)]"
             >
               ← Back to Shaolin Scrolls
-            </Link>
+            </DirectoryReturnLink>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={getBadgeClass(release.status as never)}>

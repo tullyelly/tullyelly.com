@@ -1,5 +1,7 @@
 import CollectionRelationships from "@/components/identity/CollectionRelationships";
-import Link from "next/link";
+import DataPageShell from "@/components/layout/DataPageShell";
+import PageIntro from "@/components/layout/PageIntro";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import Image from "next/image";
 
 import { SectionDivider } from "@/components/SectionDivider";
@@ -42,11 +44,9 @@ export default async function UncleJimmySquadJeffMeffPage() {
   const taggedPosts = await getIdentityTaggedPosts(["jeff-meff"]);
 
   return (
-    <div className="space-y-10">
+    <DataPageShell width="wide">
       <div className="space-y-8">
-        <h1 className="text-2xl md:text-3xl font-semibold leading-tight">
-          jeff meff
-        </h1>
+        <PageIntro eyebrow="unclejimmy · Fam" title="jeff meff" />
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           <i>jeff meff</i> is the next dedicated page in 🎙<i>unclejimmy</i>
           &rsquo;s squad. He's the greatest teammate, always sporting a smile,
@@ -58,18 +58,34 @@ export default async function UncleJimmySquadJeffMeffPage() {
           for the latest and greatest.
         </p>
         <p>
-          <Link
-            href="/unclejimmy/squad"
+          <DirectoryReturnLink
+            directory="/unclejimmy/squad"
+            alternatives={["/unclejimmy/fam"]}
             className="text-[16px] md:text-[18px] underline hover:no-underline"
           >
-            ← back to squad
-          </Link>
+            ← Back to directory
+          </DirectoryReturnLink>
         </p>
       </div>
       <SectionDivider className="my-6" />
       <VolleyballTournamentDirectory />
       <SectionDivider className="my-6" />
-      <section className="space-y-4">
+      <nav aria-label="On this page" className="flex flex-wrap gap-3">
+        <a className="link-blue" href="#family-story">
+          Personal story
+        </a>
+        <a className="link-blue" href="#family-collections">
+          Collections
+        </a>
+        <a className="link-blue" href="#family-chronicles">
+          Chronicles
+        </a>
+      </nav>
+      <section
+        id="family-story"
+        aria-label="Personal story"
+        className="min-w-0 space-y-4"
+      >
         <h2 className="text-xl md:text-2xl font-semibold leading-snug">
           lost series
         </h2>
@@ -124,12 +140,16 @@ export default async function UncleJimmySquadJeffMeffPage() {
         />
       </section>
       <SectionDivider className="my-6" />
-      <CollectionRelationships
-        slug="jeff-meff"
-        displayName="jeff meff"
-        mode="person"
-      />
-      <SquadMemberPosts tag="jeff-meff" posts={taggedPosts} />
-    </div>
+      <div id="family-collections" className="scroll-mt-24">
+        <CollectionRelationships
+          slug="jeff-meff"
+          displayName="jeff meff"
+          mode="person"
+        />
+      </div>
+      <div id="family-chronicles" className="scroll-mt-24">
+        <SquadMemberPosts tag="jeff-meff" posts={taggedPosts} />
+      </div>
+    </DataPageShell>
   );
 }

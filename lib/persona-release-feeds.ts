@@ -50,7 +50,9 @@ export const PERSONA_RELEASE_FEEDS = {
 export type PersonaReleaseFeed = keyof typeof PERSONA_RELEASE_FEEDS;
 export type PersonaReleaseOrder = "newest" | "oldest";
 
-export function isPersonaReleaseFeed(value: string): value is PersonaReleaseFeed {
+export function isPersonaReleaseFeed(
+  value: string,
+): value is PersonaReleaseFeed {
   return Object.hasOwn(PERSONA_RELEASE_FEEDS, value);
 }
 
@@ -62,11 +64,13 @@ export function getPersonaReleaseLogHref(
   persona: PersonaReleaseFeed,
   page = 1,
   order: PersonaReleaseOrder = "newest",
+  q = "",
 ): string {
   const base = `${PERSONA_RELEASE_FEEDS[persona].baseRoute}/releases`;
   const query = new URLSearchParams();
   if (page > 1) query.set("page", String(page));
   if (order === "oldest") query.set("order", "oldest");
+  if (q.trim()) query.set("q", q.trim());
   const suffix = query.toString();
   return suffix ? `${base}?${suffix}` : base;
 }

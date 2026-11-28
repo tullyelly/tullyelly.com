@@ -1,9 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useTransition } from "react";
+import { useCallback, useTransition } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
+import {
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+import { fmtDate } from "@/lib/datetime";
 import TrendPill from "./TrendPill";
 import type {
   TCDBRankingTableData,
@@ -33,6 +38,7 @@ const signedFormatter = new Intl.NumberFormat("en-US", {
 });
 
 export type TCDBRankingTableClientProps = {
+  allowSort?: boolean;
   serverData: TCDBRankingTableData;
   theme?: TCDBRankingTableTheme;
   labels: TCDBRankingTableLabels;
@@ -40,6 +46,7 @@ export type TCDBRankingTableClientProps = {
 };
 
 export default function TCDBRankingTableClient({
+  allowSort = false,
   serverData,
   theme,
   labels,
@@ -56,10 +63,17 @@ export default function TCDBRankingTableClient({
   const searchSport = (search?.get("sport") ?? "").trim().toLowerCase();
   const searchTrend = search?.get("trend") ?? "";
 
-  const rows = useMemo(
-    () => [...serverData.data].sort((a, b) => b.card_count - a.card_count),
-    [serverData.data],
+  const searchSort = ["name", "rank"].includes(search?.get("sort") ?? "")
+    ? search!.get("sort")!
+    : "cards";
+  const directory = safeDirectoryReturn(
+    `${currentPath}${searchSnapshot ? `?${searchSnapshot}` : ""}`,
+    currentPath,
   );
+  const rows = serverData.data.map((row) => ({
+    ...row,
+    href: searchSnapshot ? withDirectoryReturn(row.href, directory) : row.href,
+  }));
 
   const updateQuery = useCallback(
     (
@@ -80,7 +94,7 @@ export default function TCDBRankingTableClient({
         const nextPath = queryString
           ? `${currentPath}?${queryString}`
           : currentPath;
-        router.replace(nextPath as Route);
+        router.push(nextPath as Route);
       });
     },
     [currentPath, router, searchSnapshot, startTransition],
@@ -115,7 +129,10 @@ export default function TCDBRankingTableClient({
 
   const hasRows = rows.length > 0;
   const hasActiveFilters =
-    searchQ.length > 0 || searchSport.length > 0 || searchTrend.length > 0;
+    searchQ.length > 0 ||
+    searchSport.length > 0 ||
+    searchTrend.length > 0 ||
+    (allowSort && searchSort !== "cards");
   const emptyMessage = hasActiveFilters
     ? labels.emptyMessage
     : labels.emptyDatasetMessage;
@@ -157,6 +174,28 @@ export default function TCDBRankingTableClient({
         }
         filters={
           <>
+            {allowSort ? (
+              <select
+                aria-label="Sort clans"
+                className="form-input w-full sm:w-auto"
+                value={searchSort}
+                onChange={(event) =>
+                  updateQuery(
+                    {
+                      sort:
+                        event.target.value === "cards"
+                          ? undefined
+                          : event.target.value,
+                    },
+                    { resetPage: true },
+                  )
+                }
+              >
+                <option value="cards">Most cards</option>
+                <option value="name">Name</option>
+                <option value="rank">Best rank</option>
+              </select>
+            ) : null}
             {sportOptions?.length ? (
               <select
                 name="sport"
@@ -194,7 +233,12 @@ export default function TCDBRankingTableClient({
               className="btn whitespace-nowrap"
               onClick={() =>
                 updateQuery(
-                  { q: undefined, sport: undefined, trend: undefined },
+                  {
+                    q: undefined,
+                    sport: undefined,
+                    trend: undefined,
+                    ...(allowSort ? { sort: undefined } : {}),
+                  },
                   { resetPage: true },
                 )
               }
@@ -239,6 +283,7 @@ export default function TCDBRankingTableClient({
           <TableHeaderCell intent="grow">Name</TableHeaderCell>
           <TableHeaderCell intent="numeric">Cards</TableHeaderCell>
           <TableHeaderCell intent="numeric">Rank</TableHeaderCell>
+          <TableHeaderCell intent="date">Measured</TableHeaderCell>
           <TableHeaderCell intent="status">Trend</TableHeaderCell>
         </THead>
         <TBody>
@@ -246,14 +291,14 @@ export default function TCDBRankingTableClient({
             rows.map((row) => (
               <tr key={row.key} data-testid="tcdb-table-row">
                 <TableCell intent="identifier" className="text-ink/80">
-                  <TCDBRankingRowClient href={row.href} name={row.name}>
-                    <span className="block max-w-[10rem] truncate">
-                      {row.identifierValue}
-                    </span>
-                  </TCDBRankingRowClient>
+                  <span className="block max-w-[10rem] break-words">
+                    {row.identifierValue}
+                  </span>
                 </TableCell>
                 <TableCell intent="grow" className="text-ink">
-                  {row.name}
+                  <TCDBRankingRowClient href={row.href} name={row.name}>
+                    {row.name}
+                  </TCDBRankingRowClient>
                 </TableCell>
                 <TableCell intent="numeric" className="text-ink">
                   {integerFormatter.format(row.card_count)}
@@ -261,13 +306,14 @@ export default function TCDBRankingTableClient({
                 <TableCell intent="numeric" className="text-ink/80">
                   {integerFormatter.format(row.ranking)}
                 </TableCell>
+                <TableCell intent="date">{fmtDate(row.ranking_at)}</TableCell>
                 <TableCell intent="status">
                   <TrendPill trend={row.trend_overall} />
                 </TableCell>
               </tr>
             ))
           ) : (
-            <TableEmptyRow colSpan={5}>{emptyMessage}</TableEmptyRow>
+            <TableEmptyRow colSpan={6}>{emptyMessage}</TableEmptyRow>
           )}
         </TBody>
       </Table>
@@ -290,8 +336,8 @@ function MobileRankingCard({ row }: { row: Row }) {
   return (
     <Card as="li" className="p-3">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-ink">{row.name}</p>
+        <div className="min-w-0">
+          <p className="break-words text-sm text-ink">{row.name}</p>
           <p className="text-xs text-ink/70">
             Rank {integerFormatter.format(row.ranking)}
           </p>
@@ -316,6 +362,10 @@ function MobileRankingCard({ row }: { row: Row }) {
           <dd className="tabular-nums text-ink">
             {signedFormatter.format(row.difference)}
           </dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-xs uppercase text-ink/60">Measured</dt>
+          <dd>{fmtDate(row.ranking_at)}</dd>
         </div>
       </dl>
       <TCDBRankingRowClient

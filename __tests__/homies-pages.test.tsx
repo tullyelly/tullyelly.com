@@ -804,3 +804,30 @@ test("actual historical homie route redirects only through an explicit same-pers
     }),
   ).rejects.toThrow("redirect:/cardattack/homies/king-james");
 });
+
+test("historical homie redirects preserve only safe directory return state", async () => {
+  mockTagAliases.mockResolvedValue(new Map([["lebron-james", "king-james"]]));
+  mockGetHomieTcdbRankingByRouteKey.mockResolvedValue({
+    ...homieRanking,
+    tag_slug: "king-james",
+    route_slug: "king-james",
+  });
+  await expect(
+    HomieDetailPage({
+      params: Promise.resolve({ tagSlugOrId: "lebron-james" }),
+      searchParams: Promise.resolve({
+        returnTo: "/cardattack/homies?q=king&page=2&draft=private",
+      }),
+    }),
+  ).rejects.toThrow(
+    "redirect:/cardattack/homies/king-james?returnTo=%2Fcardattack%2Fhomies%3Fq%3Dking%26page%3D2",
+  );
+  await expect(
+    HomieDetailPage({
+      params: Promise.resolve({ tagSlugOrId: "lebron-james" }),
+      searchParams: Promise.resolve({ returnTo: "https://evil.test" }),
+    }),
+  ).rejects.toThrow(
+    "redirect:/cardattack/homies/king-james?returnTo=%2Fcardattack%2Fhomies",
+  );
+});

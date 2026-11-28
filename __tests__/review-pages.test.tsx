@@ -176,7 +176,9 @@ describe("review route pages", () => {
     expect(
       screen.getByRole("link", { name: "← Back to golden age" }),
     ).toHaveAttribute("href", "/unclejimmy/golden-age");
-    expect(screen.getByText("Chronicle Feed")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Chronicle Feed" }),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("review-chronicle-feed")).toHaveTextContent(
       "Visit:self-care",
     );
@@ -194,3 +196,6 @@ describe("review route pages", () => {
     expect(screen.getByText("8.8/10")).toBeInTheDocument();
   });
 });
+
+// Each mounted directory starts a new browsing journey.
+beforeEach(() => window.history.replaceState(null, "", "/"));

@@ -120,7 +120,7 @@ export default async function CollectionChronicleFeed<TDay extends FeedDay>({
   }
 
   return (
-    <div className="space-y-0" style={themeStyle}>
+    <div className="min-w-0 space-y-0" style={themeStyle}>
       {renderableDays.map((day, dayIndex) => (
         <div key={day.visitDate} className="space-y-0">
           {dayIndex > 0 ? (
@@ -130,8 +130,9 @@ export default async function CollectionChronicleFeed<TDay extends FeedDay>({
             />
           ) : null}
           <article
+            id={`activity-${day.visitDate}`}
             aria-label={`${entryLabel}: ${fmtDate(day.visitDate)}`}
-            className="space-y-5"
+            className="min-w-0 scroll-mt-24 space-y-5"
           >
             <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">

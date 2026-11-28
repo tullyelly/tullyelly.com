@@ -80,3 +80,29 @@ describe("TcdbTradeListClient", () => {
     ).toHaveLength(2);
   });
 });
+
+beforeEach(() => window.history.replaceState(null, "", "/"));
+
+test("mobile received-only trades expose quantities without inventing a completion date", () => {
+  render(
+    <TcdbTradeListClient
+      rows={[
+        {
+          tradeId: "10",
+          startDate: "2026-11-28",
+          status: "Completed",
+          tradePartnerId: 1,
+          partner: "Collector",
+          received: 10,
+        },
+      ]}
+    />,
+  );
+  const card = within(screen.getByTestId("tcdb-trade-card"));
+  expect(card.getByText("Received")).toBeVisible();
+  expect(card.getAllByText("10")).toHaveLength(2);
+  expect(card.getByText("Sent")).toBeVisible();
+  expect(card.getByText("Total")).toBeVisible();
+  expect(card.getByText("Not recorded")).toBeVisible();
+  expect(card.queryByText("Open")).not.toBeInTheDocument();
+});

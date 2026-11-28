@@ -2,7 +2,16 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import {
+  useDirectoryField,
+  useDirectorySearch,
+} from "@/components/directory/useDirectoryField";
+import {
+  clampDirectoryPage,
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+import TablePager from "@/components/ui/TablePager";
 
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
@@ -35,7 +44,20 @@ const getFinishLabel = (finish: number | null) =>
   formatVolleyballTournamentFinish(finish) ?? "Not tracked";
 
 export default function VolleyballTournamentList({ rows }: Props) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [sort, setSort] = useDirectoryField<string>("sort", "latest", [
+    "latest",
+    "name",
+  ]);
+  const [page, setPage] = useDirectoryField<number>("page", 1);
+  const [pageSize, setPageSize] = useDirectoryField<number>(
+    "pageSize",
+    25,
+    [25, 50, 100],
+  );
+  const search = useDirectorySearch();
+  const directory = "/unclejimmy/squad/volleyball";
+  const returnTo = safeDirectoryReturn(`${directory}${search}`, directory);
   const filteredRows = useTableSearch(rows, query, (row) => [
     row.tournamentName,
     row.tournamentId,
@@ -43,6 +65,18 @@ export default function VolleyballTournamentList({ rows }: Props) {
     getFinishLabel(row.finish),
   ]);
 
+  const sorted = [...filteredRows].sort(
+    (a, b) =>
+      (sort === "name"
+        ? a.tournamentName.localeCompare(b.tournamentName, "en")
+        : b.latestTournamentDate.localeCompare(a.latestTournamentDate)) ||
+      a.tournamentId.localeCompare(b.tournamentId),
+  );
+  const current = clampDirectoryPage(page, sorted.length, pageSize);
+  const visibleRows = sorted.slice(
+    (current - 1) * pageSize,
+    current * pageSize,
+  );
   return (
     <div className="space-y-4">
       <DataToolbar
@@ -54,6 +88,30 @@ export default function VolleyballTournamentList({ rows }: Props) {
             label="Search volleyball tournaments"
           />
         }
+        filters={
+          <select
+            aria-label="Sort tournaments"
+            className="form-input"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
+            <option value="latest">Latest first</option>
+            <option value="name">Name A to Z</option>
+          </select>
+        }
+        actions={
+          query || sort !== "latest" ? (
+            <button
+              className="btn"
+              onClick={() => {
+                setQuery("");
+                setSort("latest");
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null
+        }
         result={
           <DataResultCount>
             {`${filteredRows.length} ${filteredRows.length === 1 ? "tournament" : "tournaments"}`}
@@ -62,7 +120,7 @@ export default function VolleyballTournamentList({ rows }: Props) {
       />
       <ul className="space-y-3 md:hidden">
         {filteredRows.length > 0 ? (
-          filteredRows.map((row) => (
+          visibleRows.map((row) => (
             <MobileDataCard
               key={`mobile-${row.tournamentId}`}
               data-testid="volleyball-tournament-card"
@@ -72,7 +130,10 @@ export default function VolleyballTournamentList({ rows }: Props) {
                 title={
                   <Link
                     href={
-                      `/unclejimmy/squad/volleyball/${row.tournamentId}` as Route
+                      withDirectoryReturn(
+                        `/unclejimmy/squad/volleyball/${row.tournamentId}`,
+                        returnTo,
+                      ) as Route
                     }
                     className="link-blue text-sm font-medium"
                   >
@@ -129,7 +190,7 @@ export default function VolleyballTournamentList({ rows }: Props) {
         </THead>
         <TBody>
           {filteredRows.length > 0 ? (
-            filteredRows.map((row) => (
+            visibleRows.map((row) => (
               <tr
                 key={row.tournamentId}
                 data-testid="volleyball-tournament-row"
@@ -137,7 +198,10 @@ export default function VolleyballTournamentList({ rows }: Props) {
                 <TableCell intent="name">
                   <Link
                     href={
-                      `/unclejimmy/squad/volleyball/${row.tournamentId}` as Route
+                      withDirectoryReturn(
+                        `/unclejimmy/squad/volleyball/${row.tournamentId}`,
+                        returnTo,
+                      ) as Route
                     }
                     className="link-blue"
                   >
@@ -170,6 +234,14 @@ export default function VolleyballTournamentList({ rows }: Props) {
           )}
         </TBody>
       </Table>
+      <TablePager
+        page={current}
+        pageSize={pageSize}
+        total={sorted.length}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={[25, 50, 100]}
+      />
     </div>
   );
 }

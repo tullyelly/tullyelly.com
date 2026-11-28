@@ -2,6 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  useDirectoryField,
+  useDirectorySearch,
+} from "@/components/directory/useDirectoryField";
+import {
+  clampDirectoryPage,
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+import { fmtDate } from "@/lib/datetime";
 import { Card } from "@ui";
 import * as Dialog from "@ui/dialog";
 import SectionHeader from "@/components/layout/SectionHeader";
@@ -94,10 +104,33 @@ export default function HomieDirectory({
   const [rows, setRows] = useState(initialRows);
   const [drafts, setDrafts] = useState<Record<number, Editable>>({});
   const [unlocked, setUnlocked] = useState(false);
-  const [q, setQ] = useState("");
-  const [trend, setTrend] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  const [q, setQ] = useDirectoryField<string>("q", "");
+  const [trend, setTrend] = useDirectoryField<string>("trend", "", [
+    "",
+    "up",
+    "down",
+    "flat",
+  ]);
+  const [sort, setSort] = useDirectoryField<string>("sort", "cards", [
+    "cards",
+    "name",
+    "rank",
+  ]);
+  const search = useDirectorySearch();
+  const directory = safeDirectoryReturn(
+    `/cardattack/homies${search}`,
+    "/cardattack/homies",
+  );
+  const detailHref = (slug: string) =>
+    directory === "/cardattack/homies"
+      ? `/cardattack/homies/${slug}`
+      : withDirectoryReturn(`/cardattack/homies/${slug}`, directory);
+  const [page, setPage] = useDirectoryField<number>("page", 1);
+  const [pageSize, setPageSize] = useDirectoryField<number>(
+    "pageSize",
+    PAGE_SIZES[0],
+    PAGE_SIZES,
+  );
   const [pendingIds, setPendingIds] = useState<Set<number>>(() => new Set());
   const [mobileEdit, setMobileEdit] = useState<number | null>(null);
 
@@ -109,12 +142,29 @@ export default function HomieDirectory({
       ),
     [searchedRows, trend],
   );
-  const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const sorted = useMemo(
+    () =>
+      [...filtered].sort((a, b) => {
+        const tie = a.name.localeCompare(b.name, "en") || a.id - b.id;
+        if (sort === "name") return tie;
+        const left = sort === "rank" ? a.ranking : a.card_count;
+        const right = sort === "rank" ? b.ranking : b.card_count;
+        if (left === null) return right === null ? tie : 1;
+        if (right === null) return -1;
+        return (sort === "rank" ? left - right : right - left) || tie;
+      }),
+    [filtered, sort],
+  );
+  const currentPage = clampDirectoryPage(page, sorted.length, pageSize);
+  const visible = sorted.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
   const emptyState =
     rows.length === 0
       ? "No homies are available yet."
       : "No homies match these filters.";
-  const hasActiveFilters = q.length > 0 || trend.length > 0;
+  const hasActiveFilters = q.length > 0 || trend.length > 0 || sort !== "cards";
   const changed = (row: HomieDirectoryRow) => {
     const draft = drafts[row.id];
     return !!draft && JSON.stringify(draft) !== JSON.stringify(values(row));
@@ -240,20 +290,32 @@ export default function HomieDirectory({
           />
         }
         filters={
-          <select
-            className="form-input w-full sm:w-auto"
-            aria-label="Filter by trend"
-            value={trend}
-            onChange={(event) => {
-              setTrend(event.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">All trends</option>
-            <option value="up">Up</option>
-            <option value="down">Down</option>
-            <option value="flat">Flat</option>
-          </select>
+          <>
+            <select
+              className="form-input w-full sm:w-auto"
+              aria-label="Filter by trend"
+              value={trend}
+              onChange={(event) => {
+                setTrend(event.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All trends</option>
+              <option value="up">Up</option>
+              <option value="down">Down</option>
+              <option value="flat">Flat</option>
+            </select>
+            <select
+              aria-label="Sort homies"
+              className="form-input w-full sm:w-auto"
+              value={sort}
+              onChange={(event) => setSort(event.target.value)}
+            >
+              <option value="cards">Most cards</option>
+              <option value="name">Name</option>
+              <option value="rank">Best rank</option>
+            </select>
+          </>
         }
         actions={
           hasActiveFilters ? (
@@ -263,6 +325,7 @@ export default function HomieDirectory({
               onClick={() => {
                 setQ("");
                 setTrend("");
+                setSort("cards");
                 setPage(1);
               }}
             >
@@ -282,10 +345,10 @@ export default function HomieDirectory({
           visible.map((row) => (
             <Card as="li" className="p-3" key={row.id}>
               <div className="flex justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <Link
-                    href={`/cardattack/homies/${row.route_slug}`}
-                    className="font-semibold"
+                    href={detailHref(row.route_slug)}
+                    className="break-words font-semibold"
                     data-testid="ranking-detail-trigger"
                   >
                     {row.name}
@@ -295,13 +358,13 @@ export default function HomieDirectory({
                 {row.trend_overall ? (
                   <TrendPill trend={row.trend_overall} />
                 ) : (
-                  <span>{"—"}</span>
+                  <span>{"Not available"}</span>
                 )}
               </div>
               <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <dt className="text-xs uppercase text-ink/60">Tag slug</dt>
-                  <dd>{row.tag_slug ?? "—"}</dd>
+                  <dd>{row.tag_slug ?? "Not available"}</dd>
                 </div>
                 <div>
                   <dt className="text-xs uppercase text-ink/60">Drafted</dt>
@@ -311,14 +374,22 @@ export default function HomieDirectory({
                   <dt className="text-xs uppercase text-ink/60">Cards</dt>
                   <dd>
                     {row.card_count === null
-                      ? "—"
+                      ? "Not available"
                       : integer.format(row.card_count)}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-xs uppercase text-ink/60">Rank</dt>
                   <dd>
-                    {row.ranking === null ? "—" : integer.format(row.ranking)}
+                    {row.ranking === null
+                      ? "Not available"
+                      : integer.format(row.ranking)}
+                  </dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-xs uppercase text-ink/60">Measured</dt>
+                  <dd>
+                    {row.ranking_at ? fmtDate(row.ranking_at) : "Not available"}
                   </dd>
                 </div>
               </dl>
@@ -347,6 +418,7 @@ export default function HomieDirectory({
 
       <Table
         variant="bucks"
+        density="compact"
         aria-label="Homie directory table"
         layout={unlocked && canUpdate ? "fixed" : "auto"}
       >
@@ -368,6 +440,7 @@ export default function HomieDirectory({
             <>
               <TableHeaderCell intent="numeric">Cards</TableHeaderCell>
               <TableHeaderCell intent="numeric">Rank</TableHeaderCell>
+              <TableHeaderCell intent="date">Measured</TableHeaderCell>
               <TableHeaderCell intent="status">Trend</TableHeaderCell>
             </>
           ) : null}
@@ -384,7 +457,7 @@ export default function HomieDirectory({
                   <TableCell intent="identifier">
                     <Link
                       data-testid="ranking-detail-trigger"
-                      href={`/cardattack/homies/${row.route_slug}`}
+                      href={detailHref(row.route_slug)}
                       onClick={(event) => {
                         if (
                           changed(row) &&
@@ -409,7 +482,12 @@ export default function HomieDirectory({
                         }
                       />
                     ) : (
-                      row.name
+                      <Link
+                        href={detailHref(row.route_slug)}
+                        className="link-blue font-semibold"
+                      >
+                        {row.name}
+                      </Link>
                     )}
                   </TableCell>
                   <TableCell intent="nowrap">
@@ -431,7 +509,7 @@ export default function HomieDirectory({
                         </span>
                       </div>
                     ) : (
-                      (row.tag_slug ?? "—")
+                      (row.tag_slug ?? "Not available")
                     )}
                   </TableCell>
                   <TableCell intent="numeric">
@@ -458,19 +536,24 @@ export default function HomieDirectory({
                     <>
                       <TableCell intent="numeric">
                         {row.card_count === null
-                          ? "—"
+                          ? "Not available"
                           : integer.format(row.card_count)}
                       </TableCell>
                       <TableCell intent="numeric">
                         {row.ranking === null
-                          ? "—"
+                          ? "Not available"
                           : integer.format(row.ranking)}
+                      </TableCell>
+                      <TableCell intent="date">
+                        {row.ranking_at
+                          ? fmtDate(row.ranking_at)
+                          : "Not available"}
                       </TableCell>
                       <TableCell intent="status">
                         {row.trend_overall ? (
                           <TrendPill trend={row.trend_overall} />
                         ) : (
-                          "—"
+                          "Not available"
                         )}
                       </TableCell>
                     </>
@@ -505,7 +588,7 @@ export default function HomieDirectory({
               );
             })
           ) : (
-            <TableEmptyRow colSpan={unlocked && canUpdate ? 5 : 7}>
+            <TableEmptyRow colSpan={unlocked && canUpdate ? 5 : 8}>
               {emptyState}
             </TableEmptyRow>
           )}
@@ -513,7 +596,7 @@ export default function HomieDirectory({
       </Table>
 
       <TablePager
-        page={page}
+        page={currentPage}
         pageSize={pageSize}
         total={filtered.length}
         isPending={false}

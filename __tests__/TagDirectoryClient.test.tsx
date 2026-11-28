@@ -57,7 +57,7 @@ describe("TagDirectoryClient", () => {
 
     expect(
       within(desktopRows()[0]).getByRole("link", { name: "#alpha" }),
-    ).toHaveAttribute("href", "/shaolin/tags/alpha");
+    ).toHaveAttribute("href", "/shaolin/tags/alpha?returnTo=%2Fshaolin%2Ftags");
     expect(
       within(desktopRows()[0]).getByRole("link", {
         name: "Chronicle archive (5)",
@@ -70,7 +70,7 @@ describe("TagDirectoryClient", () => {
     ).toHaveLength(2);
     expect(
       screen.getAllByRole("link", { name: "Alter ego page" })[0],
-    ).toHaveAttribute("href", "/zeta");
+    ).toHaveAttribute("href", "/zeta?returnTo=%2Fshaolin%2Ftags");
     expect(screen.getAllByText("Z (4)")).toHaveLength(2);
     expect(screen.getAllByText("Zed (2)")).toHaveLength(2);
     expect(screen.getAllByText("+1 more")).toHaveLength(2);
@@ -126,4 +126,8 @@ describe("TagDirectoryClient", () => {
       screen.getAllByText("No Chronicle tags are available yet."),
     ).toHaveLength(2);
   });
+});
+
+beforeEach(() => {
+  window.history.replaceState(null, "", "/");
 });

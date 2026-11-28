@@ -33,6 +33,8 @@ type TcdbTradeHallOfFameInductionRow = {
 };
 
 type Props = {
+  preserveOrder?: boolean;
+  detailHref?: (href: string) => string;
   rows: TcdbTradeHallOfFameInductionRow[];
 };
 
@@ -40,10 +42,13 @@ function getFallbackSetCollectorDetailHref(setSlug: string): string {
   return `/cardattack/set-collector/${encodeURIComponent(setSlug)}`;
 }
 
-function renderHallOfFamer(row: TcdbTradeHallOfFameInductionRow) {
+function renderHallOfFamer(
+  row: TcdbTradeHallOfFameInductionRow,
+  detailHref: (href: string) => string,
+) {
   return (
     <Link
-      href={`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`}
+      href={detailHref(`/cardattack/tcdb-trade-partners/${row.tradePartnerId}`)}
       className="link-blue"
     >
       {row.tcdbUsername}
@@ -60,12 +65,17 @@ function renderCategoryTag(categoryTag?: string) {
   );
 }
 
-export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
+export default function TcdbTradeHallOfFameInductionsTable({
+  rows,
+  preserveOrder = false,
+  detailHref = (href) => href,
+}: Props) {
   const sortedRows = useMemo(() => {
+    if (preserveOrder) return rows;
     return [...rows].sort((a, b) =>
       b.inductedDate.localeCompare(a.inductedDate),
     );
-  }, [rows]);
+  }, [rows, preserveOrder]);
 
   return (
     <section className="space-y-4">
@@ -93,7 +103,7 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
                       Set
                     </p>
                     <Link
-                      href={setHref}
+                      href={detailHref(setHref)}
                       className="link-blue text-sm font-medium"
                     >
                       {row.setName}
@@ -124,7 +134,9 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
                     </dt>
                     <dd className="tabular-nums">
                       <Link
-                        href={`/cardattack/tcdb-trades/${row.tradeId}`}
+                        href={detailHref(
+                          `/cardattack/tcdb-trades/${row.tradeId}`,
+                        )}
                         className="link-blue"
                       >
                         {row.tradeId}
@@ -136,7 +148,7 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
                       Hall of Famer
                     </dt>
                     <dd className="[overflow-wrap:anywhere]">
-                      {renderHallOfFamer(row)}
+                      {renderHallOfFamer(row, detailHref)}
                     </dd>
                   </div>
                 </dl>
@@ -178,7 +190,10 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
                   data-testid="tcdb-trade-hof-induction-row"
                 >
                   <TableCell intent="grow">
-                    <Link href={setHref} className="link-blue font-medium">
+                    <Link
+                      href={detailHref(setHref)}
+                      className="link-blue font-medium"
+                    >
                       {row.setName}
                     </Link>
                   </TableCell>
@@ -192,13 +207,17 @@ export default function TcdbTradeHallOfFameInductionsTable({ rows }: Props) {
                   </TableCell>
                   <TableCell intent="identifier" className="font-medium">
                     <Link
-                      href={`/cardattack/tcdb-trades/${row.tradeId}`}
+                      href={detailHref(
+                        `/cardattack/tcdb-trades/${row.tradeId}`,
+                      )}
                       className="link-blue"
                     >
                       {row.tradeId}
                     </Link>
                   </TableCell>
-                  <TableCell intent="name">{renderHallOfFamer(row)}</TableCell>
+                  <TableCell intent="name">
+                    {renderHallOfFamer(row, detailHref)}
+                  </TableCell>
                 </tr>
               );
             })

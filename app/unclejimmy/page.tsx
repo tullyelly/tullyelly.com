@@ -1,3 +1,4 @@
+import PersonaLandingIntro from "@/components/persona/PersonaLandingIntro";
 import PersonTag from "@/components/mdx/PersonTag";
 import PersonaReleaseFeed from "@/components/chronicles/PersonaReleaseFeed";
 import PersonaActivityChart from "@/components/analytics/PersonaActivityChart";
@@ -32,6 +33,7 @@ export const metadata = {
 export default function UncleJimmyPage() {
   return (
     <div className="space-y-12">
+      <PersonaLandingIntro persona="unclejimmy" description={pageDescription} />
       <PersonaActivityChart alterEgo="unclejimmy" />
       <PersonaReleaseFeed persona="unclejimmy" />
       <section className="space-y-4">
@@ -92,12 +94,12 @@ export default function UncleJimmyPage() {
           🎙unclejimmy.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
-          The 🎙unclejimmy alter comes from Amber once noting that I
-          didn&rsquo;t strike her as a jimmy. I then spent an entire weekend
-          getting my nephews to start calling me 🎙unclejimmy. There was some of
-          the ol&rsquo; rabble in need of rousing after all. I&rsquo;ve spent
-          years now regretting the box I put myself in because I think
-          I&rsquo;ve heard it at least 10,000 times at this point.
+          The 🎙unclejimmy alter comes from Amber once noting that I didn&rsquo;t
+          strike her as a jimmy. I then spent an entire weekend getting my
+          nephews to start calling me 🎙unclejimmy. There was some of the
+          ol&rsquo; rabble in need of rousing after all. I&rsquo;ve spent years
+          now regretting the box I put myself in because I think I&rsquo;ve
+          heard it at least 10,000 times at this point.
         </p>
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           It now rattles around in my headspace, rent free.
@@ -127,9 +129,9 @@ export default function UncleJimmyPage() {
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           <b>The Storyteller. The Showman. The Human Layer.</b>
           <br />
-          🎙unclejimmy is the social soul of the ecosystem - part host, part
-          hype man, part neighborhood philosopher. He brings warmth and rhythm
-          to the data-driven world of shaolin. When things get too technical,
+          🎙unclejimmy is the social soul of the ecosystem - part host, part hype
+          man, part neighborhood philosopher. He brings warmth and rhythm to the
+          data-driven world of shaolin. When things get too technical,
           🎙unclejimmy steps in to remind everyone why it matters - through
           humor, nostalgia, and local flavor.
         </p>

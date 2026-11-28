@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { withDirectoryReturn } from "@/lib/directory-state";
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { formatReleaseDate } from "@/components/scrolls/formatReleaseDate";
@@ -11,10 +12,12 @@ import { MobileDataEmptyState } from "@/components/ui/MobileDataCard";
 type ReleaseCardsProps = {
   rows: ReleaseRow[];
   emptyMessage?: string;
+  returnTo?: string;
 };
 
 export default function ReleaseCards({
   rows,
+  returnTo,
   emptyMessage = "No scrolls have been recorded yet.",
 }: ReleaseCardsProps) {
   return (
@@ -24,7 +27,14 @@ export default function ReleaseCards({
           <Card as="li" key={r.id} data-testid="release-card" className="p-3">
             <div className="flex items-center justify-between">
               <Link
-                href={`/mark2/shaolin-scrolls/${r.id}`}
+                href={
+                  returnTo
+                    ? withDirectoryReturn(
+                        `/mark2/shaolin-scrolls/${r.id}`,
+                        returnTo,
+                      )
+                    : `/mark2/shaolin-scrolls/${r.id}`
+                }
                 aria-label={`View release ${r.id} details`}
                 className="font-semibold link-blue"
               >

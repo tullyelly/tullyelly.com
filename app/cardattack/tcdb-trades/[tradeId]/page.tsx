@@ -1,3 +1,5 @@
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
+import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -181,15 +183,15 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--trade-rust)_0%,var(--trade-rust-deep)_100%)] text-[color:var(--trade-off-white)] shadow-sm">
           <div className="space-y-4 px-4 py-4 md:space-y-6 md:px-6 md:py-6">
             <div className="space-y-2 md:grid md:grid-cols-[max-content_minmax(0,1fr)_max-content] md:items-center md:gap-x-4 md:space-y-0">
-              <Link
-                href="/cardattack/tcdb-trades"
+              <DirectoryReturnLink
+                directory="/cardattack/tcdb-trades"
                 className={`${topLinkClassName} whitespace-nowrap`}
               >
                 ← Back to TCDb trades
-              </Link>
-              <div className="min-w-0 text-[1.275rem] font-bold leading-none md:px-4 md:text-center md:text-[1.575rem]">
+              </DirectoryReturnLink>
+              <h1 className="!m-0 min-w-0 break-words text-[1.275rem] font-bold leading-none md:px-4 md:text-center md:text-[1.575rem]">
                 {`TCDb Trade ${summary.tradeId}`}
-              </div>
+              </h1>
               <span
                 aria-hidden="true"
                 className={`${topLinkClassName} invisible hidden whitespace-nowrap md:inline-flex`}
@@ -198,7 +200,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               </span>
             </div>
 
-            <dl className="grid gap-px overflow-hidden rounded-xl border border-white/15 bg-white/15 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.05fr_0.7fr_0.45fr_0.5fr_0.42fr_1.2fr_1.2fr]">
+            <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/15 bg-white/15 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.05fr_0.7fr_0.45fr_0.5fr_0.42fr_1.2fr_1.2fr]">
               {summaryStats.map((stat) => (
                 <div
                   key={stat.label}
@@ -227,6 +229,15 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </div>
         </section>
 
+        <div className="flex flex-wrap gap-3">
+          <ContextDirectoryReturn
+            directory="/cardattack/hof"
+            label="Back to Hall of Fame"
+          />
+          <a className="link-blue" href="#trade-chronicle-feed">
+            Chronicle timeline
+          </a>
+        </div>
         <section aria-labelledby="trade-chronicle-feed" className="space-y-8">
           <div>
             <h2

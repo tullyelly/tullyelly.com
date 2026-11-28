@@ -1,3 +1,5 @@
+import DataPageShell from "@/components/layout/DataPageShell";
+import PageIntro from "@/components/layout/PageIntro";
 import TagLink from "@/components/tags/TagLink";
 import Link from "next/link";
 import type { Route } from "next";
@@ -18,7 +20,7 @@ import SquadCommentaryChart from "./_components/SquadCommentaryChart";
 
 const pageTitle = "🎙unclejimmy squad | tullyelly";
 const pageDescription =
-  "Holding area for future squad content inside the 🎙unclejimmy persona.";
+  "Family stories, activities and commentary from the 🎙unclejimmy squad.";
 
 export const metadata = {
   title: pageTitle,
@@ -115,11 +117,25 @@ export default async function UncleJimmySquadPage() {
   );
 
   return (
-    <div className="space-y-12">
+    <DataPageShell width="wide">
       <section className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-semibold leading-snug">
-          squad
-        </h2>
+        <PageIntro
+          eyebrow="unclejimmy"
+          title="squad"
+          actions={
+            <nav
+              aria-label="Family directories"
+              className="flex flex-wrap gap-3"
+            >
+              <Link className="btn" href="/unclejimmy/fam">
+                Browse Fam
+              </Link>
+              <Link className="btn" href="/unclejimmy/squads">
+                Browse Squads
+              </Link>
+            </nav>
+          }
+        />
         <p className="text-[16px] md:text-[18px] text-muted-foreground">
           This is early days on another idea. The 🎙unclejimmy squad will be
           unveiled over time. Baby steps.
@@ -144,6 +160,6 @@ export default async function UncleJimmySquadPage() {
       <SquadContentSection
         section={squadSectionByKey.get("coming-soon") ?? null}
       />
-    </div>
+    </DataPageShell>
   );
 }

@@ -1,7 +1,11 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useDirectoryField } from "@/components/directory/useDirectoryField";
+import { useDirectoryPagination } from "@/components/directory/useDirectoryPagination";
+import TablePager from "@/components/ui/TablePager";
+
 import Link from "next/link";
 import { Card } from "@ui";
 
@@ -84,9 +88,13 @@ export default function UspsListClient({
   tableTestId = "usps-table",
   rowTestId = "usps-row",
 }: UspsListClientProps) {
-  const [query, setQuery] = useState("");
-  const [state, setState] = useState("");
-  const [sort, setSort] = useState<VisitDirectorySort>("latest");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [state, setState] = useDirectoryField<string>("state", "");
+  const [sort, setSort] = useDirectoryField<VisitDirectorySort>(
+    "sort",
+    "latest",
+    ["latest", "rating", "visits", "name"],
+  );
   const searchedRows = useTableSearch(rows, query, getUspsSearchValues);
   const stateOptions = useMemo(() => getVisitDirectoryStates(rows), [rows]);
   const visibleRows = useMemo(
@@ -98,6 +106,10 @@ export default function UspsListClient({
         (row) => row.cityName,
       ),
     [searchedRows, sort, state],
+  );
+  const { pageRows, detailHref, pagination } = useDirectoryPagination(
+    visibleRows,
+    detailBasePath,
   );
   const emptyState =
     rows.length === 0
@@ -146,6 +158,20 @@ export default function UspsListClient({
             </select>
           </>
         }
+        actions={
+          query || sort !== "latest" || state ? (
+            <button
+              className="btn"
+              onClick={() => {
+                setQuery("");
+                setSort("latest");
+                setState("");
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null
+        }
         result={
           <DataResultCount>
             {visibleRows.length} USPS location
@@ -155,7 +181,7 @@ export default function UspsListClient({
       />
       <ul className="space-y-4 md:hidden">
         {visibleRows.length > 0 ? (
-          visibleRows.map((row) => (
+          pageRows.map((row) => (
             <Card
               as="li"
               key={`mobile-${row.citySlug}`}
@@ -167,8 +193,8 @@ export default function UspsListClient({
                   <div className="min-w-0 space-y-1">
                     <p className={mobileMetaLabelClassName}>{locationLabel}</p>
                     <Link
-                      href={`${detailBasePath}/${row.citySlug}`}
-                      className="block text-lg font-semibold leading-tight text-[color:var(--usps-link)] transition hover:text-[color:var(--usps-link-hover)]"
+                      href={detailHref(`${detailBasePath}/${row.citySlug}`)}
+                      className="block break-words text-lg font-semibold leading-tight text-[color:var(--usps-link)] transition hover:text-[color:var(--usps-link-hover)]"
                     >
                       {row.cityName}
                     </Link>
@@ -234,11 +260,11 @@ export default function UspsListClient({
         </THead>
         <TBody>
           {visibleRows.length > 0 ? (
-            visibleRows.map((row) => (
+            pageRows.map((row) => (
               <tr key={row.citySlug} data-testid={rowTestId}>
                 <TableCell intent="grow">
                   <Link
-                    href={`${detailBasePath}/${row.citySlug}`}
+                    href={detailHref(`${detailBasePath}/${row.citySlug}`)}
                     className="text-base font-semibold text-[color:var(--usps-link)] transition hover:text-[color:var(--usps-link-hover)]"
                   >
                     {row.cityName}
@@ -282,6 +308,7 @@ export default function UspsListClient({
           )}
         </TBody>
       </Table>
+      <TablePager {...pagination} />
     </div>
   );
 }

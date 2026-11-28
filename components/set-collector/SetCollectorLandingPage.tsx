@@ -51,9 +51,8 @@ export default function SetCollectorLandingPage({
       title="Set Collector"
       description={
         <>
-          DB-backed progress dossiers for the card sets I&apos;m trying to
-          finish; snapshot history, ratings, and trade breadcrumbs all stay in
-          one place.
+          Progress for the card sets I&apos;m trying to finish; snapshot
+          history, ratings, and trade breadcrumbs all stay in one place.
         </>
       }
       stats={stats}

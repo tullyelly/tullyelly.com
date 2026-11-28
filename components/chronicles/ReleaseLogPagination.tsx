@@ -13,6 +13,7 @@ type Props = Pick<ReleasePageResult, "page" | "pageCount"> & {
   order: PersonaReleaseOrder;
   dateRange: { start: string; end: string } | null;
   position: "top" | "bottom";
+  q?: string;
 };
 
 export function ReleaseLogPagination({
@@ -22,6 +23,7 @@ export function ReleaseLogPagination({
   pageCount,
   dateRange,
   position,
+  q,
 }: Props) {
   return (
     <nav
@@ -33,7 +35,7 @@ export function ReleaseLogPagination({
           {page > 1 ? (
             <Link
               className="link-blue"
-              href={getPersonaReleaseLogHref(persona, page - 1, order)}
+              href={getPersonaReleaseLogHref(persona, page - 1, order, q)}
               rel="prev"
             >
               ← Previous
@@ -47,7 +49,7 @@ export function ReleaseLogPagination({
           {page < pageCount ? (
             <Link
               className="link-blue"
-              href={getPersonaReleaseLogHref(persona, page + 1, order)}
+              href={getPersonaReleaseLogHref(persona, page + 1, order, q)}
               rel="next"
             >
               Next →

@@ -188,3 +188,6 @@ describe("visit directory controls", () => {
     expect(screen.getByRole("status")).toHaveTextContent("1 USPS location");
   });
 });
+
+// Each mounted directory starts a new browsing journey.
+beforeEach(() => window.history.replaceState(null, "", "/"));

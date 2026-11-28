@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import DirectoryReturnLink from "@/components/directory/DirectoryReturnLink";
 import { Card } from "@ui";
 import FullBleedPage from "@/components/layout/FullBleedPage";
 import TrendPill from "@/components/tcdb/TrendPill";
@@ -105,18 +106,21 @@ export default function RankingDetailPage({
         style={tcdbTradePageThemeVars}
       >
         <section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--trade-rust)_0%,var(--trade-rust-deep)_100%)] text-[color:var(--trade-off-white)] shadow-sm">
-          <div className="relative flex min-h-[9rem] flex-col items-center justify-center gap-3 px-4 py-4 text-center md:min-h-[6.5rem] md:px-6">
-            <div className="flex min-w-0 justify-center md:absolute md:left-6 md:top-1/2 md:-translate-y-1/2 md:justify-start">
-              <Link href={topHref} className={`${topLinkClassName} m-0`}>
+          <div className="grid min-w-0 gap-4 px-4 py-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:px-6">
+            <div className="flex min-w-0 justify-start">
+              <DirectoryReturnLink
+                directory={topHref}
+                className={`${topLinkClassName} m-0`}
+              >
                 {topLabel}
-              </Link>
+              </DirectoryReturnLink>
             </div>
-            <div className="flex h-12 min-w-0 items-center justify-center md:absolute md:left-1/2 md:top-1/2 md:max-w-[calc(100%_-_28rem)] md:-translate-x-1/2 md:-translate-y-1/2">
-              <h1 className="!m-0 min-w-0 text-center text-[1.45rem] font-bold !leading-none md:text-[1.8rem]">
+            <div className="min-w-0">
+              <h1 className="!m-0 min-w-0 break-words text-3xl font-semibold leading-tight md:text-4xl">
                 {title}
               </h1>
             </div>
-            <div className="flex min-w-0 flex-wrap items-center justify-center gap-3 md:absolute md:right-6 md:top-1/2 md:-translate-y-1/2 md:justify-end">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
               <span className={headerMetaClassName}>{eyebrow}</span>
               {listLink ? (
                 <Link
@@ -134,6 +138,7 @@ export default function RankingDetailPage({
           {groups.map((group, index) => (
             <Card
               as="section"
+              id={`collection-summary-${index}`}
               key={group.title ?? index}
               className="border-[color:var(--trade-border)] bg-[color:var(--trade-off-white)]"
             >

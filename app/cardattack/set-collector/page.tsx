@@ -10,7 +10,7 @@ import {
 
 const title = "Set Collector | cardattack vault";
 const description =
-  "DB-backed set completion tracker for the cardattack vault; tracked sets, progress percentages, snapshot history, and trade-linked movement.";
+  "Set completion tracker for the cardattack vault; tracked sets, progress percentages, snapshot history, and trade-linked movement.";
 
 export const metadata: Metadata = {
   title,

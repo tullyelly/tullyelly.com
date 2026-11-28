@@ -88,3 +88,28 @@ describe("Clans landing page", () => {
     expect(mockGetTcdbClanCollectionScoreboard).toHaveBeenCalledTimes(1);
   });
 });
+
+test("clamps a stale server page while retaining the requested sort", async () => {
+  mockGetTcdbClanCollectionScoreboard.mockResolvedValue({
+    tracked_clans: 1,
+    total_current_cards: 2,
+    number_one_rankings: 0,
+    sports: [],
+  });
+  mockListTcdbClanRankings.mockReset();
+  mockListTcdbClanRankings
+    .mockResolvedValueOnce({
+      data: [],
+      meta: { page: 99, pageSize: 20, total: 30, totalPages: 2 },
+    })
+    .mockResolvedValueOnce({
+      data: [],
+      meta: { page: 2, pageSize: 20, total: 30, totalPages: 2 },
+    });
+  await renderTcdbClanRankingsPage(
+    Promise.resolve({ page: "99", pageSize: "20", sort: "name" }),
+  );
+  expect(mockListTcdbClanRankings).toHaveBeenLastCalledWith(
+    expect.objectContaining({ page: 2, sort: "name" }),
+  );
+});

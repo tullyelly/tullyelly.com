@@ -1,5 +1,15 @@
 "use client";
-import { useState } from "react";
+import {
+  useDirectoryField,
+  useDirectorySearch,
+} from "@/components/directory/useDirectoryField";
+import {
+  clampDirectoryPage,
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+import TablePager from "@/components/ui/TablePager";
+
 import Link from "next/link";
 import CategoryRankSummary from "@/components/categories/CategoryRankSummary";
 import { Card } from "@ui";
@@ -19,8 +29,23 @@ export default function CategoryOverview({
 }: {
   categories: CategorySnapshot[];
 }) {
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState("name");
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [sort, setSort] = useDirectoryField<string>("sort", "name", [
+    "name",
+    "date",
+    "ranking",
+  ]);
+  const [page, setPage] = useDirectoryField<number>("page", 1);
+  const [pageSize, setPageSize] = useDirectoryField<number>(
+    "pageSize",
+    25,
+    [25, 50, 100],
+  );
+  const search = useDirectorySearch();
+  const returnTo = safeDirectoryReturn(
+    `/cardattack/categories${search}`,
+    "/cardattack/categories",
+  );
   const matches = useTableSearch(categories, query, searchValues);
   const rows = [...matches].sort((a, b) =>
     sort === "ranking"
@@ -31,6 +56,7 @@ export default function CategoryOverview({
           a.name.localeCompare(b.name)
         : a.name.localeCompare(b.name),
   );
+  const current = clampDirectoryPage(page, rows.length, pageSize);
   const tracked = categories.filter(
     (category) => category.snapshot_id !== null,
   ).length;
@@ -71,6 +97,19 @@ export default function CategoryOverview({
                 </select>
               </label>
             }
+            actions={
+              query || sort !== "name" ? (
+                <button
+                  className="btn"
+                  onClick={() => {
+                    setQuery("");
+                    setSort("name");
+                  }}
+                >
+                  Clear filters
+                </button>
+              ) : null
+            }
             result={
               <DataResultCount>{rows.length} categories match</DataResultCount>
             }
@@ -79,55 +118,72 @@ export default function CategoryOverview({
             id="category-results"
             className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
           >
-            {rows.map((row) => (
-              <Card
-                key={row.slug}
-                as="section"
-                className="min-w-0 border-[color:var(--trade-border)] bg-[color:var(--trade-off-white)]"
-              >
-                <h2 className="text-xl font-semibold">
-                  <Link
-                    className="text-[color:var(--trade-blue)] underline"
-                    href={`/cardattack/categories/${row.slug}`}
-                  >
-                    {row.name}
-                  </Link>
-                </h2>
-                {row.card_count === null ? (
-                  <p>Not tracked yet</p>
-                ) : (
-                  <dl className="mt-3 space-y-2 text-sm">
-                    <div>
-                      <dt>Latest owned-card count</dt>
-                      <dd className="text-xl font-semibold tabular-nums">
-                        {formatCategoryCount(row.card_count)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Measured on</dt>
-                      <dd>{fmtDate(row.measured_on)}</dd>
-                    </div>
-                    <div>
-                      <dt>Change since previous measurement</dt>
-                      <dd>{formatCategoryChange(row.count_change)}</dd>
-                    </div>
-                    <CategoryRankSummary snapshot={row} />
-                    {row.previous_date ? (
+            {rows
+              .slice((current - 1) * pageSize, current * pageSize)
+              .map((row) => (
+                <Card
+                  key={row.slug}
+                  as="section"
+                  className="min-w-0 border-[color:var(--trade-border)] bg-[color:var(--trade-off-white)]"
+                >
+                  <h2 className="text-xl font-semibold">
+                    <Link
+                      className="text-[color:var(--trade-blue)] underline"
+                      href={
+                        search
+                          ? withDirectoryReturn(
+                              `/cardattack/categories/${row.slug}`,
+                              returnTo,
+                            )
+                          : `/cardattack/categories/${row.slug}`
+                      }
+                    >
+                      {row.name}
+                    </Link>
+                  </h2>
+                  {row.card_count === null ? (
+                    <p>Not tracked yet</p>
+                  ) : (
+                    <dl className="mt-3 space-y-2 text-sm">
                       <div>
-                        <dt>Previous measurement</dt>
-                        <dd>
-                          {row.previous_count === null
-                            ? ""
-                            : formatCategoryCount(row.previous_count)}{" "}
-                          cards on {fmtDate(row.previous_date)}
+                        <dt>Latest owned-card count</dt>
+                        <dd className="text-xl font-semibold tabular-nums">
+                          {formatCategoryCount(row.card_count)}
                         </dd>
                       </div>
-                    ) : null}
-                  </dl>
-                )}
-              </Card>
-            ))}
+                      <div>
+                        <dt>Measured on</dt>
+                        <dd>{fmtDate(row.measured_on)}</dd>
+                      </div>
+                      <div>
+                        <dt>Change since previous measurement</dt>
+                        <dd>{formatCategoryChange(row.count_change)}</dd>
+                      </div>
+                      <CategoryRankSummary snapshot={row} />
+                      {row.previous_date ? (
+                        <div>
+                          <dt>Previous measurement</dt>
+                          <dd>
+                            {row.previous_count === null
+                              ? ""
+                              : formatCategoryCount(row.previous_count)}{" "}
+                            cards on {fmtDate(row.previous_date)}
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  )}
+                </Card>
+              ))}
           </div>
+          <TablePager
+            page={current}
+            pageSize={pageSize}
+            total={rows.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[25, 50, 100]}
+          />
           {!rows.length ? <p>No categories match your search.</p> : null}
         </>
       )}
