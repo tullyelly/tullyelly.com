@@ -7,6 +7,8 @@ Use this for “commit this,” “open/update a PR,” “deploy this,” and c
 requests. Infer the requested endpoint from the conversation; no special prompt
 or release-lane choice is needed. Follow the [Jira workflow](../../../docs/jira-workflow.md)
 for live scope, the shared epic branch, session context and guarded commits.
+Reuse a previously fully merged branch automatically when that workflow's live
+safety checks pass; a prior merge or stale date alone needs no confirmation.
 
 ## Commit
 

@@ -9,6 +9,13 @@ prerequisites, local changes and local/remote refs. Explicit instructions take
 precedence over saved context; the epic execution order may supply an unambiguous
 next ready child. Ask only when attribution or epic selection remains ambiguous.
 
+Automatically reuse a fully merged epic branch when live checks establish safe
+reuse from current main. A prior merge or stale day alone is not a reason to ask
+permission. Follow the owning workflow's safe-reuse checks, preserve all local
+and remote work, and refresh verified daily/session context. Resolve routine
+reversible issues autonomously; ask only about a concrete unresolved risk or
+ambiguity. Never reset, force-push or bypass the shared mutation lock.
+
 Use one shared epic branch; never create child, author or publication branches.
 Load the session's own verified context; never borrow another session's active
 item. Review staged scope yourself, then use the guarded commit command. A key

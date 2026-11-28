@@ -16,8 +16,52 @@ from verified appropriate main with a clean tree. Recheck remote discovery befor
 creation; if another session creates it first, reuse it. Never carry uncommitted
 work across a switch automatically. Never reset, force-push or create an escape
 branch. When only one same-day open epic is eligible, reuse it automatically;
-multiple candidates, stale/closed/merged context or a new day require selection.
-This first version has no multi-day release strategy.
+explicit requested work can also establish the epic unambiguously through its
+live Jira ancestry. A stale day or prior merge requires fresh verification, not
+user confirmation by itself. Ask only when selection remains ambiguous or a
+concrete safety risk cannot be resolved autonomously.
+
+### Automatically reuse a fully merged branch
+
+When the requested work identifies one epic and its existing shared branch,
+perform these checks without asking James to approve routine branch reuse:
+
+1. Inspect the worktree and index (including untracked files), HEAD, local and
+   live remote branch tips, current remote main, other worktrees and active
+   session/lock ownership. Refresh remote refs and verify Jira scope/status and
+   ancestry; for a subtask, retain its real parent and resolve the parent story's
+   epic. Do not infer ownership from a branch name or stale session record.
+2. Establish that both the local branch tip, if present, and remote branch tip
+   are ancestors of verified current main, using `git merge-base --is-ancestor`.
+   A merged PR label alone is insufficient: later local/remote commits may be
+   unmerged. Squash/rebase merges that fail this ancestry proof require further
+   inspection; never discard commits based on similar file contents.
+3. If already on the selected branch at current main, keep it and preserve
+   existing edits in place. Otherwise require a clean worktree/index and no
+   conflicting active user of the branch before switching or advancing it.
+   Do not stash, overwrite or carry unrelated edits across a switch automatically.
+4. Serialize mutations using the existing `jira-mutation.lock` (exclusive
+   creation at `git rev-parse --git-path jira-mutation.lock`). While holding the
+   lock, recheck HEAD, index/worktree, local refs and live remote tips against the
+   inspected state. If anything advanced, release your own lock and reassess;
+   never delete another owner's lock. The lock coordinates local agents, not
+   remote writers. Reconcile any later remote advancement before an ordinary
+   push; never force-push.
+5. Reuse the existing branch name without prompting. Switch to the existing
+   local branch and fast-forward only to the verified main SHA with
+   `git merge --ff-only <verified-main-SHA>`. If only the remote branch exists,
+   create its local tracking branch first, then fast-forward. Do not reset,
+   rename, delete or create a separate story/escape branch. Refresh the daily
+   epic record and only this session's context from verified facts under the
+   same serialized mutation boundary. Release only the lock you acquired.
+
+Unmerged/divergent commits, dirty files requiring a switch, concurrent ownership
+or ambiguous Jira scope fail the automatic-reuse conditions; preserve all work.
+Resolve routine reversible issues and repeat checks where possible. Ask only
+when a concrete unresolved risk or choice needs James, describing that blocker.
+A new day or a previously merged branch alone never requires permission when
+these checks succeed. This does not authorize merge, deployment or changing a
+closed epic's status.
 
 Commit `.jira/active-epic.json` containing epic, branch, day and timezone so another
 session can recover branch selection. It does not select every session's child.
@@ -88,4 +132,16 @@ After WU-1271, keep the epic branch and switch your verified session item to
 WU-1270. Its commit uses WU-1270 automatically. Repeat for WU-1261. James can say
 “continue the next ready item” without repeating the branch or epic. For his
 Chronicle, he supplies its key; the branch stays the same. Ask only for unresolved
-epic selection, missing/invalid content key, ambiguous scope or stale-day context.
+epic selection, missing/invalid content key, ambiguous scope or a concrete safety
+blocker; refresh stale-day context automatically when live facts resolve it.
+
+### Safe-reuse walkthrough; WU-1315
+
+| Observed state                                                                                                               | Action and expected result                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prior local and remote epic tips are ancestors of current main; clean tree/index; no other owner; refs stable under the lock | Reuse the same branch and fast-forward to verified main, refresh the day/session facts, and continue without a prompt.                                                |
+| Already on that branch at current main with WU-1314 edits                                                                    | Keep the branch and every edit in place; no switch, reset or new branch is needed. Attribute subsequent work to its verified item.                                    |
+| Local or remote tip contains an unmerged commit or diverges from main                                                        | Ancestry check fails; retain both tips and investigate. Do not reset to main or treat a merged PR as proof that later commits are merged.                             |
+| Staged, unstaged or untracked work would need to cross a branch switch                                                       | Preserve HEAD, index and files; do not switch or auto-stash. Continue independent work where possible and surface only the actual unresolved ownership/scope blocker. |
+| Remote tip or local state changes between inspection and mutation                                                            | Recheck detects advancement; release the acquired lock, refresh and reassess. Preserve the new commit and do not force-push.                                          |
+| Another session owns the mutation lock or is actively using the branch                                                       | Coordinate and retry after ownership is resolved; never remove the other session's lock or disrupt its work.                                                          |
