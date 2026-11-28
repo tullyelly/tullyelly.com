@@ -78,7 +78,7 @@ function maskFencedCode(source: string): string {
 }
 
 function findOpeningTagEnd(source: string, start: number): number {
-  let quote: "\"" | "'" | null = null;
+  let quote: '"' | "'" | null = null;
   let braceDepth = 0;
   for (let index = start; index < source.length; index += 1) {
     const char = source[index];
@@ -101,7 +101,10 @@ function attributeAlterEgo(openingTag: string): string | null {
 
 export function extractReleaseSections(raw: string): ExtractedReleaseSection[] {
   const searchable = maskFencedCode(raw);
-  const preliminary: Omit<ExtractedReleaseSection, "totalSections" | "sourceColourKey">[] = [];
+  const preliminary: Omit<
+    ExtractedReleaseSection,
+    "totalSections" | "sourceColourKey"
+  >[] = [];
   let cursor = 0;
   let ordinal = 0;
 
@@ -120,7 +123,14 @@ export function extractReleaseSections(raw: string): ExtractedReleaseSection[] {
     ordinal += 1;
     const selfClosing = /\/\s*>$/.test(openingTag);
     if (selfClosing) {
-      if (alterEgo) preliminary.push({ alterEgo, mdx: raw.slice(start, tagEnd + 1), bodyMdx: "", offset: start, sectionOrdinal: ordinal });
+      if (alterEgo)
+        preliminary.push({
+          alterEgo,
+          mdx: raw.slice(start, tagEnd + 1),
+          bodyMdx: "",
+          offset: start,
+          sectionOrdinal: ordinal,
+        });
       cursor = tagEnd + 1;
       continue;
     }
@@ -136,7 +146,8 @@ export function extractReleaseSections(raw: string): ExtractedReleaseSection[] {
       if (nextOpen >= 0 && nextOpen < nextClose) {
         const nestedEnd = findOpeningTagEnd(searchable, nextOpen + OPEN.length);
         if (nestedEnd < 0) break;
-        if (!/\/\s*>$/.test(searchable.slice(nextOpen, nestedEnd + 1))) depth += 1;
+        if (!/\/\s*>$/.test(searchable.slice(nextOpen, nestedEnd + 1)))
+          depth += 1;
         searchAt = nestedEnd + 1;
       } else {
         depth -= 1;
@@ -146,11 +157,22 @@ export function extractReleaseSections(raw: string): ExtractedReleaseSection[] {
       }
     }
     if (depth > 0 || end < 0) break;
-    if (alterEgo) preliminary.push({ alterEgo, mdx: raw.slice(start, end), bodyMdx: raw.slice(tagEnd + 1, closeStart), offset: start, sectionOrdinal: ordinal });
+    if (alterEgo)
+      preliminary.push({
+        alterEgo,
+        mdx: raw.slice(start, end),
+        bodyMdx: raw.slice(tagEnd + 1, closeStart),
+        offset: start,
+        sectionOrdinal: ordinal,
+      });
     cursor = end;
   }
 
-  return preliminary.map((section) => ({ ...section, totalSections: ordinal, sourceColourKey: raw }));
+  return preliminary.map((section) => ({
+    ...section,
+    totalSections: ordinal,
+    sourceColourKey: raw,
+  }));
 }
 
 const timestamp = (date: string) => {
@@ -158,11 +180,16 @@ const timestamp = (date: string) => {
   return Number.isNaN(value) ? 0 : value;
 };
 
-export function compareReleaseEntriesNewestFirst(a: AlterEgoReleaseEntry, b: AlterEgoReleaseEntry): number {
-  return timestamp(b.postDate) - timestamp(a.postDate) ||
+export function compareReleaseEntriesNewestFirst(
+  a: AlterEgoReleaseEntry,
+  b: AlterEgoReleaseEntry,
+): number {
+  return (
+    timestamp(b.postDate) - timestamp(a.postDate) ||
     b.sectionOrdinal - a.sectionOrdinal ||
     a.postSlug.localeCompare(b.postSlug) ||
-    b.offset - a.offset;
+    b.offset - a.offset
+  );
 }
 
 export function getAlterEgoReleaseEntries(
@@ -171,17 +198,34 @@ export function getAlterEgoReleaseEntries(
 ): AlterEgoReleaseEntry[] {
   return posts
     .filter((post) => !post.draft)
-    .flatMap((post) => extractReleaseSections(post.body?.raw ?? "")
-      .filter((section) => section.alterEgo === alterEgo)
-      .map((section) => ({ ...section, postSlug: post.slug, postUrl: post.url || `/shaolin/${post.slug}`, postTitle: post.title ?? post.slug, postDate: post.date, postTags: post.tags ?? [] })))
+    .flatMap((post) =>
+      extractReleaseSections(post.body?.raw ?? "")
+        .filter((section) => section.alterEgo === alterEgo)
+        .map((section) => ({
+          ...section,
+          postSlug: post.slug,
+          postUrl: post.url || `/shaolin/${post.slug}`,
+          postTitle: post.title ?? post.slug,
+          postDate: post.date,
+          postTags: post.tags ?? [],
+        })),
+    )
     .sort(compareReleaseEntriesNewestFirst);
 }
 
-export function getLandingReleaseEntries(alterEgo: PersonaReleaseFeed, posts?: readonly ReleasePostSource[]) {
-  return getAlterEgoReleaseEntries(alterEgo, posts).slice(0, PERSONA_RELEASE_LANDING_LIMIT);
+export function getLandingReleaseEntries(
+  alterEgo: PersonaReleaseFeed,
+  posts?: readonly ReleasePostSource[],
+) {
+  return getAlterEgoReleaseEntries(alterEgo, posts).slice(
+    0,
+    PERSONA_RELEASE_LANDING_LIMIT,
+  );
 }
 
-export function normalizeReleasePage(value: string | string[] | undefined): number {
+export function normalizeReleasePage(
+  value: string | string[] | undefined,
+): number {
   const raw = Array.isArray(value) ? value[0] : value;
   if (!raw || !/^\d+$/.test(raw)) return 1;
   const page = Number(raw);
@@ -202,13 +246,27 @@ export function orderReleaseEntries(
   return order === "oldest" ? [...entries].reverse() : entries;
 }
 
-export function paginateReleaseEntries(entries: AlterEgoReleaseEntry[], requestedPage: number): ReleasePageResult {
-  const page = Number.isSafeInteger(requestedPage) && requestedPage >= 1 ? requestedPage : 1;
+export function paginateReleaseEntries(
+  entries: AlterEgoReleaseEntry[],
+  requestedPage: number,
+): ReleasePageResult {
+  const page =
+    Number.isSafeInteger(requestedPage) && requestedPage >= 1
+      ? requestedPage
+      : 1;
   const total = entries.length;
   const pageCount = Math.max(1, Math.ceil(total / PERSONA_RELEASE_PAGE_SIZE));
   const outOfRange = total > 0 && page > pageCount;
   const start = (page - 1) * PERSONA_RELEASE_PAGE_SIZE;
-  return { entries: outOfRange ? [] : entries.slice(start, start + PERSONA_RELEASE_PAGE_SIZE), page, pageCount, total, outOfRange };
+  return {
+    entries: outOfRange
+      ? []
+      : entries.slice(start, start + PERSONA_RELEASE_PAGE_SIZE),
+    page,
+    pageCount,
+    total,
+    outOfRange,
+  };
 }
 
 export function getReleasePageDateRange(
@@ -233,4 +291,19 @@ export function releaseSectionPreview(bodyMdx: string, limit = 240): string {
   text = text.slice(0, limit + 1);
   const boundary = text.lastIndexOf(" ");
   return `${text.slice(0, boundary > 0 ? boundary : limit).trim()}…`;
+}
+
+/** Search published release entries without changing section identity or content. */
+export function filterReleaseEntries(
+  entries: AlterEgoReleaseEntry[],
+  query: string,
+): AlterEgoReleaseEntry[] {
+  const q = query.trim().toLocaleLowerCase("en-US");
+  return q
+    ? entries.filter((entry) =>
+        [entry.postTitle, ...entry.postTags, entry.bodyMdx].some((value) =>
+          value.toLocaleLowerCase("en-US").includes(q),
+        ),
+      )
+    : entries;
 }

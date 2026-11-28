@@ -12,6 +12,7 @@ export const DIRECTORY_QUERY_KEYS = [
   "alterEgo",
   "recognition",
   "view",
+  "order",
 ] as const;
 
 export function readDirectoryValue<T extends string | number>(

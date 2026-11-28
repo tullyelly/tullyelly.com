@@ -1,3 +1,4 @@
+import ArchiveReturnLink from "@/components/directory/ArchiveReturnLink";
 import { cn } from "@/lib/utils";
 
 export type PageWidth = "reading" | "standard" | "wide";
@@ -29,6 +30,7 @@ export default function FullBleedPage({
           articleClassName,
         )}
       >
+        <ArchiveReturnLink />
         {children}
       </article>
     </div>

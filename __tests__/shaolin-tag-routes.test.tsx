@@ -129,7 +129,7 @@ describe("Shaolin tag routes", () => {
     );
     expect(
       screen.getAllByRole("link", { name: "Related page" })[0],
-    ).toHaveAttribute("href", "/mark2/builds");
+    ).toHaveAttribute("href", "/mark2/builds?returnTo=%2Fshaolin%2Ftags");
     expect(screen.getAllByText("Metal Face (4)")).toHaveLength(2);
     expect(screen.getAllByText("Viktor Vaughn (2)")).toHaveLength(2);
   });
@@ -155,7 +155,10 @@ describe("Shaolin tag routes", () => {
 
     const links = screen.getAllByRole("link", { name: "Alter ego page" });
     expect(links).toHaveLength(2);
-    expect(links[0]).toHaveAttribute("href", "/theabbott");
+    expect(links[0]).toHaveAttribute(
+      "href",
+      "/theabbott?returnTo=%2Fshaolin%2Ftags",
+    );
     expect(
       screen.queryByRole("link", { name: "Persona page" }),
     ).not.toBeInTheDocument();
@@ -185,7 +188,10 @@ describe("Shaolin tag routes", () => {
 
     const links = screen.getAllByRole("link", { name: "Fam page" });
     expect(links).toHaveLength(2);
-    expect(links[0]).toHaveAttribute("href", "/unclejimmy/fam/doom");
+    expect(links[0]).toHaveAttribute(
+      "href",
+      "/unclejimmy/fam/doom?returnTo=%2Fshaolin%2Ftags",
+    );
     expect(
       screen.queryByRole("link", { name: "Squad page" }),
     ).not.toBeInTheDocument();
@@ -211,4 +217,8 @@ describe("Shaolin tag routes", () => {
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalledTimes(1);
   });
+});
+
+beforeEach(() => {
+  window.history.replaceState(null, "", "/");
 });

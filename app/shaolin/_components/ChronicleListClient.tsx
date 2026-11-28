@@ -4,7 +4,17 @@ import TagLink from "@/components/tags/TagLink";
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import {
+  useDirectoryField,
+  useDirectorySearch,
+} from "@/components/directory/useDirectoryField";
+import {
+  clampDirectoryPage,
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+
 import { Badge } from "@/app/ui/Badge";
 import { getBadgeClass } from "@/app/ui/badge-maps";
 import { Card } from "@ui";
@@ -53,9 +63,11 @@ const getChronicleSearchValues = (row: ChronicleListRow) => [
 function TagLinks({
   tags,
   tagDisplayNames,
+  directoryReturn,
 }: {
   tags: string[];
   tagDisplayNames: Record<string, string>;
+  directoryReturn?: string;
 }) {
   const visibleTags = tags.slice(0, VISIBLE_TAGS);
   const hiddenTagCount = tags.length - visibleTags.length;
@@ -63,7 +75,13 @@ function TagLinks({
   return (
     <div className="flex flex-wrap gap-1.5">
       {visibleTags.map((tag) => (
-        <TagLink key={tag} tag={tag} className="inline-flex" prefetch={false}>
+        <TagLink
+          key={tag}
+          tag={tag}
+          directoryReturn={directoryReturn}
+          className="inline-flex"
+          prefetch={false}
+        >
           <Badge className={getBadgeClass("planned")}>
             #{tagDisplayNames[tag] ?? getHashtagDisplayName(tag).slice(1)}
           </Badge>
@@ -87,6 +105,7 @@ export default function ChronicleListClient({
   tagDisplayNames = {},
   archiveLabel = "Chronicles archive",
   controlsLabel = "Chronicle controls",
+  directoryHref = "/shaolin",
 }: {
   rows: ChronicleListRow[];
   alterEgos: readonly AlterEgo[];
@@ -94,12 +113,30 @@ export default function ChronicleListClient({
   tagDisplayNames?: Record<string, string>;
   archiveLabel?: string;
   controlsLabel?: string;
+  directoryHref?: string;
 }) {
-  const [query, setQuery] = useState("");
-  const [alterEgo, setAlterEgo] = useState<AlterEgo | "">(initialAlterEgo);
-  const [sort, setSort] = useState<SortOrder>("newest");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [alterEgo, setAlterEgo] = useDirectoryField<AlterEgo | "">(
+    "alterEgo",
+    "",
+    ["", ...alterEgos],
+    initialAlterEgo,
+  );
+  const [sort, setSort] = useDirectoryField<SortOrder>("sort", "newest", [
+    "newest",
+    "oldest",
+  ]);
+  const [page, setPage] = useDirectoryField<number>("page", 1);
+  const [pageSize, setPageSize] = useDirectoryField<number>(
+    "pageSize",
+    PAGE_SIZES[0],
+    PAGE_SIZES,
+  );
+  const search = useDirectorySearch();
+  const returnTo = safeDirectoryReturn(
+    `${directoryHref}${search}`,
+    directoryHref,
+  );
   const searchedRows = useTableSearch(rows, query, getChronicleSearchValues);
   const filteredRows = useMemo(
     () => searchedRows.filter((row) => !alterEgo || row.alterEgo === alterEgo),
@@ -113,7 +150,11 @@ export default function ChronicleListClient({
       }),
     [filteredRows, sort],
   );
-  const visibleRows = sortedRows.slice((page - 1) * pageSize, page * pageSize);
+  const current = clampDirectoryPage(page, sortedRows.length, pageSize);
+  const visibleRows = sortedRows.slice(
+    (current - 1) * pageSize,
+    current * pageSize,
+  );
   const hasActiveFilters =
     query.length > 0 || alterEgo !== "" || sort !== "newest";
 
@@ -121,7 +162,6 @@ export default function ChronicleListClient({
     setQuery("");
     setAlterEgo("");
     setSort("newest");
-    setPage(1);
   }
 
   return (
@@ -133,7 +173,6 @@ export default function ChronicleListClient({
             query={query}
             onQueryChange={(nextQuery) => {
               setQuery(nextQuery);
-              setPage(1);
             }}
             label="Search chronicles"
             placeholder="Search chronicles"
@@ -148,7 +187,6 @@ export default function ChronicleListClient({
               value={alterEgo}
               onChange={(event) => {
                 setAlterEgo(event.target.value as AlterEgo | "");
-                setPage(1);
               }}
             >
               <option value="">All alter egos</option>
@@ -164,7 +202,6 @@ export default function ChronicleListClient({
               value={sort}
               onChange={(event) => {
                 setSort(event.target.value as SortOrder);
-                setPage(1);
               }}
             >
               <option value="newest">Newest first</option>
@@ -198,7 +235,11 @@ export default function ChronicleListClient({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <Link
-                    href={row.url as Route}
+                    href={
+                      (search || directoryHref !== "/shaolin"
+                        ? withDirectoryReturn(row.url, returnTo)
+                        : row.url) as Route
+                    }
                     className="link-blue font-semibold"
                   >
                     {row.title}
@@ -230,7 +271,11 @@ export default function ChronicleListClient({
                 </div>
               </dl>
               {row.tags.length > 0 ? (
-                <TagLinks tags={row.tags} tagDisplayNames={tagDisplayNames} />
+                <TagLinks
+                  tags={row.tags}
+                  tagDisplayNames={tagDisplayNames}
+                  directoryReturn={returnTo}
+                />
               ) : null}
             </Card>
           ))
@@ -263,7 +308,11 @@ export default function ChronicleListClient({
                   <div className="flex items-start gap-2">
                     <div className="min-w-0">
                       <Link
-                        href={row.url as Route}
+                        href={
+                          (search || directoryHref !== "/shaolin"
+                            ? withDirectoryReturn(row.url, returnTo)
+                            : row.url) as Route
+                        }
                         className="link-blue font-semibold"
                       >
                         {row.title}
@@ -289,6 +338,7 @@ export default function ChronicleListClient({
                 <TableCell intent="descriptive" className="align-top">
                   {row.tags.length > 0 ? (
                     <TagLinks
+                      directoryReturn={returnTo}
                       tags={row.tags}
                       tagDisplayNames={tagDisplayNames}
                     />
@@ -307,13 +357,12 @@ export default function ChronicleListClient({
       </Table>
 
       <TablePager
-        page={page}
+        page={current}
         pageSize={pageSize}
         total={sortedRows.length}
         onPageChange={setPage}
         onPageSizeChange={(nextPageSize) => {
           setPageSize(nextPageSize);
-          setPage(1);
         }}
         pageSizeOptions={PAGE_SIZES}
       />

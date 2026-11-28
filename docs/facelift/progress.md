@@ -208,3 +208,28 @@ journeys passed again. Filtered Hall of Fame emptiness has a distinct message.
 Final baseline passed in 142.5s: 271 suites/2,153 tests, passing coverage and
 production build. Docs and formatting passed. No connected database mutation,
 authentication, import or deployment was run.
+
+## WU-1297
+
+Chronicle and tag archives now retain search, sort, page and page size in public
+URLs. Tag pills retain authored labels, metadata-disabled/external behavior and
+canonical routing; explicitly labeled archive links remain separate from related
+identity destinations. Public archive returns survive alias redirects and details.
+Scroll paging creates history entries and detail links carry validated search and
+sort state. The existing server paging, SQL ordering and creation gates are intact.
+
+Persona release logs add GET search over existing extracted titles, tags and
+release text. Search is applied before the existing ordering/pagination and keeps
+source objects, MDX, original source anchors, colors and dates. Canonical metadata,
+invalid-page behavior, per-persona extraction and article bodies remain unchanged.
+The shared page shell recognizes only supported archive return destinations.
+
+Four isolated browser journeys passed at 375px/1440px, covering archive search,
+page reset/reload, tag and Fam return paths, scroll GET controls and detail return.
+Mobile archive and desktop scroll screenshots were inspected. Focused regressions
+cover canonical/disabled links, existing tag counts, safe returns, release search
+and original source-section anchors. These checks use synthetic data and mocked
+services; connected databases, authentication and release creation remain unrun.
+
+Full baseline passed in 153.8s: 272 suites/2,162 tests, passing coverage and
+database-free production build. Docs and formatting checks passed.

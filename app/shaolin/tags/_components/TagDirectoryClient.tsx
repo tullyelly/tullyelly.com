@@ -4,7 +4,17 @@ import type { TagLinkMetadata } from "@/lib/tags";
 import TagLink from "@/components/tags/TagLink";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import {
+  useDirectoryField,
+  useDirectorySearch,
+} from "@/components/directory/useDirectoryField";
+import {
+  clampDirectoryPage,
+  safeDirectoryReturn,
+  withDirectoryReturn,
+} from "@/lib/directory-state";
+
 import DataToolbar, { DataResultCount } from "@/components/ui/DataToolbar";
 import {
   MobileDataCard,
@@ -46,10 +56,22 @@ export default function TagDirectoryClient({
 }: {
   rows: TagDirectoryRow[];
 }) {
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortOrder>("usage");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  const [query, setQuery] = useDirectoryField<string>("q", "");
+  const [sort, setSort] = useDirectoryField<SortOrder>("sort", "usage", [
+    "usage",
+    "alphabetical",
+  ]);
+  const [page, setPage] = useDirectoryField<number>("page", 1);
+  const [pageSize, setPageSize] = useDirectoryField<number>(
+    "pageSize",
+    PAGE_SIZES[0],
+    PAGE_SIZES,
+  );
+  const search = useDirectorySearch();
+  const returnTo = safeDirectoryReturn(
+    `/shaolin/tags${search}`,
+    "/shaolin/tags",
+  );
   const searchedRows = useTableSearch(rows, query, (row) => [
     row.slug,
     ...(row.searchTerms ?? []),
@@ -67,7 +89,11 @@ export default function TagDirectoryClient({
       ),
     [searchedRows, sort],
   );
-  const visibleRows = sortedRows.slice((page - 1) * pageSize, page * pageSize);
+  const current = clampDirectoryPage(page, sortedRows.length, pageSize);
+  const visibleRows = sortedRows.slice(
+    (current - 1) * pageSize,
+    current * pageSize,
+  );
   const emptyMessage =
     rows.length === 0
       ? "No Chronicle tags are available yet."
@@ -78,7 +104,11 @@ export default function TagDirectoryClient({
 
     return (
       <a
-        href={row.alias.href}
+        href={
+          row.alias.external
+            ? row.alias.href
+            : withDirectoryReturn(row.alias.href, returnTo)
+        }
         className="link-blue"
         {...(row.alias.external
           ? { target: "_blank", rel: "noopener noreferrer" }
@@ -123,7 +153,6 @@ export default function TagDirectoryClient({
             query={query}
             onQueryChange={(nextQuery) => {
               setQuery(nextQuery);
-              setPage(1);
             }}
             label="Search Chronicle tags"
             placeholder="Search tags"
@@ -137,12 +166,24 @@ export default function TagDirectoryClient({
             value={sort}
             onChange={(event) => {
               setSort(event.target.value as SortOrder);
-              setPage(1);
             }}
           >
             <option value="usage">Most used</option>
             <option value="alphabetical">Alphabetical A-Z</option>
           </select>
+        }
+        actions={
+          query || sort !== "usage" ? (
+            <button
+              className="btn"
+              onClick={() => {
+                setQuery("");
+                setSort("usage");
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null
         }
         result={
           <DataResultCount>
@@ -158,6 +199,7 @@ export default function TagDirectoryClient({
               <TagLink
                 tag={row.slug}
                 metadata={row.metadata}
+                directoryReturn={returnTo}
                 className="link-blue font-semibold"
                 prefetch={false}
               >
@@ -165,7 +207,16 @@ export default function TagDirectoryClient({
               </TagLink>
               <MobileDataGrid className="grid-cols-1">
                 <MobileDataField label="Chronicles">
-                  <Link href={`/shaolin/tags/${encodeURIComponent(row.slug)}`}>
+                  <Link
+                    href={
+                      search
+                        ? withDirectoryReturn(
+                            `/shaolin/tags/${encodeURIComponent(row.slug)}`,
+                            returnTo,
+                          )
+                        : `/shaolin/tags/${encodeURIComponent(row.slug)}`
+                    }
+                  >
                     Chronicle archive ({row.chronicleCount})
                   </Link>
                 </MobileDataField>
@@ -203,6 +254,7 @@ export default function TagDirectoryClient({
                   <TagLink
                     tag={row.slug}
                     metadata={row.metadata}
+                    directoryReturn={returnTo}
                     className="link-blue font-semibold"
                     prefetch={false}
                   >
@@ -210,7 +262,16 @@ export default function TagDirectoryClient({
                   </TagLink>
                 </TableCell>
                 <TableCell intent="numeric">
-                  <Link href={`/shaolin/tags/${encodeURIComponent(row.slug)}`}>
+                  <Link
+                    href={
+                      search
+                        ? withDirectoryReturn(
+                            `/shaolin/tags/${encodeURIComponent(row.slug)}`,
+                            returnTo,
+                          )
+                        : `/shaolin/tags/${encodeURIComponent(row.slug)}`
+                    }
+                  >
                     Chronicle archive ({row.chronicleCount})
                   </Link>
                 </TableCell>
@@ -229,13 +290,12 @@ export default function TagDirectoryClient({
       </Table>
 
       <TablePager
-        page={page}
+        page={current}
         pageSize={pageSize}
         total={sortedRows.length}
         onPageChange={setPage}
         onPageSizeChange={(nextPageSize) => {
           setPageSize(nextPageSize);
-          setPage(1);
         }}
         pageSizeOptions={PAGE_SIZES}
         ariaLabel="Chronicle tag pagination"

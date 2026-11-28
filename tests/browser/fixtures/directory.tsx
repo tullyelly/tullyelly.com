@@ -1,3 +1,8 @@
+import ChronicleListClient from "@/app/shaolin/_components/ChronicleListClient";
+import TagDirectoryClient from "@/app/shaolin/tags/_components/TagDirectoryClient";
+import ArchiveReturnLink from "@/components/directory/ArchiveReturnLink";
+import ScrollsPageClient from "@/app/mark2/shaolin-scrolls/_components/ScrollsPageClient";
+import ScrollActionBar from "@/app/mark2/shaolin-scrolls/_components/ActionBar";
 import TcdbTradeListClient from "@/app/cardattack/tcdb-trades/_components/TcdbTradeListClient";
 import TcdbTradePartnerListClient from "@/app/cardattack/tcdb-trade-partners/_components/TcdbTradePartnerListClient";
 import HallOfFameDirectory from "@/app/cardattack/hof/HallOfFameDirectory";
@@ -279,6 +284,7 @@ function FamilyFixture() {
   );
   return (
     <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+      <ArchiveReturnLink />
       <TagMetadataProvider metadata={metadata}>
         {location.pathname === directory ? (
           <>
@@ -680,8 +686,120 @@ function TradingFixture() {
     </main>
   );
 }
+
+function ArchivesFixture() {
+  const path = location.pathname;
+  const tag = path === "/shaolin/tags/archive-tag";
+  const rows = Array.from({ length: 32 }, (_, i) => ({
+    slug: `archive-post-${i}`,
+    url: `/shaolin/archive-post-${i}`,
+    title: `Archive Chronicle ${String(i + 1).padStart(2, "0")}`,
+    summary: "Authored release, citation and music notes",
+    date: "2026-11-28",
+    alterEgo: "mark2" as const,
+    tags: ["archive-tag"],
+    infinityStone: false,
+  }));
+  return (
+    <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+      <ArchiveReturnLink />
+      <PageIntro
+        title={
+          path === "/shaolin"
+            ? "Chronicles"
+            : path === "/shaolin/tags"
+              ? "Chronicle tags"
+              : tag
+                ? "#archive-tag"
+                : "Archive Chronicle"
+        }
+      />
+      {path === "/shaolin" || tag ? (
+        <ChronicleListClient
+          rows={rows}
+          alterEgos={["mark2"]}
+          directoryHref={path}
+        />
+      ) : path === "/shaolin/tags" ? (
+        <TagDirectoryClient
+          rows={[
+            {
+              slug: "archive-tag",
+              canonicalDisplayName: "Authored Name",
+              chronicleCount: 32,
+              alias: {
+                href: "/unclejimmy/fam/lulu",
+                label: "Fam page",
+                external: false,
+              },
+              personTagNames: [],
+              remainingPersonTagNameCount: 0,
+            },
+          ]}
+        />
+      ) : (
+        <p id="release-section-1">Original release body and anchor.</p>
+      )}
+    </main>
+  );
+}
+function ScrollFixture() {
+  const params = new URLSearchParams(location.search);
+  const q = params.get("q") ?? "";
+  const page = Number(params.get("page") ?? 1);
+  const sort =
+    params.get("sort") === "semver:asc" ? "semver:asc" : "semver:desc";
+  const rows = Array.from({ length: 30 }, (_, i) => ({
+    id: String(i + 1),
+    name: `Release ${i + 1}`,
+    label: `Release ${i + 1}`,
+    status: "Released",
+    type: "Patch",
+    semver: `2.7.${i + 1}`,
+    sem_major: 2,
+    sem_minor: 7,
+    sem_patch: i + 1,
+    sem_hotfix: 0,
+    created_at: "2026-11-28",
+    release_date: "2026-11-28",
+  })).filter((r) => r.name.toLowerCase().includes(q.toLowerCase()));
+  if (sort === "semver:desc") rows.reverse();
+  return (
+    <main className="mx-auto max-w-[72rem] space-y-6 p-4">
+      <PageIntro title="Shaolin Scrolls" />
+      {location.pathname === "/mark2/shaolin-scrolls" ? (
+        <>
+          <ScrollActionBar q={q} sort={sort} total={rows.length} />
+          <ScrollsPageClient
+            rows={rows.slice((page - 1) * 25, page * 25)}
+            meta={{
+              q,
+              sort,
+              page,
+              pageSize: 25,
+              total: rows.length,
+              totalPages: Math.ceil(rows.length / 25),
+            }}
+          />
+        </>
+      ) : (
+        <DirectoryReturnLink directory="/mark2/shaolin-scrolls">
+          Back to Shaolin Scrolls
+        </DirectoryReturnLink>
+      )}
+    </main>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
-  location.pathname.startsWith("/cardattack/tcdb-trade") ||
+  location.pathname.startsWith("/mark2/shaolin-scrolls") ? (
+    <ScrollFixture />
+  ) : location.pathname === "/shaolin" ||
+    location.pathname === "/shaolin/tags" ||
+    location.pathname.startsWith("/shaolin/tags/archive-tag") ||
+    location.pathname.startsWith("/shaolin/archive-post") ? (
+    <ArchivesFixture />
+  ) : location.pathname.startsWith("/cardattack/tcdb-trade") ||
     location.pathname === "/cardattack/hof" ? (
     <TradingFixture />
   ) : trackerPaths.some((path) => location.pathname.startsWith(path)) ? (

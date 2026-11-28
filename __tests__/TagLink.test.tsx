@@ -75,11 +75,14 @@ it("renders canonical and disabled tag pills in both Chronicle list layouts", ()
   );
   expect(screen.getAllByRole("link", { name: "#lulu" })).toHaveLength(2);
   for (const link of screen.getAllByRole("link", { name: "#lulu" }))
-    expect(link).toHaveAttribute("href", "/stored-route");
+    expect(link).toHaveAttribute("href", "/stored-route?returnTo=%2Fshaolin");
   expect(screen.queryByRole("link", { name: "#disabled" })).toBeNull();
   expect(screen.getAllByText("#disabled")).toHaveLength(2);
   for (const link of screen.getAllByRole("link", { name: "#a/b-&-c" }))
-    expect(link).toHaveAttribute("href", "/shaolin/tags/a%2Fb-%26-c");
+    expect(link).toHaveAttribute(
+      "href",
+      "/shaolin/tags/a%2Fb-%26-c?returnTo=%2Fshaolin",
+    );
 });
 
 it("keeps explicitly labeled archive access for disabled and routed directory tags in both layouts", () => {
@@ -97,7 +100,10 @@ it("keeps explicitly labeled archive access for disabled and routed directory ta
     />,
   );
   for (const link of screen.getAllByRole("link", { name: "#lulu" }))
-    expect(link).toHaveAttribute("href", "/stored-route");
+    expect(link).toHaveAttribute(
+      "href",
+      "/stored-route?returnTo=%2Fshaolin%2Ftags",
+    );
   expect(screen.getAllByRole("link", { name: "#lulu" })).toHaveLength(2);
   expect(screen.queryByRole("link", { name: "#disabled" })).toBeNull();
   for (const link of screen.getAllByRole("link", {
@@ -136,4 +142,8 @@ it("uses a fresh server resolution when a client navigation retains an older lay
     "href",
     "/updated-stored-route",
   );
+});
+
+beforeEach(() => {
+  window.history.replaceState(null, "", "/");
 });

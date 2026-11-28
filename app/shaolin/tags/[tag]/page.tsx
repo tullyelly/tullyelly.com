@@ -1,3 +1,4 @@
+import { getArchiveReturnDirectory } from "@/lib/archive-return";
 import {
   safeDirectoryReturn,
   withDirectoryReturn,
@@ -90,7 +91,13 @@ export default async function Page({
       returnTo
         ? withDirectoryReturn(
             `/shaolin/tags/${encodeURIComponent(tag)}`,
-            safeDirectoryReturn(returnTo, "/theabbott/crates"),
+            safeDirectoryReturn(
+              returnTo,
+              getArchiveReturnDirectory(returnTo)?.path ??
+                (returnTo.split("?")[0] === "/theabbott/crates"
+                  ? "/theabbott/crates"
+                  : "/shaolin/tags"),
+            ),
           )
         : `/shaolin/tags/${encodeURIComponent(tag)}`,
     );
@@ -137,6 +144,7 @@ export default async function Page({
           description={`${rows.length} chronicle${rows.length === 1 ? "" : "s"} in this tag archive.`}
         />
         <ChronicleListClient
+          directoryHref={`/shaolin/tags/${encodeURIComponent(tag)}`}
           rows={rows}
           alterEgos={alterEgos}
           tagDisplayNames={tagDisplayNames}

@@ -1,3 +1,4 @@
+import ArchiveReturnLink from "@/components/directory/ArchiveReturnLink";
 import ContextDirectoryReturn from "@/components/directory/ContextDirectoryReturn";
 import Link from "next/link";
 import { PageViewCounter } from "@/components/analytics/PageViewCounter";
@@ -66,6 +67,7 @@ async function PostContent({ slug }: { slug: string }) {
   return (
     <div className="-mx-2 md:mx-0">
       <article className="w-full max-w-none space-y-10 md:mx-auto md:max-w-3xl">
+        <ArchiveReturnLink />
         <ContextDirectoryReturn
           directory="/theabbott/crates"
           label="Back to Crates"

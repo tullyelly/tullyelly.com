@@ -27,8 +27,13 @@ export function useDirectoryField<T extends string | number>(
   key: string,
   fallback: T,
   allowed?: readonly T[],
+  initial?: T,
 ): [T, (value: T) => void] {
-  const search = useDirectorySearch();
+  const search = useSyncExternalStore(subscribe, snapshot, () =>
+    initial === undefined
+      ? ""
+      : new URLSearchParams({ [key]: String(initial) }).toString(),
+  );
   const value = readDirectoryValue(
     new URLSearchParams(search),
     key,

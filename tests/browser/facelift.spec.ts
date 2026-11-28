@@ -484,3 +484,80 @@ for (const width of [375, 1440]) {
     await expect(page.getByRole("searchbox")).toHaveValue("Set 01");
   });
 }
+
+for (const width of [375, 1440]) {
+  test(`archive search, tag return and history at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await mount(page, "shaolin?page=2");
+    await page.getByRole("searchbox").fill("Archive Chronicle");
+    await expect(page).not.toHaveURL(/page=2/);
+    await page.getByRole("button", { name: "Next page" }).click();
+    await page
+      .getByRole("link", { name: "Archive Chronicle 19", exact: true })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("link", { name: "Back to Chronicles" }).click();
+    await expect(page).toHaveURL(/page=2/);
+    await page.reload();
+    await expect(page.getByRole("searchbox")).toHaveValue("Archive Chronicle");
+    await page
+      .getByRole("link", { name: "#archive-tag", exact: true })
+      .filter({ visible: true })
+      .first()
+      .click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "#archive-tag",
+    );
+    await page.getByRole("link", { name: "Back to Chronicles" }).click();
+    await page.getByRole("searchbox").fill("absent");
+    await page.getByRole("button", { name: "Clear filters" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("");
+    await page.screenshot({
+      path: info.outputPath(`archives-${width}.png`),
+      fullPage: true,
+    });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.goto("http://directory.test/shaolin/tags?q=Authored");
+    await page
+      .getByRole("link", { name: "Fam page" })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("link", { name: "Back to tag directory" }).click();
+    await expect(page.getByRole("searchbox")).toHaveValue("Authored");
+  });
+  test(`scroll server controls and safe detail return at ${width}px`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await mount(page, "mark2/shaolin-scrolls");
+    await page.getByRole("searchbox").fill("Release");
+    await page
+      .getByRole("combobox", { name: "Sort scrolls" })
+      .selectOption("semver:asc");
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await page.getByRole("button", { name: "Next page" }).click();
+    await expect(page).toHaveURL(/page=2/);
+    await page
+      .getByRole("link", { name: "View release 26 details" })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("link", { name: "Back to Shaolin Scrolls" }).click();
+    await expect(page).toHaveURL(/page=2/);
+    await expect(page.getByRole("searchbox")).toHaveValue("Release");
+    await page.screenshot({
+      path: info.outputPath(`scrolls-${width}.png`),
+      fullPage: true,
+    });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  });
+}
