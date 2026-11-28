@@ -25,6 +25,8 @@ author or agent branches. Jira attribution does not authorize release or SQL.
 For ordinary “commit this,” “open/update a PR,” or “deploy this” requests, follow
 [delivery requests](.agents/skills/delivery-requests/SKILL.md). Use the existing
 profile tooling automatically; James need not choose a lane or special prompt.
+Review PRs must be authored by the configured GitHub App, not the human approver
+`tullyelly`; follow the delivery skill's identity checks before creating one.
 
 ## Universal rules
 

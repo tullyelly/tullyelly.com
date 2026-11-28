@@ -21,6 +21,36 @@ is provisional. A commit-only request ends after the commit and its report.
 
 ## Open or update a PR
 
+Before creating a PR, establish the intended human approver (`tullyelly` for this
+repository) and the identity that will create it. These must be different.
+Git commit author/email, push identity and PR author are independent; changing
+commit attribution or adding a reviewer cannot fix a self-authored PR.
+
+Use the existing [App-owned review procedure](../../../docs/release-app-setup.md#publish-an-ordinary-review-branch)
+and `scripts/release-app-draft.ts` with the explicit shared branch, exact HEAD,
+reviewed body file and `--ready`. Its creation path verifies repository, remote
+SHA and configured App author. Prefer this helper over a generic connector or
+`gh pr create`; do not assume a tool called by Cipher acts as Cipher. Inspect
+existing PRs first; update only the matching App-owned PR. Follow the documented
+publication check before authorized writes, without printing keys or tokens.
+
+Never create a review PR through an identity matching the human approver, or
+through an identity whose author cannot be verified. A personal GitHub connector
+authenticated as `tullyelly` is not a fallback. If App configuration/access is
+unavailable, retain the commits and report that exact blocker; do not create an
+unapprovable PR, provision credentials, weaken review rules or approve for James.
+After creation, verify the returned PR author is the expected App bot, differs
+from the approver, and has the intended base, branch and exact SHA before
+reporting it ready for approval.
+
+If a human-owned PR was created by mistake, its author cannot be changed. Preserve
+the branch/commits, record its URL and review/check context, and prepare a
+replacement through the App helper. The helper rejects an existing human-owned
+PR: once App access and the replacement inputs are verified, close the mistaken
+PR without merging or deleting the branch, create the App-owned replacement,
+and verify its author and fresh checks. Report the replacement link. Do not
+close the only review PR while App access remains unavailable.
+
 Carry out any authorized prerequisite commit, reconcile the live shared branch,
 and push with the existing pre-push hook enabled. Use the existing PR checks and
 review process. Reuse validation already performed for this step; do not manually

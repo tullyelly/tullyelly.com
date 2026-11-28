@@ -29,3 +29,17 @@ For an authorized deployment, use the exact reviewed and merged main SHA with
 `npm run chronicle:status -- <full-SHA>` and report its public receipt or actual
 blocker. Release preparation rechecks the complete production-to-target diff;
 none of these examples substitutes for that check.
+
+## PR author and approver checks
+
+- Connector reports `tullyelly`, and James is the intended approver: do not call
+  its PR-creation tool. Use the existing App-owned review helper instead.
+- App configuration is missing: retain the commits and report unavailable App
+  access. Do not silently fall back to a personal connector.
+- Commit author is James but the verified PR author is the configured App bot:
+  commit attribution does not make this a self-authored PR; preserve the actual
+  commit author and check the PR's author separately.
+- Existing PR #715 was opened by `tullyelly`: changing commit email or requesting
+  James as reviewer cannot repair ownership. Prepare and verify App access before
+  closing it, then create a replacement for the same branch/SHA through the App
+  helper. Verify its author and rerun normal hosted checks before approval.
